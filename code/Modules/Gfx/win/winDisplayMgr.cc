@@ -1,5 +1,6 @@
 //------------------------------------------------------------------------------
 //  winDisplayMgr.cc
+//  NOTE: window management and input handling is largely taken from GLFW!
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "winDisplayMgr.h"
@@ -26,7 +27,11 @@ inCreateWindow(false),
 cursorMode(ORYOL_WIN_CURSOR_NORMAL),
 cursorPosX(0.0),
 cursorPosY(0.0),
-cursorInside(false),
+windowCursorPosX(0.0),
+windowCursorPosY(0.0),
+win32CursorPosX(0),
+win32CursorPosY(0),
+cursorTracked(false),
 iconified(false) {
     self = this;
     Memory::Clear(this->mouseButtons, sizeof(mouseButtons));
@@ -81,6 +86,14 @@ winDisplayMgr::ProcessSystemEvents() {
         else {
             ::TranslateMessage(&msg);
             ::DispatchMessageW(&msg);
+        }
+    }
+
+    if (this->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
+        int width, height;
+        this->winGetWindowSize(&width, &height);
+        if ((this->win32CursorPosX != width/2) || (this->win32CursorPosY != height/2)) {
+            this->winSetCursorPos(width/2, height/2);
         }
     }
 
@@ -240,74 +253,6 @@ winDisplayMgr::inputGetKeyMods() {
 
 //------------------------------------------------------------------------------
 void
-winDisplayMgr::updateClipRect() {
-    o_assert_dbg(this->hwnd);
-    RECT clipRect;
-    ::GetClientRect(this->hwnd, &clipRect);
-    ::ClientToScreen(this->hwnd, (POINT*)&clipRect.left);
-    ::ClientToScreen(this->hwnd, (POINT*)&clipRect.right);
-    ::ClipCursor(&clipRect);
-}
-
-//------------------------------------------------------------------------------
-void
-winDisplayMgr::restoreCursor() {
-    o_assert_dbg(0 != this->hwnd);
-    POINT pos;
-    ::ClipCursor(NULL);
-    if (::GetCursorPos(&pos)) {
-        if (::WindowFromPoint(pos) == self->hwnd) {
-            // FIXME: handle custom cursor
-            ::SetCursor(::LoadCursorW(NULL, IDC_ARROW));
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-winDisplayMgr::hideCursor() {
-    o_assert_dbg(0 != this->hwnd);
-    POINT pos;
-    ::ClipCursor(NULL);
-    if (::GetCursorPos(&pos)) {
-        if (::WindowFromPoint(pos) == self->hwnd) {
-            ::SetCursor(NULL);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-winDisplayMgr::disableCursor() {
-    o_assert_dbg(0 != this->hwnd);
-    POINT pos;
-    this->updateClipRect();
-    if (::GetCursorPos(&pos)) {
-        if (::WindowFromPoint(pos) == self->hwnd) {
-            ::SetCursor(NULL);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-winDisplayMgr::applyCursorMode() {
-    switch (this->cursorMode)
-    {
-    case ORYOL_WIN_CURSOR_NORMAL:
-        this->restoreCursor();
-        break;
-    case ORYOL_WIN_CURSOR_HIDDEN:
-        this->hideCursor();
-        break;
-    case ORYOL_WIN_CURSOR_DISABLED:
-        this->disableCursor();
-        break;
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 winDisplayMgr::inputKey(int key, int scancode, int action, int mods) {
     if ((key >= 0) && (key <= ORYOL_WIN_KEY_LAST)) {
         bool repeated = false;
@@ -370,11 +315,10 @@ winDisplayMgr::inputCursorMotion(double x, double y) {
         if ((x == 0.0) && (y == 0.0)) {
             return;
         }
-        this->cursorPosX += x;
-        this->cursorPosY += y;
-
-        x = this->cursorPosX;
-        y = this->cursorPosY;
+        this->windowCursorPosX += x;
+        this->windowCursorPosY += y;
+        x = this->windowCursorPosX;
+        y = this->windowCursorPosY;
     }
     if (this->callbacks.cursorPos) {
         this->callbacks.cursorPos(x, y);
@@ -484,24 +428,6 @@ winDisplayMgr::inputTranslateKey(WPARAM wParam, LPARAM lParam) {
 
 //------------------------------------------------------------------------------
 void
-winDisplayMgr::setCursorMode(int newMode) {
-
-    const int oldMode = this->cursorMode;
-    if (newMode != ORYOL_WIN_CURSOR_NORMAL &&
-        newMode != ORYOL_WIN_CURSOR_HIDDEN &&
-        newMode != ORYOL_WIN_CURSOR_DISABLED) {
-        return;
-    }
-    if (oldMode == newMode) {
-        return;
-    }
-    this->cursorMode = newMode;
-    // FIXME: I have omitted some cursor positioning code from GLFW here
-    this->applyCursorMode();
-}
-
-//------------------------------------------------------------------------------
-void
 winDisplayMgr::setInputMode(int mode, int value)
 {
     switch (mode) {
@@ -515,16 +441,115 @@ winDisplayMgr::setInputMode(int mode, int value)
 }
 
 //------------------------------------------------------------------------------
+void
+winDisplayMgr::setCursorMode(int newMode) {
+    const int oldMode = this->cursorMode;
+    if (newMode != ORYOL_WIN_CURSOR_NORMAL &&
+        newMode != ORYOL_WIN_CURSOR_HIDDEN &&
+        newMode != ORYOL_WIN_CURSOR_DISABLED) {
+        return;
+    }
+    if (oldMode == newMode) {
+        return;
+    }
+    this->cursorMode = newMode;
+    if (oldMode == ORYOL_WIN_CURSOR_DISABLED) {
+        this->winSetCursorPos(this->cursorPosX, this->cursorPosY);
+    }
+    else if (newMode == ORYOL_WIN_CURSOR_DISABLED) {
+        this->winGetCursorPos(&this->cursorPosX, &this->cursorPosY);
+        this->windowCursorPosX = this->cursorPosX;
+        this->windowCursorPosY = this->cursorPosY;
+        int width, height;
+        this->winGetWindowSize(&width, &height);
+        this->winSetCursorPos(width/2, height/2);
+    }
+    this->winSetCursorMode(this->cursorMode);
+}
+
+//------------------------------------------------------------------------------
+void
+winDisplayMgr::updateClipRect() {
+    o_assert_dbg(this->hwnd);
+    RECT clipRect;
+    ::GetClientRect(this->hwnd, &clipRect);
+    ::ClientToScreen(this->hwnd, (POINT*)&clipRect.left);
+    ::ClientToScreen(this->hwnd, (POINT*)&clipRect.right);
+    ::ClipCursor(&clipRect);
+}
+
+//------------------------------------------------------------------------------
+void
+winDisplayMgr::winSetCursorMode(int mode) {
+    if (mode == ORYOL_WIN_CURSOR_DISABLED) {
+        this->updateClipRect();
+    }
+    else {
+        ::ClipCursor(NULL);
+    }
+    POINT pos;
+    if (!::GetCursorPos(&pos)) {
+        return;
+    }
+    if (::WindowFromPoint(pos) != this->hwnd) {
+        return;
+    }
+    if (mode == ORYOL_WIN_CURSOR_NORMAL) {
+        ::SetCursor(LoadCursor(NULL, IDC_ARROW));
+    }
+    else {
+        ::SetCursor(NULL);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+winDisplayMgr::winSetCursorPos(double xpos, double ypos) {
+    POINT pos = { (int)xpos, (int)ypos };
+    this->win32CursorPosX = pos.x;
+    this->win32CursorPosY = pos.y;
+    ::ClientToScreen(this->hwnd, &pos);
+    ::SetCursorPos(pos.x, pos.y);
+}
+
+//------------------------------------------------------------------------------
+void
+winDisplayMgr::winGetCursorPos(double* xpos, double* ypos) {
+    POINT pos;
+    if (::GetCursorPos(&pos)) {
+        ::ScreenToClient(this->hwnd, &pos);
+        if (xpos) {
+            *xpos = pos.x;
+        }
+        if (ypos) {
+            *ypos = pos.y;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+winDisplayMgr::winGetWindowSize(int* width, int* height) {
+    RECT area;
+    ::GetClientRect(this->hwnd, &area);
+    if (width) {
+        *width = area.right;
+    }
+    if (height) {
+        *height = area.bottom;
+    }
+}
+
+//------------------------------------------------------------------------------
 LRESULT CALLBACK
 winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     winDisplayMgr* self = winDisplayMgr::self;
     switch (uMsg) {
     case WM_SETFOCUS:
         if (self) {
-            if (self->cursorMode != ORYOL_WIN_CURSOR_NORMAL) {
-                self->applyCursorMode();
+            if (self->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
+                self->winSetCursorMode(ORYOL_WIN_CURSOR_DISABLED);
             }
-            // FIXME: fullscreen handling
             self->inputWindowFocus(true);
             return 0;
         }
@@ -532,8 +557,8 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
     case WM_KILLFOCUS:
         if (self) {
-            if (self->cursorMode != ORYOL_WIN_CURSOR_NORMAL) {
-                self->restoreCursor();
+            if (self->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
+                self->winSetCursorMode(ORYOL_WIN_CURSOR_NORMAL);
             }
             // FIXME: fullscreen handling
             self->inputWindowFocus(false);
@@ -682,21 +707,21 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             const int x = GET_X_LPARAM(lParam);
             const int y = GET_Y_LPARAM(lParam);
             if (self->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
-                self->inputCursorMotion(x - self->cursorPosX, y - self->cursorPosY);
+                self->inputCursorMotion(x - self->win32CursorPosX, y - self->win32CursorPosY);
             }
             else {
                 self->inputCursorMotion(x, y);
             }
-            self->cursorPosX = x;
-            self->cursorPosY = y;
-            if (!self->cursorInside) {
+            self->win32CursorPosX = x;
+            self->win32CursorPosY = y;
+            if (!self->cursorTracked) {
                 TRACKMOUSEEVENT tme;
                 Memory::Clear(&tme, sizeof(tme));
                 tme.cbSize = sizeof(tme);
                 tme.dwFlags = TME_LEAVE;
                 tme.hwndTrack = self->hwnd;
                 TrackMouseEvent(&tme);
-                self->cursorInside = true;
+                self->cursorTracked = true;
                 self->inputCursorEnter(true);
             }
             return 0;
@@ -705,7 +730,7 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
     case WM_MOUSELEAVE:
         if (self) {
-            self->cursorInside = false;
+            self->cursorTracked = false;
             self->inputCursorEnter(false);
             return 0;
         }

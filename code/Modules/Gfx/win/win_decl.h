@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /** 
-    @file d3d11_decl.h
-    @brief D3D11 forward declarations
+    @file win_decl.h
+    @brief Windows forward declarations
 */
 #if defined(_WIN64)
 typedef __int64 INT_PTR, *PINT_PTR;

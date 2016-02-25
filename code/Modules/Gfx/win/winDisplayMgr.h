@@ -43,20 +43,22 @@ public:
     void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
     /// setup the key translation table
     void setupKeyTranslationTable();
+
     /// set input mode (called from d3d11InputMgr)
     void setInputMode(int mode, int value);
     /// set cursor mode (called from setInputMode)
     void setCursorMode(int newMode);
-    /// apply the current cursor mode
-    void applyCursorMode();
-    /// restore the mouse cursor
-    void restoreCursor();
-    /// hide the mouse cursor
-    void hideCursor();
-    /// disable the mouse cursor
-    void disableCursor();
+    /// lowlevel set cursor mode
+    void winSetCursorMode(int mode);
+    /// lowlevel set cursor pos
+    void winSetCursorPos(double xpos, double ypos);
+    /// lowlevel get cursor pos
+    void winGetCursorPos(double* xpos, double* ypos);
+    /// lowlevel get window size
+    void winGetWindowSize(int* width, int* height);
     /// update cursor clip rect
     void updateClipRect();
+
     /// get modifier keys
     int inputGetKeyMods();
     /// translate key code from WM wParam, lParam
@@ -100,7 +102,11 @@ public:
     int cursorMode;
     double cursorPosX;
     double cursorPosY;
-    bool cursorInside;
+    double windowCursorPosX;
+    double windowCursorPosY;
+    int win32CursorPosX;
+    int win32CursorPosY;
+    bool cursorTracked;
     bool iconified;
     char mouseButtons[ORYOL_WIN_MOUSE_BUTTON_LAST + 1];
     char keys[ORYOL_WIN_KEY_LAST + 1];
