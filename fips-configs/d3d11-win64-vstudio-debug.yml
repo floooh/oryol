@@ -1,8 +1,8 @@
 ---
 platform: win64 
-generator: Visual Studio 12 Win64
+generator-platform: x64
 build_tool: cmake
-build_type: Release
+build_type: Debug
 defines:
     ORYOL_USE_D3D11: ON
 

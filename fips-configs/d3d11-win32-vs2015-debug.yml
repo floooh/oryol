@@ -1,8 +1,0 @@
----
-platform: win32 
-generator: Visual Studio 14
-build_tool: cmake
-build_type: Debug
-defines:
-    ORYOL_USE_D3D11: ON
-
