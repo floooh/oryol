@@ -219,9 +219,9 @@ void
 MeshViewerApp::handleInput() {
 
     // rotate camera with mouse if not UI-dragging
-    if (this->dragging) {
-        const Touchpad& tpad = Input::Touchpad();
-        if (tpad.Attached) {
+    const Touchpad& tpad = Input::Touchpad();
+    if (tpad.Attached) {
+        if (!ImGui::IsMouseHoveringAnyWindow()) {
             if (tpad.PanningStarted) {
                 this->camera.startOrbital = this->camera.orbital;
             }
@@ -239,14 +239,16 @@ MeshViewerApp::handleInput() {
                 this->camera.dist = glm::clamp(this->camera.startDistance - (curDist - startDist) * 0.01f, minCamDist, maxCamDist);
             }
         }
-        const Mouse& mouse = Input::Mouse();
-        if (mouse.Attached) {
+    }
+    const Mouse& mouse = Input::Mouse();
+    if (mouse.Attached) {
+        if (this->dragging) {
             if (mouse.ButtonPressed(Mouse::LMB)) {
                 this->camera.orbital.y -= mouse.Movement.x * 0.01f;
                 this->camera.orbital.x = glm::clamp(this->camera.orbital.x + mouse.Movement.y * 0.01f, glm::radians(minLatitude), glm::radians(maxLatitude));
             }
-            this->camera.dist = glm::clamp(this->camera.dist + mouse.Scroll.y * 0.1f, minCamDist, maxCamDist);
         }
+        this->camera.dist = glm::clamp(this->camera.dist + mouse.Scroll.y * 0.1f, minCamDist, maxCamDist);
     }
 }
 
