@@ -69,32 +69,44 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
     [window setContentSize:NSMakeSize(setup.Width, setup.Height)];
     [window center];
-
-    // NOTE: this will upscale on Retina displays, to render at Retina
-    // resolution just drop the setDrawableSiz, or set to
-    // [mtkView convertSizeToBacking:mtkView.bounds.size], but this
-    // also needs fixes in the ApplyScissorRect and ApplyViewport functions!
-    CGSize drawableSize = { (CGFloat) setup.Width, (CGFloat) setup.Height };
-    [osBridge::ptr()->mtkView setDrawableSize:drawableSize];
+    osBridge* bridge = osBridge::ptr();
+    if (!setup.HighDPI) {
+        CGSize drawableSize = { (CGFloat) setup.Width, (CGFloat) setup.Height };
+        [bridge->mtkView setDrawableSize:drawableSize];
+    }
     #elif ORYOL_IOS
     osBridge* bridge = osBridge::ptr();
     if (gfxSetup.HighDPI) {
         [bridge->mtkView setContentScaleFactor:2.0f];
+        bridge->mouseScale = 2.0f;
     }
     else {
         [bridge->mtkView setContentScaleFactor:1.0f];
     }
-    // get actual rendering size
-    int fbWidth = (int) [bridge->mtkView drawableSize].width;
-    int fbHeight = (int) [bridge->mtkView drawableSize].height;
-    Log::Info("mtlDisplayMgr: actual framebuffer size w=%d, h=%d\n", fbWidth, fbHeight);
-    this->displayAttrs.FramebufferWidth = fbWidth;
-    this->displayAttrs.FramebufferHeight = fbHeight;
-    this->displayAttrs.WindowWidth = fbWidth;
-    this->displayAttrs.WindowHeight = fbHeight;
     #else
     #error "mtlDisplayMgr: undefined platform!"
     #endif
+
+    // get actual rendering size
+    #if ORYOL_IOS
+    const CGRect winContentRect = [bridge->mtkView frame];
+    #else
+    const NSRect winContentRect = [bridge->mtkView frame];
+    #endif
+    CGSize fbSize = [bridge->mtkView drawableSize];
+    int fbWidth = (int) fbSize.width;
+    int fbHeight = (int) fbSize.height;
+    #if ORYOL_OSX
+    if (fbWidth == setup.Width * 2) {
+        // we're on a Retina display
+        bridge->mouseScale = 2.0;
+    }
+    #endif
+    Log::Info("mtlDisplayMgr: actual framebuffer size w=%d, h=%d\n", fbWidth, fbHeight);
+    this->displayAttrs.FramebufferWidth = fbWidth;
+    this->displayAttrs.FramebufferHeight = fbHeight;
+    this->displayAttrs.WindowWidth = winContentRect.size.width;
+    this->displayAttrs.WindowHeight = winContentRect.size.height;
     [osBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
 }
 
@@ -104,8 +116,10 @@ void
 mtlDisplayMgr::onFramebufferSize(int w, int h) {
     o_assert_dbg((w > 0) && (h > 0));
     if (self) {
-        self->displayAttrs.FramebufferWidth = w;
-        self->displayAttrs.FramebufferHeight = h;
+        // need to get the actual size
+        CGSize fbSize = [osxBridge::ptr()->mtkView drawableSize];
+        self->displayAttrs.FramebufferWidth = (int) fbSize.width;
+        self->displayAttrs.FramebufferHeight = (int) fbSize.height;
         self->displayAttrs.WindowWidth = w;
         self->displayAttrs.WindowHeight = h;
     }

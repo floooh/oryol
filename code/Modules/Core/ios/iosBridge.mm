@@ -137,6 +137,7 @@ app(nullptr)
 ,eaglContext(nil)
 ,glkView(nil)
 #endif
+,mouseScale(1.0)
 {
     o_assert(nullptr == self);
     self = this;

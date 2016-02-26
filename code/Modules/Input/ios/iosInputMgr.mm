@@ -33,9 +33,8 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
             touchEvent::point& curPoint = newEvent.points[newEvent.numTouches++];
             curPoint.identifier = (Oryol::uintptr) curTouch;
             #if ORYOL_METAL
-            if (iosInputMgrPtr->highDPI) {
-                pos.x *= 2.0f; pos.y *= 2.0f;
-            }
+            const double mouseScale = iosBridge::ptr()->mouseScale;
+            pos.x *= mouseScale; pos.y *= mouseScale;
             #endif
             curPoint.pos.x = pos.x;
             curPoint.pos.y = pos.y;
@@ -72,9 +71,6 @@ inputDelegate(nil)
 ,motionManager(nil)
 ,resetRunLoopId(RunLoop::InvalidId)
 ,motionRunLoopId(RunLoop::InvalidId)
-#if ORYOL_METAL
-,highDPI(false)
-#endif
 {
     o_assert(nullptr == iosInputMgrPtr);
     iosInputMgrPtr = this;
@@ -119,8 +115,6 @@ iosInputMgr::setup(const InputSetup& setup) {
     [iosBridge::ptr()->glkView setTouchDelegate:this->inputDelegate];
     #elif ORYOL_METAL
     [iosBridge::ptr()->mtkView setTouchDelegate:this->inputDelegate];
-    // MTKView actually returns true Retina resolution when contentScaleFactor is set to 2.0
-    this->highDPI = Gfx::GfxSetup().HighDPI;
     #else
     #error "ioInputMgr: invalid platform!"
     #endif

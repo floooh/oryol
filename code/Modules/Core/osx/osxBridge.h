@@ -160,6 +160,7 @@ public:
     float64 warpDeltaX, warpDeltaY;
     float64 cursorPosX, cursorPosY;
     float64 winCursorPosX, winCursorPosY;
+    float64 mouseScale;
     char  mouseButtons[ORYOL_OSXBRIDGE_MOUSE_BUTTON_LAST + 1];
     char  keys[ORYOL_OSXBRIDGE_KEY_LAST + 1];
     int16 publicKeys[256];

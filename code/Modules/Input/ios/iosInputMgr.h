@@ -30,9 +30,6 @@ public:
     ORYOL_OBJC_ID motionManager;
     RunLoop::Id resetRunLoopId;
     RunLoop::Id motionRunLoopId;
-    #if ORYOL_METAL
-    bool highDPI;
-    #endif
 };
 
 } // namespace _priv

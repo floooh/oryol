@@ -304,12 +304,13 @@ mtkViewDelegate(nil),
 mtkView(nil),
 cursorMode(ORYOL_OSXBRIDGE_CURSOR_NORMAL),
 modifierFlags(0),
+warpDeltaX(0.0),
+warpDeltaY(0.0),
 cursorPosX(0.0),
 cursorPosY(0.0),
 winCursorPosX(0.0),
 winCursorPosY(0.0),
-warpDeltaX(0.0),
-warpDeltaY(0.0) {
+mouseScale(1.0) {
     o_assert(nullptr == self);
     self = this;
     Memory::Clear(this->keys, sizeof(this->keys));
@@ -456,7 +457,7 @@ osxBridge::onWindowDidResize() {
     if (ORYOL_OSXBRIDGE_CURSOR_DISABLED == this->cursorMode) {
         this->centerCursor();
     }
-    const NSRect contentRect = [this->mtkView frame];
+    const NSRect contentRect = [this->mtkView frame];    
     if (this->callbacks.fbsize) {
         this->callbacks.fbsize(contentRect.size.width, contentRect.size.height);
     }
@@ -530,7 +531,7 @@ osxBridge::onCursorMotion(float64 x, float64 y) {
         y = this->winCursorPosY;
     }
     if (this->callbacks.cursorPos) {
-        this->callbacks.cursorPos(x, y);
+        this->callbacks.cursorPos(x * this->mouseScale, y * this->mouseScale);
     }
 }
 
