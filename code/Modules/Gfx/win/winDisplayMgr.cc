@@ -11,6 +11,15 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#ifndef DPI_ENUMS_DECLARED
+typedef enum PROCESS_DPI_AWARENESS
+{
+    PROCESS_DPI_UNAWARE = 0,
+    PROCESS_SYSTEM_DPI_AWARE = 1,
+    PROCESS_PER_MONITOR_DPI_AWARE = 2
+} PROCESS_DPI_AWARENESS;
+#endif /*DPI_ENUMS_DECLARED*/
+
 namespace Oryol {
 namespace _priv {
 
@@ -24,6 +33,7 @@ hwnd(0),
 dwStyle(0),
 dwExStyle(0),
 inCreateWindow(false),
+dpiAware(false),
 cursorMode(ORYOL_WIN_CURSOR_NORMAL),
 cursorPosX(0.0),
 cursorPosY(0.0),
@@ -53,6 +63,7 @@ winDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs, cons
 
     displayMgrBase::SetupDisplay(setup, ptrs);
 
+    this->initDPI();
     this->registerWindowClass();
     this->createWindow(windowTitlePostfix);
 }
@@ -195,6 +206,41 @@ winDisplayMgr::destroyWindow() {
 
     ::DestroyWindow((HWND)this->hwnd);
     this->hwnd = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+winDisplayMgr::initDPI() {
+    o_assert(!this->dpiAware);
+
+    // there's a new, and an old API to tell Windows that we are DPI aware, 
+    // try to call both (see GLFW)
+    typedef BOOL(WINAPI * SETPROCESSDPIAWARE_T)(void);
+    SETPROCESSDPIAWARE_T dpiAwareProc = 0;
+    typedef HRESULT(WINAPI * SETPROCESSDPIAWARENESS_T)(PROCESS_DPI_AWARENESS);
+    SETPROCESSDPIAWARENESS_T dpiAwarenessProc = 0;
+    HINSTANCE hUser32 = ::LoadLibraryA("user32.dll");
+    if (hUser32) {
+        dpiAwareProc = (SETPROCESSDPIAWARE_T) ::GetProcAddress(hUser32, "SetProcessDPIAware");
+    }
+    HINSTANCE hShCore = ::LoadLibraryA("shcore.dll");
+    if (hShCore) {
+        dpiAwarenessProc = (SETPROCESSDPIAWARENESS_T) ::GetProcAddress(hShCore, "SetProcessDpiAwareness");
+    }
+    if (dpiAwarenessProc) {
+        dpiAwarenessProc(PROCESS_SYSTEM_DPI_AWARE);
+        this->dpiAware = true;
+    }
+    else if (dpiAwareProc) {
+        dpiAwareProc();
+        this->dpiAware = true;
+    }
+    if (hUser32) {
+        ::FreeLibrary(hUser32);
+    }
+    if (hShCore) {
+        ::FreeLibrary(hShCore);
+    }
 }
 
 //------------------------------------------------------------------------------

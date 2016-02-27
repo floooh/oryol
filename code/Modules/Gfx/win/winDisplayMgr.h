@@ -38,6 +38,8 @@ public:
     void createWindow(const char* titlePostFix);
     /// destroy the application window
     void destroyWindow();
+    /// initialize DPI-related stuff
+    void initDPI();
 
     /// compute actual window size from client rect size plus window chrome
     void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
@@ -98,6 +100,7 @@ public:
     DWORD dwStyle;
     DWORD dwExStyle;
     bool inCreateWindow;
+    bool dpiAware;
 
     int cursorMode;
     double cursorPosX;
