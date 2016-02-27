@@ -138,7 +138,7 @@ This would create a 800x600 window titled "My Oryol App".
 
 The GfxSetup object allows to configure and tweak the rendering system
 for the specific needs of the Oryol application. Have a look at the
-[Gfx/Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+[Gfx/GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
 header to see what's possible.
 
 >NOTE: On some platforms (mostly mobile), the actual rendering 
