@@ -18,6 +18,12 @@ typedef enum PROCESS_DPI_AWARENESS
     PROCESS_SYSTEM_DPI_AWARE = 1,
     PROCESS_PER_MONITOR_DPI_AWARE = 2
 } PROCESS_DPI_AWARENESS;
+typedef enum MONITOR_DPI_TYPE {
+    MDT_EFFECTIVE_DPI = 0,
+    MDT_ANGULAR_DPI = 1,
+    MDT_RAW_DPI = 2,
+    MDT_DEFAULT = MDT_EFFECTIVE_DPI
+} MONITOR_DPI_TYPE;
 #endif /*DPI_ENUMS_DECLARED*/
 
 namespace Oryol {
@@ -34,6 +40,7 @@ dwStyle(0),
 dwExStyle(0),
 inCreateWindow(false),
 dpiAware(false),
+dpiScaleFactor(1.0f),
 cursorMode(ORYOL_WIN_CURSOR_NORMAL),
 cursorPosX(0.0),
 cursorPosY(0.0),
@@ -219,6 +226,9 @@ winDisplayMgr::initDPI() {
     SETPROCESSDPIAWARE_T dpiAwareProc = 0;
     typedef HRESULT(WINAPI * SETPROCESSDPIAWARENESS_T)(PROCESS_DPI_AWARENESS);
     SETPROCESSDPIAWARENESS_T dpiAwarenessProc = 0;
+    typedef HRESULT(WINAPI * GETDPIFORMONITOR_T)(HMONITOR, MONITOR_DPI_TYPE, UINT*, UINT*);
+    GETDPIFORMONITOR_T getDpiForMonitorProc = 0;
+
     HINSTANCE hUser32 = ::LoadLibraryA("user32.dll");
     if (hUser32) {
         dpiAwareProc = (SETPROCESSDPIAWARE_T) ::GetProcAddress(hUser32, "SetProcessDPIAware");
@@ -226,6 +236,7 @@ winDisplayMgr::initDPI() {
     HINSTANCE hShCore = ::LoadLibraryA("shcore.dll");
     if (hShCore) {
         dpiAwarenessProc = (SETPROCESSDPIAWARENESS_T) ::GetProcAddress(hShCore, "SetProcessDpiAwareness");
+        getDpiForMonitorProc = (GETDPIFORMONITOR_T) ::GetProcAddress(hShCore, "GetDpiForMonitor");
     }
     if (dpiAwarenessProc) {
         dpiAwarenessProc(PROCESS_SYSTEM_DPI_AWARE);
@@ -235,6 +246,20 @@ winDisplayMgr::initDPI() {
         dpiAwareProc();
         this->dpiAware = true;
     }
+
+    // get dpi scale factor for main monitor
+    if (getDpiForMonitorProc) {
+        POINT pt = { 1, 1 };
+        HMONITOR hm = ::MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+        UINT dpix, dpiy;
+        HRESULT hr = getDpiForMonitorProc(hm, MDT_EFFECTIVE_DPI, &dpix, &dpiy);
+        o_assert(SUCCEEDED(hr));
+        this->dpiScaleFactor = float(dpix) / 96.0f;
+    }
+    else {
+        this->dpiScaleFactor = 1.0f;
+    }
+
     if (hUser32) {
         ::FreeLibrary(hUser32);
     }
@@ -246,7 +271,9 @@ winDisplayMgr::initDPI() {
 //------------------------------------------------------------------------------
 void
 winDisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight) {
-    RECT rect = { 0, 0, clientWidth, clientHeight };
+    RECT rect = { 0, 0, 
+        (int) (clientWidth * this->dpiScaleFactor), 
+        (int) (clientHeight*this->dpiScaleFactor) };
     ::AdjustWindowRectEx(&rect, this->dwStyle, FALSE, this->dwExStyle);
     outWidth = rect.right - rect.left;
     outHeight = rect.bottom - rect.top;
@@ -256,6 +283,9 @@ winDisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWidt
 void
 winDisplayMgr::windowResize(int newWidth, int newHeight) {
     o_assert((0 != newWidth) && (0 != newHeight));
+
+    newWidth = int(newWidth / this->dpiScaleFactor);
+    newHeight = int(newHeight / this->dpiScaleFactor);
 
     // NOTE: this method is not called when minimized, or restored from minimized
     if ((newWidth != this->displayAttrs.FramebufferWidth) ||
@@ -357,6 +387,10 @@ winDisplayMgr::inputMouseClick(int button, int action, int mods) {
 //------------------------------------------------------------------------------
 void
 winDisplayMgr::inputCursorMotion(double x, double y) {
+
+    x /= this->dpiScaleFactor;
+    y /= this->dpiScaleFactor;
+
     if (this->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
         if ((x == 0.0) && (y == 0.0)) {
             return;
@@ -414,6 +448,10 @@ winDisplayMgr::inputWindowPos(int x, int y) {
 //------------------------------------------------------------------------------
 void
 winDisplayMgr::inputWindowSize(int width, int height) {
+
+    width = int(width / this->dpiScaleFactor);
+    height = int(height / this->dpiScaleFactor);
+
     if (this->callbacks.size) {
         this->callbacks.size(width, height);
     }
@@ -430,6 +468,10 @@ winDisplayMgr::inputWindowIconify(bool iconified) {
 //------------------------------------------------------------------------------
 void
 winDisplayMgr::inputFramebufferSize(int width, int height) {
+
+    width = int(width / this->dpiScaleFactor);
+    height = int(height / this->dpiScaleFactor);
+
     if (this->callbacks.fbsize) {
         this->callbacks.fbsize(width, height);
     }
