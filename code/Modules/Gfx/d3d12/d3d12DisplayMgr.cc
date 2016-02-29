@@ -121,8 +121,8 @@ d3d12DisplayMgr::createSwapChain() {
     HRESULT hr;
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     Memory::Clear(&swapChainDesc, sizeof(swapChainDesc));
-    swapChainDesc.BufferDesc.Width = this->gfxSetup.Width;
-    swapChainDesc.BufferDesc.Height = this->gfxSetup.Height;
+    swapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
+    swapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
     swapChainDesc.BufferDesc.Format = d3d12Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;

@@ -67,7 +67,8 @@ d3d12Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     this->createFrameResources(setup.GlobalUniformBufferSize, setup.MaxDrawCallsPerFrame);
     this->createFrameSyncObjects();
-    this->createDefaultRenderTargets(setup.Width, setup.Height);
+    const DisplayAttrs& dispAttrs = ptrs.displayMgr->GetDisplayAttrs();
+    this->createDefaultRenderTargets(dispAttrs.FramebufferWidth, dispAttrs.FramebufferHeight);
     this->createRootSignature();
    
     // prepare command list for first frame

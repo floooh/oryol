@@ -40,7 +40,8 @@ d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
     winDisplayMgr::SetupDisplay(setup, ptrs, " (D3D11)");
     this->createDeviceAndSwapChain();
-    this->createDefaultRenderTarget(setup.Width, setup.Height);
+    const DisplayAttrs& attrs = this->displayAttrs;
+    this->createDefaultRenderTarget(attrs.FramebufferWidth, attrs.FramebufferHeight);
 }
 
 //------------------------------------------------------------------------------
@@ -73,8 +74,8 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     #endif
 
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
-    dxgiSwapChainDesc.BufferDesc.Width = this->gfxSetup.Width;
-    dxgiSwapChainDesc.BufferDesc.Height = this->gfxSetup.Height;
+    dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
+    dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
     dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;

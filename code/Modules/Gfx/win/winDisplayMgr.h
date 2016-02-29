@@ -39,7 +39,7 @@ public:
     /// destroy the application window
     void destroyWindow();
     /// initialize DPI-related stuff
-    void initDPI();
+    void initDPI(bool highDpiRequested);
 
     /// compute actual window size from client rect size plus window chrome
     void computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight);
@@ -101,7 +101,8 @@ public:
     DWORD dwExStyle;
     bool inCreateWindow;
     bool dpiAware;
-    float dpiScaleFactor;
+    float windowScale;
+    float contentScale;
 
     int cursorMode;
     double cursorPosX;
