@@ -562,8 +562,8 @@ winDisplayMgr::setCursorMode(int newMode) {
     }
     else if (newMode == ORYOL_WIN_CURSOR_DISABLED) {
         this->winGetCursorPos(&this->cursorPosX, &this->cursorPosY);
-        this->windowCursorPosX = this->cursorPosX;
-        this->windowCursorPosY = this->cursorPosY;
+        this->windowCursorPosX = (this->cursorPosX / this->windowScale) * this->contentScale;
+        this->windowCursorPosY = (this->cursorPosY / this->windowScale) * this->contentScale;
         int width, height;
         this->winGetWindowSize(&width, &height);
         this->winSetCursorPos(width/2, height/2);
