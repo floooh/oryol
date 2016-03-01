@@ -32,7 +32,7 @@ should switch to.
 A minimal Oryol application looks like this:
 
 ```cpp
-#include "Core/App.h"
+#include "Core/Main.h"
 
 using namespace Oryol;
 
