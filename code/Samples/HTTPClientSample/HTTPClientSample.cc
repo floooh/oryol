@@ -2,7 +2,7 @@
 //  HTTPClientSample.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "HTTP/HTTPClient.h"
 #include <thread>
 #include <chrono>

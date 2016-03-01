@@ -2,7 +2,7 @@
 //  DDSTextureLoading.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Core/Containers/StaticArray.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"

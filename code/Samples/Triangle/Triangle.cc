@@ -2,7 +2,7 @@
 //  Triangle.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "Assets/Gfx/MeshBuilder.h"
 #include "shaders.h"

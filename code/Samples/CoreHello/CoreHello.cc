@@ -2,8 +2,7 @@
 //  CoreHello.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
-#include "Core/Log.h"
+#include "Core/Main.h"
 #include <thread>
 
 using namespace Oryol;

@@ -2,7 +2,7 @@
 //  ImGuiDemo.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "Input/Input.h"
 #include "IMUI/IMUI.h"

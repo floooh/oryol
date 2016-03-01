@@ -7,6 +7,7 @@ fips_begin_module(Core)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     endif()
     fips_files(
+        Main.h
         App.cc App.h
         AppState.cc AppState.h
         Args.cc Args.h

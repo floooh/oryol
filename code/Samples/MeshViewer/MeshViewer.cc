@@ -2,7 +2,7 @@
 //  MeshViewer.cc
 //-----------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "IO/IO.h"
 #include "IMUI/IMUI.h"

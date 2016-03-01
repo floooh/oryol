@@ -2,7 +2,7 @@
 //  DDSCubeMap.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"

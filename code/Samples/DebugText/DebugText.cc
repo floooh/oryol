@@ -2,7 +2,7 @@
 //  DebugText.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "glm/gtc/random.hpp"

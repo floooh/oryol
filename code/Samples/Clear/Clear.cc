@@ -2,7 +2,7 @@
 //  Clear.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/constants.hpp"

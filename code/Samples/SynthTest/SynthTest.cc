@@ -2,7 +2,7 @@
 //  SynthTest.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "IMUI/IMUI.h"
 #include "Input/Input.h"

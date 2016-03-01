@@ -2,7 +2,7 @@
 //  Julia.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Core/App.h"
+#include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "fractal.h"
 #include "Assets/Gfx/ShapeBuilder.h"
