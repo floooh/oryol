@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "App.h"
+#include "Core/Memory/Memory.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Trace.h"
@@ -11,6 +12,15 @@
 #endif
 #if ORYOL_PNACL
 #include "Core/pnacl/pnaclInstance.h"
+#endif
+#if ORYOL_IOS
+#include "Core/ios/iosBridge.h"
+#endif
+#if ORYOL_MACOS && ORYOL_METAL
+#include "Core/osx/osxBridge.h"
+#endif
+#if ORYOL_ANDROID
+#include "Core/android/androidBridge.h"
 #endif
 
 namespace Oryol {
@@ -28,22 +38,31 @@ suspendRequested(false)
 {
     self = this;
     #if ORYOL_ANDROID
-    this->androidBridge.setup(this);
+    this->androidBridge = Memory::New<_priv::androidBridge>();
+    this->androidBridge->setup(this);
     #elif ORYOL_IOS
-    this->iosBridge.setup(this);
+    this->iosBridge = Memory::New<_priv::iosBridge>();
+    this->iosBridge->setup(this);
     #elif ORYOL_MACOS && ORYOL_METAL
-    this->osxBridge.setup(this);
+    this->osxBridge = Memory::New<_priv::osxBridge>();
+    this->osxBridge->setup(this);
     #endif
 }
 
 //------------------------------------------------------------------------------
 App::~App() {
     #if ORYOL_MACOS && ORYOL_METAL
-    this->osxBridge.discard();
+    this->osxBridge->discard();
+    Memory::Delete(this->osxBridge);
+    this->osxBridge = nullptr;
     #elif ORYOL_ANDROID
-    this->androidBridge.discard();
+    this->androidBridge->discard();
+    Memory::Delete(this->androidBridge);
+    this->androidBridge = nullptr;
     #elif ORYOL_IOS
-    this->iosBridge.discard();
+    this->iosBridge->discard();
+    Memory::Delete(this->iosBridge);
+    this->iosBridge = nullptr;
     #endif
     self = nullptr;
 }
@@ -57,16 +76,16 @@ App::StartMainLoop() {
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
     #elif ORYOL_IOS
-        this->iosBridge.startMainLoop();
+        this->iosBridge->startMainLoop();
     #elif ORYOL_MACOS && ORYOL_METAL
-        this->osxBridge.startMainLoop();
+        this->osxBridge->startMainLoop();
     #elif ORYOL_ANDROID
         this->addBlocker(AppState::Init);
-        this->androidBridge.onStart();
-        while (this->androidBridge.onFrame() && (AppState::InvalidAppState != this->curState)) {
+        this->androidBridge->onStart();
+        while (this->androidBridge->onFrame() && (AppState::InvalidAppState != this->curState)) {
             // empty
         }
-        this->androidBridge.onStop();
+        this->androidBridge->onStop();
     #elif ORYOL_PNACL
         pnaclInstance::Instance()->startMainLoop(this);
     #else
@@ -240,7 +259,7 @@ App::OnDestroy() {
     emscripten_cancel_main_loop();
     #endif
     #if ORYOL_MACOS && ORYOL_METAL
-    this->osxBridge.onDestroy();
+    this->osxBridge->onDestroy();
     #endif
     return AppState::InvalidAppState;
 }

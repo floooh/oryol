@@ -40,6 +40,16 @@
 
 namespace Oryol {
 
+namespace _priv {
+#if ORYOL_ANDROID
+class androidBridge;
+#elif ORYOL_IOS
+class iosBridge;
+#elif ORYOL_MACOS && ORYOL_METAL
+class osxBridge;
+#endif
+}
+
 class App {
 public:
     /// constructor
@@ -89,13 +99,13 @@ protected:
     bool quitRequested;
     bool suspendRequested;
     #if ORYOL_IOS
-    _priv::iosBridge iosBridge;
+    _priv::iosBridge* iosBridge;
     #endif
     #if ORYOL_MACOS && ORYOL_METAL
-    _priv::osxBridge osxBridge;
+    _priv::osxBridge* osxBridge;
     #endif
     #if ORYOL_ANDROID
-    _priv::androidBridge androidBridge;
+    _priv::androidBridge* androidBridge;
     #endif
 };
 

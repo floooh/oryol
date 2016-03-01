@@ -17,13 +17,6 @@
 #endif
 #if ORYOL_ANDROID
 #include "android_native/android_native_app_glue.h"
-#include "Core/android/androidBridge.h"
-#endif
-#if ORYOL_IOS
-#include "Core/ios/iosBridge.h"
-#endif
-#if ORYOL_MACOS && ORYOL_METAL
-#include "Core/osx/osxBridge.h"
 #endif
 #if ORYOL_PNACL
 #include "Core/pnacl/pnaclModule.h"
