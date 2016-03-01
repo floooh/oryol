@@ -15,7 +15,7 @@
     will always look like this:
  
     ```cpp
-    #include "Core/OryolMain.h"
+    #include "Core/Main.h"
     
     class MyAppClass : public Oryol::App {
     public:

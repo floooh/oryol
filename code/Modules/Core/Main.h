@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file Core/OryolMain.h
+    @file Core/Main.h
     @brief Oryol application entry wrapper
 
     This file defines the macro OryolMain() which expects the name
