@@ -65,37 +65,33 @@ can be easily selected via fips build configs:
 
 ##### D3D11:
 
-Building with D3D11 support requires at least Windows7 and VS2013 (VS2015
-is also supported), select any of the following build configs:
+Building with D3D11 support requires at least Windows7 and a recent 
+Visual Studio version (VS2013 or VS2015). Select any of the following build 
+configs:
 
-- d3d11-win64-vs2013-debug
-- d3d11-win64-vs2013-release
-- d3d11-win64-vs2015-debug
-- d3d11-win64-vs2015-release
+- d3d11-win64-vstudio-debug
+- d3d11-win64-vstudio-release
 
 For example:
 
 ```bash
 # to build and run on command line:
-> fips set config d3d11-win64-vs2013-release
+> fips set config d3d11-win64-vstudio-release
 > fips gen
 > fips run Triangle
-# to build and debug in VS2013:
-> fips set config d3d11-win64-vs2013-debug
+# to build and debug in Visual Studio:
+> fips set config d3d11-win64-vstudio-debug
 > fips gen
 > fips open
 ```
-
-There are also build configs for 32-bit builds, but 32-bit builds on Windows
-are currently buggy, don't use them.
 
 ##### D3D12:
 
 Building with D3D12 support requires Windows10, VS2015 and cmake-3.4, use
 the following build configs for D3D12:
 
-- d3d12-win64-vs2015-debug
-- d3d12-win64-vs2015-release
+- d3d12-win64-vstudio-debug
+- d3d12-win64-vstudio-release
 
 ##### Metal (OSX and iOS):
 
