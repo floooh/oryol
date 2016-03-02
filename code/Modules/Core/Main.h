@@ -22,6 +22,7 @@
 #include "Core/pnacl/pnaclModule.h"
 #endif
 #include "Core/App.h"
+#include "Core/String/WideString.h"
 
 #if ORYOL_WINDOWS
 #define OryolMain(clazz) \

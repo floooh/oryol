@@ -35,7 +35,6 @@
 #include "Core/Types.h"
 #include "Core/Args.h"
 #include "Core/AppState.h"
-#include "Core/String/WideString.h"
 #include "Core/Containers/Set.h"
 
 namespace Oryol {
