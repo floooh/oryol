@@ -22,6 +22,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Shapes::Params params;
+    MeshBlock meshes;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -37,7 +38,7 @@ ShapeApp::OnRunning() {
     
     // apply state and render
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyDrawState(this->drawState, this->meshes);
     
     // render shape primitive groups
     static const glm::vec3 positions[] = {
@@ -77,10 +78,10 @@ ShapeApp::OnInit() {
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10);
-    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
+    this->meshes[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shapes::Setup());
     
-    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.SampleCount = gfxSetup.SampleCount;

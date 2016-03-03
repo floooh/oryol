@@ -23,7 +23,7 @@ public:
     /// clear the object
     void Clear();
     
-    /// set GL program object by mask
+    /// set GL program object
     int32 addProgram(uint32 mask, GLuint glProg);
     /// bind a uniform location to a slot index
     void bindUniform(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex, GLint glUniformLocation);

@@ -58,10 +58,10 @@ public:
     /// apply scissor rect
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(drawState* ds);
-    /// apply a shader uniform block
+    void applyDrawState(drawState* ds, mesh** meshes, int numMeshes);
+    /// apply a shader uniform block (called after applyDrawState)
     void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
-    /// apply a texture block
+    /// apply a texture block (called after applyDrawState)
     void applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
@@ -112,8 +112,8 @@ private:
     void applyBlendState(const BlendState& bs);
     /// apply fixed function state
     void applyRasterizerState(const RasterizerState& rs);
-    /// apply mesh state
-    void applyMeshState(const drawState* ds);
+    /// apply meshes
+    void applyMeshes(drawState* ds, mesh** meshes, int numMeshes);
 
     bool valid;
     gfxPointers pointers;
@@ -135,6 +135,7 @@ private:
     // high-level state cache
     texture* curRenderTarget;
     drawState* curDrawState;
+    StaticArray<mesh*, GfxConfig::MaxNumInputMeshes> curMeshes;
 
     // GL state cache
     BlendState blendState;

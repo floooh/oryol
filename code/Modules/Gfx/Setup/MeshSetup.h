@@ -45,10 +45,6 @@ public:
 
     /// vertex layout
     VertexLayout Layout;
-    /// vertex step function (per-vertex or per-instance)
-    VertexStepFunction::Code StepFunction;
-    /// vertex step rate (1 or greater for VertexStepFunction::PerInstance)
-    int32 StepRate;
 
     /// number of vertices (only CreateEmpty)
     int32 NumVertices;

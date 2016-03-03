@@ -20,18 +20,6 @@ color(1.0f, 1.0f, 1.0f, 1.0f) {
 }
 
 //------------------------------------------------------------------------------
-void
-ShapeBuilder::clear() {
-    this->Layout.Clear();
-    this->RandomColors = false;
-    this->curPrimGroupBaseElement = 0;
-    this->curPrimGroupNumElements = 0;
-    this->transform = glm::mat4();
-    this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    this->shapes.Clear();
-}
-
-//------------------------------------------------------------------------------
 ShapeBuilder&
 ShapeBuilder::Transform(const glm::mat4& m) {
     this->transform = m;
@@ -268,7 +256,15 @@ ShapeBuilder::Build() {
         curTriIndex += shape.numTris;
     }
     SetupAndData<MeshSetup> result = this->meshBuilder.Build();
-    this->clear();
+
+    // clear private data (but not config params)
+    this->curPrimGroupBaseElement = 0;
+    this->curPrimGroupNumElements = 0;
+    this->transform = glm::mat4();
+    this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    this->shapes.Clear();
+    this->meshBuilder.PrimitiveGroups.Clear();
+
     return result;
 }
 

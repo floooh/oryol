@@ -26,12 +26,10 @@ public:
     void NewFrame(float32 frameDurationInSeconds);
 
 private:
-    /// setup dynamic mesh
-    void setupMesh();
     /// setup font texture
     void setupFontTexture();
     /// setup draw state
-    void setupDrawState();
+    void setupMeshAndDrawState();
     /// imgui's draw callback
     static void imguiRenderDrawLists(ImDrawData* draw_data);
 
@@ -42,8 +40,8 @@ private:
 
     bool isValid = false;
     ResourceLabel resLabel;
+    MeshBlock meshBlock;
     Id fontTexture;
-    Id mesh;
     Id shader;
     Id drawState;
     ImDrawVert vertexData[MaxNumVertices];

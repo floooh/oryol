@@ -855,7 +855,7 @@ public:
 */
 class VertexStepFunction {
 public:
-    enum Code {
+    enum Code : uint8 {
         PerVertex = 0,
         PerInstance = 1,
     };

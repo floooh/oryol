@@ -51,8 +51,7 @@ imguiWrapper::Setup() {
 
     // create gfx resources
     this->resLabel = Gfx::PushResourceLabel();
-    this->setupMesh();
-    this->setupDrawState();
+    this->setupMeshAndDrawState();
     this->setupFontTexture();
     Gfx::PopResourceLabel();
 
@@ -104,30 +103,23 @@ imguiWrapper::setupFontTexture() {
 
 //------------------------------------------------------------------------------
 void
-imguiWrapper::setupMesh() {
-    o_assert_dbg(!this->mesh.IsValid());
+imguiWrapper::setupMeshAndDrawState() {
+    o_assert_dbg(!this->meshBlock[0].IsValid());
+    o_assert_dbg(!this->drawState.IsValid());
 
-    MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream, IndexType::Index16, MaxNumIndices, Usage::Stream);
-    setup.Layout
+    MeshSetup meshSetup = MeshSetup::Empty(MaxNumVertices, Usage::Stream, IndexType::Index16, MaxNumIndices, Usage::Stream);
+    meshSetup.Layout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2)
         .Add(VertexAttr::Color0, VertexFormat::UByte4N);
-    o_assert_dbg(setup.Layout.ByteSize() == sizeof(ImDrawVert));
+    o_assert_dbg(meshSetup.Layout.ByteSize() == sizeof(ImDrawVert));
 
-    this->mesh = Gfx::CreateResource(setup);
-    o_assert(this->mesh.IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->mesh).State == ResourceState::Valid);
-}
-
-//------------------------------------------------------------------------------
-void
-imguiWrapper::setupDrawState() {
-    o_assert_dbg(!this->drawState.IsValid());
-    o_assert_dbg(this->mesh.IsValid());
+    this->meshBlock[0] = Gfx::CreateResource(meshSetup);
+    o_assert(this->meshBlock[0].IsValid());
+    o_assert(Gfx::QueryResourceInfo(this->meshBlock[0]).State == ResourceState::Valid);
 
     this->shader = Gfx::CreateResource(Shaders::IMUIShader::Setup());
-    
-    auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
+    auto dss = DrawStateSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;
@@ -243,9 +235,9 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
     Shaders::IMUIShader::FSTextures texBlock;
     texBlock.Texture = self->fontTexture;
 
-    Gfx::UpdateVertices(self->mesh, self->vertexData, vertexDataSize);
-    Gfx::UpdateIndices(self->mesh, self->indexData, indexDataSize);
-    Gfx::ApplyDrawState(self->drawState, texBlock);
+    Gfx::UpdateVertices(self->meshBlock[0], self->vertexData, vertexDataSize);
+    Gfx::UpdateIndices(self->meshBlock[0], self->indexData, indexDataSize);
+    Gfx::ApplyDrawState(self->drawState, self->meshBlock, texBlock);
     Gfx::ApplyUniformBlock(vsParams);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {

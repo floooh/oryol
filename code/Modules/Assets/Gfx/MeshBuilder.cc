@@ -9,27 +9,6 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-void
-MeshBuilder::clear() {
-    o_assert(!this->inBegin);
-    
-    this->NumVertices = 0;
-    this->NumIndices = 0;
-    this->IndicesType = IndexType::Index16;
-    this->PrimType = PrimitiveType::Triangles;
-    this->Layout.Clear();
-    this->PrimitiveGroups.Clear();
-    this->VertexUsage = Usage::Immutable;
-    this->IndexUsage = Usage::Immutable;
-    this->inBegin = false;
-    this->vertexPointer = nullptr;
-    this->indexPointer = nullptr;
-    this->endPointer = nullptr;
-    this->setupAndData.Setup = MeshSetup::FromData();
-    this->setupAndData.Data.Clear();
-}
-
-//------------------------------------------------------------------------------
 MeshBuilder&
 MeshBuilder::Begin() {
     o_assert(!this->inBegin);
@@ -73,9 +52,17 @@ MeshBuilder::Build() {
     o_assert(this->inBegin);
 
     this->inBegin = false;
-    // explicit moves required by VS2013
+
+    // NOTE: explicit moves required by VS2013
     SetupAndData<MeshSetup> result(std::move(this->setupAndData));
-    this->clear();
+
+    // clear private data, not configuration data
+    this->vertexPointer = nullptr;
+    this->indexPointer = nullptr;
+    this->endPointer = nullptr;
+    this->setupAndData.Setup = MeshSetup::FromData();
+    this->setupAndData.Data.Clear();
+    
     return result;
 }
 

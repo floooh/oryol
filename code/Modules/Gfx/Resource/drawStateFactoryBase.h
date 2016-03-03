@@ -32,11 +32,6 @@ public:
     void DestroyResource(drawState& ds);
     
 protected:
-    /// resolve input mesh pointers
-    void resolveInputMeshes(drawState& ds);
-    /// check whether input mesh configuration is valid
-    void checkInputMeshes(const drawState& ds) const;
-
     gfxPointers pointers;
     bool isValid;
 };

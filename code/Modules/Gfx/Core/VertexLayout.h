@@ -20,7 +20,9 @@ public:
         /// default constructor
         Component();
         /// construct from vertex attr and format
-        Component(VertexAttr::Code attr, VertexFormat::Code format);
+        Component(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=0);
+        /// constructor for instanced component
+        static Component Instanced(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=0);
         /// return true if valid (attr and format set)
         bool IsValid() const;
         /// clear the component (unset attr and format)
@@ -28,28 +30,25 @@ public:
         /// get byte size of component
         int32 ByteSize() const;
 
-        union {
-            #pragma pack(push,1)
-            struct {
-                VertexAttr::Code Attr;
-                VertexFormat::Code Format;
-            };
-            #pragma pack(pop)
-            uint16 Hash;
-        };
+        VertexAttr::Code Attr;
+        VertexFormat::Code Format;
+        uint8 SlotIndex;
+        VertexStepFunction::Code StepFunction;
+        uint8 StepRate;
     };
-    static_assert(sizeof(Component) == 2, "unexpected sizeof(VertexLayout::Component), bitfield packing problem!");
 
     /// constructor
     VertexLayout();
-    /// clear the object
-    void Clear();
+    /// clear the vertex layout, chainable
+    VertexLayout& Clear();
     /// return true if layout is empty
     bool Empty() const;
     /// add a component
     VertexLayout& Add(const Component& comp);
     /// add component by name and format
-    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
+    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=0);
+    /// add an instanced component by name and format
+    VertexLayout& AddInstanced(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=1);
     /// append components from other vertex layout, fails hard on components collision
     VertexLayout& Append(const VertexLayout& other);
     /// get number of components
@@ -82,16 +81,31 @@ private:
 inline
 VertexLayout::Component::Component() :
 Attr(VertexAttr::InvalidVertexAttr),
-Format(VertexFormat::InvalidVertexFormat) {
+Format(VertexFormat::InvalidVertexFormat),
+SlotIndex(0),
+StepFunction(VertexStepFunction::PerVertex),
+StepRate(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-VertexLayout::Component::Component(VertexAttr::Code attr, VertexFormat::Code fmt) :
+VertexLayout::Component::Component(VertexAttr::Code attr, VertexFormat::Code fmt, uint8 slot) :
 Attr(attr),
-Format(fmt) {
+Format(fmt),
+SlotIndex(slot),
+StepFunction(VertexStepFunction::PerVertex),
+StepRate(0) {
     // empty
+}
+
+//------------------------------------------------------------------------------
+inline VertexLayout::Component
+VertexLayout::Component::Instanced(VertexAttr::Code attr, VertexFormat::Code fmt, uint8 slot) {
+    Component comp(attr, fmt, slot);
+    comp.StepFunction = VertexStepFunction::PerInstance;
+    comp.StepRate = 1;
+    return comp;
 }
 
 //------------------------------------------------------------------------------

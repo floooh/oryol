@@ -131,11 +131,16 @@ glMeshFactory::createIndexBuffer(const void* indexData, uint32 indexDataSize, Us
 ResourceState::Code
 glMeshFactory::createFullscreenQuad(mesh& mesh) {
 
+    o_assert_dbg(mesh.Setup.Layout.NumComponents() == 2);
+    o_assert_dbg(mesh.Setup.Layout.ComponentAt(0).Attr == VertexAttr::Position);
+    o_assert_dbg(mesh.Setup.Layout.ComponentAt(1).Attr == VertexAttr::TexCoord0);
+    o_assert_dbg(mesh.Setup.Layout.ComponentAt(0).Format == VertexFormat::Float3);
+    o_assert_dbg(mesh.Setup.Layout.ComponentAt(1).Format == VertexFormat::Float2);
+
     VertexBufferAttrs vbAttrs;
     vbAttrs.NumVertices = 4;
     vbAttrs.BufferUsage = Usage::Immutable;
-    vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    vbAttrs.Layout = mesh.Setup.Layout;
     mesh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;
@@ -181,8 +186,6 @@ glMeshFactory::setupAttrs(mesh& msh) {
     vbAttrs.NumVertices = msh.Setup.NumVertices;
     vbAttrs.Layout = msh.Setup.Layout;
     vbAttrs.BufferUsage = msh.Setup.VertexUsage;
-    vbAttrs.StepFunction = msh.Setup.StepFunction;
-    vbAttrs.StepRate = msh.Setup.StepRate;
     msh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;

@@ -128,12 +128,23 @@ Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyDrawState(const Id& id) {
+Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
     o_assert_dbg(id.Type == GfxResourceType::DrawState);
     state->gfxFrameInfo.NumApplyDrawState++;
-    state->renderer.applyDrawState(state->resourceContainer.lookupDrawState(id));
+    drawState* ds = state->resourceContainer.lookupDrawState(id);
+    mesh* meshes[GfxConfig::MaxNumInputMeshes] = { };
+    int numMeshes = 0;
+    for (; numMeshes < GfxConfig::MaxNumInputMeshes; numMeshes++) {
+        if (mb[numMeshes].IsValid()) {
+            meshes[numMeshes] = state->resourceContainer.lookupMesh(mb[numMeshes]);
+        }
+        else {
+            break;
+        }
+    }
+    state->renderer.applyDrawState(ds, meshes, numMeshes);
 }
 
 //------------------------------------------------------------------------------

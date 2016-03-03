@@ -11,13 +11,13 @@ namespace Oryol {
 using namespace _priv;
 
 //------------------------------------------------------------------------------
-void
+VertexLayout&
 VertexLayout::Clear() {
     this->numComps = 0;
     this->byteSize = 0;
-
     this->attrCompIndices.Fill(InvalidIndex);
     this->byteOffsets.Fill(0);
+    return *this;
 }
     
 //------------------------------------------------------------------------------
@@ -68,8 +68,14 @@ VertexLayout::Add(const Component& comp) {
 
 //------------------------------------------------------------------------------
 VertexLayout&
-VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
-    return this->Add(Component(attr, format));
+VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot) {
+    return this->Add(Component(attr, format, slot));
+}
+
+//------------------------------------------------------------------------------
+VertexLayout&
+VertexLayout::AddInstanced(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot) {
+    return this->Add(Component::Instanced(attr, format, slot));
 }
 
 //------------------------------------------------------------------------------

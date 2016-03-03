@@ -338,7 +338,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
             ::glStencilMask(0xFF);
         }
     }
-    
+
     // finally do the actual clear
     if (0 != glClearMask) {
         ::glClear(glClearMask);
@@ -348,22 +348,34 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyMeshState(const drawState* ds) {
+glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != ds);
-    o_assert_dbg(nullptr != ds->meshes[0]);
     o_assert_dbg(nullptr != ds->shd);
+    o_assert_dbg(meshes && meshes[0] && (numMeshes > 0));
     ORYOL_GL_CHECK_ERROR();
 
+    #if ORYOL_DEBUG
+    // check that the mesh configuration is valid for rendering
+    mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
+    #endif
+
+    int i;
+    for (i = 0; i < numMeshes; i++) {
+        this->curMeshes[i] = meshes[i];
+    }
+    for (; i<GfxConfig::MaxNumInputMeshes; i++) {
+        this->curMeshes[i] = nullptr;
+    }
+
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
-    // this is the default vertex attribute code path for most
-    // desktop and mobile platforms
-    const auto& ib = ds->meshes[0]->buffers[mesh::ib];
+    // this is the default vertex attribute code path for most desktop and mobile platforms
+    const auto& ib = meshes[0]->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
         glVertexAttr& curAttr = this->glAttrs[attrIndex];
-        const mesh* msh = ds->meshes[attr.vbIndex];
+        const mesh* msh = meshes[attr.vbIndex];
         const auto& vb = msh->buffers[mesh::vb];
         const GLuint glVB = vb.glBuffers[vb.activeSlot];
 
@@ -399,7 +411,7 @@ glRenderer::applyMeshState(const drawState* ds) {
     // FIXME: currently this doesn't use state-caching
     o_assert_dbg(InvalidIndex != ds->shdProgIndex);
 
-    const auto& ib = ds->meshes[0]->buffers[mesh::ib];
+    const auto& ib = meshes[0]->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
@@ -407,7 +419,7 @@ glRenderer::applyMeshState(const drawState* ds) {
         const GLint glAttribIndex = ds->shd->getAttribLocation(ds->shdProgIndex, (VertexAttr::Code)attrIndex);
         if (glAttribIndex >= 0) {
             o_assert_dbg(attr.enabled);
-            const mesh* msh = ds->meshes[attr.vbIndex];
+            const mesh* msh = meshes[attr.vbIndex];
             const auto& vb = msh->buffers[mesh::vb];
             const GLuint glVB = vb.glBuffers[vb.activeSlot];
             this->bindVertexBuffer(glVB);
@@ -434,38 +446,42 @@ glRenderer::applyMeshState(const drawState* ds) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyDrawState(drawState* ds) {
+glRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(ds);
+    o_assert_dbg(meshes && (numMeshes > 0));
 
-    if (nullptr == ds) {
-        // the draw state has not been loaded yet, invalidate rendering
-        this->curDrawState = nullptr;
+    // if any of the meshes is still loading, cancel the next draw state
+    for (int i = 0; i < numMeshes; i++) {
+        if (nullptr == meshes[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
     }
-    else {
-        // draw state is valid, ready for rendering
-        this->curDrawState = ds;
-        o_assert_dbg(ds->shd);
 
-        const DrawStateSetup& setup = ds->Setup;
-        o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-        o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-        o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
-        if (setup.DepthStencilState != this->depthStencilState) {
-            this->applyDepthStencilState(setup.DepthStencilState);
-        }
-        if (setup.BlendState != this->blendState) {
-            this->applyBlendState(setup.BlendState);
-        }
-        if (setup.BlendColor != this->blendColor) {
-            this->blendColor = setup.BlendColor;
-            ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
-        }
-        if (setup.RasterizerState != this->rasterizerState) {
-            this->applyRasterizerState(setup.RasterizerState);
-        }
-        this->useProgram(ds->shd->getProgram(ds->shdProgIndex));
-        this->applyMeshState(ds);
+    // draw state is valid, ready for rendering
+    this->curDrawState = ds;
+    o_assert_dbg(ds->shd);
+
+    const DrawStateSetup& setup = ds->Setup;
+    o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+    if (setup.DepthStencilState != this->depthStencilState) {
+        this->applyDepthStencilState(setup.DepthStencilState);
     }
+    if (setup.BlendState != this->blendState) {
+        this->applyBlendState(setup.BlendState);
+    }
+    if (setup.BlendColor != this->blendColor) {
+        this->blendColor = setup.BlendColor;
+        ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
+    }
+    if (setup.RasterizerState != this->rasterizerState) {
+        this->applyRasterizerState(setup.RasterizerState);
+    }
+    this->useProgram(ds->shd->getProgram(ds->shdProgIndex));
+    this->applyMeshes(ds, meshes, numMeshes);
 }
 
 //------------------------------------------------------------------------------
@@ -476,9 +492,9 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
+    o_assert_dbg(this->curMeshes[0]);
     ORYOL_GL_CHECK_ERROR();
-    const mesh* msh = this->curDrawState->meshes[0];
+    const mesh* msh = this->curMeshes[0];
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
@@ -503,14 +519,14 @@ glRenderer::draw(int32 primGroupIndex) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    o_assert_dbg(this->curMeshes[0]);
+    if (primGroupIndex >= this->curMeshes[0]->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = this->curMeshes[0]->primGroups[primGroupIndex];
     this->draw(primGroup);
 }
 
@@ -523,8 +539,8 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
         return;
     }
     ORYOL_GL_CHECK_ERROR();
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    const mesh* msh = this->curDrawState->meshes[0];
+    o_assert_dbg(this->curMeshes[0]);
+    const mesh* msh = this->curMeshes[0];
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
@@ -549,14 +565,14 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    o_assert_dbg(this->curMeshes[0]);
+    if (primGroupIndex >= this->curMeshes[0]->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = this->curMeshes[0]->primGroups[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 

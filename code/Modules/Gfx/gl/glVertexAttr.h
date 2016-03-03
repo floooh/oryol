@@ -18,7 +18,6 @@ public:
         index(0),
         enabled(0),
         vbIndex(0),
-        streaming(false),
         divisor(0),
         stride(0),
         size(0),
@@ -39,7 +38,6 @@ public:
     uint8 index;
     uint8 enabled;
     uint8 vbIndex;
-    uint8 streaming;
     uint8 divisor;
     uint8 stride;
     uint8 size;

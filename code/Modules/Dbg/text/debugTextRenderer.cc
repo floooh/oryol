@@ -137,8 +137,8 @@ debugTextRenderer::drawTextBuffer() {
         Shaders::TextShader::FSTextures texBlock;
         texBlock.Texture = this->fontTexture;
 
-        Gfx::UpdateVertices(this->textMesh, this->vertexData, numVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->textDrawState, texBlock);
+        Gfx::UpdateVertices(this->textMesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
+        Gfx::ApplyDrawState(this->textDrawState, this->textMesh, texBlock);
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
@@ -191,7 +191,7 @@ debugTextRenderer::setupFontTexture() {
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupTextMesh() {
-    o_assert(!this->textMesh.IsValid());
+    o_assert(!this->textMesh[0].IsValid());
     o_assert(this->vertexLayout.Empty());
     
     // setup an empty mesh, only vertices
@@ -203,22 +203,22 @@ debugTextRenderer::setupTextMesh() {
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->textMesh = Gfx::CreateResource(setup);
-    o_assert(this->textMesh.IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->textMesh).State == ResourceState::Valid);
+    this->textMesh[0] = Gfx::CreateResource(setup);
+    o_assert(this->textMesh[0].IsValid());
+    o_assert(Gfx::QueryResourceInfo(this->textMesh[0]).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupTextDrawState() {
     o_assert(!this->textDrawState.IsValid());
-    o_assert(this->textMesh.IsValid());
+    o_assert(this->textMesh[0].IsValid());
 
     // shader
     this->textShader = Gfx::CreateResource(Shaders::TextShader::Setup());
     
     // finally create draw state
-    auto dss = DrawStateSetup::FromMeshAndShader(this->textMesh, this->textShader);
+    auto dss = DrawStateSetup::FromLayoutAndShader(this->vertexLayout, this->textShader);
     dss.DepthStencilState.DepthWriteEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.BlendEnabled = true;

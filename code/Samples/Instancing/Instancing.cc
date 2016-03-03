@@ -26,7 +26,11 @@ private:
     void emitParticles();
     void updateParticles();
 
-    Id instanceMesh;
+    // the static geometry is at mesh slot 0, and the instance data at slot 1
+    static const int geomMeshSlot = 0;
+    static const int instMeshSlot = 1;
+
+    MeshBlock meshBlock;
     Id drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -59,14 +63,14 @@ InstancingApp::OnRunning() {
         updTime = Clock::Since(updStart);
 
         TimePoint bufStart = Clock::Now();
-        Gfx::UpdateVertices(this->instanceMesh, this->positions, this->curNumParticles * sizeof(glm::vec4));
+        Gfx::UpdateVertices(this->meshBlock[instMeshSlot], this->positions, this->curNumParticles * sizeof(glm::vec4));
         bufTime = Clock::Since(bufStart);
     }
     
     // render block        
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
@@ -146,26 +150,30 @@ InstancingApp::OnInit() {
         o_error("ERROR: instanced_arrays extension required!\n");
     }
 
-    // create dynamic instance data mesh
-    auto instanceMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
-    instanceMeshSetup.Layout.Add(VertexAttr::Instance0, VertexFormat::Float4);
-    instanceMeshSetup.StepFunction = VertexStepFunction::PerInstance;
-    instanceMeshSetup.StepRate = 1;
-    this->instanceMesh = Gfx::CreateResource(instanceMeshSetup);
-    
-    // setup static draw state
+    static const int geomMeshSlot = 0;
+    static const int instMeshSlot = 1;
+
+    // create static mesh at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
     shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::Float4);
+        .Add(VertexAttr::Position, VertexFormat::Float3, geomMeshSlot)
+        .Add(VertexAttr::Color0, VertexFormat::Float4, geomMeshSlot);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
     auto shapeBuilderResult = shapeBuilder.Build();
-    Id mesh = Gfx::CreateResource(shapeBuilderResult);
+    this->meshBlock[geomMeshSlot] = Gfx::CreateResource(shapeBuilderResult);
+
+    // create dynamic instance data mesh at mesh slot 1
+    auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
+    instMeshSetup.Layout.AddInstanced(VertexAttr::Instance0, VertexFormat::Float4, instMeshSlot);
+    this->meshBlock[instMeshSlot] = Gfx::CreateResource(instMeshSetup);
+
+    // setup draw state for instanced rendering
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
-    dss.Meshes[1] = this->instanceMesh;
+    auto dss = DrawStateSetup::FromShader(shd);
+    dss.Layouts[geomMeshSlot] = shapeBuilder.Layout;
+    dss.Layouts[instMeshSlot] = instMeshSetup.Layout;
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;

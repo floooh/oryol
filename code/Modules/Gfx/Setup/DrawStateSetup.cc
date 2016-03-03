@@ -10,18 +10,27 @@ namespace Oryol {
 //------------------------------------------------------------------------------
 DrawStateSetup::DrawStateSetup() :
 Locator(Locator::NonShared()),
-BlendColor(1.0f, 1.0f, 1.0f, 1.0f),
-ShaderSelectionMask(0) {
+BlendColor(1.0f, 1.0f, 1.0f, 1.0f) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 DrawStateSetup
-DrawStateSetup::FromMeshAndShader(const Id& msh, const Id& shd, uint32 selMask) {
+DrawStateSetup::FromShader(const Id& shd) {
+    o_assert_dbg(shd.IsValid());
     DrawStateSetup setup;
-    setup.Meshes[0] = msh;
     setup.Shader = shd;
-    setup.ShaderSelectionMask = selMask;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+DrawStateSetup
+DrawStateSetup::FromLayoutAndShader(const VertexLayout& layout, const Id& shd) {
+    o_assert_dbg(!layout.Empty());
+    o_assert_dbg(shd.IsValid());
+    DrawStateSetup setup;
+    setup.Layouts[0] = layout;
+    setup.Shader = shd;
     return setup;
 }
 

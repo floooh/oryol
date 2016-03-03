@@ -33,6 +33,7 @@ private:
     int curNumParticles = 0;
     int numParticlesPerBatch = 1000;
 
+    MeshBlock meshBlock;
     StaticArray<Id,3> drawStates;
 
     glm::mat4 view;
@@ -97,7 +98,7 @@ DrawCallExplorerApp::OnRunning() {
     for (int32 i = 0; i < this->curNumParticles; i++) {
         if (++batchCount >= this->numParticlesPerBatch) {
             batchCount = 0;
-            Gfx::ApplyDrawState(this->drawStates[curBatch++]);
+            Gfx::ApplyDrawState(this->drawStates[curBatch++], this->meshBlock);
             Gfx::ApplyUniformBlock(this->perFrameParams);
             if (curBatch >= 3) {
                 curBatch = 0;
@@ -201,13 +202,13 @@ DrawCallExplorerApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
 
     Id redShd   = Gfx::CreateResource(Shaders::Red::Setup());
     Id greenShd = Gfx::CreateResource(Shaders::Green::Setup());
     Id blueShd  = Gfx::CreateResource(Shaders::Blue::Setup());
 
-    auto dss = DrawStateSetup::FromMeshAndShader(mesh, redShd);
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, redShd);
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;

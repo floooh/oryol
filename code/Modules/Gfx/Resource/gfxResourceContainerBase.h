@@ -73,13 +73,6 @@ public:
     /// per-frame update (update resource pools and pending loaders)
     void update();
 
-    /// private helper function to dependent resource state
-    bool checkState(ResourceState::Code resState) const;
-    /// query overall state of drawstate dependencies (state of input meshes)
-    ResourceState::Code queryDrawStateDepState(const drawState* ds);
-    /// handle pending draw states, this is called once per frame
-    void handlePendingDrawStates();
-    
     gfxPointers pointers;
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
@@ -91,7 +84,6 @@ public:
     class drawStatePool drawStatePool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
-    Array<Id> pendingDrawStates;
 };
 
 //------------------------------------------------------------------------------
