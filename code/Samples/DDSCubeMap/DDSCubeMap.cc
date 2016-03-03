@@ -28,6 +28,7 @@ private:
     glm::mat4 proj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
+    MeshBlock meshBlock;
     Shaders::Main::VSParams vsParams;
     Shaders::Main::FSTextures fsTextures;
     ClearState clearState;
@@ -48,7 +49,7 @@ DDSCubeMapApp::OnRunning() {
     // check whether the cube map has finished loading
     if (Gfx::QueryResourceInfo(this->fsTextures.Texture).State == ResourceState::Valid) {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState, this->fsTextures);
+        Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->fsTextures);
         Gfx::ApplyUniformBlock(this->vsParams);
         Gfx::Draw(0);
     }
@@ -94,8 +95,8 @@ DDSCubeMapApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20);
-    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
-    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);

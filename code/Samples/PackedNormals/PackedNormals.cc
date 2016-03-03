@@ -23,7 +23,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::PackedNormals::Params params;
-    MeshBlock meshes;
+    MeshBlock meshBlock;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -49,7 +49,7 @@ PackedNormalsApp::OnRunning() {
         glm::vec3(0.0f, -1.0f, -6.0f)
     };
     
-    Gfx::ApplyDrawState(this->drawState, this->meshes);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
     int32 primGroupIndex = 0;
     for (const auto& pos : positions) {
         this->params.ModelViewProjection = this->computeMVP(pos);
@@ -79,7 +79,7 @@ PackedNormalsApp::OnInit() {
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10);
-    this->meshes[0] = Gfx::CreateResource(shapeBuilder.Build());
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::PackedNormals::Setup());
     auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;

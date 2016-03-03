@@ -27,6 +27,7 @@ private:
     void showInfo();
 
     struct Object {
+        MeshBlock meshBlock;
         Id drawState;
         Id texture;
         ResourceLabel label;
@@ -63,7 +64,7 @@ ResourceStressApp::OnRunning() {
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
             vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
             fsTextures.Texture = obj.texture;
-            Gfx::ApplyDrawState(obj.drawState, fsTextures);
+            Gfx::ApplyDrawState(obj.drawState, obj.meshBlock, fsTextures);
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(0);
         }
@@ -147,8 +148,9 @@ ResourceStressApp::createObjects() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1);
-    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
-    obj.drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, this->shader));
+    obj.meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, this->shader);
+    obj.drawState = Gfx::CreateResource(dss);
     obj.texture = Gfx::LoadResource(TextureLoader::Create(
         TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint)));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);

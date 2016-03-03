@@ -30,7 +30,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    MeshBlock meshes;
+    MeshBlock meshBlock;
     Shaders::Main::PerFrameParams perFrameParams;
     Shaders::Main::PerParticleParams perParticleParams;
     bool updateEnabled = true;
@@ -67,7 +67,7 @@ DrawCallPerfApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     applyRtTime = Clock::Since(applyRtStart);
     TimePoint drawStart = Clock::Now();
-    Gfx::ApplyDrawState(this->drawState, this->meshes);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
     Gfx::ApplyUniformBlock(this->perFrameParams);
     for (int32 i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.Translate = this->particles[i].pos;
@@ -157,7 +157,7 @@ DrawCallPerfApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->meshes[0] = Gfx::CreateResource(shapeBuilder.Build());
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.RasterizerState.CullFaceEnabled = true;

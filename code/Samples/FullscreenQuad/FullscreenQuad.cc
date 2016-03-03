@@ -16,6 +16,7 @@ public:
     
 private:
     Id drawState;
+    MeshBlock meshBlock;
     Shaders::Main::Params params;
 
 };
@@ -27,7 +28,7 @@ FullscreenQuadApp::OnRunning() {
     // render one frame
     this->params.Time += 1.0f / 60.0f;
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
     Gfx::ApplyUniformBlock(this->params);
     Gfx::Draw(0);
     Gfx::CommitFrame();
@@ -40,9 +41,11 @@ FullscreenQuadApp::OnRunning() {
 AppState::Code
 FullscreenQuadApp::OnInit() {
     Gfx::Setup(GfxSetup::Window(600, 600, "Oryol Fullscreen Quad Sample"));
-    Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    auto quadSetup = MeshSetup::FullScreenQuad();
+    this->meshBlock[0] = Gfx::CreateResource(quadSetup);
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    this->drawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
+    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, shd);
+    this->drawState = Gfx::CreateResource(dss);
     this->params.Time = 0.0f;
     return App::OnInit();
 }

@@ -21,12 +21,13 @@ fractal::~fractal() {
 
 //------------------------------------------------------------------------------
 void
-fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id fsq) {
+fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id fsqMesh, const VertexLayout& fsqLayout) {
     o_assert_dbg(!this->isValid());
 
     this->rect = rect_;
     this->pos = pos_;
     this->frameIndex = 0;
+    this->fsqMeshBlock[0] = fsqMesh;
 
     // generate a new resource label for our gfx resources
     this->label = Gfx::PushResourceLabel();
@@ -54,7 +55,7 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     this->colorTexture = Gfx::CreateResource(rtSetup);
 
     // create draw state for updating the fractal state
-    auto dss = DrawStateSetup::FromMeshAndShader(fsq, fractalShader);
+    auto dss = DrawStateSetup::FromLayoutAndShader(fsqLayout, fractalShader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
@@ -112,7 +113,7 @@ fractal::update() {
     Shaders::Julia::FSTextures juliaTextures;
     juliaTextures.Texture = this->fractalTexture[readIndex];
     Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->fractalDrawState, juliaTextures);
+    Gfx::ApplyDrawState(this->fractalDrawState, this->fsqMeshBlock, juliaTextures);
     Gfx::ApplyUniformBlock(this->fractalVSParams);
     Gfx::ApplyUniformBlock(this->fractalFSParams);
     Gfx::Draw(0);
@@ -121,7 +122,7 @@ fractal::update() {
     Shaders::Color::FSTextures colorTextures;
     colorTextures.Texture = this->fractalTexture[writeIndex];
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->colorDrawState, colorTextures);
+    Gfx::ApplyDrawState(this->colorDrawState, this->fsqMeshBlock, colorTextures);
     Gfx::Draw(0);
 
     if (this->frameIndex >= this->cycleCount) {

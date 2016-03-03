@@ -22,7 +22,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Shapes::Params params;
-    MeshBlock meshes;
+    MeshBlock meshBlock;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -38,7 +38,7 @@ ShapeApp::OnRunning() {
     
     // apply state and render
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshes);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
     
     // render shape primitive groups
     static const glm::vec3 positions[] = {
@@ -78,7 +78,7 @@ ShapeApp::OnInit() {
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10);
-    this->meshes[0] = Gfx::CreateResource(shapeBuilder.Build());
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shapes::Setup());
     
     auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);

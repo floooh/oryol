@@ -1,7 +1,0 @@
-fips_begin_app(PBRendering windowed)
-    fips_vs_warning_level(3)
-    fips_files(PBRendering.cc)
-    oryol_shader(shaders.shd)
-    fips_deps(Gfx Assets Dbg)
-    oryol_add_web_sample(PBRendering "Physically based rendering sample" "emscripten,pnacl,android" PBRendering.jpg "PBRendering/PBRendering.cc")
-fips_end_app()

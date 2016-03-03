@@ -24,6 +24,7 @@ public:
 private:
     glm::mat4 computeMVP(const Sensors& sensor);
 
+    MeshBlock meshBlock;
     Id drawState;
     glm::mat4 proj;
     TimePoint lastFrameTimePoint;
@@ -44,9 +45,9 @@ SensorsApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(2.0, 2.0, 2.0, 1);
-    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.CullFaceEnabled = true;
@@ -76,7 +77,7 @@ SensorsApp::OnRunning() {
     
     const Sensors& sensors = Input::Sensors();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
     this->vsParams.ModelViewProjection = this->computeMVP(sensors);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
