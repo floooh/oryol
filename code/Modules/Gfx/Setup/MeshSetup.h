@@ -55,8 +55,6 @@ public:
     /// flip v coordinates for fullscreen quad (so that origin is top-left)
     bool FullScreenQuadFlipV;
 
-    /// primitive type 
-    PrimitiveType::Code PrimType;
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups

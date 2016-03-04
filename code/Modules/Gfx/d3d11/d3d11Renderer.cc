@@ -325,9 +325,9 @@ d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
             &(this->curVertexStrides[0]),           // pStrides
             &(this->curVertexOffsets[0]));          // pOffsets
     }
-    if (this->d3d11CurPrimitiveTopology != this->curPrimaryMesh->d3d11PrimTopology) {
-        this->d3d11CurPrimitiveTopology = this->curPrimaryMesh->d3d11PrimTopology;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(this->curPrimaryMesh->d3d11PrimTopology);
+    if (this->d3d11CurPrimitiveTopology != ds->d3d11PrimTopology) {
+        this->d3d11CurPrimitiveTopology = ds->d3d11PrimTopology;
+        this->d3d11DeviceContext->IASetPrimitiveTopology(ds->d3d11PrimTopology);
     }
 
     // apply optional index buffer (can be nullptr!)

@@ -39,6 +39,8 @@ public:
     class RasterizerState RasterizerState;
     /// input vertex layouts (one per mesh slot)
     StaticArray<VertexLayout, GfxConfig::MaxNumInputMeshes> Layouts;
+    /// primitive type 
+    PrimitiveType::Code PrimType;
     /// shader 
     Id Shader;
 };

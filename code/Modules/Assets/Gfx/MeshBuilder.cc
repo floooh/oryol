@@ -24,7 +24,6 @@ MeshBuilder::Begin() {
     meshSetup.NumVertices = this->NumVertices;
     meshSetup.NumIndices = this->NumIndices;
     meshSetup.IndicesType = this->IndicesType;
-    meshSetup.PrimType = this->PrimType;
     for (const auto& primGroup : this->PrimitiveGroups) {
         meshSetup.AddPrimitiveGroup(primGroup);
     }

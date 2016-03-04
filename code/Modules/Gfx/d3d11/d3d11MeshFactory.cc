@@ -130,7 +130,6 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     ibAttrs.BufferUsage = Usage::Immutable;
     mesh.indexBufferAttrs = ibAttrs;
 
-    mesh.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(PrimitiveType::Triangles);
     mesh.numPrimGroups = 1;
     mesh.primGroups[0] = PrimitiveGroup(0, 6);
 
@@ -177,7 +176,6 @@ d3d11MeshFactory::setupAttrs(mesh& mesh) {
 //------------------------------------------------------------------------------
 void
 d3d11MeshFactory::setupPrimGroups(mesh& mesh) {
-    mesh.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(mesh.Setup.PrimType);
     mesh.numPrimGroups = mesh.Setup.NumPrimitiveGroups();
     o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < mesh.numPrimGroups; i++) {

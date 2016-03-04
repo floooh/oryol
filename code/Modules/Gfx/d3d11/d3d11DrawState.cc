@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d11DrawState.h"
+#include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -10,6 +11,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 d3d11DrawState::d3d11DrawState() :
 d3d11InputLayout(nullptr),
+d3d11PrimTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED),
 d3d11VertexShader(nullptr),
 d3d11PixelShader(nullptr),
 d3d11RasterizerState(nullptr),
@@ -34,6 +36,7 @@ d3d11DrawState::~d3d11DrawState() {
 void
 d3d11DrawState::Clear() {
     this->d3d11InputLayout = nullptr;
+    this->d3d11PrimTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     this->d3d11VertexShader = nullptr;
     this->d3d11PixelShader = nullptr;
     this->d3d11RasterizerState = nullptr;

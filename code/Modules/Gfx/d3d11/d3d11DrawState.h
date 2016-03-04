@@ -24,6 +24,8 @@ public:
 
     /// pointer to input layout object
     ID3D11InputLayout* d3d11InputLayout;
+    /// primitive topology
+    D3D_PRIMITIVE_TOPOLOGY d3d11PrimTopology;
     /// pointer to vertex shader
     ID3D11VertexShader* d3d11VertexShader;
     /// pointer to pixel shader

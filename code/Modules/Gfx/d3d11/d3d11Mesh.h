@@ -25,7 +25,6 @@ public:
     ID3D11Buffer* d3d11IndexBuffer;
     int32 vbUpdateFrameIndex;
     int32 ibUpdateFrameIndex;
-    D3D_PRIMITIVE_TOPOLOGY d3d11PrimTopology;
 };
 
 } // namespace _priv

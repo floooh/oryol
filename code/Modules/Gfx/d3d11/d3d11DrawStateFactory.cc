@@ -58,6 +58,7 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     // input-layout, vertex and pixel shader
     // FIXME: remove shader selection mask
     ds.d3d11InputLayout = this->createInputLayout(ds);
+    ds.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(ds.Setup.PrimType);
     ds.d3d11VertexShader = ds.shd->getVertexShaderByMask(0);
     ds.d3d11PixelShader = ds.shd->getPixelShaderByMask(0);
     o_assert_dbg(ds.d3d11InputLayout);
