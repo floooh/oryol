@@ -65,22 +65,18 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
     // convert input mesh vertex layout components to glVertexAttrs
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumInputMeshes; layoutIndex++) {
         const VertexLayout& layout = ds.Setup.Layouts[layoutIndex];
+
         const int numComps = layout.NumComponents();
         if (numComps > 0) {
+            o_assert_dbg(VertexStepFunction::PerVertex==layout.StepFunction ? 0==layout.StepRate:1<=layout.StepRate);
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
                 o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
                 glVertexAttr& glAttr = ds.glAttrs[comp.Attr];
                 o_assert_dbg(!glAttr.enabled);
                 glAttr.enabled = GL_TRUE;
-                glAttr.vbIndex = comp.SlotIndex;
-                if (comp.StepFunction == VertexStepFunction::PerVertex) {
-                    glAttr.divisor = 0;
-                }
-                else {
-                    o_assert2(comp.StepRate == 1, "figure out GL vertex divisor for step-rate > 1!\n");
-                    glAttr.divisor = comp.StepRate;
-                }
+                glAttr.vbIndex = layoutIndex;
+                glAttr.divisor = layout.StepRate;
                 glAttr.stride = layout.ByteSize();
                 glAttr.offset = layout.ComponentByteOffset(compIndex);
                 glAttr.size   = vertexFormatTable[comp.Format].size;

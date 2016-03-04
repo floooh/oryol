@@ -15,14 +15,13 @@ namespace Oryol {
 class VertexLayout {
 public:
     /// a component in the vertex layout
+    #pragma pack(push,1)
     class Component {
     public:
         /// default constructor
         Component();
         /// construct from vertex attr and format
-        Component(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=0);
-        /// constructor for instanced component
-        static Component Instanced(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=0);
+        Component(VertexAttr::Code attr, VertexFormat::Code format);
         /// return true if valid (attr and format set)
         bool IsValid() const;
         /// clear the component (unset attr and format)
@@ -32,10 +31,13 @@ public:
 
         VertexAttr::Code Attr;
         VertexFormat::Code Format;
-        uint8 SlotIndex;
-        VertexStepFunction::Code StepFunction;
-        uint8 StepRate;
     };
+    #pragma pack(pop)
+
+    /// the vertex step function, used for instancing, default is 'PerVertex'
+    VertexStepFunction::Code StepFunction;
+    /// the vertex step rate, used for instancing, default is 0
+    uint8 StepRate;
 
     /// constructor
     VertexLayout();
@@ -43,28 +45,26 @@ public:
     VertexLayout& Clear();
     /// return true if layout is empty
     bool Empty() const;
+
     /// add a component
     VertexLayout& Add(const Component& comp);
     /// add component by name and format
-    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=0);
-    /// add an instanced component by name and format
-    VertexLayout& AddInstanced(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot=1);
-    /// append components from other vertex layout, fails hard on components collision
-    VertexLayout& Append(const VertexLayout& other);
+    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
+    /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
+    VertexLayout& UseInstancing();
+
     /// get number of components
     int32 NumComponents() const;
     /// get component at index
     const Component& ComponentAt(int32 index) const;
     /// get component index by vertex attribute, return InvalidIndex if layout doesn't include attr
     int32 ComponentIndexByVertexAttr(VertexAttr::Code attr) const;
-    /// get byte size of vertex
+    /// get byte size of vertex (aka stride)
     int32 ByteSize() const;
     /// get byte offset of a component
     int32 ComponentByteOffset(int32 componentIndex) const;
     /// test if the layout contains a specific vertex attribute
     bool Contains(VertexAttr::Code attr) const;
-    /// compute a hash value of a vertex layout
-    uint64 Hash() const;
 
     /// compute a combined hash value of 2 vertex layout (used for mesh/vertex shader layout matching)
     static uint64 CombinedHash(const VertexLayout& l0, const VertexLayout& l1);
@@ -81,31 +81,16 @@ private:
 inline
 VertexLayout::Component::Component() :
 Attr(VertexAttr::InvalidVertexAttr),
-Format(VertexFormat::InvalidVertexFormat),
-SlotIndex(0),
-StepFunction(VertexStepFunction::PerVertex),
-StepRate(0) {
+Format(VertexFormat::InvalidVertexFormat) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 inline
-VertexLayout::Component::Component(VertexAttr::Code attr, VertexFormat::Code fmt, uint8 slot) :
+VertexLayout::Component::Component(VertexAttr::Code attr, VertexFormat::Code fmt) :
 Attr(attr),
-Format(fmt),
-SlotIndex(slot),
-StepFunction(VertexStepFunction::PerVertex),
-StepRate(0) {
+Format(fmt) {
     // empty
-}
-
-//------------------------------------------------------------------------------
-inline VertexLayout::Component
-VertexLayout::Component::Instanced(VertexAttr::Code attr, VertexFormat::Code fmt, uint8 slot) {
-    Component comp(attr, fmt, slot);
-    comp.StepFunction = VertexStepFunction::PerInstance;
-    comp.StepRate = 1;
-    return comp;
 }
 
 //------------------------------------------------------------------------------

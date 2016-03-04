@@ -13,6 +13,8 @@ using namespace _priv;
 //------------------------------------------------------------------------------
 VertexLayout&
 VertexLayout::Clear() {
+    this->StepFunction = VertexStepFunction::PerVertex;
+    this->StepRate = 0;
     this->numComps = 0;
     this->byteSize = 0;
     this->attrCompIndices.Fill(InvalidIndex);
@@ -23,14 +25,6 @@ VertexLayout::Clear() {
 //------------------------------------------------------------------------------
 VertexLayout::VertexLayout() {
     this->Clear();
-}
-
-//------------------------------------------------------------------------------
-uint64
-VertexLayout::Hash() const {
-    const uint64 seed = 0xABADFEED12345678;
-    uint64 hash = fasthash64(&this->comps[0], this->comps.Size() * sizeof(Component), seed);
-    return hash;
 }
 
 //------------------------------------------------------------------------------
@@ -68,22 +62,15 @@ VertexLayout::Add(const Component& comp) {
 
 //------------------------------------------------------------------------------
 VertexLayout&
-VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot) {
-    return this->Add(Component(attr, format, slot));
+VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
+    return this->Add(Component(attr, format));
 }
 
 //------------------------------------------------------------------------------
 VertexLayout&
-VertexLayout::AddInstanced(VertexAttr::Code attr, VertexFormat::Code format, uint8 slot) {
-    return this->Add(Component::Instanced(attr, format, slot));
-}
-
-//------------------------------------------------------------------------------
-VertexLayout&
-VertexLayout::Append(const VertexLayout& other) {
-    for (int i = 0; i < other.NumComponents(); i++) {
-        this->Add(other.comps[i]);
-    }
+VertexLayout::UseInstancing() {
+    this->StepFunction = VertexStepFunction::PerInstance;
+    this->StepRate = 1;
     return *this;
 }
 

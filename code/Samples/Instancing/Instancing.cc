@@ -150,30 +150,29 @@ InstancingApp::OnInit() {
         o_error("ERROR: instanced_arrays extension required!\n");
     }
 
-    static const int geomMeshSlot = 0;
-    static const int instMeshSlot = 1;
-
     // create static mesh at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
     shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3, geomMeshSlot)
-        .Add(VertexAttr::Color0, VertexFormat::Float4, geomMeshSlot);
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
     auto shapeBuilderResult = shapeBuilder.Build();
-    this->meshBlock[geomMeshSlot] = Gfx::CreateResource(shapeBuilderResult);
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilderResult);
 
     // create dynamic instance data mesh at mesh slot 1
     auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
-    instMeshSetup.Layout.AddInstanced(VertexAttr::Instance0, VertexFormat::Float4, instMeshSlot);
-    this->meshBlock[instMeshSlot] = Gfx::CreateResource(instMeshSetup);
+    instMeshSetup.Layout
+        .UseInstancing()
+        .Add(VertexAttr::Instance0, VertexFormat::Float4);
+    this->meshBlock[1] = Gfx::CreateResource(instMeshSetup);
 
     // setup draw state for instanced rendering
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
     auto dss = DrawStateSetup::FromShader(shd);
-    dss.Layouts[geomMeshSlot] = shapeBuilder.Layout;
-    dss.Layouts[instMeshSlot] = instMeshSetup.Layout;
+    dss.Layouts[0] = shapeBuilder.Layout;
+    dss.Layouts[1] = instMeshSetup.Layout;
     dss.RasterizerState.CullFaceEnabled = true;
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;

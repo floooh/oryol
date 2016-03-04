@@ -163,20 +163,7 @@ GPUParticlesApp::OnInit() {
     dss.RasterizerState.ScissorTestEnabled = true;
     this->updateParticles = Gfx::CreateResource(dss);
 
-    // a vertex buffer with the particleIds, this would not be needed if
-    // ANGLE_instanced_arrays would support gl_InstanceID
-    const int32 particleIdSize = MaxNumParticles * sizeof(float32);
-    float32* particleIdData = (float32*) Memory::Alloc(particleIdSize);
-    for (int32 i = 0; i < MaxNumParticles; i++) {
-        particleIdData[i] = (float32) i;
-    }
-    auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
-    particleIdSetup.NumVertices = MaxNumParticles;
-    particleIdSetup.Layout.AddInstanced(VertexAttr::Instance0, VertexFormat::Float);
-    this->shapeMeshBlock[1] = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
-    Memory::Free(particleIdData);
-    
-    // the geometry of a single particle
+    // the static geometry of a single particle is at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
@@ -185,7 +172,20 @@ GPUParticlesApp::OnInit() {
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
     this->shapeMeshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+
+    // a instancing vertex buffer with the particleIds at mesh slot 1
+    const int32 particleIdSize = MaxNumParticles * sizeof(float32);
+    float32* particleIdData = (float32*) Memory::Alloc(particleIdSize);
+    for (int32 i = 0; i < MaxNumParticles; i++) {
+        particleIdData[i] = (float32) i;
+    }
+    auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
+    particleIdSetup.NumVertices = MaxNumParticles;
+    particleIdSetup.Layout.UseInstancing().Add(VertexAttr::Instance0, VertexFormat::Float);
+    this->shapeMeshBlock[1] = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
+    Memory::Free(particleIdData);
     
+
     // particle rendering texture blocks and draw state
     Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::Setup());
     dss = DrawStateSetup::FromShader(drawShader);
