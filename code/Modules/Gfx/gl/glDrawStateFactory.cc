@@ -7,7 +7,6 @@
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/Resource/drawState.h"
-#include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/shader.h"
