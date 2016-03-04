@@ -122,8 +122,6 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     vbAttrs.BufferUsage = Usage::Immutable;
     vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    vbAttrs.StepFunction = VertexStepFunction::PerVertex;
-    vbAttrs.StepRate = 1;
     mesh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;
@@ -167,8 +165,6 @@ d3d11MeshFactory::setupAttrs(mesh& mesh) {
     vbAttrs.NumVertices = mesh.Setup.NumVertices;
     vbAttrs.Layout = mesh.Setup.Layout;
     vbAttrs.BufferUsage = mesh.Setup.VertexUsage;
-    vbAttrs.StepFunction = mesh.Setup.StepFunction;
-    vbAttrs.StepRate = mesh.Setup.StepRate;
     mesh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;

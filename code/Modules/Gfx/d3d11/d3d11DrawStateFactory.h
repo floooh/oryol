@@ -31,11 +31,8 @@ public:
 private:
     /// create or return existing input layout object
     ID3D11InputLayout* createInputLayout(const drawState& ds);
-    /// release an input layout object
-    void releaseInputLayout(ID3D11InputLayout* d3d11InputLayout);
 
     ID3D11Device* d3d11Device;
-    Map<uint64, ID3D11InputLayout*> d3d11InputLayouts;     
 };
 
 } // namespace _priv
