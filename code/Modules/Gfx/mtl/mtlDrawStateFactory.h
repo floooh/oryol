@@ -7,10 +7,6 @@
 */
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Resource/drawStateFactoryBase.h"
-#include "Resource/Id.h"
-#include "Core/Containers/Map.h"
-#include "glm/vec4.hpp"
-#include "glm/gtc/epsilon.hpp"
 #include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
@@ -18,8 +14,6 @@ namespace _priv {
 
 class mtlDrawStateFactory : public drawStateFactoryBase {
 public:
-    /// setup the factory
-    void Setup(const gfxPointers& ptrs);
     /// setup a new drawState resource
     ResourceState::Code SetupResource(drawState& ds);
     /// destroy drawState resource
@@ -34,65 +28,6 @@ private:
     void createDSS(drawState& ds);
     /// release MTLDepthStencilState object in drawState
     void releaseDSS(drawState& ds);
-
-    /// key type for renderPipelineStateCache
-    struct RPSKey {
-        uint64 blendStateHash = 0;
-        uint64 vertexLayoutHash[GfxConfig::MaxNumInputMeshes];
-        Id shader;
-        glm::vec4 blendColor;
-        uint32 rasterizerStateHash = 0;
-
-        RPSKey() :
-            blendStateHash(0),
-            rasterizerStateHash(0) {
-            for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
-                vertexLayoutHash[i] = 0;
-            }
-        };
-        static_assert(GfxConfig::MaxNumInputMeshes == 4, "Fix mtlDrawStateFactory::RPSKey!");
-        bool operator==(const RPSKey& rhs) const {
-            return (this->blendStateHash == rhs.blendStateHash) &&
-                (this->vertexLayoutHash[0] == rhs.vertexLayoutHash[0]) &&
-                (this->vertexLayoutHash[1] == rhs.vertexLayoutHash[1]) &&
-                (this->vertexLayoutHash[2] == rhs.vertexLayoutHash[2]) &&
-                (this->vertexLayoutHash[3] == rhs.vertexLayoutHash[3]) &&
-                (this->shader == rhs.shader) &&
-                (this->rasterizerStateHash == rhs.rasterizerStateHash) &&
-                (glm::all(glm::epsilonEqual(this->blendColor, rhs.blendColor, 0.001f)));
-        };
-        bool operator<(const RPSKey& rhs) const {
-            return (this->blendStateHash < rhs.blendStateHash) ||
-                (this->vertexLayoutHash[0] < rhs.vertexLayoutHash[0]) ||
-                (this->vertexLayoutHash[1] < rhs.vertexLayoutHash[1]) ||
-                (this->vertexLayoutHash[2] < rhs.vertexLayoutHash[2]) ||
-                (this->vertexLayoutHash[3] < rhs.vertexLayoutHash[3]) ||
-                (this->shader < rhs.shader) ||
-                (this->rasterizerStateHash < rhs.rasterizerStateHash) ||
-                (this->blendColor.x < rhs.blendColor.x) ||
-                (this->blendColor.y < rhs.blendColor.y) ||
-                (this->blendColor.z < rhs.blendColor.z) ||
-                (this->blendColor.w < rhs.blendColor.w);
-        };
-    };
-    /// initialize a new RPSKey object
-    RPSKey initRPSKey(const drawState& ds);
-
-    /// value type for render-pipeline-state-cache
-    struct RPSValue {
-        ORYOL_OBJC_TYPED_ID(MTLRenderPipelineState) rps;
-        int32 useCount;
-    };
-    /// value type for depth-stencil-state-cache
-    struct DSSValue {
-        ORYOL_OBJC_TYPED_ID(MTLDepthStencilState) dss;
-        int32 useCount;
-    };
-
-    /// cache for MTLRenderPipelineState objects
-    Map<RPSKey, RPSValue> rpsCache;
-    /// cache for DepthStencilState objects
-    Map<uint64, DSSValue> dssCache;
 };
 
 } // namespace _priv
