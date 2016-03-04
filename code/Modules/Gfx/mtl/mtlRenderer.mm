@@ -24,6 +24,7 @@ frameIndex(0),
 curFrameRotateIndex(0),
 rtValid(false),
 curDrawState(nullptr),
+curPrimaryMesh(nullptr),
 curMTLPrimitiveType(MTLPrimitiveTypeTriangle),
 curMTLIndexType(MTLIndexTypeUInt16),
 mtlDevice(nil),
@@ -150,6 +151,8 @@ mtlRenderer::commitFrame() {
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
     this->curUniformBufferPtr = nullptr;
+    this->curDrawState = nullptr;
+    this->curPrimaryMesh = nullptr;
 
     // block until previous frame has finished (the semaphore
     // has a counter of MaxRotateFrame, which is at least 2)
@@ -321,25 +324,31 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyDrawState(drawState* ds) {
+mtlRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(ds);
+    o_assert_dbg(meshes && (numMeshes > 0));
+
     if (nil == this->curCommandEncoder) {
         return;
     }
-    if (nullptr == ds) {
-        // drawState dependencies still pending, invalidate rendering
-        this->curDrawState = nullptr;
-        return;
+    // if any of the meshes are still loading, cancel the next draw-call
+    for (int i = 0; i < numMeshes; i++) {
+        if (nullptr == meshes[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
     }
-
     o_assert_dbg(ds->mtlRenderPipelineState);
     o_assert_dbg(ds->mtlDepthStencilState);
     o_assert2_dbg(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
     o_assert2_dbg(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
     o_assert2_dbg(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-    // set current draw state (used to indicate that rendering is valid)
+    // need to store draw state and first mesh for later draw call
     this->curDrawState = ds;
+    this->curPrimaryMesh = meshes[0];
+    o_assert_dbg(this->curPrimaryMesh);
 
     // apply general state
     const glm::vec4& bc = ds->Setup.BlendColor;
@@ -353,10 +362,14 @@ mtlRenderer::applyDrawState(drawState* ds) {
     [this->curCommandEncoder setRenderPipelineState:ds->mtlRenderPipelineState];
     [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
 
+    #if ORYOL_DEBUG
+    // check that the mesh configuration is valid for rendering
+    mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
+    #endif
+
     // apply vertex buffers
-    const int numMeshSlots = ds->meshes.Size();
-    for (int meshIndex = 0; meshIndex < numMeshSlots; meshIndex++) {
-        const mesh* msh = ds->meshes[meshIndex];
+    for (int meshIndex = 0; meshIndex < GfxConfig::MaxNumInputMeshes; meshIndex++) {
+        const mesh* msh = meshIndex < numMeshes ? meshes[meshIndex] : nullptr;
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshIndex + GfxConfig::MaxNumUniformBlocksPerStage;
         if (msh) {
@@ -369,10 +382,10 @@ mtlRenderer::applyDrawState(drawState* ds) {
         }
     }
 
-    // store state for following draw calls
-    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(ds->meshes[0]->Setup.PrimType);
-    if (ds->meshes[0]->indexBufferAttrs.Type != IndexType::None) {
-        this->curMTLIndexType = mtlTypes::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
+    // store additional state for following draw calls
+    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(this->curPrimaryMesh->Setup.PrimType);
+    if (this->curPrimaryMesh->indexBufferAttrs.Type != IndexType::None) {
+        this->curMTLIndexType = mtlTypes::asIndexType(this->curPrimaryMesh->indexBufferAttrs.Type);
     }
 }
 
@@ -476,7 +489,7 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     if (nullptr == this->curDrawState) {
         return;
     }
-    const mesh* msh = this->curDrawState->meshes[0];
+    const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     if (IndexType::None == msh->indexBufferAttrs.Type) {
         [this->curCommandEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
@@ -506,13 +519,14 @@ mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if rendering a placeholder which doesn't have
         // as many materials as the original mesh
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 

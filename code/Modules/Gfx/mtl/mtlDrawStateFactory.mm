@@ -55,19 +55,14 @@ mtlDrawStateFactory::DestroyResource(drawState& ds) {
 //------------------------------------------------------------------------------
 mtlDrawStateFactory::RPSKey
 mtlDrawStateFactory::initRPSKey(const drawState& ds) {
-    VertexLayout mergedLayout;
-    for (const mesh* msh : ds.meshes) {
-        if (msh) {
-            mergedLayout.Append(msh->vertexBufferAttrs.Layout);
-        }
-    }
     RPSKey key;
     key.blendStateHash = ds.Setup.BlendState.Hash;
-    key.vertexLayoutHash = mergedLayout.Hash();
+    for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
+        key.vertexLayoutHash[i] = ds.Setup.Layouts[i].Hash();
+    }
     key.shader = ds.Setup.Shader;
-    key.shaderSelectionMask = ds.Setup.ShaderSelectionMask;
-    key.rasterizerStateHash = ds.Setup.RasterizerState.Hash;
     key.blendColor = ds.Setup.BlendColor;
+    key.rasterizerStateHash = ds.Setup.RasterizerState.Hash;
     return key;
 }
 
@@ -90,22 +85,19 @@ mtlDrawStateFactory::createRPS(drawState& ds) {
     else {
         // create vertex-descriptor object
         MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
-        for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
+        for (int meshSlotIndex = 0; meshSlotIndex < GfxConfig::MaxNumInputMeshes; meshSlotIndex++) {
             // NOTE: vertex buffers are located after constant buffers
-            const int vbSlotIndex = mshIndex + GfxConfig::MaxNumUniformBlocksPerStage;
-            const mesh* msh = ds.meshes[mshIndex];
-            if (msh) {
-                const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
-                for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++) {
-                    const auto& comp = layout.ComponentAt(compIndex);
-                    vtxDesc.attributes[comp.Attr].format = mtlTypes::asVertexFormat(comp.Format);
-                    vtxDesc.attributes[comp.Attr].bufferIndex = vbSlotIndex;
-                    vtxDesc.attributes[comp.Attr].offset = layout.ComponentByteOffset(compIndex);
-                }
-                vtxDesc.layouts[vbSlotIndex].stride = layout.ByteSize();
-                vtxDesc.layouts[vbSlotIndex].stepFunction = mtlTypes::asVertexStepFunc(msh->vertexBufferAttrs.StepFunction);
-                vtxDesc.layouts[vbSlotIndex].stepRate = msh->vertexBufferAttrs.StepRate;
+            const int vbSlotIndex = meshSlotIndex + GfxConfig::MaxNumUniformBlocksPerStage;
+            const VertexLayout& layout = ds.Setup.Layouts[meshSlotIndex];
+            for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++) {
+                const auto& comp = layout.ComponentAt(compIndex);
+                vtxDesc.attributes[comp.Attr].format = mtlTypes::asVertexFormat(comp.Format);
+                vtxDesc.attributes[comp.Attr].bufferIndex = vbSlotIndex;
+                vtxDesc.attributes[comp.Attr].offset = layout.ComponentByteOffset(compIndex);
             }
+            vtxDesc.layouts[vbSlotIndex].stride = layout.ByteSize();
+            vtxDesc.layouts[vbSlotIndex].stepFunction = mtlTypes::asVertexStepFunc(layout.StepFunction);
+            vtxDesc.layouts[vbSlotIndex].stepRate = layout.StepRate;
         }
 
         // create renderpipeline-state
@@ -122,7 +114,8 @@ mtlDrawStateFactory::createRPS(drawState& ds) {
         rpDesc.colorAttachments[0].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
         rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
         rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
-        const int32 progIndex = ds.shd->getProgIndexByMask(ds.Setup.ShaderSelectionMask);
+        // FIXME: shader selection mask
+        const int32 progIndex = ds.shd->getProgIndexByMask(0);
         o_assert_dbg(InvalidIndex != progIndex);
         rpDesc.fragmentFunction = ds.shd->getFragmentShader(progIndex);
         rpDesc.vertexFunction = ds.shd->getVertexShader(progIndex);

@@ -5,6 +5,7 @@
     @ingroup _priv
     @brief Metal implementation of drawStateFactory
 */
+#include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Resource/drawStateFactoryBase.h"
 #include "Resource/Id.h"
 #include "Core/Containers/Map.h"
@@ -37,25 +38,36 @@ private:
     /// key type for renderPipelineStateCache
     struct RPSKey {
         uint64 blendStateHash = 0;
-        uint64 vertexLayoutHash = 0;
+        uint64 vertexLayoutHash[GfxConfig::MaxNumInputMeshes];
         Id shader;
-        uint32 shaderSelectionMask = 0;
-        uint32 rasterizerStateHash = 0;
         glm::vec4 blendColor;
+        uint32 rasterizerStateHash = 0;
 
+        RPSKey() :
+            blendStateHash(0),
+            rasterizerStateHash(0) {
+            for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
+                vertexLayoutHash[i] = 0;
+            }
+        };
+        static_assert(GfxConfig::MaxNumInputMeshes == 4, "Fix mtlDrawStateFactory::RPSKey!");
         bool operator==(const RPSKey& rhs) const {
             return (this->blendStateHash == rhs.blendStateHash) &&
-                (this->vertexLayoutHash == rhs.vertexLayoutHash) &&
+                (this->vertexLayoutHash[0] == rhs.vertexLayoutHash[0]) &&
+                (this->vertexLayoutHash[1] == rhs.vertexLayoutHash[1]) &&
+                (this->vertexLayoutHash[2] == rhs.vertexLayoutHash[2]) &&
+                (this->vertexLayoutHash[3] == rhs.vertexLayoutHash[3]) &&
                 (this->shader == rhs.shader) &&
-                (this->shaderSelectionMask == rhs.shaderSelectionMask) &&
                 (this->rasterizerStateHash == rhs.rasterizerStateHash) &&
                 (glm::all(glm::epsilonEqual(this->blendColor, rhs.blendColor, 0.001f)));
         };
         bool operator<(const RPSKey& rhs) const {
             return (this->blendStateHash < rhs.blendStateHash) ||
-                (this->vertexLayoutHash < rhs.vertexLayoutHash) ||
+                (this->vertexLayoutHash[0] < rhs.vertexLayoutHash[0]) ||
+                (this->vertexLayoutHash[1] < rhs.vertexLayoutHash[1]) ||
+                (this->vertexLayoutHash[2] < rhs.vertexLayoutHash[2]) ||
+                (this->vertexLayoutHash[3] < rhs.vertexLayoutHash[3]) ||
                 (this->shader < rhs.shader) ||
-                (this->shaderSelectionMask < rhs.shaderSelectionMask) ||
                 (this->rasterizerStateHash < rhs.rasterizerStateHash) ||
                 (this->blendColor.x < rhs.blendColor.x) ||
                 (this->blendColor.y < rhs.blendColor.y) ||
