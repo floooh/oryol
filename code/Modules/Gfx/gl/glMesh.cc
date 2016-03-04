@@ -8,12 +8,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glMesh::glMesh() :
-glPrimType(0) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 glMesh::~glMesh() {
     #if ORYOL_DEBUG
     for (const auto& buf : this->buffers) {
@@ -30,7 +24,6 @@ glMesh::Clear() {
     for (auto& buf : this->buffers) {
         buf = buffer();
     }
-    this->glPrimType = 0;
     meshBase::Clear();
 }
 

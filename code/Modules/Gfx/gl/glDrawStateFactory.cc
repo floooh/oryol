@@ -6,6 +6,7 @@
 #include "Core/Assertion.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glExt.h"
+#include "Gfx/gl/glTypes.h"
 #include "Gfx/Resource/drawState.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/renderer.h"
@@ -40,6 +41,8 @@ glDrawStateFactory::SetupResource(drawState& ds) {
     ds.shdProgIndex = ds.shd->getProgIndexByMask(0);
     o_assert_dbg(InvalidIndex != ds.shdProgIndex);
     this->glSetupVertexAttrs(ds);
+    ds.glPrimType = glTypes::asGLPrimitiveType(ds.Setup.PrimType);
+
 
     return ResourceState::Valid;
 }

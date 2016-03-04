@@ -494,7 +494,7 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = msh->glPrimType;
+    const GLenum glPrimType = this->curDrawState->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -541,7 +541,7 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = msh->glPrimType;
+    const GLenum glPrimType = this->curDrawState->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
