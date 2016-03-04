@@ -52,7 +52,7 @@ meshBase::checkInputMeshes(meshBase** meshes, int num) {
         const meshBase* msh = meshes[mshIndex];
         if (msh) {
             if (ResourceState::Valid != msh->State) {
-                o_error("invalid drawState: input mesh at slot '%d' no valid!\n", mshIndex);
+                o_error("invalid drawState: input mesh at slot '%d' not valid!\n", mshIndex);
             }
             if ((mshIndex > 0) && (msh->indexBufferAttrs.Type != IndexType::None)) {
                 o_error("invalid drawState: input mesh at slot '%d' has indices, only allowed for slot 0!", mshIndex);
