@@ -383,7 +383,7 @@ mtlRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     }
 
     // store additional state for following draw calls
-    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(this->curPrimaryMesh->Setup.PrimType);
+    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(ds->Setup.PrimType);
     if (this->curPrimaryMesh->indexBufferAttrs.Type != IndexType::None) {
         this->curMTLIndexType = mtlTypes::asIndexType(this->curPrimaryMesh->indexBufferAttrs.Type);
     }
