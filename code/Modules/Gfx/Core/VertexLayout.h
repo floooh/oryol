@@ -36,7 +36,7 @@ public:
 
     /// the vertex step function, used for instancing, default is 'PerVertex'
     VertexStepFunction::Code StepFunction;
-    /// the vertex step rate, used for instancing, default is 0
+    /// the vertex step rate, used for instancing
     uint8 StepRate;
 
     /// constructor
@@ -66,6 +66,8 @@ public:
     /// test if the layout contains a specific vertex attribute
     bool Contains(VertexAttr::Code attr) const;
 
+    /// compute hash value for this vertex layout
+    uint64 Hash() const;
     /// compute a combined hash value of 2 vertex layout (used for mesh/vertex shader layout matching)
     static uint64 CombinedHash(const VertexLayout& l0, const VertexLayout& l1);
 

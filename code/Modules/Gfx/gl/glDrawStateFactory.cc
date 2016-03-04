@@ -68,7 +68,6 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
 
         const int numComps = layout.NumComponents();
         if (numComps > 0) {
-            o_assert_dbg(VertexStepFunction::PerVertex==layout.StepFunction ? 0==layout.StepRate:1<=layout.StepRate);
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
                 o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
@@ -76,7 +75,12 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
                 o_assert_dbg(!glAttr.enabled);
                 glAttr.enabled = GL_TRUE;
                 glAttr.vbIndex = layoutIndex;
-                glAttr.divisor = layout.StepRate;
+                if (VertexStepFunction::PerVertex == layout.StepFunction) {
+                    glAttr.divisor = 0;
+                }
+                else {
+                    glAttr.divisor = layout.StepRate;
+                }
                 glAttr.stride = layout.ByteSize();
                 glAttr.offset = layout.ComponentByteOffset(compIndex);
                 glAttr.size   = vertexFormatTable[comp.Format].size;
