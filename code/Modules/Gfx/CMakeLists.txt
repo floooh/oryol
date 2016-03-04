@@ -148,6 +148,7 @@ fips_begin_module(Gfx)
             d3d12Texture.cc d3d12Texture.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
             d3d12Renderer.cc d3d12Renderer.h
+            fasthash.h
         )
     endif()
     if (ORYOL_METAL)
