@@ -99,8 +99,6 @@ d3d12MeshFactory::setupAttrs(mesh& msh) {
     vbAttrs.NumVertices = msh.Setup.NumVertices;
     vbAttrs.Layout = msh.Setup.Layout;
     vbAttrs.BufferUsage = msh.Setup.VertexUsage;
-    vbAttrs.StepFunction = msh.Setup.StepFunction;
-    vbAttrs.StepRate = msh.Setup.StepRate;
     msh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;
@@ -113,8 +111,6 @@ d3d12MeshFactory::setupAttrs(mesh& msh) {
 //------------------------------------------------------------------------------
 void
 d3d12MeshFactory::setupPrimGroups(mesh& msh) {
-    msh.d3d12PrimTopologyType = d3d12Types::asPrimitiveTopologyType(msh.Setup.PrimType);
-    msh.d3d12PrimTopology = d3d12Types::asPrimitiveTopology(msh.Setup.PrimType);
     msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
     o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
     for (int32 i = 0; i < msh.numPrimGroups; i++) {
@@ -224,8 +220,6 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     vbAttrs.BufferUsage = Usage::Immutable;
     vbAttrs.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
     vbAttrs.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    vbAttrs.StepFunction = VertexStepFunction::PerVertex;
-    vbAttrs.StepRate = 1;
     msh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;
@@ -234,8 +228,6 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     ibAttrs.BufferUsage = Usage::Immutable;
     msh.indexBufferAttrs = ibAttrs;
 
-    msh.d3d12PrimTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    msh.d3d12PrimTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     msh.numPrimGroups = 1;
     msh.primGroups[0] = PrimitiveGroup(0, 6);
 

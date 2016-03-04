@@ -21,8 +21,9 @@ public:
     /// clear the object (called from drawStateFactory::DestroyResource())
     void Clear();
 
-    /// the d3d12 pipeline state object
     ID3D12PipelineState* d3d12PipelineState;
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE d3d12PrimTopologyType;
+    D3D12_PRIMITIVE_TOPOLOGY d3d12PrimTopology;
 };
 
 } // namespace _priv

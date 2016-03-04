@@ -23,6 +23,7 @@ valid(false),
 rtValid(false),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
+curPrimaryMesh(nullptr),
 d3d12Fence(nullptr),
 fenceEvent(nullptr),
 msaaSurface(nullptr),
@@ -407,6 +408,10 @@ d3d12Renderer::commitFrame() {
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
     cmdList->Close();
     this->d3d12CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&cmdList);
+
+    this->curRenderTarget = nullptr;
+    this->curDrawState = nullptr;
+    this->curPrimaryMesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -640,20 +645,27 @@ d3d12Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, boo
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyDrawState(drawState* ds) {
-    if (nullptr == ds) {
-        // the drawState is pending (dependent resource still loading),
-        // invalidate rendering for followup draw calls
-        this->curDrawState = nullptr;
-        return;
-    }
-    this->curDrawState = ds;
-    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
+d3d12Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
+    o_assert_dbg(ds);
+    o_assert_dbg(ds->shd);
+    o_assert_dbg(meshes && (numMeshes > 0));
 
+    // if any of the meshes are still loading, cancel the next draw state
+    for (int i = 0; i < numMeshes; i++) {
+        if (nullptr == meshes[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
+    }
     o_assert_dbg(ds->d3d12PipelineState);
     o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
     o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
     o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+
+    this->curDrawState = ds;
+    this->curPrimaryMesh = meshes[0];
+    o_assert_dbg(this->curPrimaryMesh);
+    ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     // apply pipeline state
     cmdList->SetPipelineState(ds->d3d12PipelineState);
@@ -662,21 +674,22 @@ d3d12Renderer::applyDrawState(drawState* ds) {
     D3D12_VERTEX_BUFFER_VIEW vbViews[GfxConfig::MaxNumInputMeshes];
     D3D12_INDEX_BUFFER_VIEW ibView;
     const D3D12_INDEX_BUFFER_VIEW* ibViewPtr = nullptr;
-    for (int i = 0; i < GfxConfig::MaxNumInputMeshes; i++) {
-        const mesh* msh = ds->meshes[i];
+    for (int mshSlotIndex = 0; mshSlotIndex < GfxConfig::MaxNumInputMeshes; mshSlotIndex++) {
+        const mesh* msh = meshes[mshSlotIndex];
+        auto& vbView = vbViews[mshSlotIndex];
         if (msh) {
             const mesh::buffer& vb = msh->buffers[mesh::vb];
             if (vb.d3d12RenderBuffers[vb.activeSlot]) {
-                vbViews[i].BufferLocation = vb.d3d12RenderBuffers[vb.activeSlot]->GetGPUVirtualAddress();
-                vbViews[i].SizeInBytes = msh->vertexBufferAttrs.ByteSize();
-                vbViews[i].StrideInBytes = msh->vertexBufferAttrs.Layout.ByteSize();
+                vbView.BufferLocation = vb.d3d12RenderBuffers[vb.activeSlot]->GetGPUVirtualAddress();
+                vbView.SizeInBytes = msh->vertexBufferAttrs.ByteSize();
+                vbView.StrideInBytes = msh->vertexBufferAttrs.Layout.ByteSize();
             }
             else {
-                vbViews[i].BufferLocation = 0;
-                vbViews[i].SizeInBytes = 0;
-                vbViews[i].StrideInBytes = 0;
+                vbView.BufferLocation = 0;
+                vbView.SizeInBytes = 0;
+                vbView.StrideInBytes = 0;
             }
-            if ((0 == i) && (IndexType::None != msh->indexBufferAttrs.Type)) {
+            if ((0 == mshSlotIndex) && (IndexType::None != msh->indexBufferAttrs.Type)) {
                 const mesh::buffer& ib = msh->buffers[mesh::ib];
                 o_assert_dbg(ib.d3d12RenderBuffers[ib.activeSlot]);
                 ibView.BufferLocation = ib.d3d12RenderBuffers[ib.activeSlot]->GetGPUVirtualAddress();
@@ -686,14 +699,14 @@ d3d12Renderer::applyDrawState(drawState* ds) {
             }
         }
         else {
-            vbViews[i].BufferLocation = 0;
-            vbViews[i].SizeInBytes = 0;
-            vbViews[i].StrideInBytes = 0;
+            vbView.BufferLocation = 0;
+            vbView.SizeInBytes = 0;
+            vbView.StrideInBytes = 0;
         }
     }
     cmdList->IASetVertexBuffers(0, GfxConfig::MaxNumInputMeshes, vbViews);
     cmdList->IASetIndexBuffer(ibViewPtr);
-    cmdList->IASetPrimitiveTopology(ds->meshes[0]->d3d12PrimTopology);
+    cmdList->IASetPrimitiveTopology(ds->d3d12PrimTopology);
     cmdList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
 }
 
@@ -836,7 +849,9 @@ d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->curCommandList()->DrawIndexedInstanced(
             primGroup.NumElements,  // IndexCountPerInstance
@@ -861,14 +876,15 @@ d3d12Renderer::draw(int32 primGroupIndex) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->draw(primGroup);
 }
 
@@ -879,7 +895,9 @@ d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
     if (nullptr == this->curDrawState) {
         return;
     }
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->curCommandList()->DrawIndexedInstanced(
             primGroup.NumElements,  // IndexCountPerInstance
@@ -904,14 +922,15 @@ d3d12Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 
