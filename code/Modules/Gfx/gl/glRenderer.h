@@ -135,7 +135,7 @@ private:
     // high-level state cache
     texture* curRenderTarget;
     drawState* curDrawState;
-    StaticArray<mesh*, GfxConfig::MaxNumInputMeshes> curMeshes;
+    mesh* curPrimaryMesh;
 
     // GL state cache
     BlendState blendState;

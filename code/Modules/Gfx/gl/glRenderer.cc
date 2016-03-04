@@ -87,6 +87,7 @@ rtValid(false),
 frameIndex(0),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
+curPrimaryMesh(nullptr),
 scissorX(0),
 scissorY(0),
 scissorWidth(0),
@@ -214,6 +215,8 @@ glRenderer::commitFrame() {
     o_assert_dbg(this->valid);    
     this->rtValid = false;
     this->curRenderTarget = nullptr;
+    this->curDrawState = nullptr;
+    this->curPrimaryMesh = nullptr;
     this->frameIndex++;
 }
 
@@ -360,17 +363,12 @@ glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
     mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
     #endif
 
-    int i;
-    for (i = 0; i < numMeshes; i++) {
-        this->curMeshes[i] = meshes[i];
-    }
-    for (; i<GfxConfig::MaxNumInputMeshes; i++) {
-        this->curMeshes[i] = nullptr;
-    }
+    // need to store primary mesh with primitive group defs for later draw call
+    this->curPrimaryMesh = meshes[0];
 
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
     // this is the default vertex attribute code path for most desktop and mobile platforms
-    const auto& ib = meshes[0]->buffers[mesh::ib];
+    const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
@@ -411,7 +409,7 @@ glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
     // FIXME: currently this doesn't use state-caching
     o_assert_dbg(InvalidIndex != ds->shdProgIndex);
 
-    const auto& ib = meshes[0]->buffers[mesh::ib];
+    const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
@@ -492,9 +490,9 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curMeshes[0]);
     ORYOL_GL_CHECK_ERROR();
-    const mesh* msh = this->curMeshes[0];
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
@@ -519,14 +517,15 @@ glRenderer::draw(int32 primGroupIndex) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curMeshes[0]);
-    if (primGroupIndex >= this->curMeshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curMeshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->draw(primGroup);
 }
 
@@ -539,8 +538,8 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
         return;
     }
     ORYOL_GL_CHECK_ERROR();
-    o_assert_dbg(this->curMeshes[0]);
-    const mesh* msh = this->curMeshes[0];
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     const GLenum glPrimType = msh->glPrimType;
     if (IndexType::None != indexType) {
@@ -565,14 +564,15 @@ glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curMeshes[0]);
-    if (primGroupIndex >= this->curMeshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curMeshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 
