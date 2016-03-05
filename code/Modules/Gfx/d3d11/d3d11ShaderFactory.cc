@@ -11,13 +11,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11ShaderFactory::d3d11ShaderFactory() :
-d3d11Device(nullptr),
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d11ShaderFactory::~d3d11ShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
@@ -51,39 +44,31 @@ ResourceState::Code
 d3d11ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(this->d3d11Device);
+    o_assert_dbg(nullptr == shd.d3d11VertexShader);
+    o_assert_dbg(nullptr == shd.d3d11PixelShader);
     HRESULT hr;
 
     this->pointers.renderer->invalidateShaderState();
     const ShaderLang::Code slang = ShaderLang::HLSL5;
     const ShaderSetup& setup = shd.Setup;
 
-    // for each program in the bundle
-    const int32 numProgs = setup.NumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
+    // create vertex shader
+    const void* vsPtr = nullptr;
+    uint32 vsSize = 0;
+    setup.VertexShaderByteCode(slang, vsPtr, vsSize);
+    o_assert_dbg(vsPtr);
+    hr = this->d3d11Device->CreateVertexShader(vsPtr, vsSize, NULL, &shd.d3d11VertexShader);
+    o_assert(SUCCEEDED(hr));
+    o_assert_dbg(shd.d3d11VertexShader);
 
-        // create vertex shader (only support byte code)
-        ID3D11VertexShader* vs = nullptr;
-        const void* vsPtr = nullptr;
-        uint32 vsSize = 0;
-        setup.VertexShaderByteCode(progIndex, slang, vsPtr, vsSize);
-        o_assert_dbg(vsPtr);
-        hr = this->d3d11Device->CreateVertexShader(vsPtr, vsSize, NULL, &vs);
-        o_assert(SUCCEEDED(hr));
-        o_assert_dbg(vs);
-
-        // create pixel shader
-        ID3D11PixelShader* ps = nullptr;
-        const void* psPtr = nullptr;
-        uint32 psSize = 0;
-        setup.FragmentShaderByteCode(progIndex, slang, psPtr, psSize);
-        o_assert_dbg(psPtr);
-        hr = this->d3d11Device->CreatePixelShader(psPtr, psSize, NULL, &ps);
-        o_assert(SUCCEEDED(hr));
-        o_assert_dbg(ps);
-
-        // add vertexshader/pixelshader pair to program bundle
-        shd.addShaders(setup.Mask(progIndex), vs, ps);
-    }
+    // create pixel shader
+    const void* psPtr = nullptr;
+    uint32 psSize = 0;
+    setup.FragmentShaderByteCode(slang, psPtr, psSize);
+    o_assert_dbg(psPtr);
+    hr = this->d3d11Device->CreatePixelShader(psPtr, psSize, NULL, &shd.d3d11PixelShader);
+    o_assert(SUCCEEDED(hr));
+    o_assert_dbg(shd.d3d11PixelShader);
 
     // create constant buffers
     D3D11_BUFFER_DESC cbDesc;
@@ -121,21 +106,12 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->d3d11Device);
 
     this->pointers.renderer->invalidateShaderState();
-
-    // clear the vertex and pixel shaders
-    const int32 numProgs = shd.getNumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        ID3D11VertexShader* vs = shd.getVertexShaderAtIndex(progIndex);
-        if (vs) {
-            vs->Release();
-        }
-        ID3D11PixelShader* ps = shd.getPixelShaderAtIndex(progIndex);
-        if (ps) {
-            ps->Release();
-        }
+    if (shd.d3d11VertexShader) {
+        shd.d3d11VertexShader->Release();
     }
-
-    // release constant buffers 
+    if (shd.d3d11PixelShader) {
+        shd.d3d11PixelShader->Release();
+    }
     for (int bindStage = 0; bindStage < ShaderStage::NumShaderStages; bindStage++) {
         for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
             ID3D11Buffer* cb = shd.getConstantBuffer((ShaderStage::Code)bindStage, bindSlot);
@@ -144,8 +120,6 @@ d3d11ShaderFactory::DestroyResource(shader& shd) {
             }
         }
     }
-
-    // reset shader object for reuse
     shd.Clear();
 }
 

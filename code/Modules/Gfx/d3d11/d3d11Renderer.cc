@@ -344,13 +344,13 @@ d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     }
 
     // apply shaders
-    if (this->d3d11CurVertexShader != ds->d3d11VertexShader) {
-        this->d3d11CurVertexShader = ds->d3d11VertexShader;
-        this->d3d11DeviceContext->VSSetShader(ds->d3d11VertexShader, NULL, 0);
+    if (this->d3d11CurVertexShader != ds->shd->d3d11VertexShader) {
+        this->d3d11CurVertexShader = ds->shd->d3d11VertexShader;
+        this->d3d11DeviceContext->VSSetShader(ds->shd->d3d11VertexShader, NULL, 0);
     }
-    if (this->d3d11CurPixelShader != ds->d3d11PixelShader) {
-        this->d3d11CurPixelShader = ds->d3d11PixelShader;
-        this->d3d11DeviceContext->PSSetShader(ds->d3d11PixelShader, NULL, 0);
+    if (this->d3d11CurPixelShader != ds->shd->d3d11PixelShader) {
+        this->d3d11CurPixelShader = ds->shd->d3d11PixelShader;
+        this->d3d11DeviceContext->PSSetShader(ds->shd->d3d11PixelShader, NULL, 0);
     }
         
     // apply vertex-shader-stage constant buffers

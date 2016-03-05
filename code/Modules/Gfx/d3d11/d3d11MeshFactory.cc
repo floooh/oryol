@@ -12,13 +12,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11MeshFactory::d3d11MeshFactory() :
-d3d11Device(nullptr),
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d11MeshFactory::~d3d11MeshFactory() {
     o_assert_dbg(!this->isValid);
 }

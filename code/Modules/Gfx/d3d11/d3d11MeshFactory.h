@@ -17,8 +17,6 @@ class mesh;
 
 class d3d11MeshFactory {
 public:
-    /// constructor
-    d3d11MeshFactory();
     /// destructor
     ~d3d11MeshFactory();
     
@@ -50,8 +48,8 @@ private:
     void setupPrimGroups(mesh& mesh);
 
     gfxPointers pointers;
-    ID3D11Device* d3d11Device;
-    bool isValid;
+    ID3D11Device* d3d11Device = nullptr;
+    bool isValid = false;
 };
 
 } // namespace _priv

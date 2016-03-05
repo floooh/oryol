@@ -14,8 +14,6 @@ namespace _priv {
 
 class d3d11DrawStateFactory : public drawStateFactoryBase {
 public:
-    /// constructor
-    d3d11DrawStateFactory();
     /// destructor
     ~d3d11DrawStateFactory();
 
@@ -32,7 +30,7 @@ private:
     /// create or return existing input layout object
     ID3D11InputLayout* createInputLayout(const drawState& ds);
 
-    ID3D11Device* d3d11Device;
+    ID3D11Device* d3d11Device = nullptr;
 };
 
 } // namespace _priv

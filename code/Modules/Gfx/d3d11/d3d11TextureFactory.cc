@@ -13,13 +13,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11TextureFactory::d3d11TextureFactory() :
-d3d11Device(nullptr),
-isValid(false) {
-    // empty
-}
-    
-//------------------------------------------------------------------------------
 d3d11TextureFactory::~d3d11TextureFactory() {
     o_assert_dbg(!this->isValid);
 }

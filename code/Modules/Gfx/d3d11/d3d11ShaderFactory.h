@@ -16,8 +16,6 @@ class shader;
 
 class d3d11ShaderFactory {
 public:
-    /// constructor
-    d3d11ShaderFactory();
     /// destructor
     ~d3d11ShaderFactory();
     
@@ -35,8 +33,8 @@ public:
 
 private:
     gfxPointers pointers;
-    ID3D11Device* d3d11Device;
-    bool isValid;
+    ID3D11Device* d3d11Device = nullptr;
+    bool isValid = false;
 };
     
 } // namespace _priv

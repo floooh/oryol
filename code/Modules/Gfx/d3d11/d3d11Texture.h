@@ -13,8 +13,6 @@ namespace _priv {
 
 class d3d11Texture : public textureBase {
 public:
-    /// constructor
-    d3d11Texture();
     /// destructor
     ~d3d11Texture();
 
@@ -22,18 +20,18 @@ public:
     void Clear();
 
     /// d3d11 2D texture object
-    ID3D11Texture2D* d3d11Texture2D;
+    ID3D11Texture2D* d3d11Texture2D = nullptr;
     /// d3d11 shader resource view object
-    ID3D11ShaderResourceView* d3d11ShaderResourceView;
+    ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
     /// d3d11 sampler state object
-    ID3D11SamplerState* d3d11SamplerState;
+    ID3D11SamplerState* d3d11SamplerState = nullptr;
 
     /// d3d11 render target resource view (only if this is a render-target texture)
-    ID3D11RenderTargetView* d3d11RenderTargetView;
+    ID3D11RenderTargetView* d3d11RenderTargetView = nullptr;
     /// d3d11 depth buffer texture (if render target with depth buffer)
-    ID3D11Texture2D* d3d11DepthBufferTexture;
+    ID3D11Texture2D* d3d11DepthBufferTexture = nullptr;
     /// d3d11 depth-stencil view
-    ID3D11DepthStencilView* d3d11DepthStencilView;
+    ID3D11DepthStencilView* d3d11DepthStencilView = nullptr;
 };
 
 } // namespace _priv

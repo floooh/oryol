@@ -12,12 +12,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11DrawStateFactory::d3d11DrawStateFactory() :
-d3d11Device(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d11DrawStateFactory::~d3d11DrawStateFactory() {
     o_assert_dbg(nullptr == this->d3d11Device);
 }
@@ -45,8 +39,6 @@ ResourceState::Code
 d3d11DrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(nullptr != this->d3d11Device);
     o_assert_dbg(nullptr == ds.d3d11InputLayout);
-    o_assert_dbg(nullptr == ds.d3d11VertexShader);
-    o_assert_dbg(nullptr == ds.d3d11PixelShader);
     o_assert_dbg(nullptr == ds.d3d11RasterizerState);
     o_assert_dbg(nullptr == ds.d3d11BlendState);
     o_assert_dbg(nullptr == ds.d3d11DepthStencilState);
@@ -55,15 +47,9 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.shd);
 
-    // input-layout, vertex and pixel shader
-    // FIXME: remove shader selection mask
     ds.d3d11InputLayout = this->createInputLayout(ds);
     ds.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(ds.Setup.PrimType);
-    ds.d3d11VertexShader = ds.shd->getVertexShaderByMask(0);
-    ds.d3d11PixelShader = ds.shd->getPixelShaderByMask(0);
     o_assert_dbg(ds.d3d11InputLayout);
-    o_assert_dbg(ds.d3d11VertexShader);
-    o_assert_dbg(ds.d3d11PixelShader);
 
     // create state objects (NOTE: creating the same state will return
     // the same d3d11 state object, so no need to implement our own reuse)
@@ -173,11 +159,9 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds) {
     }
 
     // lookup the vertex shader bytecode
-    // FIXME: remove shader selection mask
-    const int32 progIndex = ds.shd->getProgIndexByMask(0);
     const void* vsByteCode = nullptr;
     uint32 vsSize = 0;
-    ds.shd->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);
+    ds.shd->Setup.VertexShaderByteCode(ShaderLang::HLSL5, vsByteCode, vsSize);
     o_assert_dbg(vsByteCode && (vsSize > 0));
 
     // create d3d11 input layout object

@@ -9,17 +9,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11Texture::d3d11Texture() :
-d3d11Texture2D(nullptr),
-d3d11ShaderResourceView(nullptr),
-d3d11SamplerState(nullptr),
-d3d11RenderTargetView(nullptr),
-d3d11DepthBufferTexture(nullptr),
-d3d11DepthStencilView(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d11Texture::~d3d11Texture() {
     o_assert_dbg(nullptr == this->d3d11Texture2D);
     o_assert_dbg(nullptr == this->d3d11ShaderResourceView);

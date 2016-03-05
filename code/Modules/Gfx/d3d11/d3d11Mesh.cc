@@ -9,15 +9,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11Mesh::d3d11Mesh() :
-d3d11VertexBuffer(nullptr),
-d3d11IndexBuffer(nullptr),
-vbUpdateFrameIndex(-1),
-ibUpdateFrameIndex(-1) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d11Mesh::~d3d11Mesh() {
     o_assert_dbg(nullptr == this->d3d11VertexBuffer);
     o_assert_dbg(nullptr == this->d3d11IndexBuffer);
