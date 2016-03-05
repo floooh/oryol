@@ -47,7 +47,7 @@ VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
 
 //------------------------------------------------------------------------------
 VertexLayout&
-VertexLayout::UseInstancing() {
+VertexLayout::EnableInstancing() {
     this->StepFunction = VertexStepFunction::PerInstance;
     this->StepRate = 1;
     return *this;

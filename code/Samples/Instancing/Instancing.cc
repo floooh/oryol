@@ -164,7 +164,7 @@ InstancingApp::OnInit() {
     // create dynamic instance data mesh at mesh slot 1
     auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
     instMeshSetup.Layout
-        .UseInstancing()
+        .EnableInstancing()
         .Add(VertexAttr::Instance0, VertexFormat::Float4);
     this->meshBlock[1] = Gfx::CreateResource(instMeshSetup);
 

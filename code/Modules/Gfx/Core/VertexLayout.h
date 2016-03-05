@@ -51,7 +51,7 @@ public:
     /// add component by name and format
     VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
     /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
-    VertexLayout& UseInstancing();
+    VertexLayout& EnableInstancing();
 
     /// get number of components
     int32 NumComponents() const;

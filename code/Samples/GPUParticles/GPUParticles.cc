@@ -181,11 +181,10 @@ GPUParticlesApp::OnInit() {
     }
     auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
     particleIdSetup.NumVertices = MaxNumParticles;
-    particleIdSetup.Layout.UseInstancing().Add(VertexAttr::Instance0, VertexFormat::Float);
+    particleIdSetup.Layout.EnableInstancing().Add(VertexAttr::Instance0, VertexFormat::Float);
     this->shapeMeshBlock[1] = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
     Memory::Free(particleIdData);
     
-
     // particle rendering texture blocks and draw state
     Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::Setup());
     dss = DrawStateSetup::FromShader(drawShader);
