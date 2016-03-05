@@ -21,9 +21,7 @@
     _color = vec4(f, f, f, 1.0);
 @end
 
-@bundle Background
-@program backgroundVS backgroundFS
-@end
+@program Background backgroundVS backgroundFS
 
 //------------------------------------------------------------------------------
 //  triangle shader
@@ -46,6 +44,4 @@
     _color = color;
 @end
 
-@bundle Triangle
-@program triangleVS triangleFS
-@end
+@program Triangle triangleVS triangleFS

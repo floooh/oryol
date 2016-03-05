@@ -21,6 +21,4 @@
     _color = color;
 @end
 
-@bundle Shapes
-@program vs fs
-@end
+@program Shapes vs fs

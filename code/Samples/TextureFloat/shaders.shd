@@ -121,9 +121,7 @@ _func float snoise(vec2 v)
     _color = vec4(red, green, blue, 0.0) * 100.0;
 @end
 
-@bundle Offscreen
-@program offscreenVS offscreenFS
-@end
+@program Offscreen offscreenVS offscreenFS
 
 //------------------------------------------------------------------------------
 //  Copy offscreen render target to back buffer
@@ -147,7 +145,5 @@ _func float snoise(vec2 v)
     _color = vec4(tex2D(tex, uv).xyz*0.01,1.0);
 @end
 
-@bundle Copy
-@program copyVS copyFS
-@end
+@program Copy copyVS copyFS
 

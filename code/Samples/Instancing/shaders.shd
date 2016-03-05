@@ -21,6 +21,4 @@
     _color = color;
 @end
 
-@bundle Main
-@program vs fs
-@end
+@program Main vs fs

@@ -129,9 +129,7 @@ _func float snoise(vec2 v)
 }
 @end
 
-@bundle Plasma
-@program plasmaVS plasmaFS
-@end
+@program Plasma plasmaVS plasmaFS
 
 //------------------------------------------------------------------------------
 @uniform_block planeParams VSParams
@@ -163,7 +161,5 @@ _func float snoise(vec2 v)
 }
 @end
 
-@bundle Plane
-@program planeVS planeFS
-@end
+@program Plane planeVS planeFS
 

@@ -12,7 +12,6 @@ ShaderSetup::ShaderSetup() :
 Locator(Locator::NonShared()),
 libraryByteCodeSize(0),
 libraryByteCode(nullptr),
-numPrograms(0),
 numUniformBlocks(0),
 numTextureBlocks(0) {
     // empty
@@ -21,61 +20,40 @@ numTextureBlocks(0) {
 //------------------------------------------------------------------------------
 ShaderSetup::ShaderSetup(const class Locator& locator) :
 Locator(locator),
-numPrograms(0),
 numUniformBlocks(0),
 numTextureBlocks(0) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-ShaderSetup::programEntry&
-ShaderSetup::obtainEntry(uint32 mask) {
-    // find existing entry with matching mask
-    for (int32 i = 0; i < this->numPrograms; i++) {
-        if (this->programs[i].mask == mask) {
-            return this->programs[i];
-        }
-    }
-    // fallthrough: return new entry
-    programEntry& newEntry = this->programs[this->numPrograms++];
-    newEntry.mask = mask;
-    return newEntry;
-}
-
-//------------------------------------------------------------------------------
 void
-ShaderSetup::AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource) {
+ShaderSetup::SetProgramFromSources(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource) {
     o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
-
-    programEntry& entry = this->obtainEntry(mask);
-    entry.vsSources[slang] = vsSource;
-    entry.fsSources[slang] = fsSource;
-    entry.vsInputLayout = vsInputLayout;
+    this->program.vsSources[slang] = vsSource;
+    this->program.fsSources[slang] = fsSource;
+    this->program.vsInputLayout = vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
+ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
-
-    programEntry& entry = this->obtainEntry(mask);
-    entry.vsByteCode[slang].ptr = vsByteCode;
-    entry.vsByteCode[slang].size = vsNumBytes;
-    entry.fsByteCode[slang].ptr = fsByteCode;
-    entry.fsByteCode[slang].size = fsNumBytes;
-    entry.vsInputLayout = vsInputLayout;
+    this->program.vsByteCode[slang].ptr = vsByteCode;
+    this->program.vsByteCode[slang].size = vsNumBytes;
+    this->program.fsByteCode[slang].ptr = fsByteCode;
+    this->program.fsByteCode[slang].size = fsNumBytes;
+    this->program.vsInputLayout = vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const Oryol::VertexLayout &vsInputLayout, const char *vsFunc, const char *fsFunc) {
+ShaderSetup::SetProgramFromLibrary(ShaderLang::Code slang, const Oryol::VertexLayout &vsInputLayout, const char *vsFunc, const char *fsFunc) {
     o_assert_dbg(ShaderLang::Metal == slang);
     o_assert_dbg(vsFunc && fsFunc);
-    programEntry& entry = this->obtainEntry(mask);
-    entry.vsFuncs[slang] = vsFunc;
-    entry.fsFuncs[slang] = fsFunc;
-    entry.vsInputLayout = vsInputLayout;
+    this->program.vsFuncs[slang] = vsFunc;
+    this->program.fsFuncs[slang] = fsFunc;
+    this->program.vsInputLayout = vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
@@ -125,61 +103,49 @@ ShaderSetup::LibraryByteCode(ShaderLang::Code slang, const void *&outPtr, uint32
 }
 
 //------------------------------------------------------------------------------
-int32
-ShaderSetup::NumPrograms() const {
-    return this->numPrograms;
-}
-
-//------------------------------------------------------------------------------
-uint32
-ShaderSetup::Mask(int32 progIndex) const {
-    return this->programs[progIndex].mask;
-}
-
-//------------------------------------------------------------------------------
 const VertexLayout&
-ShaderSetup::VertexShaderInputLayout(int32 progIndex) const {
-    return this->programs[progIndex].vsInputLayout;
+ShaderSetup::VertexShaderInputLayout() const {
+    return this->program.vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
 const String&
-ShaderSetup::VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const {
-    return this->programs[progIndex].vsSources[slang];
+ShaderSetup::VertexShaderSource(ShaderLang::Code slang) const {
+    return this->program.vsSources[slang];
 }
 
 //------------------------------------------------------------------------------
 const String&
-ShaderSetup::FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const {
-    return this->programs[progIndex].fsSources[slang];
+ShaderSetup::FragmentShaderSource(ShaderLang::Code slang) const {
+    return this->program.fsSources[slang];
 }
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
-    outPtr = this->programs[progIndex].vsByteCode[slang].ptr;
-    outSize = this->programs[progIndex].vsByteCode[slang].size;
+ShaderSetup::VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
+    outPtr = this->program.vsByteCode[slang].ptr;
+    outSize = this->program.vsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
-    outPtr = this->programs[progIndex].fsByteCode[slang].ptr;
-    outSize = this->programs[progIndex].fsByteCode[slang].size;
+ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
+    outPtr = this->program.fsByteCode[slang].ptr;
+    outSize = this->program.fsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------
 const String&
-ShaderSetup::VertexShaderFunc(int32 progIndex, ShaderLang::Code slang) const {
+ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
     o_assert_dbg(ShaderLang::Metal == slang);
-    return this->programs[progIndex].vsFuncs[slang];
+    return this->program.vsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------
 const String&
-ShaderSetup::FragmentShaderFunc(int32 progIndex, ShaderLang::Code slang) const {
+ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
     o_assert_dbg(ShaderLang::Metal == slang);
-    return this->programs[progIndex].fsFuncs[slang];
+    return this->program.fsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------

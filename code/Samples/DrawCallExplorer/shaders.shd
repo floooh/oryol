@@ -34,14 +34,6 @@
     _color = color * vec4(0.0, 0.0, 2.0, 1.0);
 @end
 
-@bundle Red
-@program vs fs_red
-@end
-
-@bundle Green
-@program vs fs_green
-@end
-
-@bundle Blue
-@program vs fs_blue
-@end
+@program Red vs fs_red
+@program Green vs fs_green
+@program Blue vs fs_blue

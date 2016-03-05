@@ -407,14 +407,12 @@ glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
     // this uses glGetAttribLocation for platforms which don't support
     // glBindAttribLocation (e.g. RaspberryPi)
     // FIXME: currently this doesn't use state-caching
-    o_assert_dbg(InvalidIndex != ds->shdProgIndex);
-
     const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = ds->glAttrs[attrIndex];
-        const GLint glAttribIndex = ds->shd->getAttribLocation(ds->shdProgIndex, (VertexAttr::Code)attrIndex);
+        const GLint glAttribIndex = ds->shd->getAttribLocation((VertexAttr::Code)attrIndex);
         if (glAttribIndex >= 0) {
             o_assert_dbg(attr.enabled);
             const mesh* msh = meshes[attr.vbIndex];
@@ -478,7 +476,7 @@ glRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     if (setup.RasterizerState != this->rasterizerState) {
         this->applyRasterizerState(setup.RasterizerState);
     }
-    this->useProgram(ds->shd->getProgram(ds->shdProgIndex));
+    this->useProgram(ds->shd->glProgram);
     this->applyMeshes(ds, meshes, numMeshes);
 }
 
@@ -771,7 +769,6 @@ glRenderer::invalidateShaderState() {
 void
 glRenderer::useProgram(GLuint prog) {
     o_assert_dbg(this->valid);
-
     if (prog != this->program) {
         this->program = prog;
         ::glUseProgram(prog);
@@ -1068,8 +1065,6 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     // get the uniform layout object for this uniform block
     const shader* shd = this->curDrawState->shd;
     o_assert_dbg(shd);
-    const int32 progIndex = this->curDrawState->shdProgIndex;
-    o_assert_dbg(InvalidIndex != progIndex);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     o_assert_dbg(InvalidIndex != ubIndex);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
@@ -1087,7 +1082,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
         const auto& comp = layout.ComponentAt(uniformIndex);
         const uint8* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
-        GLint glLoc = shd->getUniformLocation(progIndex, bindStage, bindSlot, uniformIndex);
+        GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
         if (-1 != glLoc) {
             switch (comp.Type) {
                 case UniformType::Float:

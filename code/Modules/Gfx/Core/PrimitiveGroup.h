@@ -5,10 +5,8 @@
     @ingroup Gfx
     @brief describes a group of primitives to be rendered
     
-    A PrimitiveGroup object describes the number and type of a set of
-    primitives to be rendered by a draw call. The baseElement and
-    numElements either refer to vertices, or indices as element, this 
-    depends on the Mesh being rendered (whether it has indices or not).
+    A PrimitiveGroup object describes a range of primitive elements in
+    a mesh, where elements are either vertices or indices.
 */
 #include "Core/Types.h"
 #include "Gfx/Core/Enums.h"

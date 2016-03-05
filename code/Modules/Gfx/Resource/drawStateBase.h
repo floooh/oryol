@@ -18,10 +18,8 @@ class drawStateBase : public resourceBase<DrawStateSetup> {
 public:
     /// destructor
     ~drawStateBase();
-    
     /// clear the object
-    void Clear();
-    
+    void Clear();    
     /// shader pointer
     shader* shd = nullptr;
 };

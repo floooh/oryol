@@ -20,6 +20,4 @@
     _color = nrm * 0.5 + 0.5;
 @end
 
-@bundle Main
-@program vs fs
-@end
+@program Main vs fs

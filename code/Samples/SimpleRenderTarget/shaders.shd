@@ -28,9 +28,7 @@
     _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
 @end
 
-@bundle RenderTarget
-@program renderTargetVS renderTargetFS
-@end
+@program RenderTarget renderTargetVS renderTargetFS
 
 //------------------------------------------------------------------------------
 //  Vertex and fragment shaders for rendering into the frame buffer.
@@ -56,7 +54,5 @@
     _color = vec4(c.xyz * (l + 0.25), 1.0);
 @end
 
-@bundle Main
-@program mainVS mainFS
-@end
+@program Main mainVS mainFS
 

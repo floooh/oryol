@@ -91,12 +91,8 @@ _func vec4 hue2rgb(float h) {
 @end
 
 //------------------------------------------------------------------------------
-@bundle Mandelbrot
-@program FractalVS MandelbrotFS
-@end
-@bundle Julia
-@program FractalVS JuliaFS
-@end
+@program Mandelbrot FractalVS MandelbrotFS
+@program Julia FractalVS JuliaFS
 
 //------------------------------------------------------------------------------
 @vs DisplayVS
@@ -133,6 +129,4 @@ _func vec4 hue2rgb(float h) {
 @end
 
 //------------------------------------------------------------------------------
-@bundle Display
-@program DisplayVS DisplayFS
-@end
+@program Display DisplayVS DisplayFS

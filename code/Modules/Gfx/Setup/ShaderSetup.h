@@ -29,12 +29,12 @@ public:
     /// the resource locator
     class Locator Locator;
 
-    /// add shader program from vertex- and fragment-shader sources
-    void AddProgramFromSources(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
-    /// add shader program from precompiled shader byte code
-    void AddProgramFromByteCode(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
-    /// add shader program from a metal-style shader library
-    void AddProgramFromLibrary(uint32 mask, ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
+    /// set shader program from vertex- and fragment-shader sources
+    void SetProgramFromSources(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
+    /// set shader program from precompiled shader byte code
+    void SetProgramFromByteCode(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes);
+    /// set shader program from a metal-style shader library
+    void SetProgramFromLibrary(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
     /// add a uniform block
     void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
     /// add a texture block
@@ -45,24 +45,20 @@ public:
     /// get metal-style library byte code
     void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
 
-    /// get number of programs
-    int32 NumPrograms() const;
-    /// get program mask by index
-    uint32 Mask(int32 progIndex) const;
     /// get the vertex shader input layout
-    const VertexLayout& VertexShaderInputLayout(int32 progIndex) const;
+    const VertexLayout& VertexShaderInputLayout() const;
     /// get program vertex shader source (only valid if setup from sources)
-    const String& VertexShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    const String& VertexShaderSource(ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
-    const String& FragmentShaderSource(int32 progIndex, ShaderLang::Code slang) const;
+    const String& FragmentShaderSource(ShaderLang::Code slang) const;
     /// get program vertex shader byte code, returns nullptr if no byte code exists
-    void VertexShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;    
+    void VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
     /// get program fragment shader byte code, returns nullptr if no byte code exists
-    void FragmentShaderByteCode(int32 progIndex, ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
+    void FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const;
     /// get vertex shader name (if using metal-style shader library
-    const String& VertexShaderFunc(int32 progIndex, ShaderLang::Code slang) const;
+    const String& VertexShaderFunc(ShaderLang::Code slang) const;
     /// get fragment shader name (if using metal-style shader library
-    const String& FragmentShaderFunc(int32 progIndex, ShaderLang::Code slang) const;
+    const String& FragmentShaderFunc(ShaderLang::Code slang) const;
 
     /// get number of uniform blocks
     int32 NumUniformBlocks() const;
@@ -92,7 +88,6 @@ public:
 
 private:
     struct programEntry {
-        uint32 mask = 0;
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> vsFuncs;
@@ -118,16 +113,12 @@ private:
         int32 bindSlot = InvalidIndex;
     };
 
-    /// obtain an existing entry with matching mask or new entry
-    programEntry& obtainEntry(uint32 mask);
-
     static const int32 MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
     static const int32 MaxNumTextureBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumTextureBlocksPerStage;
 
     int32 libraryByteCodeSize;
     const void* libraryByteCode;
-    int32 numPrograms;
-    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programs;
+    programEntry program;
     int32 numUniformBlocks;
     StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;
     int32 numTextureBlocks;

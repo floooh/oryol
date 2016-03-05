@@ -25,9 +25,7 @@
 }
 @end
 
-@bundle Canvas
-@program canvasVS canvasFS
-@end
+@program Canvas canvasVS canvasFS
 
 //------------------------------------------------------------------------------
 //  Timothy Lottes CRT effect shader:
@@ -205,11 +203,6 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 }
 @end 
 
-@bundle CRT
-@program crtVS crtFS
-@end
-
-@bundle NoCRT
-@program crtVS nocrtFS
-@end
+@program CRT crtVS crtFS
+@program NoCRT crtVS nocrtFS
 

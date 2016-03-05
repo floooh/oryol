@@ -37,12 +37,8 @@ glDrawStateFactory::SetupResource(drawState& ds) {
 
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.shd);
-    // FIXME: remove selection mask
-    ds.shdProgIndex = ds.shd->getProgIndexByMask(0);
-    o_assert_dbg(InvalidIndex != ds.shdProgIndex);
     this->glSetupVertexAttrs(ds);
     ds.glPrimType = glTypes::asGLPrimitiveType(ds.Setup.PrimType);
-
 
     return ResourceState::Valid;
 }
@@ -67,7 +63,6 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
     // convert input mesh vertex layout components to glVertexAttrs
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumInputMeshes; layoutIndex++) {
         const VertexLayout& layout = ds.Setup.Layouts[layoutIndex];
-
         const int numComps = layout.NumComponents();
         if (numComps > 0) {
             for (int compIndex = 0; compIndex < numComps; compIndex++) {

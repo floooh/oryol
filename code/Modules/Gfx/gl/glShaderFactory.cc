@@ -14,12 +14,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glShaderFactory::glShaderFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 glShaderFactory::~glShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
@@ -61,115 +55,110 @@ glShaderFactory::SetupResource(shader& shd) {
     #endif
     const ShaderSetup& setup = shd.Setup;
 
-    // for each program in the bundle...
-    const int32 numProgs = setup.NumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        o_assert_dbg(setup.VertexShaderSource(progIndex, slang).IsValid());
-        o_assert_dbg(setup.FragmentShaderSource(progIndex, slang).IsValid());
-        
-        // compile vertex shader
-        const String& vsSource = setup.VertexShaderSource(progIndex, slang);
-        GLuint glVertexShader = this->compileShader(ShaderStage::VS, vsSource.AsCStr(), vsSource.Length());
-        o_assert_dbg(0 != glVertexShader);
-        
-        // compile fragment shader
-        const String& fsSource = setup.FragmentShaderSource(progIndex, slang);
-        GLuint glFragmentShader = this->compileShader(ShaderStage::FS, fsSource.AsCStr(), fsSource.Length());
-        o_assert_dbg(0 != glFragmentShader);
-        
-        // create GL program object and attach vertex/fragment shader
-        GLuint glProg = ::glCreateProgram();
-        ::glAttachShader(glProg, glVertexShader);
-        ORYOL_GL_CHECK_ERROR();
-        ::glAttachShader(glProg, glFragmentShader);
-        ORYOL_GL_CHECK_ERROR();
-        
-        // bind vertex attribute locations
-        /// @todo: would be good to optimize this to only bind
-        /// attributes which exist in the shader (may be with more shader source generation)
-        #if !ORYOL_GL_USE_GETATTRIBLOCATION
-        o_assert_dbg(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
-        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-            ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
-        }
-        ORYOL_GL_CHECK_ERROR();
-        #endif
-        
-        // link the program
-        ::glLinkProgram(glProg);
-        ORYOL_GL_CHECK_ERROR();
-        
-        // can discard shaders now if we compiled them ourselves
-        ::glDeleteShader(glVertexShader);
-        ::glDeleteShader(glFragmentShader);
+    o_assert_dbg(setup.VertexShaderSource(slang).IsValid());
+    o_assert_dbg(setup.FragmentShaderSource(slang).IsValid());
 
-        // linking successful?
-        GLint linkStatus;
-        ::glGetProgramiv(glProg, GL_LINK_STATUS, &linkStatus);
-        #if ORYOL_DEBUG
-        GLint logLength;
-        ::glGetProgramiv(glProg, GL_INFO_LOG_LENGTH, &logLength);
-        if (logLength > 0) {
-            GLchar* logBuffer = (GLchar*) Memory::Alloc(logLength);
-            ::glGetProgramInfoLog(glProg, logLength, &logLength, logBuffer);
-            Log::Info("%s\n", logBuffer);
-            Memory::Free(logBuffer);
-        }
-        #endif
+    // compile vertex shader
+    const String& vsSource = setup.VertexShaderSource(slang);
+    GLuint glVertexShader = this->compileShader(ShaderStage::VS, vsSource.AsCStr(), vsSource.Length());
+    o_assert_dbg(0 != glVertexShader);
         
-        // if linking failed, stop the app
-        if (!linkStatus) {
-            o_warn("Failed to link program '%d' -> '%s'\n", progIndex, setup.Locator.Location().AsCStr());
-            return ResourceState::Failed;
-        }
+    // compile fragment shader
+    const String& fsSource = setup.FragmentShaderSource(slang);
+    GLuint glFragmentShader = this->compileShader(ShaderStage::FS, fsSource.AsCStr(), fsSource.Length());
+    o_assert_dbg(0 != glFragmentShader);
         
-        // linking succeeded, store GL program
-        shd.addProgram(setup.Mask(progIndex), glProg);
-
-        // resolve uniform locations
-        this->pointers.renderer->useProgram(glProg);
-        const int32 numUniformBlocks = setup.NumUniformBlocks();
-        for (int32 ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
-            const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
-            ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
-            int32 ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-            const int32 numUniforms = layout.NumComponents();
-            for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-                const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
-                const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-                shd.bindUniform(progIndex, ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
-            }
-        }
-
-        // resolve texture locations
-        int glTextureLocation = 0;
-        const int32 numTextures = setup.NumTextureBlocks();
-        for (int32 tbIndex = 0; tbIndex < numTextures; tbIndex++) {
-            const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
-            ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
-            int32 tbBindSlot = setup.TextureBlockBindSlot(tbIndex);
-            const int32 numTextures = layout.NumComponents();
-            for (int texIndex = 0; texIndex < numTextures; texIndex++) {
-                const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
-                const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-                o_assert_dbg(-1 != glUniformLocation);
-                shd.bindSampler(progIndex, tbBindStage, tbBindSlot, texIndex, glTextureLocation);
-                // set the sampler index in the shader program, this will never change
-                ::glUniform1i(glUniformLocation, glTextureLocation);
-                glTextureLocation++;
-            }
-        }
+    // create GL program object and attach vertex/fragment shader
+    GLuint glProg = ::glCreateProgram();
+    ::glAttachShader(glProg, glVertexShader);
+    ORYOL_GL_CHECK_ERROR();
+    ::glAttachShader(glProg, glFragmentShader);
+    ORYOL_GL_CHECK_ERROR();
         
-        #if ORYOL_GL_USE_GETATTRIBLOCATION
-        // resolve attrib locations
-        for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-            GLint loc = ::glGetAttribLocation(glProg, VertexAttr::ToString((VertexAttr::Code)i));
-            shd.bindAttribLocation(progIndex, (VertexAttr::Code)i, loc);
-        }
-        #endif
+    // bind vertex attribute locations
+    /// @todo: would be good to optimize this to only bind
+    /// attributes which exist in the shader (may be with more shader source generation)
+    #if !ORYOL_GL_USE_GETATTRIBLOCATION
+    o_assert_dbg(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
+    for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+        ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
     }
+    ORYOL_GL_CHECK_ERROR();
+    #endif
+        
+    // link the program
+    ::glLinkProgram(glProg);
+    ORYOL_GL_CHECK_ERROR();
+        
+    // can discard shaders now if we compiled them ourselves
+    ::glDeleteShader(glVertexShader);
+    ::glDeleteShader(glFragmentShader);
+
+    // linking successful?
+    GLint linkStatus;
+    ::glGetProgramiv(glProg, GL_LINK_STATUS, &linkStatus);
+    #if ORYOL_DEBUG
+    GLint logLength;
+    ::glGetProgramiv(glProg, GL_INFO_LOG_LENGTH, &logLength);
+    if (logLength > 0) {
+        GLchar* logBuffer = (GLchar*) Memory::Alloc(logLength);
+        ::glGetProgramInfoLog(glProg, logLength, &logLength, logBuffer);
+        Log::Info("%s\n", logBuffer);
+        Memory::Free(logBuffer);
+    }
+    #endif
+        
+    // if linking failed, stop the app
+    if (!linkStatus) {
+        o_warn("Failed to link program '%s'\n", setup.Locator.Location().AsCStr());
+        return ResourceState::Failed;
+    }
+        
+    // linking succeeded, store GL program
+    shd.glProgram = glProg;
+
+    // resolve uniform locations
+    this->pointers.renderer->useProgram(glProg);
+    const int32 numUniformBlocks = setup.NumUniformBlocks();
+    for (int32 ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
+        const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
+        ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
+        int32 ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
+        const int32 numUniforms = layout.NumComponents();
+        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+            const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
+            const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
+            shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
+        }
+    }
+
+    // resolve texture locations
+    int glTextureLocation = 0;
+    const int32 numTextures = setup.NumTextureBlocks();
+    for (int32 tbIndex = 0; tbIndex < numTextures; tbIndex++) {
+        const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
+        ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
+        int32 tbBindSlot = setup.TextureBlockBindSlot(tbIndex);
+        const int32 numTextures = layout.NumComponents();
+        for (int texIndex = 0; texIndex < numTextures; texIndex++) {
+            const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
+            const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
+            o_assert_dbg(-1 != glUniformLocation);
+            shd.bindSampler(tbBindStage, tbBindSlot, texIndex, glTextureLocation);
+            // set the sampler index in the shader program, this will never change
+            ::glUniform1i(glUniformLocation, glTextureLocation);
+            glTextureLocation++;
+        }
+    }
+        
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
+    // resolve attrib locations
+    for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+        GLint loc = ::glGetAttribLocation(glProg, VertexAttr::ToString((VertexAttr::Code)i));
+        shd.bindAttribLocation((VertexAttr::Code)i, loc);
+    }
+    #endif
     this->pointers.renderer->invalidateShaderState();
-    
     return ResourceState::Valid;
 }
 
@@ -178,14 +167,9 @@ void
 glShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
     this->pointers.renderer->invalidateShaderState();
-    
-    const int32 numProgs = shd.getNumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        GLuint glProg = shd.getProgram(progIndex);
-        if (0 != glProg) {
-            ::glDeleteProgram(glProg);
-            ORYOL_GL_CHECK_ERROR();
-        }
+    if (0 != shd.glProgram) {
+        ::glDeleteProgram(shd.glProgram);
+        ORYOL_GL_CHECK_ERROR();
     }
     shd.Clear();
 }
@@ -213,21 +197,21 @@ glShaderFactory::compileShader(ShaderStage::Code stage, const char* sourceString
     ORYOL_GL_CHECK_ERROR();
     
     #if ORYOL_DEBUG
-        GLint logLength = 0;
-        ::glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
+    GLint logLength = 0;
+    ::glGetShaderiv(glShader, GL_INFO_LOG_LENGTH, &logLength);
+    ORYOL_GL_CHECK_ERROR();
+    if (logLength > 0) {
+        
+        // first print the shader source
+        Log::Info("SHADER SOURCE:\n%s\n\n", sourceString);
+        
+        // now print the info log
+        GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
+        ::glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
         ORYOL_GL_CHECK_ERROR();
-        if (logLength > 0) {
-            
-            // first print the shader source
-            Log::Info("SHADER SOURCE:\n%s\n\n", sourceString);
-            
-            // now print the info log
-            GLchar* shdLogBuf = (GLchar*) Memory::Alloc(logLength);
-            ::glGetShaderInfoLog(glShader, logLength, &logLength, shdLogBuf);
-            ORYOL_GL_CHECK_ERROR();
-            Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
-            Memory::Free(shdLogBuf);
-        }
+        Log::Info("SHADER LOG: %s\n\n", shdLogBuf);
+        Memory::Free(shdLogBuf);
+    }
     #endif
     
     if (!compileStatus) {

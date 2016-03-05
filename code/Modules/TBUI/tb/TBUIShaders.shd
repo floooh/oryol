@@ -29,6 +29,4 @@
     _color = tex2D(tex, uv) * color;
 @end
 
-@bundle TBUIShader
-@program vs fs
-@end
+@program TBUIShader vs fs

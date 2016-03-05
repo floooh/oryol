@@ -15,50 +15,38 @@ glShader::glShader() {
 
 //------------------------------------------------------------------------------
 glShader::~glShader() {
-    #if !ORYOL_NO_ASSERT
-    for (int32 i = 0; i < this->numProgramEntries; i++) {
-        o_assert_dbg(0 == this->programEntries[i].program);
-    }
-    #endif
+    o_assert_dbg(0 == this->glProgram);
 }
 
 //------------------------------------------------------------------------------
 void
 glShader::Clear() {
-    this->numProgramEntries = 0;
-    this->programEntries.Fill(programEntry());
+    this->glProgram = 0;
+    this->uniformMappings.Fill(-1);
+    this->samplerMappings.Fill(InvalidIndex);
+    #if ORYOL_GL_USE_GETATTRIBLOCATION
+    this->attribMapping.Fill(-1);
+    #endif
     shaderBase::Clear();
 }
 
 //------------------------------------------------------------------------------
-int32
-glShader::addProgram(uint32 mask, GLuint glProg) {
-    // make sure the mask is unique
-    for (int32 i = 0; i < this->numProgramEntries; i++) {
-        o_assert_dbg(this->programEntries[i].mask != mask);
-    }    
-    this->programEntries[this->numProgramEntries].mask = mask;
-    this->programEntries[this->numProgramEntries].program = glProg;
-    return this->numProgramEntries++;
+void
+glShader::bindUniform(ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex, GLint glUniformLocation) {
+    this->uniformMappings[uniformArrayIndex(bindStage, bindSlot, uniformIndex)] = glUniformLocation;
 }
 
 //------------------------------------------------------------------------------
 void
-glShader::bindUniform(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex, GLint glUniformLocation) {
-    this->programEntries[progIndex].uniformArrayEntry(bindStage, bindSlot, uniformIndex) = glUniformLocation;
-}
-
-//------------------------------------------------------------------------------
-void
-glShader::bindSampler(int32 progIndex, ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex, int32 samplerIndex) {
-    this->programEntries[progIndex].samplerArrayEntry(bindStage, bindSlot, textureIndex) = samplerIndex;
+glShader::bindSampler(ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex, int32 samplerIndex) {
+    this->samplerMappings[samplerArrayIndex(bindStage, bindSlot, textureIndex)] = samplerIndex;
 }
 
 //------------------------------------------------------------------------------
 #if ORYOL_GL_USE_GETATTRIBLOCATION
 void
-glShader::bindAttribLocation(int32 progIndex, VertexAttr::Code attr, GLint location) {
-    this->programEntries[progIndex].attribMapping[attr] = location;
+glShader::bindAttribLocation(VertexAttr::Code attr, GLint location) {
+    this->attribMapping[attr] = location;
 }
 #endif
 

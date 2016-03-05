@@ -18,9 +18,8 @@ public:
     glDrawState();
     /// clear the object (called from drawStateFactory::DestroyResource()
     void Clear();
-
+    
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
-    int32 shdProgIndex;
     GLenum glPrimType;
 };
 
