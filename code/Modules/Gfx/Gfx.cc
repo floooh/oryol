@@ -144,6 +144,9 @@ Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb) {
             break;
         }
     }
+    #if ORYOL_DEBUG
+    mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
+    #endif
     state->renderer.applyDrawState(ds, meshes, numMeshes);
 }
 
