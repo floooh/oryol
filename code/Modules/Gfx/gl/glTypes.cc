@@ -61,7 +61,6 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
             return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
 
         default:
-            // FIXME: add missing values
             o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
             return 0;
     }
@@ -114,7 +113,6 @@ glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
             return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
             
         default:
-            // FIXME: add missing values
             o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
             return 0;
     }
@@ -160,7 +158,6 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
             #endif
             
         default:
-            // FIXME: add missing values
             o_error("glTypes::asGLTexImageType(): invalid param!\n");
             return 0;
     }
