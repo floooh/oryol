@@ -362,11 +362,6 @@ mtlRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     [this->curCommandEncoder setRenderPipelineState:ds->mtlRenderPipelineState];
     [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
 
-    #if ORYOL_DEBUG
-    // check that the mesh configuration is valid for rendering
-    mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
-    #endif
-
     // apply vertex buffers
     for (int meshIndex = 0; meshIndex < GfxConfig::MaxNumInputMeshes; meshIndex++) {
         const mesh* msh = meshIndex < numMeshes ? meshes[meshIndex] : nullptr;
