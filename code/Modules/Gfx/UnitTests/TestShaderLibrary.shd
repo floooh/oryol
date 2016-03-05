@@ -52,7 +52,5 @@ _func vec4 myColor(vec4 nrm, vec4 texColor)
 }
 @end
 
-@bundle MyShader
-@program MyVertexShader MyFragmentShader
-@end
+@program MyShader MyVertexShader MyFragmentShader
 

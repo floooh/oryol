@@ -46,7 +46,6 @@ TEST(MeshFactoryTest) {
     MeshBuilder mb;
     mb.NumVertices = 4;
     mb.NumIndices = 6;
-    mb.PrimType = PrimitiveType::Triangles;
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
@@ -92,7 +91,6 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(mesh.indexBufferAttrs.ByteSize() == 12);
     CHECK(mesh.numPrimGroups == 1);
-    CHECK(mesh.Setup.PrimType == PrimitiveType::Triangles);
     CHECK(mesh.primGroups[0].BaseElement == 0);
     CHECK(mesh.primGroups[0].NumElements == 6);
     #if ORYOL_OPENGL

@@ -68,7 +68,6 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.indexBufferAttrs.Type == IndexType::Index16);
     CHECK(simpleCube.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(simpleCube.numPrimGroups == 1);
-    CHECK(simpleCube.Setup.PrimType == PrimitiveType::Triangles);
     CHECK(simpleCube.primGroups[0].BaseElement == 0);
     CHECK(simpleCube.primGroups[0].NumElements == 36);
     #if ORYOL_OPENGL

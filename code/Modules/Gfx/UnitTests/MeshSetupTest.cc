@@ -98,7 +98,6 @@ TEST(MeshSetupTest) {
     CHECK(s7.IndicesType == IndexType::Index16);
     CHECK(s7.Layout.NumComponents() == 2);
     CHECK(s7.NumPrimitiveGroups() == 1);
-    CHECK(s7.PrimType == PrimitiveType::Triangles);
     CHECK(s7.PrimitiveGroup(0).BaseElement == 0);
     CHECK(s7.PrimitiveGroup(0).NumElements == 64);
 }
