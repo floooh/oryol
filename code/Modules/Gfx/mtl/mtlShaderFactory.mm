@@ -11,12 +11,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlShaderFactory::mtlShaderFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 mtlShaderFactory::~mtlShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
@@ -47,7 +41,7 @@ mtlShaderFactory::IsValid() const {
 ResourceState::Code
 mtlShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(nil == shd.getLibrary());
+    o_assert_dbg(nil == shd.mtlLibrary);
 
     const ShaderLang::Code slang = ShaderLang::Metal;
     const ShaderSetup& setup = shd.Setup;
@@ -60,19 +54,14 @@ mtlShaderFactory::SetupResource(shader& shd) {
     // first create the shader library (one library per bundle)
     NSError* err = 0;
     dispatch_data_t libData = dispatch_data_create(libraryByteCode, libraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-    id<MTLLibrary> mtlLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:libData error:&err];
+    shd.mtlLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:libData error:&err];
     o_assert(nil == err);
-    shd.setLibrary(mtlLibrary);
 
     // create vertex and fragment shader function objects
-    const int32 numProgs = setup.NumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        const String& vsName = setup.VertexShaderFunc(progIndex, slang);
-        id<MTLFunction> vsFunc = [mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:vsName.AsCStr()]];
-        const String& fsName = setup.FragmentShaderFunc(progIndex, slang);
-        id<MTLFunction> fsFunc = [mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:fsName.AsCStr()]];
-        shd.addShaders(setup.Mask(progIndex), vsFunc, fsFunc);
-    }
+    const String& vsName = setup.VertexShaderFunc(slang);
+    shd.mtlVertexShader = [shd.mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:vsName.AsCStr()]];
+    const String& fsName = setup.FragmentShaderFunc(slang);
+    shd.mtlFragmentShader = [shd.mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:fsName.AsCStr()]];
 
     return ResourceState::Valid;
 }
@@ -81,14 +70,11 @@ mtlShaderFactory::SetupResource(shader& shd) {
 void
 mtlShaderFactory::DestroyResource(shader& shd) {
     o_assert_dbg(this->isValid);
-
-    for (auto& entry : shd.programEntries) {
-        if (nil != entry.mtlVertexShader) {
-            this->pointers.renderer->releaseDeferred(entry.mtlVertexShader);
-        }
-        if (nil != entry.mtlFragmentShader) {
-            this->pointers.renderer->releaseDeferred(entry.mtlFragmentShader);
-        }
+    if (nil != shd.mtlVertexShader) {
+        this->pointers.renderer->releaseDeferred(shd.mtlVertexShader);
+    }
+    if (nil != shd.mtlFragmentShader) {
+        this->pointers.renderer->releaseDeferred(shd.mtlFragmentShader);
     }
     if (nil != shd.mtlLibrary) {
         this->pointers.renderer->releaseDeferred(shd.mtlLibrary);

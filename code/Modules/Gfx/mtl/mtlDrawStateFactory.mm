@@ -76,11 +76,8 @@ mtlDrawStateFactory::createRPS(drawState& ds) {
     rpDesc.colorAttachments[0].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
     rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
     rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
-    // FIXME: shader selection mask
-    const int32 progIndex = ds.shd->getProgIndexByMask(0);
-    o_assert_dbg(InvalidIndex != progIndex);
-    rpDesc.fragmentFunction = ds.shd->getFragmentShader(progIndex);
-    rpDesc.vertexFunction = ds.shd->getVertexShader(progIndex);
+    rpDesc.fragmentFunction = ds.shd->mtlFragmentShader;
+    rpDesc.vertexFunction = ds.shd->mtlVertexShader;
     rpDesc.vertexDescriptor = vtxDesc;
     rpDesc.rasterizationEnabled = YES;
     rpDesc.alphaToCoverageEnabled = ds.Setup.RasterizerState.AlphaToCoverageEnabled;
