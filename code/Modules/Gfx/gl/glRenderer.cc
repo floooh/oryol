@@ -358,11 +358,6 @@ glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
     o_assert_dbg(meshes && meshes[0] && (numMeshes > 0));
     ORYOL_GL_CHECK_ERROR();
 
-    #if ORYOL_DEBUG
-    // check that the mesh configuration is valid for rendering
-    mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
-    #endif
-
     // need to store primary mesh with primitive group defs for later draw call
     this->curPrimaryMesh = meshes[0];
 
