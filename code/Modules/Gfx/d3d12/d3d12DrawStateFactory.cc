@@ -5,7 +5,6 @@
 #include "Core/Assertion.h"
 #include "Gfx/Resource/drawState.h"
 #include "Gfx/Resource/shader.h"
-#include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "d3d12DrawStateFactory.h"
@@ -98,11 +97,9 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     ds.d3d12PrimTopology = d3d12Types::asPrimitiveTopology(ds.Setup.PrimType);
 
     // get vertex and pixel shader byte code
-    // FIXME: remove ShaderSelectionMask
-    const shader::shaderBlob* vs = ds.shd->getVertexShaderByMask(0);
-    const shader::shaderBlob* ps = ds.shd->getPixelShaderByMask(0);
-    o_assert2(vs && ps, "invalid shader selection mask");
-    o_assert_dbg(vs->ptr && (vs->size > 0) && ps->ptr && (ps->size > 0));
+    const shader::shaderBlob& vs = ds.shd->vertexShader;
+    const shader::shaderBlob& ps = ds.shd->pixelShader;
+    o_assert_dbg(vs.ptr && (vs.size > 0) && ps.ptr && (ps.size > 0));
 
     // create the pipeline-state-object
     const RasterizerState& rs = ds.Setup.RasterizerState;
@@ -112,10 +109,10 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     Memory::Clear(&psoDesc, sizeof(psoDesc));
     psoDesc.pRootSignature = this->pointers.renderer->d3d12RootSignature;
-    psoDesc.VS.pShaderBytecode = vs->ptr;
-    psoDesc.VS.BytecodeLength = vs->size;
-    psoDesc.PS.pShaderBytecode = ps->ptr;
-    psoDesc.PS.BytecodeLength = ps->size;
+    psoDesc.VS.pShaderBytecode = vs.ptr;
+    psoDesc.VS.BytecodeLength = vs.size;
+    psoDesc.PS.pShaderBytecode = ps.ptr;
+    psoDesc.PS.BytecodeLength = ps.size;
     psoDesc.BlendState.AlphaToCoverageEnable = rs.AlphaToCoverageEnabled;
     psoDesc.BlendState.IndependentBlendEnable = FALSE;
     psoDesc.BlendState.RenderTarget[0].BlendEnable = bs.BlendEnabled;

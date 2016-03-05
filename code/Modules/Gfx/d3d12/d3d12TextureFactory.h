@@ -9,7 +9,6 @@
 #include "Resource/Id.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/d3d12/d3d12_decl.h"
-#include "Core/Containers/Map.h"
 
 namespace Oryol {
 namespace _priv {
@@ -18,8 +17,6 @@ class texture;
 
 class d3d12TextureFactory {
 public:
-    /// constructor
-    d3d12TextureFactory();
     /// destructor
     ~d3d12TextureFactory();
 
@@ -48,7 +45,7 @@ private:
     void setupTextureAttrs(texture& tex);
 
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
 
 } // _priv

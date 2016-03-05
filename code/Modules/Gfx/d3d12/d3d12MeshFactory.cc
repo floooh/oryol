@@ -13,12 +13,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d12MeshFactory::d3d12MeshFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d12MeshFactory::~d3d12MeshFactory() {
     o_assert_dbg(!this->isValid);
 }

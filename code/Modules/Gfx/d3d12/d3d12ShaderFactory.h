@@ -15,8 +15,6 @@ class shader;
 
 class d3d12ShaderFactory {
 public:
-    /// constructor
-    d3d12ShaderFactory();
     /// destructor
     ~d3d12ShaderFactory();
 
@@ -34,7 +32,7 @@ public:
 
 private:
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
 
 } // namespace _priv
