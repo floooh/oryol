@@ -33,8 +33,8 @@ private:
 
     int32 frameCount = 0;
     ResourceLabel curMeshLabel;
-    Id mesh;
     MeshSetup curMeshSetup;
+    MeshBlock meshBlock;
     glm::vec3 eyePos;
     glm::mat4 view;
     glm::mat4 proj;
@@ -195,7 +195,7 @@ MeshViewerApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     this->drawUI();
     for (int i = 0; i < this->numMaterials; i++) {
-        Gfx::ApplyDrawState(this->materials[i].drawState);
+        Gfx::ApplyDrawState(this->materials[i].drawState, this->meshBlock);
         this->applyVariables(i);
         Gfx::Draw(i);
     }
@@ -283,7 +283,7 @@ MeshViewerApp::updateLight() {
 void
 MeshViewerApp::drawUI() {
     const char* state;
-    switch (Gfx::QueryResourceInfo(this->mesh).State) {
+    switch (Gfx::QueryResourceInfo(this->meshBlock[0]).State) {
         case ResourceState::Valid: state = "Loaded"; break;
         case ResourceState::Failed: state = "Load Failed"; break;
         case ResourceState::Pending: state = "Loading..."; break;
@@ -356,14 +356,14 @@ MeshViewerApp::drawUI() {
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::createMaterials() {
-    o_assert_dbg(this->mesh.IsValid());
+    o_assert_dbg(this->meshBlock[0].IsValid());
     if (this->curMaterialLabel.IsValid()) {
         Gfx::DestroyResources(this->curMaterialLabel);
     }
 
     this->curMaterialLabel = Gfx::PushResourceLabel();
     for (int i = 0; i < this->numMaterials; i++) {
-        auto dss = DrawStateSetup::FromMeshAndShader(this->mesh, this->shaders[this->materials[i].shaderIndex]);
+        auto dss = DrawStateSetup::FromLayoutAndShader(this->curMeshSetup.Layout, this->shaders[this->materials[i].shaderIndex]);
         dss.DepthStencilState.DepthWriteEnabled = true;
         dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
         dss.RasterizerState.CullFaceEnabled = true;
@@ -387,7 +387,7 @@ MeshViewerApp::loadMesh(const char* path) {
     // object of the loaded mesh
     this->numMaterials = 0;
     this->curMeshLabel = Gfx::PushResourceLabel();
-    this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) {
+    this->meshBlock[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) {
         this->curMeshSetup = setup;
         this->numMaterials = setup.NumPrimitiveGroups();
         this->createMaterials();

@@ -16,18 +16,12 @@ class mesh;
 
 class drawStateBase : public resourceBase<DrawStateSetup> {
 public:
-    /// constructor
-    drawStateBase();
     /// destructor
     ~drawStateBase();
-    
     /// clear the object
-    void Clear();
-    
-    /// input mesh pointers
-    StaticArray<mesh*, GfxConfig::MaxNumInputMeshes> meshes;
+    void Clear();    
     /// shader pointer
-    shader* shd;
+    shader* shd = nullptr;
 };
 
 } // namespace _priv

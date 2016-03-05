@@ -54,7 +54,7 @@ public:
     /// apply scissor rect
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(drawState* ds);
+    void applyDrawState(drawState* ds, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
     void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
     /// apply a texture block
@@ -145,6 +145,7 @@ private:
 
     texture* curRenderTarget;
     drawState* curDrawState;
+    mesh* curPrimaryMesh;
 
     // frame-sync objects
     ID3D12Fence* d3d12Fence;

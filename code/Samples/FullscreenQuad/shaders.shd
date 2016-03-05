@@ -169,6 +169,4 @@ _func vec3 normal(vec4 sinTime, vec3 p) {
 @end
 
 //------------------------------------------------------------------------------
-@bundle Main
-@program vs fs
-@end
+@program Main vs fs

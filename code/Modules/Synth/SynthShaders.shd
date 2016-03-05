@@ -19,6 +19,4 @@
     _color = vec4(s0, s1);
 @end
 
-@bundle Synth
-@program vsSynth fsSynth
-@end
+@program Synth vsSynth fsSynth

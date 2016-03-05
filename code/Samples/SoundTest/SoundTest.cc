@@ -386,9 +386,11 @@ SoundTestApp::OnRunning() {
     ImGui::SameLine();
     ImGui::Combo("Effect", &this->uiCurEffect, this->uiEffectNames, NumEffects);
     Effect& effect = this->effects[this->uiCurEffect];
-    ImGui::PlotLines("##samples", effect.samples + effect.uiOffset, effect.uiNum, 0, nullptr, -1.0f, 1.0f, ImVec2(990, 80));
-    ImGui::SliderInt("offset", &effect.uiOffset, 0, effect.numSamples - effect.uiNum);
-    ImGui::SliderInt("num", &effect.uiNum, 1, effect.numSamples - effect.uiOffset);
+    if (effect.samples) {
+        ImGui::PlotLines("##samples", effect.samples + effect.uiOffset, effect.uiNum, 0, nullptr, -1.0f, 1.0f, ImVec2(990, 80));
+        ImGui::SliderInt("offset", &effect.uiOffset, 0, effect.numSamples - effect.uiNum);
+        ImGui::SliderInt("num", &effect.uiNum, 1, effect.numSamples - effect.uiOffset);
+    }
     ImGui::End();
 
     ImGui::Render();

@@ -6,8 +6,8 @@
 #include "Core/Assertion.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glExt.h"
+#include "Gfx/gl/glTypes.h"
 #include "Gfx/Resource/drawState.h"
-#include "Gfx/Resource/mesh.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/shader.h"
@@ -37,9 +37,8 @@ glDrawStateFactory::SetupResource(drawState& ds) {
 
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.shd);
-    ds.shdProgIndex = ds.shd->getProgIndexByMask(ds.Setup.ShaderSelectionMask);
-    o_assert_dbg(InvalidIndex != ds.shdProgIndex);
     this->glSetupVertexAttrs(ds);
+    ds.glPrimType = glTypes::asGLPrimitiveType(ds.Setup.PrimType);
 
     return ResourceState::Valid;
 }
@@ -62,25 +61,22 @@ glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
     }
 
     // convert input mesh vertex layout components to glVertexAttrs
-    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
-        const mesh* msh = ds.meshes[mshIndex];
-        if (msh) {
-            const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
-            const int numComps = layout.NumComponents();
+    for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumInputMeshes; layoutIndex++) {
+        const VertexLayout& layout = ds.Setup.Layouts[layoutIndex];
+        const int numComps = layout.NumComponents();
+        if (numComps > 0) {
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
                 o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
                 glVertexAttr& glAttr = ds.glAttrs[comp.Attr];
                 o_assert_dbg(!glAttr.enabled);
                 glAttr.enabled = GL_TRUE;
-                glAttr.vbIndex = mshIndex;
-                glAttr.streaming = (Usage::Stream == msh->vertexBufferAttrs.BufferUsage);
-                if (msh->vertexBufferAttrs.StepFunction == VertexStepFunction::PerVertex) {
+                glAttr.vbIndex = layoutIndex;
+                if (VertexStepFunction::PerVertex == layout.StepFunction) {
                     glAttr.divisor = 0;
                 }
                 else {
-                    o_assert2(msh->vertexBufferAttrs.StepRate == 1, "figure out GL vertex divisor for step-rate > 1!\n");
-                    glAttr.divisor = msh->vertexBufferAttrs.StepRate;
+                    glAttr.divisor = layout.StepRate;
                 }
                 glAttr.stride = layout.ByteSize();
                 glAttr.offset = layout.ComponentByteOffset(compIndex);

@@ -9,7 +9,7 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 glDrawState::glDrawState() :
-shdProgIndex(InvalidIndex) {
+glPrimType(0) {
     // empty
 }
 
@@ -17,7 +17,7 @@ shdProgIndex(InvalidIndex) {
 void
 glDrawState::Clear() {
     this->glAttrs.Fill(glVertexAttr());
-    this->shdProgIndex = InvalidIndex;
+    this->glPrimType = 0;
     drawStateBase::Clear();
 }
 

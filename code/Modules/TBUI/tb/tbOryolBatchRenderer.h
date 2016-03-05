@@ -69,10 +69,8 @@ public:
     void addQuad(const tb::TBRect& dstRect, const tb::TBRect& srcRect, uint32 color, tb::TBBitmap* bitmap, tb::TBBitmapFragment* fragment);    
     /// setup white texture used for untextured areas
     void setupWhiteTexture();
-    /// setup the dynamic mesh
-    void setupMesh();
-    /// setup the draw state
-    void setupShaderAndDrawState();
+    /// setup the mesh, shader and draw state
+    void setupResources();
     /// add texture to be defer-deleted in EndPaint()
     void deferDeleteTexture(ResourceLabel label);
     /// delete textures added with deferDeleteTexture
@@ -104,7 +102,7 @@ private:
     VertexLayout vertexLayout;
     tb::TBRect tbClipRect;
     Id whiteTexture;
-    Id mesh;
+    MeshBlock meshBlock;
     Id shader;
     Id drawState;
     Array<ResourceLabel> texturesForDeletion;

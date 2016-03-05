@@ -6,6 +6,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Resource/Id.h"
 #include "Resource/ResourceLabel.h"
+#include "Gfx/Core/MeshBlock.h"
 #include "glm/vec4.hpp"
 #include "Julia/shaders.h"
 
@@ -19,7 +20,7 @@ public:
     ~fractal();
 
     /// setup the object with size of fractal render targets
-    void setup(int w, int h, const glm::vec4& rect, const glm::vec2& pos, Oryol::Id fsq);
+    void setup(int w, int h, const glm::vec4& rect, const glm::vec2& pos, Oryol::Id fsqMesh, const Oryol::VertexLayout& fsqLayout);
     /// discard the object, call before shutting down Gfx module
     void discard();
     /// return true if object has been setup
@@ -39,6 +40,7 @@ public:
     Oryol::Id colorTexture;
 
     Oryol::ResourceLabel label;
+    Oryol::MeshBlock fsqMeshBlock;
     Oryol::Id fractalDrawState;
     Oryol::StaticArray<Oryol::Id, 2> fractalTexture;
     Oryol::Id colorDrawState;

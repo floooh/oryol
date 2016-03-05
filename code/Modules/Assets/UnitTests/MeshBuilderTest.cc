@@ -15,7 +15,6 @@ TEST(MeshBuilderTest) {
     MeshBuilder mb;
     mb.NumVertices = 4;
     mb.NumIndices = 6;
-    mb.PrimType = PrimitiveType::Triangles;
     mb.IndicesType = IndexType::Index16;
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)

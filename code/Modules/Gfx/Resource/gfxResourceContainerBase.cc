@@ -280,102 +280,11 @@ gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
         resId = this->drawStatePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
-
-        // check if all referenced resources are loaded, if not defer draw state creation
-        const ResourceState::Code resState = this->queryDrawStateDepState(&res);
-        if (resState == ResourceState::Pending) {
-            this->pendingDrawStates.Add(resId);
-            this->drawStatePool.UpdateState(resId, ResourceState::Pending);
-        }
-        else {
-            const ResourceState::Code newState = this->drawStateFactory.SetupResource(res);
-            o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
-            this->drawStatePool.UpdateState(resId, newState);
-        }
+        const ResourceState::Code newState = this->drawStateFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
+        this->drawStatePool.UpdateState(resId, newState);
     }
     return resId;
-}
-
-//------------------------------------------------------------------------------
-bool
-gfxResourceContainerBase::checkState(ResourceState::Code resState) const {
-    // helper function for the queryXxxState functions, returns true
-    // if the input state is Failed or Pending, fails hard on Initial or
-    // Setup state, otherwise returns false
-    switch (resState) {
-        case ResourceState::Failed:
-        case ResourceState::Pending:
-            return true;
-        case ResourceState::Initial:
-        case ResourceState::Setup:
-            o_error("gfxResourceContainerBase::checkState: can't happen!");
-            return true;
-        default:
-            return false;
-    }
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-gfxResourceContainerBase::queryDrawStateDepState(const drawState* ds) {
-    o_assert_dbg(ds);
-
-    // this returns an overall state of the meshes attached to
-    // a draw state (failed, pending, valid)
-    for (const Id& meshId : ds->Setup.Meshes) {
-        if (meshId.IsValid()) {
-            const mesh* msh = this->meshPool.Get(meshId);
-            if (msh) {
-                if (this->checkState(msh->State)) {
-                    // Failed or Pending, exit early
-                    return msh->State;
-                }
-            }
-            else {
-                // the dependent resource no longer exists
-                return ResourceState::Failed;
-            }
-        }
-    }
-    // fallthrough means: all mesh dependencies are valid
-    return ResourceState::Valid;
-}
-
-//------------------------------------------------------------------------------
-void
-gfxResourceContainerBase::handlePendingDrawStates() {
-
-    // this goes through all pending draw states (where meshes are still
-    // loading), checks whether meshes have finished loading (or failed to load)
-    // and finishes the draw state creation
-    for (int i = this->pendingDrawStates.Size() - 1; i >= 0; i--) {
-        Id resId = this->pendingDrawStates[i];
-        o_assert_dbg(resId.IsValid());
-        drawState* ds = this->drawStatePool.Get(resId);
-        if (ds) {
-            const ResourceState::Code state = this->queryDrawStateDepState(ds);
-            if (state != ResourceState::Pending) {
-                if (state == ResourceState::Valid) {
-                    // all ok, can setup draw state
-                    const ResourceState::Code newState = this->drawStateFactory.SetupResource(*ds);
-                    o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
-                    this->drawStatePool.UpdateState(resId, newState);
-                }
-                else {
-                    // oops, a mesh has failed loading, also set draw state to failed
-                    o_assert_dbg(state == ResourceState::Failed);
-                    this->drawStatePool.UpdateState(resId, state);
-                }
-                this->pendingDrawStates.Erase(i);
-            }
-        }
-        else {
-            // the drawState object was destroyed before everything was loaded,
-            // still need to remove the entry from the pending array
-            o_warn("gfxResourceContainer::handlePendingDrawStates(): drawState destroyed before dependencies loaded!\n");
-            this->pendingDrawStates.Erase(i);
-        }
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -476,9 +385,6 @@ gfxResourceContainerBase::update() {
             this->pendingLoaders.Erase(i);
         }
     }
-
-    // handle drawStates with pending dependendies
-    this->handlePendingDrawStates();
 }
 
 //------------------------------------------------------------------------------

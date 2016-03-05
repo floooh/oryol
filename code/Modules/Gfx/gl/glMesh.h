@@ -15,8 +15,6 @@ namespace _priv {
     
 class glMesh : public meshBase {
 public:
-    /// constructor
-    glMesh();
     /// destructor
     ~glMesh();
 
@@ -36,7 +34,6 @@ public:
     static const int vb = 0;
     static const int ib = 1;
     StaticArray<buffer, 2> buffers;
-    GLenum glPrimType;
 };
 
 } // namespace _priv

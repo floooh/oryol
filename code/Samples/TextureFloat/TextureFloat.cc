@@ -27,6 +27,7 @@ private:
     glm::mat4 proj;
     Shaders::Offscreen::FSParams offscreenFSParams;
     Shaders::Copy::FSTextures copyFSTextures;
+    MeshBlock quadMesh;
     TimePoint lastFrameTimePoint;
     ClearState noClearState = ClearState::ClearNone();
 };
@@ -40,13 +41,13 @@ TextureFloatApp::OnRunning() {
     
     // render plasma to offscreen render target, do not clear
     Gfx::ApplyRenderTarget(this->renderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->offscreenDrawState);
+    Gfx::ApplyDrawState(this->offscreenDrawState, this->quadMesh);
     Gfx::ApplyUniformBlock(this->offscreenFSParams);
     Gfx::Draw(0);
     
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Gfx::ApplyDrawState(this->copyDrawState, this->copyFSTextures);
+    Gfx::ApplyDrawState(this->copyDrawState, this->quadMesh, this->copyFSTextures);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -80,11 +81,12 @@ TextureFloatApp::OnInit() {
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // fullscreen mesh, we'll reuse this several times
-    Id fullscreenMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    auto quadSetup = MeshSetup::FullScreenQuad();
+    this->quadMesh[0] = Gfx::CreateResource(quadSetup);
 
     // setup draw state for offscreen rendering to float render target
     Id offscreenShader = Gfx::CreateResource(Shaders::Offscreen::Setup());
-    auto dss = DrawStateSetup::FromMeshAndShader(fullscreenMesh, offscreenShader);
+    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, offscreenShader);
     dss.BlendState.ColorFormat = rtSetup.ColorFormat;
     dss.BlendState.DepthFormat = rtSetup.DepthFormat;
     this->offscreenDrawState = Gfx::CreateResource(dss);
@@ -92,7 +94,8 @@ TextureFloatApp::OnInit() {
 
     // fullscreen-copy resources
     Id copyShader = Gfx::CreateResource(Shaders::Copy::Setup());
-    this->copyDrawState = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(fullscreenMesh, copyShader));
+    dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
+    this->copyDrawState = Gfx::CreateResource(dss);
     this->copyFSTextures.Texture = this->renderTarget;
 
     // setup static transform matrices

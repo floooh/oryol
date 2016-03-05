@@ -16,8 +16,6 @@ class mesh;
 
 class d3d12MeshFactory {
 public:
-    /// constructor
-    d3d12MeshFactory();
     /// destructor
     ~d3d12MeshFactory();
 
@@ -49,7 +47,7 @@ private:
     void createBuffers(mesh& msh, int type, Usage::Code usage, const void* data, int32 size);
 
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
 
 } // namespace _priv

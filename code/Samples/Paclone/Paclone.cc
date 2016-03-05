@@ -33,6 +33,7 @@ private:
 
     Id crtEffect;
     Id crtRenderTarget;
+    MeshBlock crtMesh;
     #if USE_CRTEFFECT
     Shaders::CRT::FSParams crtParams;
     Shaders::CRT::FSTextures crtTextures;
@@ -72,13 +73,16 @@ PacloneApp::OnInit() {
     rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->crtRenderTarget = Gfx::CreateResource(rtSetup);
-    Id mesh = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
+
+    auto quadSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
+    this->crtMesh[0] = Gfx::CreateResource(quadSetup);
     #if USE_CRTEFFECT
     Id shd = Gfx::CreateResource(Shaders::CRT::Setup());
     #else
     Id shd = Gfx::CreateResource(Shaders::NoCRT::Setup());
     #endif
-    this->crtEffect = Gfx::CreateResource(DrawStateSetup::FromMeshAndShader(mesh, shd));
+    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, shd);
+    this->crtEffect = Gfx::CreateResource(dss);
     this->crtTextures.Canvas = this->crtRenderTarget;
 
     // setup canvas and game state
@@ -118,7 +122,7 @@ PacloneApp::OnRunning() {
     this->crtParams.Resolution = glm::vec2(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
     this->applyViewPort();
-    Gfx::ApplyDrawState(this->crtEffect, this->crtTextures);
+    Gfx::ApplyDrawState(this->crtEffect, this->crtMesh, this->crtTextures);
     Gfx::ApplyUniformBlock(this->crtParams);
     Gfx::Draw(0);
     Gfx::CommitFrame();

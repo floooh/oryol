@@ -33,6 +33,8 @@ private:
     Shaders::Main::FSTextures displayFSTextures;
     ClearState offscreenClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     ClearState displayClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
+    MeshBlock donutMesh;
+    MeshBlock sphereMesh;
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -46,7 +48,7 @@ SimpleRenderTargetApp::OnRunning() {
     
     // render donut to offscreen render target
     Gfx::ApplyRenderTarget(this->renderTarget, this->offscreenClearState);
-    Gfx::ApplyDrawState(this->offscreenDrawState);
+    Gfx::ApplyDrawState(this->offscreenDrawState, this->donutMesh);
     this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
     Gfx::Draw(0);
@@ -54,7 +56,7 @@ SimpleRenderTargetApp::OnRunning() {
     // render sphere to display, with offscreen render target as texture
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->displayDrawState, this->displayFSTextures);
+    Gfx::ApplyDrawState(this->displayDrawState, this->sphereMesh, this->displayFSTextures);
     Gfx::ApplyUniformBlock(this->displayVSParams);
     Gfx::Draw(0);
     
@@ -84,42 +86,42 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.ClearHint = this->offscreenClearState;
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
-    // create a donut (this will be rendered into the offscreen render target)
+    // create a donut mesh, shader and drawstate (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36);
-    Id torus = Gfx::CreateResource(shapeBuilder.Build());
-    
-    // create a sphere mesh with normals and uv coords
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    shapeBuilder.Sphere(0.5f, 72, 40);
-    Id sphere = Gfx::CreateResource(shapeBuilder.Build());
+    this->donutMesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 
-    // create shaders
     Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::Setup());
-    Id dispShader = Gfx::CreateResource(Shaders::Main::Setup());
 
-    // create texture bundle for the main pass
-    this->displayFSTextures.Texture = this->renderTarget;
-
-    // create one draw state for offscreen rendering, and one draw state for main target rendering
-    auto offdsSetup = DrawStateSetup::FromMeshAndShader(torus, offScreenShader);
+    auto offdsSetup = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, offScreenShader);
     offdsSetup.DepthStencilState.DepthWriteEnabled = true;
     offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     offdsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
     offdsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
     this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
-    auto dispdsSetup = DrawStateSetup::FromMeshAndShader(sphere, dispShader);
+
+    // create a sphere mesh, shader, drawstate and texture with normals and uv coords
+    shapeBuilder.Layout
+        .Clear()
+        .Add(VertexAttr::Position, VertexFormat::Float3)
+        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
+        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Sphere(0.5f, 72, 40);
+    this->sphereMesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+
+    Id dispShader = Gfx::CreateResource(Shaders::Main::Setup());
+
+    auto dispdsSetup = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, dispShader);
     dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
     dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dispdsSetup.RasterizerState.SampleCount = 4;
     this->displayDrawState = Gfx::CreateResource(dispdsSetup);
-    
+
+    this->displayFSTextures.Texture = this->renderTarget;
+
     // setup static transform matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

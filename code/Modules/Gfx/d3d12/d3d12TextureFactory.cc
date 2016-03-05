@@ -15,12 +15,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d12TextureFactory::d3d12TextureFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d12TextureFactory::~d3d12TextureFactory() {
     o_assert_dbg(!this->isValid);
 }

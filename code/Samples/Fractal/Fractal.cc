@@ -47,6 +47,8 @@ private:
     ClearState fractalClearState = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
     ClearState noClearState = ClearState::ClearNone();
     ResourceLabel offscreenRenderTargetLabel;
+    MeshBlock fsqFractal;
+    MeshBlock fsqDisplay;
     Id offscreenRenderTarget[2];
     Id displayShader;
     Id displayDrawState;
@@ -90,13 +92,13 @@ FractalApp::OnRunning() {
     if (Mandelbrot == this->fractalType) {
         Shaders::Mandelbrot::FSTextures texBlock;
         texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyDrawState(this->mandelbrot.drawState, texBlock);
+        Gfx::ApplyDrawState(this->mandelbrot.drawState, this->fsqFractal, texBlock);
         Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
     }
     else {
         Shaders::Julia::FSTextures texBlock;
         texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyDrawState(this->julia.drawState, texBlock);
+        Gfx::ApplyDrawState(this->julia.drawState, this->fsqFractal, texBlock);
         Gfx::ApplyUniformBlock(this->julia.vsParams);
         Gfx::ApplyUniformBlock(this->julia.fsParams);
     }
@@ -106,7 +108,7 @@ FractalApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Shaders::Display::FSTextures texBlock;
     texBlock.Texture = this->offscreenRenderTarget[index0];
-    Gfx::ApplyDrawState(this->displayDrawState, texBlock);
+    Gfx::ApplyDrawState(this->displayDrawState, this->fsqDisplay, texBlock);
     Gfx::ApplyUniformBlock(this->displayFSParams);
     Gfx::Draw(0);
 
@@ -139,8 +141,10 @@ FractalApp::OnInit() {
     style.Colors[ImGuiCol_Button] = grey;
 
     // a fullscreen quad mesh that's reused several times
-    Id fsqFractal = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
-    Id fsqDisplay = Gfx::CreateResource(MeshSetup::FullScreenQuad(true));
+    auto fsqSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
+    this->fsqFractal[0] = Gfx::CreateResource(fsqSetup);
+    fsqSetup = MeshSetup::FullScreenQuad(true);
+    this->fsqDisplay[0] = Gfx::CreateResource(fsqSetup);
 
     // create shaders
     this->displayShader = Gfx::CreateResource(Shaders::Display::Setup());
@@ -148,7 +152,7 @@ FractalApp::OnInit() {
     this->julia.shader = Gfx::CreateResource(Shaders::Julia::Setup());
 
     // draw state for rendering the final result to screen
-    auto dss = DrawStateSetup::FromMeshAndShader(fsqDisplay, this->displayShader);
+    auto dss = DrawStateSetup::FromLayoutAndShader(fsqSetup.Layout, this->displayShader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     this->displayDrawState = Gfx::CreateResource(dss);
@@ -158,7 +162,7 @@ FractalApp::OnInit() {
     this->recreateRenderTargets(Gfx::DisplayAttrs());
 
     // setup mandelbrot state
-    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, this->mandelbrot.shader);
+    dss = DrawStateSetup::FromLayoutAndShader(fsqSetup.Layout, this->mandelbrot.shader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
@@ -166,7 +170,7 @@ FractalApp::OnInit() {
     this->mandelbrot.drawState = Gfx::CreateResource(dss);
 
     // setup julia state
-    dss = DrawStateSetup::FromMeshAndShader(fsqFractal, this->julia.shader);
+    dss = DrawStateSetup::FromLayoutAndShader(fsqSetup.Layout, this->julia.shader);
     dss.RasterizerState.CullFaceEnabled = false;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     dss.BlendState.ColorFormat = PixelFormat::RGBA32F;

@@ -15,6 +15,7 @@ namespace Oryol {
 class VertexLayout {
 public:
     /// a component in the vertex layout
+    #pragma pack(push,1)
     class Component {
     public:
         /// default constructor
@@ -28,47 +29,42 @@ public:
         /// get byte size of component
         int32 ByteSize() const;
 
-        union {
-            #pragma pack(push,1)
-            struct {
-                VertexAttr::Code Attr;
-                VertexFormat::Code Format;
-            };
-            #pragma pack(pop)
-            uint16 Hash;
-        };
+        VertexAttr::Code Attr;
+        VertexFormat::Code Format;
     };
-    static_assert(sizeof(Component) == 2, "unexpected sizeof(VertexLayout::Component), bitfield packing problem!");
+    #pragma pack(pop)
+
+    /// the vertex step function, used for instancing, default is 'PerVertex'
+    VertexStepFunction::Code StepFunction;
+    /// the vertex step rate, used for instancing
+    uint8 StepRate;
 
     /// constructor
     VertexLayout();
-    /// clear the object
-    void Clear();
+    /// clear the vertex layout, chainable
+    VertexLayout& Clear();
     /// return true if layout is empty
     bool Empty() const;
+
     /// add a component
     VertexLayout& Add(const Component& comp);
     /// add component by name and format
     VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
-    /// append components from other vertex layout, fails hard on components collision
-    VertexLayout& Append(const VertexLayout& other);
+    /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
+    VertexLayout& EnableInstancing();
+
     /// get number of components
     int32 NumComponents() const;
     /// get component at index
     const Component& ComponentAt(int32 index) const;
     /// get component index by vertex attribute, return InvalidIndex if layout doesn't include attr
     int32 ComponentIndexByVertexAttr(VertexAttr::Code attr) const;
-    /// get byte size of vertex
+    /// get byte size of vertex (aka stride)
     int32 ByteSize() const;
     /// get byte offset of a component
     int32 ComponentByteOffset(int32 componentIndex) const;
     /// test if the layout contains a specific vertex attribute
     bool Contains(VertexAttr::Code attr) const;
-    /// compute a hash value of a vertex layout
-    uint64 Hash() const;
-
-    /// compute a combined hash value of 2 vertex layout (used for mesh/vertex shader layout matching)
-    static uint64 CombinedHash(const VertexLayout& l0, const VertexLayout& l1);
 
 private:
     StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents> comps;

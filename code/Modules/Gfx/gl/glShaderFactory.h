@@ -17,8 +17,6 @@ class shader;
 
 class glShaderFactory {
 public:
-    /// constructor
-    glShaderFactory();
     /// destructor
     ~glShaderFactory();
     
@@ -39,7 +37,7 @@ private:
     GLuint compileShader(ShaderStage::Code stage, const char* sourceString, int sourceLen) const;
 
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
     
 } // namespace _priv

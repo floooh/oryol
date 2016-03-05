@@ -13,19 +13,16 @@ namespace _priv {
 
 class d3d11Mesh : public meshBase {
 public:
-    /// constructor
-    d3d11Mesh();
     /// destructor
     ~d3d11Mesh();
 
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    ID3D11Buffer* d3d11VertexBuffer;
-    ID3D11Buffer* d3d11IndexBuffer;
-    int32 vbUpdateFrameIndex;
-    int32 ibUpdateFrameIndex;
-    D3D_PRIMITIVE_TOPOLOGY d3d11PrimTopology;
+    ID3D11Buffer* d3d11VertexBuffer = nullptr;
+    ID3D11Buffer* d3d11IndexBuffer = nullptr;
+    int32 vbUpdateFrameIndex = -1;
+    int32 ibUpdateFrameIndex = -1;
 };
 
 } // namespace _priv

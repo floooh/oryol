@@ -56,8 +56,6 @@ public:
     IndexType::Code IndicesType = IndexType::Index16;
     /// read/write access to vertex layout
     class VertexLayout Layout;
-    /// primitive type
-    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
     /// primitive groups (at least one must be defined)
     Array<PrimitiveGroup> PrimitiveGroups;
     /// vertex data usage

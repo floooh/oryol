@@ -30,6 +30,7 @@ rtValid(false),
 frameIndex(0),
 curRenderTarget(nullptr),
 curDrawState(nullptr),
+curPrimaryMesh(nullptr),
 d3d11CurRenderTargetView(nullptr),
 d3d11CurDepthStencilView(nullptr),
 d3d11CurRasterizerState(nullptr),
@@ -95,6 +96,7 @@ d3d11Renderer::discard() {
 
     this->curRenderTarget = nullptr;
     this->curDrawState = nullptr;
+    this->curPrimaryMesh = nullptr;
 
     this->d3d11DeviceContext = nullptr;
     this->d3d11Device = nullptr;
@@ -159,6 +161,9 @@ void
 d3d11Renderer::commitFrame() {
     o_assert_dbg(this->valid);
     this->rtValid = false;
+    this->curRenderTarget = nullptr;
+    this->curDrawState = nullptr;
+    this->curPrimaryMesh = nullptr;
     this->frameIndex++;
 }
 
@@ -248,15 +253,19 @@ d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, boo
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyDrawState(drawState* ds) {
+d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(ds);
+    o_assert_dbg(ds->shd);
+    o_assert_dbg(meshes && numMeshes > 0);
 
-    if (nullptr == ds) {
-        // the drawstate is still pending, invalidate rendering
-        this->curDrawState = nullptr;
-        return;
+    // if any of the meshes are still loading, cancel the next draw state
+    for (int i = 0; i < numMeshes; i++) {
+        if (nullptr == meshes[i]) {
+            this->curDrawState = nullptr;
+            return;
+        }
     }
-
     o_assert_dbg(ds->d3d11DepthStencilState);
     o_assert_dbg(ds->d3d11RasterizerState);
     o_assert_dbg(ds->d3d11BlendState);
@@ -265,7 +274,8 @@ d3d11Renderer::applyDrawState(drawState* ds) {
     o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
     this->curDrawState = ds;
-    o_assert_dbg(ds->shd);
+    this->curPrimaryMesh = meshes[0];
+    o_assert_dbg(this->curPrimaryMesh);
 
     // apply state objects (if state has changed)
     if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
@@ -289,40 +299,42 @@ d3d11Renderer::applyDrawState(drawState* ds) {
 
     // apply vertex buffers
     bool vbDirty = false;
-    const int32 vbNumSlots = ds->d3d11IAVertexBuffers.Size();
-    o_assert_dbg(vbNumSlots == this->d3d11CurVBs.Size());
-    for (int vbSlotIndex = 0; vbSlotIndex < vbNumSlots; vbSlotIndex++) {
-        if (this->d3d11CurVBs[vbSlotIndex] != ds->d3d11IAVertexBuffers[vbSlotIndex]) {
-            this->d3d11CurVBs[vbSlotIndex] = ds->d3d11IAVertexBuffers[vbSlotIndex];
-            vbDirty = true;
+    for (int slotIndex = 0; slotIndex < GfxConfig::MaxNumInputMeshes; slotIndex++) {
+        const mesh* msh = slotIndex < numMeshes ? meshes[slotIndex] : nullptr;
+        if (msh) {
+            if (this->d3d11CurVBs[slotIndex] != msh->d3d11VertexBuffer) {
+                this->d3d11CurVBs[slotIndex] = msh->d3d11VertexBuffer;
+                vbDirty = true;
+            }
+            if (this->curVertexStrides[slotIndex] != msh->vertexBufferAttrs.Layout.ByteSize()) {
+                this->curVertexStrides[slotIndex] = msh->vertexBufferAttrs.Layout.ByteSize();
+                vbDirty = true;
+            }
         }
-        if (this->curVertexStrides[vbSlotIndex] != ds->d3d11IAStrides[vbSlotIndex]) {
-            this->curVertexStrides[vbSlotIndex] = ds->d3d11IAStrides[vbSlotIndex];
+        else if (this->d3d11CurVBs[slotIndex] != nullptr) {
             vbDirty = true;
-        }
-        if (this->curVertexOffsets[vbSlotIndex] != ds->d3d11IAOffsets[vbSlotIndex]) {
-            this->curVertexOffsets[vbSlotIndex] = ds->d3d11IAOffsets[vbSlotIndex];
-            vbDirty = true;
+            this->d3d11CurVBs[slotIndex] = nullptr;
+            this->curVertexStrides[slotIndex] = 0;
         }
     }
     if (vbDirty) {
         this->d3d11DeviceContext->IASetVertexBuffers(
             0,                                      // StartSlot 
-            vbNumSlots,                             // NumBuffers
-            &(this->d3d11CurVBs[0]),      // ppVertexBuffers
+            GfxConfig::MaxNumInputMeshes,           // NumBuffers
+            &(this->d3d11CurVBs[0]),                // ppVertexBuffers
             &(this->curVertexStrides[0]),           // pStrides
             &(this->curVertexOffsets[0]));          // pOffsets
     }
-    if (this->d3d11CurPrimitiveTopology != ds->meshes[0]->d3d11PrimTopology) {
-        this->d3d11CurPrimitiveTopology = ds->meshes[0]->d3d11PrimTopology;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(ds->meshes[0]->d3d11PrimTopology);
+    if (this->d3d11CurPrimitiveTopology != ds->d3d11PrimTopology) {
+        this->d3d11CurPrimitiveTopology = ds->d3d11PrimTopology;
+        this->d3d11DeviceContext->IASetPrimitiveTopology(ds->d3d11PrimTopology);
     }
 
     // apply optional index buffer (can be nullptr!)
-    if (this->d3d11CurIndexBuffer != ds->meshes[0]->d3d11IndexBuffer) {
-        this->d3d11CurIndexBuffer = ds->meshes[0]->d3d11IndexBuffer;
-        DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(ds->meshes[0]->indexBufferAttrs.Type);
-        this->d3d11DeviceContext->IASetIndexBuffer(ds->meshes[0]->d3d11IndexBuffer, d3d11IndexFormat, 0);
+    if (this->d3d11CurIndexBuffer != this->curPrimaryMesh->d3d11IndexBuffer) {
+        this->d3d11CurIndexBuffer = this->curPrimaryMesh->d3d11IndexBuffer;
+        DXGI_FORMAT d3d11IndexFormat = d3d11Types::asIndexType(this->curPrimaryMesh->indexBufferAttrs.Type);
+        this->d3d11DeviceContext->IASetIndexBuffer(this->curPrimaryMesh->d3d11IndexBuffer, d3d11IndexFormat, 0);
     }
 
     // apply input layout and shaders
@@ -332,13 +344,13 @@ d3d11Renderer::applyDrawState(drawState* ds) {
     }
 
     // apply shaders
-    if (this->d3d11CurVertexShader != ds->d3d11VertexShader) {
-        this->d3d11CurVertexShader = ds->d3d11VertexShader;
-        this->d3d11DeviceContext->VSSetShader(ds->d3d11VertexShader, NULL, 0);
+    if (this->d3d11CurVertexShader != ds->shd->d3d11VertexShader) {
+        this->d3d11CurVertexShader = ds->shd->d3d11VertexShader;
+        this->d3d11DeviceContext->VSSetShader(ds->shd->d3d11VertexShader, NULL, 0);
     }
-    if (this->d3d11CurPixelShader != ds->d3d11PixelShader) {
-        this->d3d11CurPixelShader = ds->d3d11PixelShader;
-        this->d3d11DeviceContext->PSSetShader(ds->d3d11PixelShader, NULL, 0);
+    if (this->d3d11CurPixelShader != ds->shd->d3d11PixelShader) {
+        this->d3d11CurPixelShader = ds->shd->d3d11PixelShader;
+        this->d3d11DeviceContext->PSSetShader(ds->shd->d3d11PixelShader, NULL, 0);
     }
         
     // apply vertex-shader-stage constant buffers
@@ -461,8 +473,9 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
     }
@@ -478,14 +491,15 @@ d3d11Renderer::draw(int32 primGroupIndex) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->draw(primGroup);
 }
 
@@ -497,8 +511,9 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    const IndexType::Code indexType = this->curDrawState->meshes[0]->indexBufferAttrs.Type;
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
         this->d3d11DeviceContext->DrawIndexedInstanced(primGroup.NumElements, numInstances, primGroup.BaseElement, 0, 0);
     }
@@ -514,14 +529,15 @@ d3d11Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nullptr == this->curDrawState) {
         return;
     }
-    o_assert_dbg(this->curDrawState->meshes[0]);
-    if (primGroupIndex >= this->curDrawState->meshes[0]->numPrimGroups) {
+    const mesh* msh = this->curPrimaryMesh;
+    o_assert_dbg(msh);
+    if (primGroupIndex >= msh->numPrimGroups) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error
         return;
     }
-    const PrimitiveGroup& primGroup = this->curDrawState->meshes[0]->primGroups[primGroupIndex];
+    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
     this->drawInstanced(primGroup, numInstances);
 }
 

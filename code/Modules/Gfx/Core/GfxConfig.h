@@ -22,8 +22,6 @@ public:
     static const int32 MaxNumInputMeshes = 4;
     /// maximum number of primitive groups for one mesh
     static const int32 MaxNumPrimGroups = 8;
-    /// max number of shader programs in one program bundle
-    static const int32 MaxNumBundlePrograms = 8;
     /// max number of uniform blocks per stage
     static const int32 MaxNumUniformBlocksPerStage = 4;
     /// max number of texture blocks per stage

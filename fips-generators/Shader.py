@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 49
+Version = 50
 
 import os
 import sys
@@ -442,31 +442,17 @@ class Program() :
     '''
     A shader program, made of vertex/fragment shaders
     '''
-    def __init__(self, vs, fs, filePath, lineNumber) :
+    def __init__(self, name, vs, fs, filePath, lineNumber) :
+        self.name = name
         self.vs = vs
         self.fs = fs
+        self.uniformBlocks = []
+        self.textureBlocks = []
         self.filePath = filePath
         self.lineNumber = lineNumber        
 
     def getTag(self) :
         return 'program'
-
-    def dump(self) :
-        dumpObj(self)
-
-#-------------------------------------------------------------------------------
-class Bundle() :
-    '''
-    A program bundle (array of vertex/fragment shader tuples, and uniforms)
-    '''
-    def __init__(self, name) :
-        self.name = name
-        self.programs = []
-        self.uniformBlocks = []
-        self.textureBlocks = []
-
-    def getTag(self) :
-        return 'bundle'
 
     def dump(self) :
         dumpObj(self)
@@ -659,17 +645,16 @@ class Parser :
         self.push(fs)
 
     #---------------------------------------------------------------------------
-    def onBundle(self, args) :
-        if len(args) != 1:
-            util.fmtError("@bundle must have 1 arg (name)")
+    def onProgram(self, args) :        
+        if len(args) != 3:
+            util.fmtError("@program must have 3 args (name vs fs)")
         if self.current is not None :
-            util.fmtError("cannot nest @bundle (missing @end tag in '{}'?)".format(self.current.name))
+            util.fmtError("cannot nest @program (missing @end tag in '{}'?)".format(self.current.name))
         name = args[0]
-        if name in self.shaderLib.bundles :
-            util.fmtError("@bundle '{}' already defined!".format(name))
-        bundle = Bundle(name)
-        self.shaderLib.bundles[name] = bundle
-        self.push(bundle)          
+        vs = args[1]
+        fs = args[2]
+        prog = Program(name, vs, fs, self.fileName, self.lineNumber)
+        self.shaderLib.programs[name] = prog
 
     #---------------------------------------------------------------------------
     def onIn(self, args) :
@@ -712,16 +697,6 @@ class Parser :
         if checkListDup(type, self.current.highPrecision) :
             util.fmtError("@highp type '{}' already defined in '{}'!".format(type, self.current.name))
         self.current.highPrecision.append(type)
-
-    #---------------------------------------------------------------------------
-    def onProgram(self, args) :
-        if not self.current or self.current.getTag() != 'bundle' :
-            util.fmtError("@program must come after @bundle!")
-        if len(args) != 2:
-            util.fmtError("@program must have 2 args (vs fs)")
-        vs = args[0]
-        fs = args[1]
-        self.current.programs.append(Program(vs, fs, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onUseCodeBlock(self, args) :
@@ -768,8 +743,8 @@ class Parser :
 
     #---------------------------------------------------------------------------
     def onEnd(self, args) :
-        if not self.current or not self.current.getTag() in ['uniform_block', 'texture_block', 'code_block', 'vs', 'fs', 'bundle'] :
-            util.fmtError("@end must come after @uniform_block, @texture_block, @code_block, @vs, @fs or @bundle!")
+        if not self.current or not self.current.getTag() in ['uniform_block', 'texture_block', 'code_block', 'vs', 'fs', 'program'] :
+            util.fmtError("@end must come after @uniform_block, @texture_block, @code_block, @vs, @fs or @program!")
         if len(args) != 0:
             util.fmtError("@end must not have arguments")
         if self.current.getTag() in ['code_block', 'vs', 'fs'] and len(self.current.lines) == 0 :
@@ -796,8 +771,6 @@ class Parser :
                 self.onVertexShader(args)
             elif tag == 'fs':
                 self.onFragmentShader(args)
-            elif tag == 'bundle':
-                self.onBundle(args)
             elif tag == 'use_code_block':
                 self.onUseCodeBlock(args)
             elif tag == 'use_uniform_block':
@@ -1339,7 +1312,7 @@ class ShaderLibrary :
         self.textureBlocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
-        self.bundles = {}
+        self.programs = {}
         self.current = None
 
     def dump(self) :
@@ -1359,9 +1332,9 @@ class ShaderLibrary :
         print 'Fragment Shaders:'
         for fs in self.fragmentShaders.values() :
             fs.dump()
-        print 'Bundles:'
-        for bundle in self.bundles.values() :
-            bundle.dump()
+        print 'Programs:'
+        for prog in self.programs.values() :
+            program.dump()
 
     def parseSources(self) :
         '''
@@ -1421,29 +1394,28 @@ class ShaderLibrary :
                 util.setErrorLocation(textureBlockRef.filePath, textureBlockRef.lineNumber)
                 util.fmtError("texture_block '%s' not found!".format(textureBlockRef.name))
 
-    def resolveUniformAndTextureBlocks(self, bundle) :
+    def resolveUniformAndTextureBlocks(self, program) :
         '''
-        Gathers all uniform- and texture-blocks from all shaders in the bundle
+        Gathers all uniform- and texture-blocks from all shaders in the program
         and assigns the bindStage
         '''
-        for program in bundle.programs :
-            if program.vs not in self.vertexShaders :
-                util.setErrorLocation(program.filePath, program.lineNumber)
-                util.fmtError("unknown vertex shader '{}'".format(program.vs))
-            for uniformBlockRef in self.vertexShaders[program.vs].uniformBlockRefs :
-                self.checkAddUniformBlock(uniformBlockRef, bundle.uniformBlocks)
-            for textureBlockRef in self.vertexShaders[program.vs].textureBlockRefs :
-                self.checkAddTextureBlock(textureBlockRef, bundle.textureBlocks)
+        if program.vs not in self.vertexShaders :
+            util.setErrorLocation(program.filePath, program.lineNumber)
+            util.fmtError("unknown vertex shader '{}'".format(program.vs))
+        for uniformBlockRef in self.vertexShaders[program.vs].uniformBlockRefs :
+            self.checkAddUniformBlock(uniformBlockRef, program.uniformBlocks)
+        for textureBlockRef in self.vertexShaders[program.vs].textureBlockRefs :
+            self.checkAddTextureBlock(textureBlockRef, program.textureBlocks)
 
-            if program.fs not in self.fragmentShaders :
-                util.setErrorLocation(program.filePath, program.lineNumber)
-                util.fmtError("unknown fragment shader '{}'".format(program.fs))
-            for uniformBlockRef in self.fragmentShaders[program.fs].uniformBlockRefs :
-                self.checkAddUniformBlock(uniformBlockRef, bundle.uniformBlocks)
-            for textureBlockRef in self.fragmentShaders[program.fs].textureBlockRefs :
-                self.checkAddTextureBlock(textureBlockRef, bundle.textureBlocks)
+        if program.fs not in self.fragmentShaders :
+            util.setErrorLocation(program.filePath, program.lineNumber)
+            util.fmtError("unknown fragment shader '{}'".format(program.fs))
+        for uniformBlockRef in self.fragmentShaders[program.fs].uniformBlockRefs :
+            self.checkAddUniformBlock(uniformBlockRef, program.uniformBlocks)
+        for textureBlockRef in self.fragmentShaders[program.fs].textureBlockRefs :
+            self.checkAddTextureBlock(textureBlockRef, program.textureBlocks)
     
-    def assignBindSlotIndices(self, bundle) :
+    def assignBindSlotIndices(self, program) :
         '''
         Assigns bindSlotIndex to uniform- and texture-blocks, and
         to textures inside texture blocks. These
@@ -1452,7 +1424,7 @@ class ShaderLibrary :
         '''
         vsUBSlot = 0
         fsUBSlot = 0
-        for ub in bundle.uniformBlocks :
+        for ub in program.uniformBlocks :
             if ub.bindStage == 'vs' :
                 ub.bindSlot = vsUBSlot
                 vsUBSlot += 1
@@ -1463,7 +1435,7 @@ class ShaderLibrary :
         fsTBSlot = 0
         vsTexSlot = 0
         fsTexSlot = 0
-        for tb in bundle.textureBlocks :
+        for tb in program.textureBlocks :
             if tb.bindStage == 'vs' :
                 tb.bindSlot = vsTBSlot
                 vsTBSlot += 1
@@ -1490,13 +1462,13 @@ class ShaderLibrary :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
-        for bundle in self.bundles.values() :
-            self.resolveUniformAndTextureBlocks(bundle)
-            self.assignBindSlotIndices(bundle)
+        for program in self.programs.values() :
+            self.resolveUniformAndTextureBlocks(program)
+            self.assignBindSlotIndices(program)
 
     def validate(self) :
         '''
-        Runs additional validation check after bundles are resolved and before
+        Runs additional validation check after programs are resolved and before
         shader code is generated:
 
         - check whether vertex shader output signatures match fragment
@@ -1504,29 +1476,28 @@ class ShaderLibrary :
         must match exactly, even if the fragment shader doesn't use all output
         from the vertex shader
         '''
-        for bundle in self.bundles.values() :
-            for prog in bundle.programs :
-                fatalError = False
-                vs = self.vertexShaders[prog.vs]
-                fs = self.fragmentShaders[prog.fs]
-                if len(vs.outputs) != len(fs.inputs) :
-                    if len(fs.inputs) > 0 :
-                        util.setErrorLocation(fs.inputs[0].filePath, fs.inputs[0].lineNumber)
-                        util.fmtError("number of fs inputs doesn't match number of vs outputs", False)
-                        fatalError = True
-                    if len(vs.outputs) > 0 :
-                        util.setErrorLocation(vs.outputs[0].filePath, vs.outputs[0].lineNumber)
-                        util.fmtError("number of vs outputs doesn't match number of fs inputs", False)
-                        fatalError = True
-                    if fatalError :
-                        sys.exit(10)
-                else :
-                    for index, outAttr in enumerate(vs.outputs) :
-                        if outAttr != fs.inputs[index] :
-                            util.setErrorLocation(fs.inputs[index].filePath, fs.inputs[index].lineNumber)
-                            util.fmtError("fs input doesn't match vs output (names, types and order must match)", False)
-                            util.setErrorLocation(outAttr.filePath, outAttr.lineNumber)
-                            util.fmtError("vs output doesn't match fs input (names, types and order must match)")
+        for prog in self.programs.values() :
+            fatalError = False
+            vs = self.vertexShaders[prog.vs]
+            fs = self.fragmentShaders[prog.fs]
+            if len(vs.outputs) != len(fs.inputs) :
+                if len(fs.inputs) > 0 :
+                    util.setErrorLocation(fs.inputs[0].filePath, fs.inputs[0].lineNumber)
+                    util.fmtError("number of fs inputs doesn't match number of vs outputs", False)
+                    fatalError = True
+                if len(vs.outputs) > 0 :
+                    util.setErrorLocation(vs.outputs[0].filePath, vs.outputs[0].lineNumber)
+                    util.fmtError("number of vs outputs doesn't match number of fs inputs", False)
+                    fatalError = True
+                if fatalError :
+                    sys.exit(10)
+            else :
+                for index, outAttr in enumerate(vs.outputs) :
+                    if outAttr != fs.inputs[index] :
+                        util.setErrorLocation(fs.inputs[index].filePath, fs.inputs[index].lineNumber)
+                        util.fmtError("fs input doesn't match vs output (names, types and order must match)", False)
+                        util.setErrorLocation(outAttr.filePath, outAttr.lineNumber)
+                        util.fmtError("vs output doesn't match fs input (names, types and order must match)")
 
     def generateShaderSourcesGLSL(self) :
         '''
@@ -1641,12 +1612,12 @@ def writeHeaderBottom(f, shdLib) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def writeBundleHeader(f, shdLib, bundle) :
-    f.write('    class ' + bundle.name + ' {\n')
+def writeProgramHeader(f, shdLib, program) :
+    f.write('    class ' + program.name + ' {\n')
     f.write('    public:\n')
     
     # write uniform block structs
-    for ub in bundle.uniformBlocks :
+    for ub in program.uniformBlocks :
         if ub.bindStage == 'vs' :
             stageName = 'VS'
         else :
@@ -1670,7 +1641,7 @@ def writeBundleHeader(f, shdLib, bundle) :
         f.write('        #pragma pack(pop)\n')
     
     # write texture block structs
-    for tb in bundle.textureBlocks :
+    for tb in program.textureBlocks :
         if tb.bindStage == 'vs' :
             stageName = 'VS'
         else :
@@ -1692,8 +1663,8 @@ def writeBundleHeader(f, shdLib, bundle) :
 def generateHeader(absHeaderPath, shdLib) :
     f = open(absHeaderPath, 'w')
     writeHeaderTop(f, shdLib)
-    for bundle in shdLib.bundles.values() :
-        writeBundleHeader(f, shdLib, bundle)
+    for prog in shdLib.programs.values() :
+        writeProgramHeader(f, shdLib, prog)
     writeHeaderBottom(f, shdLib)
     f.close()
 
@@ -1796,41 +1767,40 @@ def writeVertexLayout(f, vs) :
     return layoutName
 
 #-------------------------------------------------------------------------------
-def writeBundleSource(f, shdLib, bundle) :
+def writeProgramSource(f, shdLib, prog) :
 
     # write the Setup() function
-    f.write('ShaderSetup ' + bundle.name + '::Setup() {\n')
-    f.write('    ShaderSetup setup("' + bundle.name + '");\n')
-    for i, prog in enumerate(bundle.programs) :
-        vs = shdLib.vertexShaders[prog.vs]
-        fs = shdLib.fragmentShaders[prog.fs]
-        vsInputLayout = writeVertexLayout(f, vs)
-        vsName = vs.name
-        fsName = fs.name
-        for slVersion in slVersions :
-            slangType = slSlangTypes[slVersion]
-            if isGLSL[slVersion] :
-                f.write('    #if ORYOL_OPENGL\n')
-            elif isHLSL[slVersion] :
-                f.write('    #if ORYOL_D3D11 || ORYOL_D3D12\n')
-            elif isMetal[slVersion] :
-                f.write('    #if ORYOL_METAL\n')
-                f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
-            vsSource = '{}_{}_src'.format(vsName, slVersion)
-            fsSource = '{}_{}_src'.format(fsName, slVersion)
-            if isGLSL[slVersion] :
-                f.write('    setup.AddProgramFromSources({}, {}, {}, {}, {});\n'.format(
-                    i, slangType, vsInputLayout, vsSource, fsSource));
-            elif isHLSL[slVersion] :
-                f.write('    setup.AddProgramFromByteCode({}, {}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
-                    i, slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
-            elif isMetal[slVersion] :
-                f.write('    setup.AddProgramFromLibrary({}, {}, {}, "{}", "{}");\n'.format(
-                    i, slangType, vsInputLayout, vsName, fsName))
-            f.write('    #endif\n');
+    f.write('ShaderSetup ' + prog.name + '::Setup() {\n')
+    f.write('    ShaderSetup setup("' + prog.name + '");\n')
+    vs = shdLib.vertexShaders[prog.vs]
+    fs = shdLib.fragmentShaders[prog.fs]
+    vsInputLayout = writeVertexLayout(f, vs)
+    vsName = vs.name
+    fsName = fs.name
+    for slVersion in slVersions :
+        slangType = slSlangTypes[slVersion]
+        if isGLSL[slVersion] :
+            f.write('    #if ORYOL_OPENGL\n')
+        elif isHLSL[slVersion] :
+            f.write('    #if ORYOL_D3D11 || ORYOL_D3D12\n')
+        elif isMetal[slVersion] :
+            f.write('    #if ORYOL_METAL\n')
+            f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
+        vsSource = '{}_{}_src'.format(vsName, slVersion)
+        fsSource = '{}_{}_src'.format(fsName, slVersion)
+        if isGLSL[slVersion] :
+            f.write('    setup.SetProgramFromSources({}, {}, {}, {});\n'.format(
+                slangType, vsInputLayout, vsSource, fsSource));
+        elif isHLSL[slVersion] :
+            f.write('    setup.SetProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+                slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
+        elif isMetal[slVersion] :
+            f.write('    setup.SetProgramFromLibrary({}, {}, "{}", "{}");\n'.format(
+                slangType, vsInputLayout, vsName, fsName))
+        f.write('    #endif\n');
 
     # add uniform layouts to setup object
-    for ub in bundle.uniformBlocks :
+    for ub in prog.uniformBlocks :
         layoutName = '{}_ublayout'.format(ub.bindName)
         f.write('    UniformBlockLayout {};\n'.format(layoutName))
         f.write('    {}.TypeHash = {};\n'.format(layoutName, ub.getHash()))
@@ -1844,7 +1814,7 @@ def writeBundleSource(f, shdLib, bundle) :
             ub.name, layoutName, ub.bindName, ub.bindName))
 
     # add texture layouts to setup objects
-    for tb in bundle.textureBlocks :
+    for tb in prog.textureBlocks :
         layoutName = '{}_tblayout'.format(tb.bindName)
         f.write('    TextureBlockLayout {};\n'.format(layoutName))
         f.write('    {}.TypeHash = {};\n'.format(layoutName, tb.getHash()))
@@ -1873,9 +1843,8 @@ def generateSource(absSourcePath, shdLib) :
             writeShaderSource(f, absSourcePath, shdLib, vs, slVersion)
         for fs in shdLib.fragmentShaders.values() :
             writeShaderSource(f, absSourcePath, shdLib, fs, slVersion)
-
-    for bundle in shdLib.bundles.values() :
-        writeBundleSource(f, shdLib, bundle)            
+    for prog in shdLib.programs.values() :
+        writeProgramSource(f, shdLib, prog)
     writeSourceBottom(f, shdLib)  
     
     f.close()

@@ -38,9 +38,7 @@ _func vec4 gamma(vec4 c) {
 }
 @end
 
-@bundle Normals
-@program normalsVS normalsFS
-@end
+@program Normals normalsVS normalsFS
 
 //------------------------------------------------------------------------------
 //  lambert shader
@@ -86,9 +84,7 @@ _func vec4 gamma(vec4 c) {
 }
 @end
 
-@bundle Lambert
-@program lambertVS lambertFS
-@end
+@program Lambert lambertVS lambertFS
 
 //------------------------------------------------------------------------------
 //  phong shader
@@ -145,7 +141,5 @@ _func vec4 gamma(vec4 c) {
 }
 @end
 
-@bundle Phong
-@program phongVS phongFS
-@end
+@program Phong phongVS phongFS
 

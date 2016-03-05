@@ -24,38 +24,17 @@ public:
     /// clear the object
     void Clear();
 
-    /// add vs/ps pair with mask
-    int32 addShaders(uint32 mask, ID3D11VertexShader* vs, ID3D11PixelShader* ps);
-    /// get program index by mask, return InvalidIndex if not found
-    int32 getProgIndexByMask(uint32 mask) const;
-    /// get vertex shader by mask, reutrn nullptr if not found
-    ID3D11VertexShader* getVertexShaderByMask(uint32 mask) const;
-    /// get pixel shader by mask, return nullptr if not found
-    ID3D11PixelShader* getPixelShaderByMask(uint32 mask) const;
-
-    /// get number of programs
-    int32 getNumPrograms() const;
-    /// get vertex shader at program index
-    ID3D11VertexShader* getVertexShaderAtIndex(int32 index) const;
-    /// get pixel shader at program index
-    ID3D11PixelShader* getPixelShaderAtIndex(int32 index) const;
-
+    /// the D3D11 vertex shader
+    ID3D11VertexShader* d3d11VertexShader;
+    /// the D3D1 pixel shader
+    ID3D11PixelShader* d3d11PixelShader;
     /// add a uniform block entry
     void addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb);
     /// get uniform block constant buffer at bind stage and slot (can return nullptr)
     ID3D11Buffer* getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const;
 
 private:
-    struct programEntry {
-        programEntry() : mask(0), vertexShader(nullptr), pixelShader(nullptr) {};
-
-        uint32 mask;
-        ID3D11VertexShader* vertexShader;
-        ID3D11PixelShader* pixelShader;
-    };
     static const int32 NumConstantBuffers = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
-    int32 numPrograms;
-    StaticArray<programEntry, GfxConfig::MaxNumBundlePrograms> programEntries;
     StaticArray<ID3D11Buffer*, NumConstantBuffers> constantBuffers;
 };
 

@@ -15,8 +15,6 @@ class shader;
 
 class mtlShaderFactory {
 public:
-    /// constructor
-    mtlShaderFactory();
     /// destructor
     ~mtlShaderFactory();
     
@@ -34,7 +32,7 @@ public:
 
 private:
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
     
 } // namespace _priv

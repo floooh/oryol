@@ -10,13 +10,10 @@ namespace Oryol {
 MeshSetup::MeshSetup() :
 VertexUsage(Usage::InvalidUsage),
 IndexUsage(Usage::InvalidUsage),
-StepFunction(VertexStepFunction::PerVertex),
-StepRate(1),
 NumVertices(0),
 NumIndices(0),
 IndicesType(IndexType::None),
 FullScreenQuadFlipV(false),
-PrimType(PrimitiveType::Triangles),
 Locator(Locator::NonShared()),
 DataVertexOffset(0),
 DataIndexOffset(InvalidIndex),
@@ -86,6 +83,8 @@ MeshSetup::FullScreenQuad(bool flipV) {
     MeshSetup setup;
     setup.setupFullScreenQuad = true;
     setup.FullScreenQuadFlipV = flipV;
+    setup.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    setup.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     return setup;
 }
 

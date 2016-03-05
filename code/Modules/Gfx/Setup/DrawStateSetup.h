@@ -11,6 +11,7 @@
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
+#include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "glm/vec4.hpp"
 
@@ -18,8 +19,10 @@ namespace Oryol {
 
 class DrawStateSetup {
 public:
-    /// construct from mesh and prog
-    static DrawStateSetup FromMeshAndShader(const Id& mesh, const Id& shd, uint32 shdSelMask=0);
+    /// construct from shader
+    static DrawStateSetup FromShader(const Id& shd);
+    /// construct from vertex layout and shader
+    static DrawStateSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd);
 
     /// default constructor
     DrawStateSetup();
@@ -34,12 +37,12 @@ public:
     class DepthStencilState DepthStencilState;
     /// rasterizer state
     class RasterizerState RasterizerState;
-    /// input mesh(es)
-    StaticArray<Id, GfxConfig::MaxNumInputMeshes> Meshes;
+    /// input vertex layouts (one per mesh slot)
+    StaticArray<VertexLayout, GfxConfig::MaxNumInputMeshes> Layouts;
+    /// primitive type 
+    PrimitiveType::Code PrimType;
     /// shader 
     Id Shader;
-    /// shader selection mask
-    uint32 ShaderSelectionMask;
 };
 
 } // namespace Oryol

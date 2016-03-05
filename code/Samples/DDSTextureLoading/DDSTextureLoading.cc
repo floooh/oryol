@@ -28,6 +28,7 @@ private:
     static const int32 NumTextures = 16;
     glm::mat4 view;
     glm::mat4 proj;
+    MeshBlock meshBlock;
     Shaders::Main::VSParams vsParams;
     StaticArray<Shaders::Main::FSTextures, NumTextures> texBlock;
     ClearState clearState;
@@ -71,7 +72,7 @@ DDSTextureLoadingApp::OnRunning() {
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
             this->vsParams.ModelViewProjection = this->computeMVP(p);
-            Gfx::ApplyDrawState(this->drawState, this->texBlock[i]);
+            Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->texBlock[i]);
             Gfx::ApplyUniformBlock(this->vsParams);
             Gfx::Draw(0);
         }
@@ -133,8 +134,8 @@ DDSTextureLoadingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4);
-    Id mesh = Gfx::CreateResource(shapeBuilder.Build());
-    auto dss = DrawStateSetup::FromMeshAndShader(mesh, shd);
+    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState = Gfx::CreateResource(dss);

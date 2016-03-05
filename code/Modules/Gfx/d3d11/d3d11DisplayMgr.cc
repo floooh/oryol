@@ -15,19 +15,6 @@ namespace _priv {
 static DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 
 //------------------------------------------------------------------------------
-d3d11DisplayMgr::d3d11DisplayMgr() :
-d3d11Device(nullptr),
-d3d11DeviceContext(nullptr),
-dxgiSwapChain(nullptr),
-d3d11RenderTarget(nullptr),
-d3d11RenderTargetView(nullptr),
-d3d11DepthStencilBuffer(nullptr),
-d3d11DepthStencilView(nullptr) {
-
-    Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
-}
-
-//------------------------------------------------------------------------------
 d3d11DisplayMgr::~d3d11DisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
@@ -38,6 +25,7 @@ d3d11DisplayMgr::~d3d11DisplayMgr() {
 void
 d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
+    Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
     winDisplayMgr::SetupDisplay(setup, ptrs, " (D3D11)");
     this->createDeviceAndSwapChain();
     const DisplayAttrs& attrs = this->displayAttrs;

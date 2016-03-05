@@ -11,12 +11,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d12ShaderFactory::d3d12ShaderFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d12ShaderFactory::~d3d12ShaderFactory() {
     o_assert_dbg(!this->isValid);
 }
@@ -50,16 +44,10 @@ d3d12ShaderFactory::SetupResource(shader& shd) {
 
     const ShaderLang::Code slang = ShaderLang::HLSL5;
     const ShaderSetup& setup = shd.Setup;
-
-    // set vertex- and pixel-shader bytecode pointers
-    d3d12Shader::shaderBlob vsByteCode;
-    d3d12Shader::shaderBlob psByteCode;
-    const int32 numProgs = setup.NumPrograms();
-    for (int32 progIndex = 0; progIndex < numProgs; progIndex++) {
-        setup.VertexShaderByteCode(progIndex, slang, vsByteCode.ptr, vsByteCode.size);
-        setup.FragmentShaderByteCode(progIndex, slang, psByteCode.ptr, psByteCode.size);
-        shd.addShaders(setup.Mask(progIndex), vsByteCode, psByteCode);
-    }
+    setup.VertexShaderByteCode(slang, shd.vertexShader.ptr, shd.vertexShader.size);
+    setup.FragmentShaderByteCode(slang, shd.pixelShader.ptr, shd.pixelShader.size);
+    o_assert_dbg(shd.vertexShader.ptr && (shd.vertexShader.size > 0));
+    o_assert_dbg(shd.pixelShader.ptr && (shd.pixelShader.size > 0));
 
     return ResourceState::Valid;
 }

@@ -29,6 +29,4 @@
     _color = tex2D(tex, uv).xxxx * color;
 @end
 
-@bundle IMUIShader
-@program vsIMUI fsIMUI
-@end
+@program IMUIShader vsIMUI fsIMUI

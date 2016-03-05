@@ -12,12 +12,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11DrawStateFactory::d3d11DrawStateFactory() :
-d3d11Device(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 d3d11DrawStateFactory::~d3d11DrawStateFactory() {
     o_assert_dbg(nullptr == this->d3d11Device);
 }
@@ -45,8 +39,6 @@ ResourceState::Code
 d3d11DrawStateFactory::SetupResource(drawState& ds) {
     o_assert_dbg(nullptr != this->d3d11Device);
     o_assert_dbg(nullptr == ds.d3d11InputLayout);
-    o_assert_dbg(nullptr == ds.d3d11VertexShader);
-    o_assert_dbg(nullptr == ds.d3d11PixelShader);
     o_assert_dbg(nullptr == ds.d3d11RasterizerState);
     o_assert_dbg(nullptr == ds.d3d11BlendState);
     o_assert_dbg(nullptr == ds.d3d11DepthStencilState);
@@ -55,25 +47,9 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     drawStateFactoryBase::SetupResource(ds);
     o_assert_dbg(ds.shd);
 
-    // set vertex buffers, strides, offsets and input layout
-    D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
-    int d3d11IASlotIndex = 0;
-    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
-        const mesh* msh = ds.meshes[mshIndex];
-        if (msh && msh->d3d11VertexBuffer) {
-            ds.d3d11IAVertexBuffers[d3d11IASlotIndex] = msh->d3d11VertexBuffer;
-            ds.d3d11IAStrides[d3d11IASlotIndex] = msh->vertexBufferAttrs.Layout.ByteSize();
-            ds.d3d11IAOffsets[d3d11IASlotIndex] = 0;
-            d3d11IASlotIndex++;
-        }
-    }
-    // input-layout, vertex and pixel shader
     ds.d3d11InputLayout = this->createInputLayout(ds);
-    ds.d3d11VertexShader = ds.shd->getVertexShaderByMask(ds.Setup.ShaderSelectionMask);
-    ds.d3d11PixelShader = ds.shd->getPixelShaderByMask(ds.Setup.ShaderSelectionMask);
+    ds.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(ds.Setup.PrimType);
     o_assert_dbg(ds.d3d11InputLayout);
-    o_assert_dbg(ds.d3d11VertexShader);
-    o_assert_dbg(ds.d3d11PixelShader);
 
     // create state objects (NOTE: creating the same state will return
     // the same d3d11 state object, so no need to implement our own reuse)
@@ -139,7 +115,7 @@ void
 d3d11DrawStateFactory::DestroyResource(drawState& ds) {
     this->pointers.renderer->invalidateDrawState();
     if (nullptr != ds.d3d11InputLayout) {
-        this->releaseInputLayout(ds.d3d11InputLayout);
+        ds.d3d11InputLayout->Release();
     }
     if (nullptr != ds.d3d11RasterizerState) {
         ds.d3d11RasterizerState->Release();
@@ -158,104 +134,48 @@ ID3D11InputLayout*
 d3d11DrawStateFactory::createInputLayout(const drawState& ds) {
     o_assert_dbg(nullptr == ds.d3d11InputLayout);
 
-    // this is trying to reuse existing input layouts which match the
-    // provided mesh-vertex and vertex-shader-input layout
-    // the resulting number of input layouts should be fairly small
-    // (number of unique mesh vertex layout times number of unique shader vertex layouts)
-
-    // build combined vertex layout of all input vertex buffers
-    VertexLayout vertexLayout;
-    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
-        const mesh* msh = ds.meshes[mshIndex];
-        if (msh) {
-            vertexLayout.Append(msh->vertexBufferAttrs.Layout);
-        }
-    }
-    const VertexLayout& vsInputLayout = ds.shd->Setup.VertexShaderInputLayout(ds.Setup.ShaderSelectionMask);
-    const uint64 hash = VertexLayout::CombinedHash(vertexLayout, vsInputLayout);
-    if (this->d3d11InputLayouts.Contains(hash)) {
-        // re-use an existing input layout object
-        ID3D11InputLayout* d3d11InputLayout = this->d3d11InputLayouts[hash];
-        d3d11InputLayout->AddRef();
-        return d3d11InputLayout;
-    }
-    else {
-        // create a new input layout object and add to cache
-        D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
-        int d3d11CompIndex = 0;
-        int d3d11IASlotIndex = 0;
-        for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
-            const mesh* msh = ds.meshes[mshIndex];
-            if (msh && !msh->vertexBufferAttrs.Layout.Empty()) {
-                const VertexLayout& layout = msh->vertexBufferAttrs.Layout;
-                for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
-                    const auto& comp = layout.ComponentAt(compIndex);
-                    o_assert_dbg(d3d11CompIndex < VertexAttr::NumVertexAttrs);
-                    D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
-                    d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
-                    d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
-                    d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
-                    d3d11Comp.InputSlot = d3d11IASlotIndex;
-                    d3d11Comp.AlignedByteOffset = layout.ComponentByteOffset(compIndex);
-                    d3d11Comp.InputSlotClass = d3d11Types::asInputClassification(msh->vertexBufferAttrs.StepFunction);
-                    if (VertexStepFunction::PerVertex == msh->vertexBufferAttrs.StepFunction) {
-                        d3d11Comp.InstanceDataStepRate = 0;
-                    }
-                    else {
-                        d3d11Comp.InstanceDataStepRate = msh->vertexBufferAttrs.StepRate;
-                    }
-                }
-                d3d11IASlotIndex++;
+    // create a new input layout object and add to cache
+    D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
+    int d3d11CompIndex = 0;
+    for (int mshSlotIndex = 0; mshSlotIndex < GfxConfig::MaxNumInputMeshes; mshSlotIndex++) {
+        const VertexLayout& layout = ds.Setup.Layouts[mshSlotIndex];
+        for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
+            const auto& comp = layout.ComponentAt(compIndex);
+            o_assert_dbg(d3d11CompIndex < VertexAttr::NumVertexAttrs);
+            D3D11_INPUT_ELEMENT_DESC& d3d11Comp = d3d11Comps[d3d11CompIndex];
+            d3d11Comp.SemanticName = d3d11Types::asSemanticName(comp.Attr);
+            d3d11Comp.SemanticIndex = d3d11Types::asSemanticIndex(comp.Attr);
+            d3d11Comp.Format = d3d11Types::asInputElementFormat(comp.Format);
+            d3d11Comp.InputSlot = mshSlotIndex;
+            d3d11Comp.AlignedByteOffset = layout.ComponentByteOffset(compIndex);
+            d3d11Comp.InputSlotClass = d3d11Types::asInputClassification(layout.StepFunction);
+            if (VertexStepFunction::PerVertex == layout.StepFunction) {
+                d3d11Comp.InstanceDataStepRate = 0;
+            }
+            else {
+                d3d11Comp.InstanceDataStepRate = layout.StepRate;
             }
         }
-
-        // lookup the vertex shader bytecode
-        const int32 progIndex = ds.shd->getProgIndexByMask(ds.Setup.ShaderSelectionMask);
-        const void* vsByteCode = nullptr;
-        uint32 vsSize = 0;
-        ds.shd->Setup.VertexShaderByteCode(progIndex, ShaderLang::HLSL5, vsByteCode, vsSize);
-        o_assert_dbg(vsByteCode && (vsSize > 0));
-
-        // create d3d11 input layout object
-        ID3D11InputLayout* d3d11InputLayout = nullptr;
-        HRESULT hr = this->d3d11Device->CreateInputLayout(
-            d3d11Comps,         // pInputElementDesc 
-            d3d11CompIndex,     // NumElements
-            vsByteCode,         // pShaderBytecodeWithInputSignature 
-            vsSize,             // BytecodeLength
-            &d3d11InputLayout);
-        o_assert(SUCCEEDED(hr));
-        o_assert_dbg(nullptr != d3d11InputLayout);
-
-        // add new input layout object to cache
-        o_assert(!this->d3d11InputLayouts.Contains(hash));
-        this->d3d11InputLayouts.Add(hash, d3d11InputLayout);
-
-        return d3d11InputLayout;
     }
-}
 
-//------------------------------------------------------------------------------
-void
-d3d11DrawStateFactory::releaseInputLayout(ID3D11InputLayout* d3d11InputLayout) {
-    o_assert_dbg(d3d11InputLayout);
+    // lookup the vertex shader bytecode
+    const void* vsByteCode = nullptr;
+    uint32 vsSize = 0;
+    ds.shd->Setup.VertexShaderByteCode(ShaderLang::HLSL5, vsByteCode, vsSize);
+    o_assert_dbg(vsByteCode && (vsSize > 0));
 
-    // release object and check if we need to remove the cache entry
-    if (0 == d3d11InputLayout->Release()) {
-        // find input layout, we assume that the overall number of input
-        // layouts will remain small (that's the whole point of the cache)
-        //
-        // NOTE: the actual input layout object will already be gone at this
-        // point, don't call methods on it!
-        for (int i = this->d3d11InputLayouts.Size() - 1; i >= 0; i--) {
-            if (this->d3d11InputLayouts.ValueAtIndex(i) == d3d11InputLayout) {
-                this->d3d11InputLayouts.EraseIndex(i);
-                return;
-            }
-        }
-        // fallthrough: input layout not found, this is a critical error, should never happen
-        o_error("d3d11DrawStateFactory::releaseInputLayout(): layout doesn't exist in cache!\n");
-    }
+    // create d3d11 input layout object
+    ID3D11InputLayout* d3d11InputLayout = nullptr;
+    HRESULT hr = this->d3d11Device->CreateInputLayout(
+        d3d11Comps,         // pInputElementDesc 
+        d3d11CompIndex,     // NumElements
+        vsByteCode,         // pShaderBytecodeWithInputSignature 
+        vsSize,             // BytecodeLength
+        &d3d11InputLayout);
+    o_assert(SUCCEEDED(hr));
+    o_assert_dbg(nullptr != d3d11InputLayout);
+
+    return d3d11InputLayout;
 }
 
 } // namespace _priv

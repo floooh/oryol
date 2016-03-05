@@ -16,8 +16,6 @@ class texture;
     
 class d3d11TextureFactory {
 public:
-    /// constructor
-    d3d11TextureFactory();
     /// destructor
     ~d3d11TextureFactory();
     
@@ -54,8 +52,8 @@ private:
     ID3D11DepthStencilView* createDepthStencilView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
 
     gfxPointers pointers;
-    ID3D11Device* d3d11Device;
-    bool isValid;
+    ID3D11Device* d3d11Device = nullptr;
+    bool isValid = false;
 };
     
 } // namespace _priv

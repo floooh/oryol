@@ -13,8 +13,6 @@ namespace _priv {
 
 class d3d11DisplayMgr : public winDisplayMgr {
 public:
-    /// constructor
-    d3d11DisplayMgr();
     /// destructor
     ~d3d11DisplayMgr();
 
@@ -26,19 +24,19 @@ public:
     void Present();
 
     /// pointer to d3d11 device
-    ID3D11Device* d3d11Device;
+    ID3D11Device* d3d11Device = nullptr;
     /// pointer to immediate mode device context
-    ID3D11DeviceContext* d3d11DeviceContext;
+    ID3D11DeviceContext* d3d11DeviceContext = nullptr;
     /// pointer to swap chain
-    IDXGISwapChain* dxgiSwapChain;
+    IDXGISwapChain* dxgiSwapChain = nullptr;
     /// pointer to default render target back buffer texture
-    ID3D11Texture2D* d3d11RenderTarget;
+    ID3D11Texture2D* d3d11RenderTarget = nullptr;
     /// pointer to default render target view
-    ID3D11RenderTargetView* d3d11RenderTargetView;
+    ID3D11RenderTargetView* d3d11RenderTargetView = nullptr;
     /// pointer to default depth/stencil buffer texture
-    ID3D11Texture2D* d3d11DepthStencilBuffer;
+    ID3D11Texture2D* d3d11DepthStencilBuffer = nullptr;
     /// pointer to default default depth/stencil view
-    ID3D11DepthStencilView* d3d11DepthStencilView;
+    ID3D11DepthStencilView* d3d11DepthStencilView = nullptr;
 
     /// create swap chain and d3d device
     void createDeviceAndSwapChain();

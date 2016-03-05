@@ -28,6 +28,8 @@ private:
     
     glm::mat4 view;
     glm::mat4 proj;
+    MeshBlock quadMesh;
+    MeshBlock planeMesh;
     Shaders::Plane::VSParams planeVSParams;
     Shaders::Plane::VSTextures planeVSTextures;
     Shaders::Plasma::FSParams plasmaFSParams;    
@@ -45,13 +47,13 @@ VertexTextureApp::OnRunning() {
 
     // render plasma to offscreen render target
     Gfx::ApplyRenderTarget(this->plasmaRenderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->plasmaDrawState);
+    Gfx::ApplyDrawState(this->plasmaDrawState, this->quadMesh);
     Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0);
 
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->planeDrawState, this->planeVSTextures);
+    Gfx::ApplyDrawState(this->planeDrawState, this->planeMesh, this->planeVSTextures);
     Gfx::ApplyUniformBlock(this->planeVSParams);
     Gfx::Draw(0);
 
@@ -82,9 +84,10 @@ VertexTextureApp::OnInit() {
     this->plasmaRenderTarget = Gfx::CreateResource(rtSetup);
 
     // setup draw state for offscreen rendering to float render target
-    Id fsQuadMesh = Gfx::CreateResource(MeshSetup::FullScreenQuad());
+    auto quadSetup = MeshSetup::FullScreenQuad();
+    this->quadMesh[0] = Gfx::CreateResource(quadSetup);
     Id plasmaShader = Gfx::CreateResource(Shaders::Plasma::Setup());
-    auto dss = DrawStateSetup::FromMeshAndShader(fsQuadMesh, plasmaShader);
+    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, plasmaShader);
     dss.BlendState.ColorFormat = rtSetup.ColorFormat;
     dss.BlendState.DepthFormat = rtSetup.DepthFormat;
     this->plasmaDrawState = Gfx::CreateResource(dss);
@@ -95,9 +98,9 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255);
-    Id planeMesh = Gfx::CreateResource(shapeBuilder.Build());
+    this->planeMesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id planeShader = Gfx::CreateResource(Shaders::Plane::Setup());
-    auto dsPlane = DrawStateSetup::FromMeshAndShader(planeMesh, planeShader);
+    auto dsPlane = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, planeShader);
     dsPlane.DepthStencilState.DepthWriteEnabled = true;
     dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dsPlane.RasterizerState.SampleCount = 4;

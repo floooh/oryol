@@ -6,7 +6,7 @@
 #include "d3d12SamplerCache.h"
 #include "d3d12Types.h"
 #include "Gfx/Core/renderer.h"
-#include "Core/Hash/fasthash.h"
+#include "fasthash.h"
 
 namespace Oryol {
 namespace _priv {

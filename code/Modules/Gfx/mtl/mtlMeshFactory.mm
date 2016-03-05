@@ -108,8 +108,6 @@ mtlMeshFactory::setupAttrs(mesh& msh) {
     vbAttrs.NumVertices = msh.Setup.NumVertices;
     vbAttrs.BufferUsage = msh.Setup.VertexUsage;
     vbAttrs.Layout = msh.Setup.Layout;
-    vbAttrs.StepFunction = msh.Setup.StepFunction;
-    vbAttrs.StepRate = msh.Setup.StepRate;
     msh.vertexBufferAttrs = vbAttrs;
 
     IndexBufferAttrs ibAttrs;

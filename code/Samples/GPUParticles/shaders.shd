@@ -173,9 +173,7 @@ _func float snoise(vec2 v)
 }
 @end
 
-@bundle InitParticles
-@program fsqVS initFS
-@end
+@program InitParticles fsqVS initFS
 
 //------------------------------------------------------------------------------
 //  Fullscreen-quad shader to update particle positions and velocity
@@ -231,9 +229,7 @@ _func float snoise(vec2 v)
 }
 @end
 
-@bundle UpdateParticles
-@program fsqVS updateFS
-@end
+@program UpdateParticles fsqVS updateFS
 
 //------------------------------------------------------------------------------
 //  This is the actual particle drawing shader. The vertex shader gets the
@@ -279,6 +275,4 @@ _func float snoise(vec2 v)
 }
 @end
 
-@bundle DrawParticles
-@program drawVS drawFS
-@end
+@program DrawParticles drawVS drawFS

@@ -27,6 +27,7 @@ private:
     int frameCount = 0;
     ClearState displayClearState;
     fractal test;
+    MeshBlock shapeMeshBlock;
     Id shapeDrawState;
     Shaders::Shape::VSParams shapeVSParams;
     Shaders::Shape::FSParams shapeFSParams;
@@ -43,17 +44,18 @@ JuliaApp::OnInit() {
     Gfx::Setup(gfxSetup);
     this->displayClearState = ClearState::ClearAll(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    Id fsq = Gfx::CreateResource(MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft)));
-    this->test.setup(512, 512, glm::vec4(-0.75f, -0.75f, +0.75f, +0.75f), glm::vec2(0.292991f, -0.014885), fsq);
+    auto fsqSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
+    Id fsqMesh = Gfx::CreateResource(fsqSetup);
+    this->test.setup(512, 512, glm::vec4(-0.75f, -0.75f, +0.75f, +0.75f), glm::vec2(0.292991f, -0.014885), fsqMesh, fsqSetup.Layout);
 
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64);
-    Id shapeMesh = Gfx::CreateResource(shapeBuilder.Build());
+    this->shapeMeshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shape::Setup());
-    auto dss = DrawStateSetup::FromMeshAndShader(shapeMesh, shd);
+    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     dss.DepthStencilState.DepthWriteEnabled = true;
     dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
@@ -90,7 +92,7 @@ JuliaApp::OnRunning() {
     this->shapeFSTextures.Texture = this->test.colorTexture;
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->shapeDrawState, this->shapeFSTextures);
+    Gfx::ApplyDrawState(this->shapeDrawState, this->shapeMeshBlock, this->shapeFSTextures);
     Gfx::ApplyUniformBlock(this->shapeVSParams);
     Gfx::ApplyUniformBlock(this->shapeFSParams);
     Gfx::Draw(0);

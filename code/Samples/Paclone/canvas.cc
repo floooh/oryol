@@ -43,9 +43,9 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(0, this->numVertices));
-    this->mesh = Gfx::CreateResource(meshSetup);
+    this->meshBlock[0] = Gfx::CreateResource(meshSetup);
     this->shader = Gfx::CreateResource(Shaders::Canvas::Setup());
-    auto dsSetup = DrawStateSetup::FromMeshAndShader(this->mesh, this->shader);
+    auto dsSetup = DrawStateSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
     dsSetup.BlendState.BlendEnabled = true;
     dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
     dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
@@ -93,8 +93,8 @@ canvas::Render() {
     o_assert(this->isValid);
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
-    Gfx::UpdateVertices(this->mesh, data, numBytes);
-    Gfx::ApplyDrawState(this->drawState, this->textures);
+    Gfx::UpdateVertices(this->meshBlock[0], data, numBytes);
+    Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->textures);
     Gfx::Draw(0);
 }
 

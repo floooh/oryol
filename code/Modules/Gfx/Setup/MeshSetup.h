@@ -45,10 +45,6 @@ public:
 
     /// vertex layout
     VertexLayout Layout;
-    /// vertex step function (per-vertex or per-instance)
-    VertexStepFunction::Code StepFunction;
-    /// vertex step rate (1 or greater for VertexStepFunction::PerInstance)
-    int32 StepRate;
 
     /// number of vertices (only CreateEmpty)
     int32 NumVertices;
@@ -59,8 +55,6 @@ public:
     /// flip v coordinates for fullscreen quad (so that origin is top-left)
     bool FullScreenQuadFlipV;
 
-    /// primitive type 
-    PrimitiveType::Code PrimType;
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups

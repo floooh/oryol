@@ -56,8 +56,6 @@ fips_begin_module(Core)
         ThreadLocalData.cc ThreadLocalData.h
         ThreadLocalPtr.h
     )
-    fips_dir(Hash)
-    fips_files(fasthash.h)
     if (FIPS_POSIX)
         fips_dir(posix)
         fips_files(precompiled.h)

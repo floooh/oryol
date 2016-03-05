@@ -42,9 +42,6 @@ public:
     SetupAndData<MeshSetup> Build();
     
 private:
-    /// clear/reset object state
-    void clear();
-
     enum ShapeType {
         InvalidType,
         BoxShape,
