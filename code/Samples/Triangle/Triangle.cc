@@ -15,7 +15,7 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 private:
-    Id drawState;
+    Id pipeline;
     MeshBlock meshBlock;
 };
 OryolMain(TriangleApp);
@@ -25,7 +25,7 @@ AppState::Code
 TriangleApp::OnRunning() {
     
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     
@@ -56,8 +56,8 @@ TriangleApp::OnInit() {
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
     this->meshBlock[0] =  Gfx::CreateResource(meshBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
+    this->pipeline = Gfx::CreateResource(ps);
 
     return App::OnInit();
 }

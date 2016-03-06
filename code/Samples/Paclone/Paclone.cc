@@ -81,8 +81,8 @@ PacloneApp::OnInit() {
     #else
     Id shd = Gfx::CreateResource(Shaders::NoCRT::Setup());
     #endif
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, shd);
-    this->crtEffect = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
+    this->crtEffect = Gfx::CreateResource(ps);
     this->crtTextures.Canvas = this->crtRenderTarget;
 
     // setup canvas and game state

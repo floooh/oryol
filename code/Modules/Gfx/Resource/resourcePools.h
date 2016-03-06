@@ -6,8 +6,8 @@
     @brief Gfx module resource pool classes
 */
 #include "Resource/Core/ResourcePool.h"
-#include "Gfx/Setup/DrawStateSetup.h"
-#include "Gfx/Resource/drawState.h"
+#include "Gfx/Setup/PipelineSetup.h"
+#include "Gfx/Resource/pipeline.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Setup/ShaderSetup.h"
@@ -18,7 +18,7 @@
 namespace Oryol {
 namespace _priv {
 
-class drawStatePool : public ResourcePool<drawState, DrawStateSetup> { };
+class pipelinePool : public ResourcePool<pipeline, PipelineSetup> { };
 class meshPool : public ResourcePool<mesh, MeshSetup> { };
 class shaderPool : public ResourcePool<shader, ShaderSetup> { };
 class texturePool : public ResourcePool<texture, TextureSetup> { };

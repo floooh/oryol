@@ -20,8 +20,8 @@ public:
     
 private:
     Id renderTarget;
-    Id offscreenDrawState;
-    Id copyDrawState;
+    Id offscreenPipeline;
+    Id copyPipeline;
 
     glm::mat4 view;
     glm::mat4 proj;
@@ -41,13 +41,13 @@ TextureFloatApp::OnRunning() {
     
     // render plasma to offscreen render target, do not clear
     Gfx::ApplyRenderTarget(this->renderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->offscreenDrawState, this->quadMesh);
+    Gfx::ApplyDrawState(this->offscreenPipeline, this->quadMesh);
     Gfx::ApplyUniformBlock(this->offscreenFSParams);
     Gfx::Draw(0);
     
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Gfx::ApplyDrawState(this->copyDrawState, this->quadMesh, this->copyFSTextures);
+    Gfx::ApplyDrawState(this->copyPipeline, this->quadMesh, this->copyFSTextures);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -86,16 +86,16 @@ TextureFloatApp::OnInit() {
 
     // setup draw state for offscreen rendering to float render target
     Id offscreenShader = Gfx::CreateResource(Shaders::Offscreen::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, offscreenShader);
-    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
-    this->offscreenDrawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, offscreenShader);
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    this->offscreenPipeline = Gfx::CreateResource(ps);
     this->offscreenFSParams.Time = 0.0f;
 
     // fullscreen-copy resources
     Id copyShader = Gfx::CreateResource(Shaders::Copy::Setup());
-    dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
-    this->copyDrawState = Gfx::CreateResource(dss);
+    ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
+    this->copyPipeline = Gfx::CreateResource(ps);
     this->copyFSTextures.Texture = this->renderTarget;
 
     // setup static transform matrices

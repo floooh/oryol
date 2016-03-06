@@ -31,7 +31,7 @@ private:
     static const int instMeshSlot = 1;
 
     MeshBlock meshBlock;
-    Id drawState;
+    Id pipeline;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
@@ -70,7 +70,7 @@ InstancingApp::OnRunning() {
     // render block        
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
@@ -170,13 +170,13 @@ InstancingApp::OnInit() {
 
     // setup draw state for instanced rendering
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromShader(shd);
-    dss.Layouts[0] = shapeBuilder.Layout;
-    dss.Layouts[1] = instMeshSetup.Layout;
-    dss.RasterizerState.CullFaceEnabled = true;
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromShader(shd);
+    ps.Layouts[0] = shapeBuilder.Layout;
+    ps.Layouts[1] = instMeshSetup.Layout;
+    ps.RasterizerState.CullFaceEnabled = true;
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->pipeline = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

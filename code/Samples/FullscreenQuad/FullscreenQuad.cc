@@ -15,7 +15,7 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    Id drawState;
+    Id pipeline;
     MeshBlock meshBlock;
     Shaders::Main::Params params;
 
@@ -28,7 +28,7 @@ FullscreenQuadApp::OnRunning() {
     // render one frame
     this->params.Time += 1.0f / 60.0f;
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
     Gfx::ApplyUniformBlock(this->params);
     Gfx::Draw(0);
     Gfx::CommitFrame();
@@ -44,8 +44,8 @@ FullscreenQuadApp::OnInit() {
     auto quadSetup = MeshSetup::FullScreenQuad();
     this->meshBlock[0] = Gfx::CreateResource(quadSetup);
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, shd);
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
+    this->pipeline = Gfx::CreateResource(ps);
     this->params.Time = 0.0f;
     return App::OnInit();
 }

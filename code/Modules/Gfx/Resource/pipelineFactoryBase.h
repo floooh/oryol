@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::drawStateFactoryBase
+    @class Oryol::_priv::pipelineFactoryBase
     @ingroup _priv
-    @brief base class for drawStateFactory
+    @brief base class for pipelineFactory
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
@@ -11,14 +11,14 @@
 namespace Oryol {
 namespace _priv {
 
-class drawState;
+class pipeline;
 
-class drawStateFactoryBase {
+class pipelineFactoryBase {
 public:
     /// constructor
-    drawStateFactoryBase();
+    pipelineFactoryBase();
     /// destructor
-    ~drawStateFactoryBase();
+    ~pipelineFactoryBase();
 
     /// setup the factory
     void Setup(const gfxPointers& ptrs);
@@ -27,9 +27,9 @@ public:
     /// return true if factory has been setup
     bool IsValid() const;
     /// setup shader resource
-    ResourceState::Code SetupResource(drawState& ds);
+    ResourceState::Code SetupResource(pipeline& pip);
     /// destroy the shader
-    void DestroyResource(drawState& ds);
+    void DestroyResource(pipeline& pip);
     
 protected:
     gfxPointers pointers;

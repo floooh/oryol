@@ -22,8 +22,8 @@ private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    Id offscreenDrawState;
-    Id displayDrawState;
+    Id offscreenPipeline;
+    Id displayPipeline;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -53,7 +53,7 @@ InfiniteSpheresApp::OnRunning() {
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     Gfx::ApplyRenderTarget(this->fsTextures[index0].Texture);
-    Gfx::ApplyDrawState(this->offscreenDrawState, this->sphereMesh, this->fsTextures[index1]);
+    Gfx::ApplyDrawState(this->offscreenPipeline, this->sphereMesh, this->fsTextures[index1]);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
     
@@ -61,7 +61,7 @@ InfiniteSpheresApp::OnRunning() {
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     Gfx::ApplyDefaultRenderTarget(this->clearState);
-    Gfx::ApplyDrawState(this->displayDrawState, this->sphereMesh, this->fsTextures[index0]);
+    Gfx::ApplyDrawState(this->displayPipeline, this->sphereMesh, this->fsTextures[index0]);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
     
@@ -104,17 +104,17 @@ InfiniteSpheresApp::OnInit() {
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
 
     // create draw state for rendering into default render target
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->displayDrawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    this->displayPipeline = Gfx::CreateResource(ps);
 
     // create draw state for rendering into offscreen render target
-    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
-    dss.RasterizerState.SampleCount = 1;
-    this->offscreenDrawState = Gfx::CreateResource(dss);
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    ps.RasterizerState.SampleCount = 1;
+    this->offscreenPipeline = Gfx::CreateResource(ps);
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -57,10 +57,10 @@ fips_begin_module(Gfx)
     fips_dir(Resource)
     fips_files(
         resourcePools.h
-        drawStateBase.h drawStateBase.cc
-        drawState.h
-        drawStateFactoryBase.cc drawStateFactoryBase.h
-        drawStateFactory.h
+        pipelineBase.h pipelineBase.cc
+        pipeline.h
+        pipelineFactoryBase.cc pipelineFactoryBase.h
+        pipelineFactory.h
         meshBase.cc meshBase.h
         mesh.h
         meshFactory.h
@@ -77,7 +77,7 @@ fips_begin_module(Gfx)
     )
     fips_dir(Setup)
     fips_files(
-        DrawStateSetup.cc DrawStateSetup.h
+        PipelineSetup.cc PipelineSetup.h
         GfxSetup.cc GfxSetup.h
         MeshSetup.cc MeshSetup.h
         ShaderSetup.cc ShaderSetup.h
@@ -89,8 +89,8 @@ fips_begin_module(Gfx)
             glDebugOutput.cc glDebugOutput.h
             glExt.cc glExt.h
             glInfo.cc glInfo.h
-            glDrawState.cc glDrawState.h
-            glDrawStateFactory.cc glDrawStateFactory.h
+            glPipeline.cc glPipeline.h
+            glPipelineFactory.cc glPipelineFactory.h
             glMesh.cc glMesh.h
             glMeshFactory.cc glMeshFactory.h
             glShader.cc glShader.h

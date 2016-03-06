@@ -104,7 +104,7 @@ private:
     Id whiteTexture;
     MeshBlock meshBlock;
     Id shader;
-    Id drawState;
+    Id pipeline;
     Array<ResourceLabel> texturesForDeletion;
     int curBatchIndex;
     Batch batches[MaxNumBatches];

@@ -1,33 +1,33 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::drawState
+    @class Oryol::_priv::pipeline
     @ingroup _priv
-    @brief bundles pre-compiled state for drawing operations
+    @brief wraps all the pipeline state required for rendering
 */
 #if ORYOL_OPENGL
-#include "Gfx/gl/glDrawState.h"
+#include "Gfx/gl/glPipeline.h"
 namespace Oryol {
 namespace _priv {
-class drawState : public glDrawState { };
+class pipeline : public glPipeline { };
 } }
 #elif ORYOL_D3D11
-#include "Gfx/d3d11/d3d11DrawState.h"
+#include "Gfx/d3d11/d3d11Pipeline.h"
 namespace Oryol {
 namespace _priv {
-class drawState : public d3d11DrawState { };
+class pipeline : public d3d11Pipeline { };
 } }
 #elif ORYOL_D3D12
-#include "Gfx/d3d12/d3d12DrawState.h"
+#include "Gfx/d3d12/d3d12Pipeline.h"
 namespace Oryol {
 namespace _priv {
-class drawState : public d3d12DrawState { };
+class pipeline : public d3d12Pipeline { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/mtl/mtlDrawState.h"
+#include "Gfx/mtl/mtlPipeline.h"
 namespace Oryol {
 namespace _priv {
-class drawState : public mtlDrawState { };
+class pipeline : public mtlPipeline { };
 } }
 #else
 #error "Target platform not yet supported!"

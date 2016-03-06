@@ -55,8 +55,8 @@ private:
     void setupFontTexture();
     /// setup the text dynamic mesh
     void setupTextMesh();
-    /// setup the text draw state
-    void  setupTextDrawState();
+    /// setup the text pipeline state object
+    void  setupTextPipeline();
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
@@ -73,7 +73,7 @@ private:
     Id textShader;
     Id fontTexture;
     MeshBlock textMesh;
-    Id textDrawState;
+    Id textPipeline;
     StringBuilder stringBuilder;
     bool valid;
     ResourceLabel resourceLabel;

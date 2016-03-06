@@ -13,7 +13,7 @@
 #include "Gfx/Resource/texture.h"
 #include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/mesh.h"
-#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/pipeline.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
@@ -86,7 +86,7 @@ globalVAO(0),
 rtValid(false),
 frameIndex(0),
 curRenderTarget(nullptr),
-curDrawState(nullptr),
+curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 scissorX(0),
 scissorY(0),
@@ -148,7 +148,7 @@ glRenderer::discard() {
     this->invalidateShaderState();
     this->invalidateTextureState();
     this->curRenderTarget = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
 
     #if !ORYOL_OPENGLES2
     ::glDeleteVertexArrays(1, &this->globalVAO);
@@ -215,7 +215,7 @@ glRenderer::commitFrame() {
     o_assert_dbg(this->valid);    
     this->rtValid = false;
     this->curRenderTarget = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
 }
@@ -351,10 +351,10 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
+glRenderer::applyMeshes(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != ds);
-    o_assert_dbg(nullptr != ds->shd);
+    o_assert_dbg(nullptr != pip);
+    o_assert_dbg(nullptr != pip->shd);
     o_assert_dbg(meshes && meshes[0] && (numMeshes > 0));
     ORYOL_GL_CHECK_ERROR();
 
@@ -366,7 +366,7 @@ glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
     const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        const glVertexAttr& attr = ds->glAttrs[attrIndex];
+        const glVertexAttr& attr = pip->glAttrs[attrIndex];
         glVertexAttr& curAttr = this->glAttrs[attrIndex];
         const mesh* msh = meshes[attr.vbIndex];
         const auto& vb = msh->buffers[mesh::vb];
@@ -437,24 +437,24 @@ glRenderer::applyMeshes(drawState* ds, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
+glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(ds);
+    o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
     // if any of the meshes is still loading, cancel the next draw state
     for (int i = 0; i < numMeshes; i++) {
         if (nullptr == meshes[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
 
     // draw state is valid, ready for rendering
-    this->curDrawState = ds;
-    o_assert_dbg(ds->shd);
+    this->curPipeline = pip;
+    o_assert_dbg(pip->shd);
 
-    const DrawStateSetup& setup = ds->Setup;
+    const PipelineSetup& setup = pip->Setup;
     o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
     o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
     o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
@@ -471,8 +471,8 @@ glRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     if (setup.RasterizerState != this->rasterizerState) {
         this->applyRasterizerState(setup.RasterizerState);
     }
-    this->useProgram(ds->shd->glProgram);
-    this->applyMeshes(ds, meshes, numMeshes);
+    this->useProgram(pip->shd->glProgram);
+    this->applyMeshes(pip, meshes, numMeshes);
 }
 
 //------------------------------------------------------------------------------
@@ -480,14 +480,14 @@ void
 glRenderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     ORYOL_GL_CHECK_ERROR();
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = this->curDrawState->glPrimType;
+    const GLenum glPrimType = this->curPipeline->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -507,7 +507,7 @@ void
 glRenderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -527,14 +527,14 @@ void
 glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     ORYOL_GL_CHECK_ERROR();
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = this->curDrawState->glPrimType;
+    const GLenum glPrimType = this->curPipeline->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
         const int32 indexByteSize = IndexType::ByteSize(indexType);
@@ -554,7 +554,7 @@ void
 glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -1052,13 +1052,13 @@ void
 glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->valid);
     o_assert_dbg(0 != layoutHash);
-    if (!this->curDrawState) {
+    if (!this->curPipeline) {
         // currently no valid draw state set
         return;
     }
 
     // get the uniform layout object for this uniform block
-    const shader* shd = this->curDrawState->shd;
+    const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     o_assert_dbg(InvalidIndex != ubIndex);
@@ -1160,7 +1160,7 @@ void
 glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, Oryol::_priv::texture **textures, int32 numTextures) {
     o_assert_dbg(this->valid);
     o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
 
@@ -1169,7 +1169,7 @@ glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     // case, disable rendering for next draw call
     for (int i = 0; i < numTextures; i++) {
         if (nullptr == textures[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
@@ -1177,7 +1177,7 @@ glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     // check if provided texture types are compatible with the expections
     // of the currently bound shader
     #if ORYOL_DEBUG
-    const shader* shd = this->curDrawState->shd;
+    const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
     o_assert_dbg(InvalidIndex != texBlockIndex);

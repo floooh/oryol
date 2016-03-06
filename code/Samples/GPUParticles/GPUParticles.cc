@@ -155,13 +155,13 @@ GPUParticlesApp::OnInit() {
     // particle initialization and update resources
     Id initShader = Gfx::CreateResource(Shaders::InitParticles::Setup());
     Id updateShader = Gfx::CreateResource(Shaders::UpdateParticles::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, initShader);
-    dss.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
-    dss.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
-    this->initParticles = Gfx::CreateResource(dss);
-    dss.Shader = updateShader;
-    dss.RasterizerState.ScissorTestEnabled = true;
-    this->updateParticles = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, initShader);
+    ps.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
+    ps.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
+    this->initParticles = Gfx::CreateResource(ps);
+    ps.Shader = updateShader;
+    ps.RasterizerState.ScissorTestEnabled = true;
+    this->updateParticles = Gfx::CreateResource(ps);
 
     // the static geometry of a single particle is at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -187,13 +187,13 @@ GPUParticlesApp::OnInit() {
     
     // particle rendering texture blocks and draw state
     Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::Setup());
-    dss = DrawStateSetup::FromShader(drawShader);
-    dss.Layouts[0] = shapeBuilder.Layout;
-    dss.Layouts[1] = particleIdSetup.Layout;
-    dss.RasterizerState.CullFaceEnabled = true;
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
-    this->drawParticles = Gfx::CreateResource(dss);
+    ps = PipelineSetup::FromShader(drawShader);
+    ps.Layouts[0] = shapeBuilder.Layout;
+    ps.Layouts[1] = particleIdSetup.Layout;
+    ps.RasterizerState.CullFaceEnabled = true;
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
+    this->drawParticles = Gfx::CreateResource(ps);
 
     // the static projection matrix
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

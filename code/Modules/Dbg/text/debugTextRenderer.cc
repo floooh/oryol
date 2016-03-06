@@ -45,7 +45,7 @@ debugTextRenderer::setup() {
     o_assert(!this->valid);
     this->resourceLabel = Gfx::PushResourceLabel();
     this->setupTextMesh();
-    this->setupTextDrawState();
+    this->setupTextPipeline();
     this->setupFontTexture();
     Gfx::PopResourceLabel();
     this->valid = true;
@@ -138,7 +138,7 @@ debugTextRenderer::drawTextBuffer() {
         texBlock.Texture = this->fontTexture;
 
         Gfx::UpdateVertices(this->textMesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->textDrawState, this->textMesh, texBlock);
+        Gfx::ApplyDrawState(this->textPipeline, this->textMesh, texBlock);
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
@@ -210,28 +210,28 @@ debugTextRenderer::setupTextMesh() {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextDrawState() {
-    o_assert(!this->textDrawState.IsValid());
+debugTextRenderer::setupTextPipeline() {
+    o_assert(!this->textPipeline.IsValid());
     o_assert(this->textMesh[0].IsValid());
 
     // shader
     this->textShader = Gfx::CreateResource(Shaders::TextShader::Setup());
     
-    // finally create draw state
-    auto dss = DrawStateSetup::FromLayoutAndShader(this->vertexLayout, this->textShader);
-    dss.DepthStencilState.DepthWriteEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    dss.BlendState.BlendEnabled = true;
-    dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
+    // finally create pipeline object
+    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, this->textShader);
+    ps.DepthStencilState.DepthWriteEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
     // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
     // for different render targets and quickly select them before
     // text rendering
-    dss.BlendState.ColorFormat = Gfx::RenderTargetAttrs().ColorPixelFormat;
-    dss.BlendState.DepthFormat = Gfx::RenderTargetAttrs().DepthPixelFormat;
-    dss.RasterizerState.SampleCount = Gfx::RenderTargetAttrs().SampleCount;
-    this->textDrawState = Gfx::CreateResource(dss);
+    ps.BlendState.ColorFormat = Gfx::RenderTargetAttrs().ColorPixelFormat;
+    ps.BlendState.DepthFormat = Gfx::RenderTargetAttrs().DepthPixelFormat;
+    ps.RasterizerState.SampleCount = Gfx::RenderTargetAttrs().SampleCount;
+    this->textPipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------

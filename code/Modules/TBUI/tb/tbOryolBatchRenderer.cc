@@ -86,7 +86,7 @@ tbOryolBatchRenderer::setupWhiteTexture() {
 void
 tbOryolBatchRenderer::setupResources() {
     o_assert_dbg(!this->meshBlock[0].IsValid());
-    o_assert_dbg(!this->drawState.IsValid());
+    o_assert_dbg(!this->pipeline.IsValid());
 
     this->vertexLayout
         .Add(VertexAttr::Position, VertexFormat::Float2)
@@ -102,18 +102,18 @@ tbOryolBatchRenderer::setupResources() {
 
     this->shader = Gfx::CreateResource(Shaders::TBUIShader::Setup());
     
-    auto dss = DrawStateSetup::FromLayoutAndShader(this->vertexLayout, this->shader);
-    dss.DepthStencilState.DepthWriteEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    dss.BlendState.BlendEnabled = true;
-    dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    dss.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
-    dss.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
-    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
-    dss.RasterizerState.ScissorTestEnabled = true;
-    dss.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, this->shader);
+    ps.DepthStencilState.DepthWriteEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
+    ps.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
+    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
+    ps.RasterizerState.ScissorTestEnabled = true;
+    ps.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
+    this->pipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------
@@ -456,7 +456,7 @@ tbOryolBatchRenderer::drawBatches() {
             const Batch& batch = this->batches[batchIndex];
             fsTextures.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
-            Gfx::ApplyDrawState(this->drawState, this->meshBlock, fsTextures);
+            Gfx::ApplyDrawState(this->pipeline, this->meshBlock, fsTextures);
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }

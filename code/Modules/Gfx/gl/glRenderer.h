@@ -23,7 +23,7 @@ namespace Oryol {
 namespace _priv {
 
 class texture;
-class drawState;
+class pipeline;
 class mesh;
 class shader;
 class textureBlock;
@@ -58,7 +58,7 @@ public:
     /// apply scissor rect
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(drawState* ds, mesh** meshes, int numMeshes);
+    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block (called after applyDrawState)
     void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
     /// apply a texture block (called after applyDrawState)
@@ -113,7 +113,7 @@ private:
     /// apply fixed function state
     void applyRasterizerState(const RasterizerState& rs);
     /// apply meshes
-    void applyMeshes(drawState* ds, mesh** meshes, int numMeshes);
+    void applyMeshes(pipeline* pip, mesh** meshes, int numMeshes);
 
     bool valid;
     gfxPointers pointers;
@@ -134,7 +134,7 @@ private:
     
     // high-level state cache
     texture* curRenderTarget;
-    drawState* curDrawState;
+    pipeline* curPipeline;
     mesh* curPrimaryMesh;
 
     // GL state cache

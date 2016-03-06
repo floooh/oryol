@@ -21,8 +21,8 @@ private:
     glm::mat4 computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos);
 
     Id renderTarget;
-    Id offscreenDrawState;
-    Id displayDrawState;
+    Id offscreenPipeline;
+    Id displayPipeline;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -48,7 +48,7 @@ SimpleRenderTargetApp::OnRunning() {
     
     // render donut to offscreen render target
     Gfx::ApplyRenderTarget(this->renderTarget, this->offscreenClearState);
-    Gfx::ApplyDrawState(this->offscreenDrawState, this->donutMesh);
+    Gfx::ApplyDrawState(this->offscreenPipeline, this->donutMesh);
     this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
     Gfx::Draw(0);
@@ -56,7 +56,7 @@ SimpleRenderTargetApp::OnRunning() {
     // render sphere to display, with offscreen render target as texture
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->displayDrawState, this->sphereMesh, this->displayFSTextures);
+    Gfx::ApplyDrawState(this->displayPipeline, this->sphereMesh, this->displayFSTextures);
     Gfx::ApplyUniformBlock(this->displayVSParams);
     Gfx::Draw(0);
     
@@ -86,7 +86,8 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.ClearHint = this->offscreenClearState;
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
-    // create a donut mesh, shader and drawstate (this will be rendered into the offscreen render target)
+    // create a donut mesh, shader and pipeline object
+    // (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
@@ -96,14 +97,14 @@ SimpleRenderTargetApp::OnInit() {
 
     Id offScreenShader = Gfx::CreateResource(Shaders::RenderTarget::Setup());
 
-    auto offdsSetup = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, offScreenShader);
-    offdsSetup.DepthStencilState.DepthWriteEnabled = true;
-    offdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    offdsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
-    offdsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
-    this->offscreenDrawState = Gfx::CreateResource(offdsSetup);
+    auto offpsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, offScreenShader);
+    offpsSetup.DepthStencilState.DepthWriteEnabled = true;
+    offpsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    offpsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
+    offpsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
+    this->offscreenPipeline = Gfx::CreateResource(offpsSetup);
 
-    // create a sphere mesh, shader, drawstate and texture with normals and uv coords
+    // create a sphere mesh, shader, pipeline object and texture with normals and uv coords
     shapeBuilder.Layout
         .Clear()
         .Add(VertexAttr::Position, VertexFormat::Float3)
@@ -114,11 +115,11 @@ SimpleRenderTargetApp::OnInit() {
 
     Id dispShader = Gfx::CreateResource(Shaders::Main::Setup());
 
-    auto dispdsSetup = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, dispShader);
-    dispdsSetup.DepthStencilState.DepthWriteEnabled = true;
-    dispdsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dispdsSetup.RasterizerState.SampleCount = 4;
-    this->displayDrawState = Gfx::CreateResource(dispdsSetup);
+    auto disppsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, dispShader);
+    disppsSetup.DepthStencilState.DepthWriteEnabled = true;
+    disppsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    disppsSetup.RasterizerState.SampleCount = 4;
+    this->displayPipeline = Gfx::CreateResource(disppsSetup);
 
     this->displayFSTextures.Texture = this->renderTarget;
 

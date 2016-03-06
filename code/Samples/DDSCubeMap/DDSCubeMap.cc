@@ -23,7 +23,7 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
-    Id drawState;
+    Id pipeline;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
@@ -49,7 +49,7 @@ DDSCubeMapApp::OnRunning() {
     // check whether the cube map has finished loading
     if (Gfx::QueryResourceInfo(this->fsTextures.Texture).State == ResourceState::Valid) {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->fsTextures);
+        Gfx::ApplyDrawState(this->pipeline, this->meshBlock, this->fsTextures);
         Gfx::ApplyUniformBlock(this->vsParams);
         Gfx::Draw(0);
     }
@@ -96,10 +96,10 @@ DDSCubeMapApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20);
     this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->pipeline = Gfx::CreateResource(ps);
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     // setup projection and view matrices

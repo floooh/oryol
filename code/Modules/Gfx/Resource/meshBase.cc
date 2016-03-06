@@ -39,11 +39,11 @@ meshBase::checkInputMeshes(meshBase** meshes, int num) {
 
     o_assert_dbg(meshes && (num > 0) && (num < GfxConfig::MaxNumInputMeshes));
     if (nullptr == meshes[0]) {
-        o_error("invalid drawState: at least one input mesh must be provided, in slot 0!\n");
+        o_error("invalid mesh block: at least one input mesh must be provided, in slot 0!\n");
     }
     if ((meshes[0]->indexBufferAttrs.Type != IndexType::None) &&
         (meshes[0]->indexBufferAttrs.NumIndices == 0)) {
-        o_error("invalid drawState: the input mesh at slot 0 uses indexed rendering, but has no indices!\n");
+        o_error("invalid mesh block: the input mesh at slot 0 uses indexed rendering, but has no indices!\n");
     }
 
     StaticArray<int, VertexAttr::NumVertexAttrs> vertexAttrCounts;
@@ -52,20 +52,20 @@ meshBase::checkInputMeshes(meshBase** meshes, int num) {
         const meshBase* msh = meshes[mshIndex];
         if (msh) {
             if (ResourceState::Valid != msh->State) {
-                o_error("invalid drawState: input mesh at slot '%d' not valid!\n", mshIndex);
+                o_error("invalid mesh block: input mesh at slot '%d' not valid!\n", mshIndex);
             }
             if ((mshIndex > 0) && (msh->indexBufferAttrs.Type != IndexType::None)) {
                 o_error("invalid drawState: input mesh at slot '%d' has indices, only allowed for slot 0!", mshIndex);
             }
             if ((mshIndex > 0) && (msh->numPrimGroups > 0)) {
-                o_error("invalid drawState: input mesh at slot '%d' has primitive groups, only allowed for slot 0!", mshIndex);
+                o_error("invalid mesh block: input mesh at slot '%d' has primitive groups, only allowed for slot 0!", mshIndex);
             }
             const int numComps = msh->vertexBufferAttrs.Layout.NumComponents();
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const auto& comp = msh->vertexBufferAttrs.Layout.ComponentAt(compIndex);
                 vertexAttrCounts[comp.Attr]++;
                 if (vertexAttrCounts[comp.Attr] > 1) {
-                    o_error("invalid drawState: same vertex attribute declared in multiple input meshes!");
+                    o_error("invalid mesh block: same vertex attribute declared in multiple input meshes!");
                 }
             }
         }

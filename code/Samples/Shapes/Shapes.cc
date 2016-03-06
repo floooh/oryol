@@ -18,7 +18,7 @@ public:
     AppState::Code OnCleanup();
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
-    Id drawState;
+    Id pipeline;
     glm::mat4 view;
     glm::mat4 proj;
     Shaders::Shapes::Params params;
@@ -38,7 +38,7 @@ ShapeApp::OnRunning() {
     
     // apply state and render
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
     
     // render shape primitive groups
     static const glm::vec3 positions[] = {
@@ -81,11 +81,11 @@ ShapeApp::OnInit() {
     this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shapes::Setup());
     
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    this->pipeline = Gfx::CreateResource(ps);
 
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -58,7 +58,7 @@ private:
     int numMaterials = 0;
     struct Material {
         int32 shaderIndex = Phong;
-        Id drawState;
+        Id pipeline;
         glm::vec4 diffuse = glm::vec4(0.0f, 0.24f, 0.64f, 1.0f);
         glm::vec4 specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         float specPower = 32.0f;
@@ -195,7 +195,7 @@ MeshViewerApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     this->drawUI();
     for (int i = 0; i < this->numMaterials; i++) {
-        Gfx::ApplyDrawState(this->materials[i].drawState, this->meshBlock);
+        Gfx::ApplyDrawState(this->materials[i].pipeline, this->meshBlock);
         this->applyVariables(i);
         Gfx::Draw(i);
     }
@@ -363,12 +363,12 @@ MeshViewerApp::createMaterials() {
 
     this->curMaterialLabel = Gfx::PushResourceLabel();
     for (int i = 0; i < this->numMaterials; i++) {
-        auto dss = DrawStateSetup::FromLayoutAndShader(this->curMeshSetup.Layout, this->shaders[this->materials[i].shaderIndex]);
-        dss.DepthStencilState.DepthWriteEnabled = true;
-        dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-        dss.RasterizerState.CullFaceEnabled = true;
-        dss.RasterizerState.SampleCount = 4;
-        this->materials[i].drawState = Gfx::CreateResource(dss);
+        auto ps = PipelineSetup::FromLayoutAndShader(this->curMeshSetup.Layout, this->shaders[this->materials[i].shaderIndex]);
+        ps.DepthStencilState.DepthWriteEnabled = true;
+        ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+        ps.RasterizerState.CullFaceEnabled = true;
+        ps.RasterizerState.SampleCount = 4;
+        this->materials[i].pipeline = Gfx::CreateResource(ps);
     }
     Gfx::PopResourceLabel();
 }

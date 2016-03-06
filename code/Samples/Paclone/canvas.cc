@@ -45,14 +45,14 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(0, this->numVertices));
     this->meshBlock[0] = Gfx::CreateResource(meshSetup);
     this->shader = Gfx::CreateResource(Shaders::Canvas::Setup());
-    auto dsSetup = DrawStateSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
-    dsSetup.BlendState.BlendEnabled = true;
-    dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    dsSetup.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dsSetup.BlendState.DepthFormat = rtSetup.DepthFormat;
-    dsSetup.RasterizerState.CullFaceEnabled = false;
-    this->drawState = Gfx::CreateResource(dsSetup);
+    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    ps.RasterizerState.CullFaceEnabled = false;
+    this->pipeline = Gfx::CreateResource(ps);
     
     // setup sprite texture
     auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
@@ -94,7 +94,7 @@ canvas::Render() {
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->meshBlock[0], data, numBytes);
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->textures);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock, this->textures);
     Gfx::Draw(0);
 }
 

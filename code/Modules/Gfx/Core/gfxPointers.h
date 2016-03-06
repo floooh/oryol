@@ -20,7 +20,7 @@ class gfxResourceContainer;
 class meshPool;
 class shaderPool;
 class texturePool;
-class drawStatePool;
+class pipelinePool;
 
 struct gfxPointers {
     class renderer* renderer = nullptr;
@@ -29,7 +29,7 @@ struct gfxPointers {
     class meshPool* meshPool = nullptr;
     class shaderPool* shaderPool = nullptr;
     class texturePool* texturePool = nullptr;
-    class drawStatePool* drawStatePool = nullptr;
+    class pipelinePool* pipelinePool = nullptr;
 };
 
 } // namespace _priv

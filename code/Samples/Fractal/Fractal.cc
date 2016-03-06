@@ -51,7 +51,7 @@ private:
     MeshBlock fsqDisplay;
     Id offscreenRenderTarget[2];
     Id displayShader;
-    Id displayDrawState;
+    Id displayPipeline;
     int32 frameIndex = 0;
     bool clearFlag = true;
     bool dragStarted = false;
@@ -59,12 +59,12 @@ private:
     Type fractalType = Mandelbrot;
     struct {
         Id shader;
-        Id drawState;
+        Id pipeline;
         Shaders::Mandelbrot::VSParams vsParams;        
     } mandelbrot;
     struct {
         Id shader;
-        Id drawState;
+        Id pipeline;
         Shaders::Julia::VSParams vsParams;
         Shaders::Julia::FSParams fsParams;
     } julia;
@@ -92,13 +92,13 @@ FractalApp::OnRunning() {
     if (Mandelbrot == this->fractalType) {
         Shaders::Mandelbrot::FSTextures texBlock;
         texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyDrawState(this->mandelbrot.drawState, this->fsqFractal, texBlock);
+        Gfx::ApplyDrawState(this->mandelbrot.pipeline, this->fsqFractal, texBlock);
         Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
     }
     else {
         Shaders::Julia::FSTextures texBlock;
         texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyDrawState(this->julia.drawState, this->fsqFractal, texBlock);
+        Gfx::ApplyDrawState(this->julia.pipeline, this->fsqFractal, texBlock);
         Gfx::ApplyUniformBlock(this->julia.vsParams);
         Gfx::ApplyUniformBlock(this->julia.fsParams);
     }
@@ -108,7 +108,7 @@ FractalApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Shaders::Display::FSTextures texBlock;
     texBlock.Texture = this->offscreenRenderTarget[index0];
-    Gfx::ApplyDrawState(this->displayDrawState, this->fsqDisplay, texBlock);
+    Gfx::ApplyDrawState(this->displayPipeline, this->fsqDisplay, texBlock);
     Gfx::ApplyUniformBlock(this->displayFSParams);
     Gfx::Draw(0);
 
@@ -152,30 +152,30 @@ FractalApp::OnInit() {
     this->julia.shader = Gfx::CreateResource(Shaders::Julia::Setup());
 
     // draw state for rendering the final result to screen
-    auto dss = DrawStateSetup::FromLayoutAndShader(fsqSetup.Layout, this->displayShader);
-    dss.RasterizerState.CullFaceEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    this->displayDrawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, this->displayShader);
+    ps.RasterizerState.CullFaceEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    this->displayPipeline = Gfx::CreateResource(ps);
 
     // setup 2 ping-poing fp32 render targets which hold the current fractal state,
     // and the texture blocks which use reference these render targets
     this->recreateRenderTargets(Gfx::DisplayAttrs());
 
     // setup mandelbrot state
-    dss = DrawStateSetup::FromLayoutAndShader(fsqSetup.Layout, this->mandelbrot.shader);
-    dss.RasterizerState.CullFaceEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
-    dss.BlendState.DepthFormat = PixelFormat::None;
-    this->mandelbrot.drawState = Gfx::CreateResource(dss);
+    ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, this->mandelbrot.shader);
+    ps.RasterizerState.CullFaceEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.ColorFormat = PixelFormat::RGBA32F;
+    ps.BlendState.DepthFormat = PixelFormat::None;
+    this->mandelbrot.pipeline = Gfx::CreateResource(ps);
 
     // setup julia state
-    dss = DrawStateSetup::FromLayoutAndShader(fsqSetup.Layout, this->julia.shader);
-    dss.RasterizerState.CullFaceEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    dss.BlendState.ColorFormat = PixelFormat::RGBA32F;
-    dss.BlendState.DepthFormat = PixelFormat::None;
-    this->julia.drawState = Gfx::CreateResource(dss);
+    ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, this->julia.shader);
+    ps.RasterizerState.CullFaceEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.ColorFormat = PixelFormat::RGBA32F;
+    ps.BlendState.DepthFormat = PixelFormat::None;
+    this->julia.pipeline = Gfx::CreateResource(ps);
 
     // initialize fractal states
     this->reset();

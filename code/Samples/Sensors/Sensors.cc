@@ -25,7 +25,7 @@ private:
     glm::mat4 computeMVP(const Sensors& sensor);
 
     MeshBlock meshBlock;
-    Id drawState;
+    Id pipeline;
     glm::mat4 proj;
     TimePoint lastFrameTimePoint;
     Shaders::Main::VSParams vsParams;
@@ -47,11 +47,11 @@ SensorsApp::OnInit() {
     shapeBuilder.Box(2.0, 2.0, 2.0, 1);
     this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.CullFaceEnabled = true;
+    this->pipeline = Gfx::CreateResource(ps);
 
     // setup transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -77,7 +77,7 @@ SensorsApp::OnRunning() {
     
     const Sensors& sensors = Input::Sensors();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
     this->vsParams.ModelViewProjection = this->computeMVP(sensors);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);

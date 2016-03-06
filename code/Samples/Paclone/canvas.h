@@ -62,7 +62,7 @@ private:
     int numSprites;
     int numVertices;
     Oryol::Id shader;
-    Oryol::Id drawState;
+    Oryol::Id pipeline;
     Oryol::MeshBlock meshBlock;
     Oryol::Shaders::Canvas::FSTextures textures;
 

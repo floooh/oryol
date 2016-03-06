@@ -105,7 +105,7 @@ imguiWrapper::setupFontTexture() {
 void
 imguiWrapper::setupMeshAndDrawState() {
     o_assert_dbg(!this->meshBlock[0].IsValid());
-    o_assert_dbg(!this->drawState.IsValid());
+    o_assert_dbg(!this->pipeline.IsValid());
 
     MeshSetup meshSetup = MeshSetup::Empty(MaxNumVertices, Usage::Stream, IndexType::Index16, MaxNumIndices, Usage::Stream);
     meshSetup.Layout
@@ -119,19 +119,19 @@ imguiWrapper::setupMeshAndDrawState() {
     o_assert(Gfx::QueryResourceInfo(this->meshBlock[0]).State == ResourceState::Valid);
 
     this->shader = Gfx::CreateResource(Shaders::IMUIShader::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
-    dss.DepthStencilState.DepthWriteEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    dss.BlendState.BlendEnabled = true;
-    dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    dss.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
-    dss.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
-    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
-    dss.RasterizerState.ScissorTestEnabled = true;
-    dss.RasterizerState.CullFaceEnabled = false;
-    dss.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
+    ps.DepthStencilState.DepthWriteEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
+    ps.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
+    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
+    ps.RasterizerState.ScissorTestEnabled = true;
+    ps.RasterizerState.CullFaceEnabled = false;
+    ps.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
+    this->pipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------
@@ -237,7 +237,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
 
     Gfx::UpdateVertices(self->meshBlock[0], self->vertexData, vertexDataSize);
     Gfx::UpdateIndices(self->meshBlock[0], self->indexData, indexDataSize);
-    Gfx::ApplyDrawState(self->drawState, self->meshBlock, texBlock);
+    Gfx::ApplyDrawState(self->pipeline, self->meshBlock, texBlock);
     Gfx::ApplyUniformBlock(vsParams);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {

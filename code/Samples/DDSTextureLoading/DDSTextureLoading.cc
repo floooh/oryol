@@ -24,7 +24,7 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float32 distVal = 0.0f;
-    Id drawState;
+    Id pipeline;
     static const int32 NumTextures = 16;
     glm::mat4 view;
     glm::mat4 proj;
@@ -72,7 +72,7 @@ DDSTextureLoadingApp::OnRunning() {
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
             this->vsParams.ModelViewProjection = this->computeMVP(p);
-            Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->texBlock[i]);
+            Gfx::ApplyDrawState(this->pipeline, this->meshBlock, this->texBlock[i]);
             Gfx::ApplyUniformBlock(this->vsParams);
             Gfx::Draw(0);
         }
@@ -135,10 +135,10 @@ DDSTextureLoadingApp::OnInit() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4);
     this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->pipeline = Gfx::CreateResource(ps);
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

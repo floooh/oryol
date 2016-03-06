@@ -43,7 +43,7 @@ private:
     MeshBlock meshBlock;
     Id fontTexture;
     Id shader;
-    Id drawState;
+    Id pipeline;
     ImDrawVert vertexData[MaxNumVertices];
     ImDrawIdx indexData[MaxNumIndices];
 };

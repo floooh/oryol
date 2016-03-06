@@ -46,7 +46,7 @@ private:
     float32 maxDist;
 
     MeshBlock meshBlock;
-    Id drawState;
+    Id pipeline;
     glm::vec2 startPolar;
     glm::vec2 polar;
     float32 distance = 6.0f;
@@ -94,11 +94,11 @@ TestInputApp::OnInit() {
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.CullFaceEnabled = true;
+    this->pipeline = Gfx::CreateResource(ps);
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -395,7 +395,7 @@ void
 TestInputApp::drawCube() const {
     Shaders::Main::VSParams vsParams;
     vsParams.ModelViewProjection = this->proj * this->view;
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw(0);
 }

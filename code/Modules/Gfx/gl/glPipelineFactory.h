@@ -1,27 +1,27 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::glDrawStateFactory
+    @class Oryol::_priv::glPipelineFactory
     @ingroup _priv
-    @brief GL implementation of drawStateFactory
+    @brief GL implementation of pipelineFactory
 */
-#include "Gfx/Resource/drawStateFactoryBase.h"
+#include "Gfx/Resource/pipelineFactoryBase.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/Core/Enums.h"
 
 namespace Oryol {
 namespace _priv {
 
-class glDrawStateFactory : public drawStateFactoryBase {
+class glPipelineFactory : public pipelineFactoryBase {
 public:
-    /// setup drawState resource
-    ResourceState::Code SetupResource(drawState& ds);
-    /// destroy the drawState
-    void DestroyResource(drawState& ds);
+    /// setup pipeline resource
+    ResourceState::Code SetupResource(pipeline& pip);
+    /// destroy the pipeline
+    void DestroyResource(pipeline& pip);
 
 private:
     /// setup the GL vertex attribute declaration
-    void glSetupVertexAttrs(drawState& ds);
+    void glSetupVertexAttrs(pipeline& pip);
 
     /// table to convert VertexFormat to GL vertex attr size, type, normalized
     static const struct VertexFormatTable {

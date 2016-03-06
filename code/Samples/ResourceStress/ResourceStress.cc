@@ -28,7 +28,7 @@ private:
 
     struct Object {
         MeshBlock meshBlock;
-        Id drawState;
+        Id pipeline;
         Id texture;
         ResourceLabel label;
         glm::mat4 modelTransform;
@@ -64,7 +64,7 @@ ResourceStressApp::OnRunning() {
         if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
             vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
             fsTextures.Texture = obj.texture;
-            Gfx::ApplyDrawState(obj.drawState, obj.meshBlock, fsTextures);
+            Gfx::ApplyDrawState(obj.pipeline, obj.meshBlock, fsTextures);
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(0);
         }
@@ -89,7 +89,7 @@ ResourceStressApp::OnInit() {
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol Resource Stress Test");
     gfxSetup.SetPoolSize(GfxResourceType::Mesh, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::Texture, MaxNumObjects + 32);
-    gfxSetup.SetPoolSize(GfxResourceType::DrawState, MaxNumObjects + 32);
+    gfxSetup.SetPoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::Shader, 4);
     Gfx::Setup(gfxSetup);
     
@@ -149,8 +149,8 @@ ResourceStressApp::createObjects() {
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1);
     obj.meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, this->shader);
-    obj.drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, this->shader);
+    obj.pipeline = Gfx::CreateResource(ps);
     obj.texture = Gfx::LoadResource(TextureLoader::Create(
         TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint)));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);

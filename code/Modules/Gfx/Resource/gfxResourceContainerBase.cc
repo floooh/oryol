@@ -26,12 +26,12 @@ gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) 
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
     this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
-    this->drawStatePool.Setup(GfxResourceType::DrawState, setup.PoolSize(GfxResourceType::DrawState));
+    this->pipelinePool.Setup(GfxResourceType::Pipeline, setup.PoolSize(GfxResourceType::Pipeline));
 
     this->meshFactory.Setup(this->pointers);
     this->shaderFactory.Setup(this->pointers);
     this->textureFactory.Setup(this->pointers);
-    this->drawStateFactory.Setup(this->pointers);
+    this->pipelineFactory.Setup(this->pointers);
 
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
         this->update();
@@ -53,8 +53,8 @@ gfxResourceContainerBase::discard() {
     
     resourceContainerBase::discard();
 
-    this->drawStatePool.Discard();
-    this->drawStateFactory.Discard();
+    this->pipelinePool.Discard();
+    this->pipelineFactory.Discard();
     this->texturePool.Discard();
     this->textureFactory.Discard();
     this->shaderPool.Discard();
@@ -269,7 +269,7 @@ gfxResourceContainerBase::Create(const ShaderSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
+gfxResourceContainerBase::Create(const PipelineSetup& setup) {
     o_assert_dbg(this->isValid());
     
     Id resId = this->registry.Lookup(setup.Locator);
@@ -277,12 +277,12 @@ gfxResourceContainerBase::Create(const DrawStateSetup& setup) {
         return resId;
     }
     else {
-        resId = this->drawStatePool.AllocId();
+        resId = this->pipelinePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
-        drawState& res = this->drawStatePool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->drawStateFactory.SetupResource(res);
+        pipeline& res = this->pipelinePool.Assign(resId, setup, ResourceState::Setup);
+        const ResourceState::Code newState = this->pipelineFactory.SetupResource(res);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
-        this->drawStatePool.UpdateState(resId, newState);
+        this->pipelinePool.UpdateState(resId, newState);
     }
     return resId;
 }
@@ -347,15 +347,15 @@ gfxResourceContainerBase::Destroy(ResourceLabel label) {
             }
             break;
                 
-            case GfxResourceType::DrawState:
+            case GfxResourceType::Pipeline:
             {
-                if (ResourceState::Valid == this->drawStatePool.QueryState(id)) {
-                    drawState* ds = this->drawStatePool.Lookup(id);
-                    if (ds) {
-                        this->drawStateFactory.DestroyResource(*ds);
+                if (ResourceState::Valid == this->pipelinePool.QueryState(id)) {
+                    pipeline* pip = this->pipelinePool.Lookup(id);
+                    if (pip) {
+                        this->pipelineFactory.DestroyResource(*pip);
                     }
                 }
-                this->drawStatePool.Unassign(id);
+                this->pipelinePool.Unassign(id);
             }
             break;
 
@@ -375,7 +375,7 @@ gfxResourceContainerBase::update() {
     this->meshPool.Update();
     this->shaderPool.Update();
     this->texturePool.Update();
-    this->drawStatePool.Update();
+    this->pipelinePool.Update();
 
     // trigger loaders, and remove from pending array if finished
     for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
@@ -399,8 +399,8 @@ gfxResourceContainerBase::QueryResourceInfo(const Id& resId) const {
             return this->meshPool.QueryResourceInfo(resId);
         case GfxResourceType::Shader:
             return this->shaderPool.QueryResourceInfo(resId);
-        case GfxResourceType::DrawState:
-            return this->drawStatePool.QueryResourceInfo(resId);
+        case GfxResourceType::Pipeline:
+            return this->pipelinePool.QueryResourceInfo(resId);
         default:
             o_assert(false);
             return ResourceInfo();
@@ -419,8 +419,8 @@ gfxResourceContainerBase::QueryPoolInfo(GfxResourceType::Code resType) const {
             return this->meshPool.QueryPoolInfo();
         case GfxResourceType::Shader:
             return this->shaderPool.QueryPoolInfo();
-        case GfxResourceType::DrawState:
-            return this->drawStatePool.QueryPoolInfo();
+        case GfxResourceType::Pipeline:
+            return this->pipelinePool.QueryPoolInfo();
         default:
             o_assert(false);
             return ResourcePoolInfo();
@@ -439,8 +439,8 @@ gfxResourceContainerBase::QueryFreeSlots(GfxResourceType::Code resourceType) con
             return this->meshPool.GetNumFreeSlots();
         case GfxResourceType::Shader:
             return this->shaderPool.GetNumFreeSlots();
-        case GfxResourceType::DrawState:
-            return this->drawStatePool.GetNumFreeSlots();
+        case GfxResourceType::Pipeline:
+            return this->pipelinePool.GetNumFreeSlots();
         default:
             o_assert(false);
             return 0;

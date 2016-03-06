@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
-//  glDrawStateFactory.cc
+//  glPipelineFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "glDrawStateFactory.h"
+#include "glPipelineFactory.h"
 #include "Core/Assertion.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/glTypes.h"
-#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/pipeline.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/shader.h"
@@ -15,7 +15,7 @@
 namespace Oryol {
 namespace _priv {
 
-const glDrawStateFactory::VertexFormatTable glDrawStateFactory::vertexFormatTable[VertexFormat::NumVertexFormats] = {
+const glPipelineFactory::VertexFormatTable glPipelineFactory::vertexFormatTable[VertexFormat::NumVertexFormats] = {
     { 1, GL_FLOAT, GL_FALSE },          // VetrexFormat::Float
     { 2, GL_FLOAT, GL_FALSE },          // VertexFormat::Float2
     { 3, GL_FLOAT, GL_FALSE },          // VertexFormat::Float3
@@ -32,43 +32,43 @@ const glDrawStateFactory::VertexFormatTable glDrawStateFactory::vertexFormatTabl
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glDrawStateFactory::SetupResource(drawState& ds) {
+glPipelineFactory::SetupResource(pipeline& pip) {
     o_assert_dbg(this->isValid);
 
-    drawStateFactoryBase::SetupResource(ds);
-    o_assert_dbg(ds.shd);
-    this->glSetupVertexAttrs(ds);
-    ds.glPrimType = glTypes::asGLPrimitiveType(ds.Setup.PrimType);
+    pipelineFactoryBase::SetupResource(pip);
+    o_assert_dbg(pip.shd);
+    this->glSetupVertexAttrs(pip);
+    pip.glPrimType = glTypes::asGLPrimitiveType(pip.Setup.PrimType);
 
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-glDrawStateFactory::DestroyResource(drawState& ds) {
+glPipelineFactory::DestroyResource(pipeline& pip) {
     this->pointers.renderer->invalidateMeshState();
-    ds.Clear();
+    pip.Clear();
 }
 
 //------------------------------------------------------------------------------
 void
-glDrawStateFactory::glSetupVertexAttrs(drawState& ds) {
+glPipelineFactory::glSetupVertexAttrs(pipeline& pip) {
 
     // first disable all vertex attrs
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        ds.glAttrs[attrIndex] = glVertexAttr();
-        ds.glAttrs[attrIndex].index = attrIndex;
+        pip.glAttrs[attrIndex] = glVertexAttr();
+        pip.glAttrs[attrIndex].index = attrIndex;
     }
 
     // convert input mesh vertex layout components to glVertexAttrs
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumInputMeshes; layoutIndex++) {
-        const VertexLayout& layout = ds.Setup.Layouts[layoutIndex];
+        const VertexLayout& layout = pip.Setup.Layouts[layoutIndex];
         const int numComps = layout.NumComponents();
         if (numComps > 0) {
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
                 o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
-                glVertexAttr& glAttr = ds.glAttrs[comp.Attr];
+                glVertexAttr& glAttr = pip.glAttrs[comp.Attr];
                 o_assert_dbg(!glAttr.enabled);
                 glAttr.enabled = GL_TRUE;
                 glAttr.vbIndex = layoutIndex;

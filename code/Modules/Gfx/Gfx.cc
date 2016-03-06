@@ -26,7 +26,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     pointers.meshPool = &state->resourceContainer.meshPool;
     pointers.shaderPool = &state->resourceContainer.shaderPool;
     pointers.texturePool = &state->resourceContainer.texturePool;
-    pointers.drawStatePool = &state->resourceContainer.drawStatePool;
+    pointers.pipelinePool = &state->resourceContainer.pipelinePool;
     
     state->displayManager.SetupDisplay(setup, pointers);
     state->renderer.setup(setup, pointers);
@@ -131,9 +131,9 @@ void
 Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
-    o_assert_dbg(id.Type == GfxResourceType::DrawState);
+    o_assert_dbg(id.Type == GfxResourceType::Pipeline);
     state->gfxFrameInfo.NumApplyDrawState++;
-    drawState* ds = state->resourceContainer.lookupDrawState(id);
+    pipeline* pip = state->resourceContainer.lookupPipeline(id);
     mesh* meshes[GfxConfig::MaxNumInputMeshes] = { };
     int numMeshes = 0;
     for (; numMeshes < GfxConfig::MaxNumInputMeshes; numMeshes++) {
@@ -147,7 +147,7 @@ Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb) {
     #if ORYOL_DEBUG
     mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
     #endif
-    state->renderer.applyDrawState(ds, meshes, numMeshes);
+    state->renderer.applyDrawState(pip, meshes, numMeshes);
 }
 
 //------------------------------------------------------------------------------

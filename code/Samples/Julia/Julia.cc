@@ -28,7 +28,7 @@ private:
     ClearState displayClearState;
     fractal test;
     MeshBlock shapeMeshBlock;
-    Id shapeDrawState;
+    Id shapePipeline;
     Shaders::Shape::VSParams shapeVSParams;
     Shaders::Shape::FSParams shapeFSParams;
     Shaders::Shape::FSTextures shapeFSTextures;
@@ -55,17 +55,17 @@ JuliaApp::OnInit() {
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64);
     this->shapeMeshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shaders::Shape::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    dss.RasterizerState.CullFaceEnabled = false;
-    dss.BlendState.BlendEnabled = false;
-    dss.BlendState.SrcFactorRGB = dss.BlendState.SrcFactorAlpha = BlendFactor::One;
-    dss.BlendState.DstFactorRGB = dss.BlendState.DstFactorAlpha = BlendFactor::One;
-    dss.BlendState.ColorFormat = gfxSetup.ColorFormat;
-    dss.BlendState.DepthFormat = gfxSetup.DepthFormat;
-    this->shapeDrawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    ps.RasterizerState.CullFaceEnabled = false;
+    ps.BlendState.BlendEnabled = false;
+    ps.BlendState.SrcFactorRGB = ps.BlendState.SrcFactorAlpha = BlendFactor::One;
+    ps.BlendState.DstFactorRGB = ps.BlendState.DstFactorAlpha = BlendFactor::One;
+    ps.BlendState.ColorFormat = gfxSetup.ColorFormat;
+    ps.BlendState.DepthFormat = gfxSetup.DepthFormat;
+    this->shapePipeline = Gfx::CreateResource(ps);
     this->shapeFSParams.NumColors = 128.0;
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -92,7 +92,7 @@ JuliaApp::OnRunning() {
     this->shapeFSTextures.Texture = this->test.colorTexture;
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->shapeDrawState, this->shapeMeshBlock, this->shapeFSTextures);
+    Gfx::ApplyDrawState(this->shapePipeline, this->shapeMeshBlock, this->shapeFSTextures);
     Gfx::ApplyUniformBlock(this->shapeVSParams);
     Gfx::ApplyUniformBlock(this->shapeFSParams);
     Gfx::Draw(0);
