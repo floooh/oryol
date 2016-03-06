@@ -1,24 +1,24 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::mtlDrawState
+    @class Oryol::_priv::mtlPipeline
     @ingroup _priv
-    @brief Metal implementation of class drawState
+    @brief Metal implementation of class pipeline
 */
-#include "Gfx/Resource/drawStateBase.h"
+#include "Gfx/Resource/pipelineBase.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class mtlDrawState : public drawStateBase {
+class mtlPipeline : public pipelineBase {
 public:
     /// constructor
-    mtlDrawState();
+    mtlPipeline();
     /// destructor
-    ~mtlDrawState();
+    ~mtlPipeline();
 
-    /// clear the object (called from drawStateFactory::DestroyResource())
+    /// clear the object (called from pipelineFactory::DestroyResource())
     void Clear();
 
     /// render-pipeline state
