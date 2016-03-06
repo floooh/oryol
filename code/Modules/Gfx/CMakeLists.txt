@@ -37,6 +37,7 @@ fips_begin_module(Gfx)
         displayMgrBase.cc displayMgrBase.h
         BlendState.h
         ClearState.cc ClearState.h
+        DrawState.h
         DepthStencilState.h
         SamplerState.h
         Enums.h

@@ -138,13 +138,12 @@ glShaderFactory::SetupResource(shader& shd) {
     for (int32 tbIndex = 0; tbIndex < numTextures; tbIndex++) {
         const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
         ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
-        int32 tbBindSlot = setup.TextureBlockBindSlot(tbIndex);
         const int32 numTextures = layout.NumComponents();
         for (int texIndex = 0; texIndex < numTextures; texIndex++) {
             const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
             const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
             o_assert_dbg(-1 != glUniformLocation);
-            shd.bindSampler(tbBindStage, tbBindSlot, texIndex, glTextureLocation);
+            shd.bindSampler(tbBindStage, texIndex, glTextureLocation);
             // set the sampler index in the shader program, this will never change
             ::glUniform1i(glUniformLocation, glTextureLocation);
             glTextureLocation++;

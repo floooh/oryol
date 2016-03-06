@@ -38,7 +38,7 @@ public:
     /// add a uniform block
     void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
     /// add a texture block
-    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot);
+    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage);
     
     /// set metal-style library byte code
     void SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes);
@@ -75,16 +75,14 @@ public:
 
     /// get number of texture blocks
     int32 NumTextureBlocks() const;
-    /// find texture block index by bind stage and slot (return InvalidIndex if not found)
-    int32 TextureBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const;
+    /// find texture block index by bind stage (return InvalidIndex if not found)
+    int32 TextureBlockIndexByStage(ShaderStage::Code bindStage) const;
     /// get texture block name at index
     const StringAtom& TextureBlockName(int32 index) const;
     /// get texture block layout at index
     const class TextureBlockLayout& TextureBlockLayout(int32 index) const;
     /// get texture block shader stage at index
     ShaderStage::Code TextureBlockBindStage(int32 index) const;
-    /// get texture block bind slot at index
-    int32 TextureBlockBindSlot(int32 index) const;
 
 private:
     struct programEntry {
@@ -110,11 +108,9 @@ private:
         StringAtom name;
         class TextureBlockLayout layout;
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
-        int32 bindSlot = InvalidIndex;
     };
 
     static const int32 MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
-    static const int32 MaxNumTextureBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumTextureBlocksPerStage;
 
     int32 libraryByteCodeSize;
     const void* libraryByteCode;
@@ -122,7 +118,7 @@ private:
     int32 numUniformBlocks;
     StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;
     int32 numTextureBlocks;
-    StaticArray<textureBlockEntry, MaxNumTextureBlocks> textureBlocks;
+    StaticArray<textureBlockEntry, ShaderStage::NumShaderStages> textureBlocks;
 };
     
 } // namespace Oryol

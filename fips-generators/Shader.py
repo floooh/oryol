@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 50
+Version = 51
 
 import os
 import sys
@@ -334,7 +334,6 @@ class TextureBlock :
         self.name = name
         self.bindName = bindName
         self.bindStage = None
-        self.bindSlot = None
         self.filePath = filePath
         self.lineNumber = lineNumber
         self.textures = []
@@ -1417,7 +1416,7 @@ class ShaderLibrary :
     
     def assignBindSlotIndices(self, program) :
         '''
-        Assigns bindSlotIndex to uniform- and texture-blocks, and
+        Assigns bindSlotIndex to uniform-blocks and
         to textures inside texture blocks. These
         are counted separately for the different shader stages (each
         shader stage has its own bind slots)
@@ -1431,20 +1430,14 @@ class ShaderLibrary :
             else :
                 ub.bindSlot = fsUBSlot
                 fsUBSlot += 1
-        vsTBSlot = 0
-        fsTBSlot = 0
         vsTexSlot = 0
         fsTexSlot = 0
         for tb in program.textureBlocks :
             if tb.bindStage == 'vs' :
-                tb.bindSlot = vsTBSlot
-                vsTBSlot += 1
                 for tex in tb.textures :
                     tex.bindSlot = vsTexSlot
                     vsTexSlot += 1
             else :
-                tb.bindSlot = fsTBSlot
-                fsTBSlot += 1
                 for tex in tb.textures :
                     tex.bindSlot = fsTexSlot
                     fsTexSlot += 1
@@ -1648,7 +1641,6 @@ def writeProgramHeader(f, shdLib, program) :
             stageName = 'FS'
         f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(tb.bindName))
-        f.write('            static const int32 _bindSlotIndex = {};\n'.format(tb.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
         f.write('            static const int64 _layoutHash = {};\n'.format(tb.getHash()))
         f.write('            static const int32 _numTextures = {};\n'.format(len(tb.textures)))
@@ -1828,8 +1820,8 @@ def writeProgramSource(f, shdLib, prog) :
             stageName = 'VS'
         else :
             stageName = 'FS'
-        f.write('    setup.AddTextureBlock("{}", {}, ShaderStage::{}, {});\n'.format(
-            tb.name, layoutName, stageName, tb.bindSlot))
+        f.write('    setup.AddTextureBlock("{}", {}, ShaderStage::{});\n'.format(
+            tb.name, layoutName, stageName))
                 
     f.write('    return setup;\n')
     f.write('}\n')

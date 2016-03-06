@@ -73,15 +73,13 @@ ShaderSetup::AddUniformBlock(const StringAtom& name, const class UniformBlockLay
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddTextureBlock(const StringAtom& name, const class TextureBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot) {
+ShaderSetup::AddTextureBlock(const StringAtom& name, const class TextureBlockLayout& layout, ShaderStage::Code bindStage) {
     o_assert_dbg(name.IsValid());
-    o_assert_dbg(bindSlot >= 0);
 
     textureBlockEntry& entry = this->textureBlocks[this->numTextureBlocks++];
     entry.name = name;
     entry.layout = layout;
     entry.bindStage = bindStage;
-    entry.bindSlot = bindSlot;
 }
 
 //------------------------------------------------------------------------------
@@ -198,10 +196,10 @@ ShaderSetup::NumTextureBlocks() const {
 
 //------------------------------------------------------------------------------
 int32
-ShaderSetup::TextureBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const {
+ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
     for (int i = 0; i < this->numTextureBlocks; i++) {
         const auto& entry = this->textureBlocks[i];
-        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
+        if (entry.bindStage == bindStage) {
             return i;
         }
     }
@@ -224,12 +222,6 @@ ShaderSetup::TextureBlockLayout(int32 index) const {
 ShaderStage::Code
 ShaderSetup::TextureBlockBindStage(int32 index) const {
     return this->textureBlocks[index].bindStage;
-}
-
-//------------------------------------------------------------------------------
-int32
-ShaderSetup::TextureBlockBindSlot(int32 index) const {
-    return this->textureBlocks[index].bindSlot;
 }
 
 } // namespace Oryol

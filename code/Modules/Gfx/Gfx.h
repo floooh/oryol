@@ -152,7 +152,7 @@ Gfx::applyTextureBlock(const T& tb) {
         o_assert_dbg(GfxResourceType::Texture == texId[i].Type);
         textures[i] = state->resourceContainer.lookupTexture(texId[i]);
     }
-    state->renderer.applyTextureBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, textures, T::_numTextures);
+    state->renderer.applyTextureBlock(T::_bindShaderStage, T::_layoutHash, textures, T::_numTextures);
 }
 
 //------------------------------------------------------------------------------

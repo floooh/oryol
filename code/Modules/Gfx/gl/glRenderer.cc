@@ -1157,7 +1157,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, Oryol::_priv::texture **textures, int32 numTextures) {
+glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int64 layoutHash, Oryol::_priv::texture **textures, int32 numTextures) {
     o_assert_dbg(this->valid);
     o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
     if (nullptr == this->curPipeline) {
@@ -1179,7 +1179,7 @@ glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     #if ORYOL_DEBUG
     const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStage(bindStage);
     o_assert_dbg(InvalidIndex != texBlockIndex);
     const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
     o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
