@@ -37,9 +37,6 @@ public:
     /// return true if the layout is empty
     bool Empty() const;
 
-    /// a layout type hash, this is used for runtime type checking in Gfx::ApplyTextureBlock
-    int64 TypeHash;
-
     /// add a component to the layout
     TextureBlockLayout& Add(const Component& comp);
     /// add a component to the layout

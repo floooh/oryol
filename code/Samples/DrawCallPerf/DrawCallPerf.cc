@@ -26,13 +26,12 @@ private:
     void emitParticles();
     void updateParticles();
 
-    Id pipeline;
+    DrawState drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    MeshBlock meshBlock;
-    Shaders::Main::PerFrameParams perFrameParams;
-    Shaders::Main::PerParticleParams perParticleParams;
+    Shader::PerFrameParams perFrameParams;
+    Shader::PerParticleParams perParticleParams;
     bool updateEnabled = true;
     int32 frameCount = 0;
     int32 curNumParticles = 0;
@@ -67,7 +66,7 @@ DrawCallPerfApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     applyRtTime = Clock::Since(applyRtStart);
     TimePoint drawStart = Clock::Now();
-    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
+    Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->perFrameParams);
     for (int32 i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.Translate = this->particles[i].pos;
@@ -157,13 +156,13 @@ DrawCallPerfApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id shd = Gfx::CreateResource(Shader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     ps.RasterizerState.CullFaceEnabled = true;
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

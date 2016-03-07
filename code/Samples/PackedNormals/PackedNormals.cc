@@ -19,11 +19,10 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    Id pipeline;
+    DrawState drawState;
     glm::mat4 view;
     glm::mat4 proj;
-    Shaders::PackedNormals::Params params;
-    MeshBlock meshBlock;
+    Shader::Params params;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -49,7 +48,7 @@ PackedNormalsApp::OnRunning() {
         glm::vec3(0.0f, -1.0f, -6.0f)
     };
     
-    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
+    Gfx::ApplyDrawState(this->drawState);
     int32 primGroupIndex = 0;
     for (const auto& pos : positions) {
         this->params.ModelViewProjection = this->computeMVP(pos);
@@ -79,14 +78,14 @@ PackedNormalsApp::OnInit() {
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::PackedNormals::Setup());
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id shd = Gfx::CreateResource(Shader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     ps.RasterizerState.CullFaceEnabled = true;
     ps.RasterizerState.SampleCount = 4;
-    this->pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup projection and view matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -78,9 +78,6 @@ imguiWrapper::IsValid() const {
 //------------------------------------------------------------------------------
 void
 imguiWrapper::setupFontTexture() {
-    o_assert_dbg(!this->fontTexture.IsValid());
-    o_assert_dbg(this->shader.IsValid());
-
     ImGuiIO& io = ImGui::GetIO();
 
     unsigned char* pixels;
@@ -94,32 +91,28 @@ imguiWrapper::setupFontTexture() {
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageData.Sizes[0][0] = imgSize;
-    this->fontTexture = Gfx::CreateResource(texSetup, pixels, imgSize);
+    Id tex = Gfx::CreateResource(texSetup, pixels, imgSize);
+    this->drawState.FSTexture[IMUIShader::FSTextures::Texture] = tex;
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;
 }
 
-
 //------------------------------------------------------------------------------
 void
 imguiWrapper::setupMeshAndDrawState() {
-    o_assert_dbg(!this->meshBlock[0].IsValid());
-    o_assert_dbg(!this->pipeline.IsValid());
-
     MeshSetup meshSetup = MeshSetup::Empty(MaxNumVertices, Usage::Stream, IndexType::Index16, MaxNumIndices, Usage::Stream);
     meshSetup.Layout
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2)
         .Add(VertexAttr::Color0, VertexFormat::UByte4N);
     o_assert_dbg(meshSetup.Layout.ByteSize() == sizeof(ImDrawVert));
+    this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup);
+    o_assert(this->drawState.Mesh[0].IsValid());
+    o_assert(Gfx::QueryResourceInfo(this->drawState.Mesh[0]).State == ResourceState::Valid);
 
-    this->meshBlock[0] = Gfx::CreateResource(meshSetup);
-    o_assert(this->meshBlock[0].IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->meshBlock[0]).State == ResourceState::Valid);
-
-    this->shader = Gfx::CreateResource(Shaders::IMUIShader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
+    Id shd = Gfx::CreateResource(IMUIShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, shd);
     ps.DepthStencilState.DepthWriteEnabled = false;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     ps.BlendState.BlendEnabled = true;
@@ -131,7 +124,7 @@ imguiWrapper::setupMeshAndDrawState() {
     ps.RasterizerState.ScissorTestEnabled = true;
     ps.RasterizerState.CullFaceEnabled = false;
     ps.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
-    this->pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------
@@ -226,18 +219,16 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
     }
 
     // draw command lists
-    Shaders::IMUIShader::VSParams vsParams;
+    IMUIShader::VSParams vsParams;
     const float width  = ImGui::GetIO().DisplaySize.x;
     const float height = ImGui::GetIO().DisplaySize.y;
     vsParams.Ortho = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
     const int vertexDataSize = numVertices * sizeof(ImDrawVert);
     const int indexDataSize = numIndices * sizeof(ImDrawIdx);
-    Shaders::IMUIShader::FSTextures texBlock;
-    texBlock.Texture = self->fontTexture;
 
-    Gfx::UpdateVertices(self->meshBlock[0], self->vertexData, vertexDataSize);
-    Gfx::UpdateIndices(self->meshBlock[0], self->indexData, indexDataSize);
-    Gfx::ApplyDrawState(self->pipeline, self->meshBlock, texBlock);
+    Gfx::UpdateVertices(self->drawState.Mesh[0], self->vertexData, vertexDataSize);
+    Gfx::UpdateIndices(self->drawState.Mesh[0], self->indexData, indexDataSize);
+    Gfx::ApplyDrawState(self->drawState);
     Gfx::ApplyUniformBlock(vsParams);
     int elmOffset = 0;
     for (int cmdListIndex = 0; cmdListIndex < numCmdLists; cmdListIndex++) {

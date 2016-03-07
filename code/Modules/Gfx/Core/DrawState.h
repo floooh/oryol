@@ -24,9 +24,9 @@ struct DrawState {
     /// input meshes
     StaticArray<Id, GfxConfig::MaxNumInputMeshes> Mesh;
     /// vertex shader stage textures
-    StaticArray<Id, GfxConfig::MaxNumTexturesPerStage> VSTexture;
+    StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
     /// fragment shader stage textures
-    StaticArray<Id, GfxConfig::MaxNumTexturesPerStage> FSTexture;
+    StaticArray<Id, GfxConfig::MaxNumFragmentTextures> FSTexture;
 };
 
 } // namepace Oryol

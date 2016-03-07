@@ -134,8 +134,8 @@ glShaderFactory::SetupResource(shader& shd) {
 
     // resolve texture locations
     int glTextureLocation = 0;
-    const int32 numTextures = setup.NumTextureBlocks();
-    for (int32 tbIndex = 0; tbIndex < numTextures; tbIndex++) {
+    const int32 numTextureBlocks = setup.NumTextureBlocks();
+    for (int32 tbIndex = 0; tbIndex < numTextureBlocks; tbIndex++) {
         const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
         ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
         const int32 numTextures = layout.NumComponents();

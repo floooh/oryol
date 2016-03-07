@@ -1157,9 +1157,11 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int64 layoutHash, Oryol::_priv::texture **textures, int32 numTextures) {
+glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int32 numTextures) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
+
+    o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
+                 ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
     if (nullptr == this->curPipeline) {
         return;
     }
@@ -1174,27 +1176,13 @@ glRenderer::applyTextureBlock(ShaderStage::Code bindStage, int64 layoutHash, Ory
         }
     }
 
-    // check if provided texture types are compatible with the expections
-    // of the currently bound shader
-    #if ORYOL_DEBUG
+    // apply textures and samplers
     const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStage(bindStage);
-    o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
-    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
-    for (int i = 0; i < numTextures; i++) {
-        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
-        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
-            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
-        }
-    }
-    #endif
-
-    // apply textures and samplers
     for (int i = 0; i < numTextures; i++) {
         const texture* tex = textures[i];
-        this->bindTexture(i, tex->glTarget, tex->glTextures[tex->activeSlot]);
+        const int32 samplerIndex = shd->getSamplerIndex(bindStage, i);
+        this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
     }
 }
 

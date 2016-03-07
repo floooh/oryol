@@ -129,7 +129,7 @@ _func float snoise(vec2 v)
 }
 @end
 
-@program Plasma plasmaVS plasmaFS
+@program PlasmaShader plasmaVS plasmaFS
 
 //------------------------------------------------------------------------------
 @uniform_block planeParams VSParams
@@ -161,5 +161,5 @@ _func float snoise(vec2 v)
 }
 @end
 
-@program Plane planeVS planeFS
+@program PlaneShader planeVS planeFS
 

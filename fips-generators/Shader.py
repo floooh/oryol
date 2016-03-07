@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 51
+Version = 53
 
 import os
 import sys
@@ -345,15 +345,6 @@ class TextureBlock :
         dumpObj(self)
         for tex in self.textures :
             dumpObj(tex)
-
-    def getHash(self) :
-        # returns an integer hash for the texture-block layout,
-        # this is used as runtime-type check in Gfx::ApplyTextureBlock
-        # to check whether a compatible block is set
-        hashString = ''
-        for tex in self.textures :
-            hashString += tex.type
-        return hash(hashString)
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -1596,11 +1587,9 @@ def writeHeaderTop(f, shdLib) :
     f.write('#include "glm/mat4x4.hpp"\n')
     f.write('#include "Resource/Id.h"\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace Shaders {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, shdLib) :
-    f.write('}\n')
     f.write('}\n')
     f.write('\n')
 
@@ -1633,21 +1622,12 @@ def writeProgramHeader(f, shdLib, program) :
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
     
-    # write texture block structs
+    # write texture bind slot constants
     for tb in program.textureBlocks :
-        if tb.bindStage == 'vs' :
-            stageName = 'VS'
-        else :
-            stageName = 'FS'
-        f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(tb.bindName))
-        f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const int64 _layoutHash = {};\n'.format(tb.getHash()))
-        f.write('            static const int32 _numTextures = {};\n'.format(len(tb.textures)))
         for tex in tb.textures :
-            f.write('            Id {};\n'.format(tex.bindName))
+            f.write('            static const int32 {} = {};\n'.format(tex.bindName, tex.bindSlot))
         f.write('        };\n')
-        f.write('        #pragma pack(pop)\n')
     f.write('        static ShaderSetup Setup();\n')
     f.write('    };\n')
 
@@ -1672,14 +1652,12 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace Shaders {\n')
     f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
     f.write('typedef unsigned char BYTE;\n')
     f.write('#endif\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
-    f.write('}\n')
     f.write('}\n')
     f.write('\n')
 
@@ -1809,7 +1787,6 @@ def writeProgramSource(f, shdLib, prog) :
     for tb in prog.textureBlocks :
         layoutName = '{}_tblayout'.format(tb.bindName)
         f.write('    TextureBlockLayout {};\n'.format(layoutName))
-        f.write('    {}.TypeHash = {};\n'.format(layoutName, tb.getHash()))
         for tex in tb.textures :
             if tex.type == 'sampler2D':
                 texType = 'Texture2D'

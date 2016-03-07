@@ -15,11 +15,10 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 private:
-    Id bgPipeline;
+    DrawState bgDrawState;
+    Id triMesh;
     Id pipelines[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
-    Shaders::Triangle::Params params;
-    MeshBlock bgQuadMesh;
-    MeshBlock triangleMesh;
+    TriShader::Params params;
 };
 OryolMain(BlendTestApp);
 
@@ -29,16 +28,19 @@ BlendTestApp::OnRunning() {
     
     // draw checkboard background
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->bgPipeline, this->bgQuadMesh);
+    Gfx::ApplyDrawState(this->bgDrawState);
     Gfx::Draw(0);
 
     // draw blended triangles
+    DrawState triDrawState;
+    triDrawState.Mesh[0] = this->triMesh;
     float d = 1.0f / BlendFactor::NumBlendFactors;
     for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
             this->params.Translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
             this->params.Translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-            Gfx::ApplyDrawState(this->pipelines[y][x], this->triangleMesh);
+            triDrawState.Pipeline = this->pipelines[y][x];
+            Gfx::ApplyDrawState(triDrawState);
             Gfx::ApplyUniformBlock(this->params);
             Gfx::Draw(0);
         }
@@ -59,10 +61,10 @@ BlendTestApp::OnInit() {
 
     // create pipeline object for a patterned background
     auto ms = MeshSetup::FullScreenQuad();
-    this->bgQuadMesh[0] = Gfx::CreateResource(ms);
-    Id bgShd = Gfx::CreateResource(Shaders::Background::Setup());
+    this->bgDrawState.Mesh[0] = Gfx::CreateResource(ms);
+    Id bgShd = Gfx::CreateResource(BGShader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(ms.Layout, bgShd);
-    this->bgPipeline = Gfx::CreateResource(ps);
+    this->bgDrawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup a triangle mesh and shader
     MeshBuilder meshBuilder;
@@ -79,8 +81,8 @@ BlendTestApp::OnInit() {
         .Vertex(1, VertexAttr::Color0, 0.0f, 0.75f, 0.0f, 0.75f)
         .Vertex(2, VertexAttr::Position, -0.05f, -0.05f, 0.5f)
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f);
-    this->triangleMesh[0] = Gfx::CreateResource(meshBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
+    this->triMesh = Gfx::CreateResource(meshBuilder.Build());
+    Id shd = Gfx::CreateResource(TriShader::Setup());
     
     // setup one draw state for each blend factor combination
     ps = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);

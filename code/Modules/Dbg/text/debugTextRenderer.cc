@@ -129,16 +129,13 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        Shaders::TextShader::VSParams vsParams;
+        DbgTextShader::VSParams vsParams;
         const float w = 8.0f / Gfx::RenderTargetAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
 
-        Shaders::TextShader::FSTextures texBlock;
-        texBlock.Texture = this->fontTexture;
-
-        Gfx::UpdateVertices(this->textMesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->textPipeline, this->textMesh, texBlock);
+        Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
+        Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
@@ -147,9 +144,7 @@ debugTextRenderer::drawTextBuffer() {
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupFontTexture() {
-    o_assert_dbg(!this->fontTexture.IsValid());
-    o_assert_dbg(this->textShader.IsValid());
-    
+
     // convert the KC85/4 font into 8bpp image data
     const int32 numChars = 128;
     const int32 charWidth = 8;
@@ -183,15 +178,15 @@ debugTextRenderer::setupFontTexture() {
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageData.Sizes[0][0] = imgDataSize;
-    this->fontTexture = Gfx::CreateResource(texSetup, data);
-    o_assert_dbg(fontTexture.IsValid());
-    o_assert_dbg(Gfx::QueryResourceInfo(fontTexture).State == ResourceState::Valid);
+    Id tex = Gfx::CreateResource(texSetup, data);
+    o_assert_dbg(tex.IsValid());
+    o_assert_dbg(Gfx::QueryResourceInfo(tex).State == ResourceState::Valid);
+    this->drawState.FSTexture[DbgTextShader::FSTextures::Texture] = tex;
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupTextMesh() {
-    o_assert(!this->textMesh[0].IsValid());
     o_assert(this->vertexLayout.Empty());
     
     // setup an empty mesh, only vertices
@@ -203,22 +198,17 @@ debugTextRenderer::setupTextMesh() {
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->textMesh[0] = Gfx::CreateResource(setup);
-    o_assert(this->textMesh[0].IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->textMesh[0]).State == ResourceState::Valid);
+    this->drawState.Mesh[0] = Gfx::CreateResource(setup);
+    o_assert(this->drawState.Mesh[0].IsValid());
+    o_assert(Gfx::QueryResourceInfo(this->drawState.Mesh[0]).State == ResourceState::Valid);
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::setupTextPipeline() {
-    o_assert(!this->textPipeline.IsValid());
-    o_assert(this->textMesh[0].IsValid());
-
-    // shader
-    this->textShader = Gfx::CreateResource(Shaders::TextShader::Setup());
-    
     // finally create pipeline object
-    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, this->textShader);
+    Id shd = Gfx::CreateResource(DbgTextShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, shd);
     ps.DepthStencilState.DepthWriteEnabled = false;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     ps.BlendState.BlendEnabled = true;
@@ -231,7 +221,7 @@ debugTextRenderer::setupTextPipeline() {
     ps.BlendState.ColorFormat = Gfx::RenderTargetAttrs().ColorPixelFormat;
     ps.BlendState.DepthFormat = Gfx::RenderTargetAttrs().DepthPixelFormat;
     ps.RasterizerState.SampleCount = Gfx::RenderTargetAttrs().SampleCount;
-    this->textPipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------

@@ -37,4 +37,4 @@
     _color = tex2D(tex, uv).xxxx * color;
 @end
 
-@program TextShader vsDbgText fsDbgText
+@program DbgTextShader vsDbgText fsDbgText

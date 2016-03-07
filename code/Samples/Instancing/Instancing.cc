@@ -30,12 +30,11 @@ private:
     static const int geomMeshSlot = 0;
     static const int instMeshSlot = 1;
 
-    MeshBlock meshBlock;
-    Id pipeline;
+    DrawState drawState;
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    Shaders::Main::VSParams vsParams;
+    Shader::VSParams vsParams;
     bool updateEnabled = true;
     int32 frameCount = 0;
     int32 curNumParticles = 0;
@@ -63,14 +62,14 @@ InstancingApp::OnRunning() {
         updTime = Clock::Since(updStart);
 
         TimePoint bufStart = Clock::Now();
-        Gfx::UpdateVertices(this->meshBlock[instMeshSlot], this->positions, this->curNumParticles * sizeof(glm::vec4));
+        Gfx::UpdateVertices(this->drawState.Mesh[instMeshSlot], this->positions, this->curNumParticles * sizeof(glm::vec4));
         bufTime = Clock::Since(bufStart);
     }
     
     // render block        
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->pipeline, this->meshBlock);
+    Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
@@ -159,24 +158,24 @@ InstancingApp::OnInit() {
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
     auto shapeBuilderResult = shapeBuilder.Build();
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilderResult);
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilderResult);
 
     // create dynamic instance data mesh at mesh slot 1
     auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
     instMeshSetup.Layout
         .EnableInstancing()
         .Add(VertexAttr::Instance0, VertexFormat::Float4);
-    this->meshBlock[1] = Gfx::CreateResource(instMeshSetup);
+    this->drawState.Mesh[1] = Gfx::CreateResource(instMeshSetup);
 
     // setup draw state for instanced rendering
-    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
+    Id shd = Gfx::CreateResource(Shader::Setup());
     auto ps = PipelineSetup::FromShader(shd);
     ps.Layouts[0] = shapeBuilder.Layout;
     ps.Layouts[1] = instMeshSetup.Layout;
     ps.RasterizerState.CullFaceEnabled = true;
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

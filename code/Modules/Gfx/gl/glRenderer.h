@@ -61,8 +61,8 @@ public:
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block (called after applyDrawState)
     void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
-    /// apply a texture block (called after applyDrawState)
-    void applyTextureBlock(ShaderStage::Code bindStage, int64 layoutHash, texture** textures, int32 numTextures);
+    /// apply a group of textures
+    void applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group

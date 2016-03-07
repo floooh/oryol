@@ -24,7 +24,6 @@ _func lookatResult lookat(vec3 eye, vec3 center,vec3 up) {
     res.upVec = cross(res.rightVec, res.fwdVec);
     return res;
 }
-
 @end
 
 //------------------------------------------------------------------------------
@@ -169,4 +168,4 @@ _func vec3 normal(vec4 sinTime, vec3 p) {
 @end
 
 //------------------------------------------------------------------------------
-@program Main vs fs
+@program Shader vs fs

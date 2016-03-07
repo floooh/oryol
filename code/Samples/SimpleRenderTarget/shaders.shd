@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 //  Vertex and fragment shaders for rendering into the offscreen render target
 //
-@vs renderTargetVS
+@vs offscreenVS
 @use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
@@ -23,17 +23,17 @@
     nrm = normal;
 @end
 
-@fs renderTargetFS
+@fs offscreenFS
 @in vec4 nrm
     _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
 @end
 
-@program RenderTarget renderTargetVS renderTargetFS
+@program OffscreenShader offscreenVS offscreenFS
 
 //------------------------------------------------------------------------------
 //  Vertex and fragment shaders for rendering into the frame buffer.
 //
-@vs mainVS
+@vs displayVS
 @use_uniform_block vsParams
 @in vec4 position
 @in vec4 normal
@@ -45,7 +45,7 @@
     nrm = normalize(mul(mvp, normal));
 @end
 
-@fs mainFS
+@fs displayFS
 @use_texture_block fsTextures
 @in vec2 uv
 @in vec4 nrm
@@ -54,5 +54,5 @@
     _color = vec4(c.xyz * (l + 0.25), 1.0);
 @end
 
-@program Main mainVS mainFS
+@program DisplayShader displayVS displayFS
 

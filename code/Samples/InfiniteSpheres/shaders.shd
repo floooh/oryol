@@ -30,4 +30,4 @@
     _color = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;
 @end
 
-@program Main vs fs
+@program Shader vs fs

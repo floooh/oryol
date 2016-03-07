@@ -21,4 +21,4 @@
     _color = color;
 @end
 
-@program Shapes vs fs
+@program Shader vs fs

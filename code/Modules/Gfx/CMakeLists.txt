@@ -47,7 +47,6 @@ fips_begin_module(Gfx)
         VertexLayout.cc VertexLayout.h
         UniformBlockLayout.cc UniformBlockLayout.h
         TextureBlockLayout.cc TextureBlockLayout.h
-        MeshBlock.h
         displayMgr.h
         renderer.h
         gfxPointers.h
