@@ -423,8 +423,10 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int64 layoutHash, texture** textures, int32 numTextures) {
+mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
+                 ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
     if (nil == this->curCommandEncoder) {
         return;
     }
@@ -440,22 +442,6 @@ mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int64 layoutHash, te
             return;
         }
     }
-
-    //  check if the provided texture types are compatible with the shader expectations
-    #if ORYOL_DEBUG
-    const shader* shd = this->curPipeline->shd;
-    o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStage(bindStage);
-    o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
-    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
-    for (int i = 0; i < numTextures; i++) {
-        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
-        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
-            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
-        }
-    }
-    #endif
 
     // apply textures and samplers
     if (ShaderStage::VS == bindStage) {

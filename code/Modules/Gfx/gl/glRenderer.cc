@@ -1159,7 +1159,6 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 void
 glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int32 numTextures) {
     o_assert_dbg(this->valid);
-
     o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                  ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
     if (nullptr == this->curPipeline) {
