@@ -20,9 +20,9 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     DrawState drawState;
+    Shader::Params params;
     glm::mat4 view;
     glm::mat4 proj;
-    Shader::Params params;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -32,14 +32,12 @@ OryolMain(PackedNormalsApp);
 AppState::Code
 PackedNormalsApp::OnRunning() {
     
-    // update angles
     this->angleY += 0.01f;
     this->angleX += 0.02f;
     
-    // apply state and render
     Gfx::ApplyDefaultRenderTarget();
-    
-    // draw shape primitive groups
+    Gfx::ApplyDrawState(this->drawState);
+
     static const glm::vec3 positions[] = {
         glm::vec3(-1.0, 1.0f, -6.0f),
         glm::vec3(1.0f, 1.0f, -6.0f),
@@ -47,28 +45,22 @@ PackedNormalsApp::OnRunning() {
         glm::vec3(+2.0f, -1.0f, -6.0f),
         glm::vec3(0.0f, -1.0f, -6.0f)
     };
-    
-    Gfx::ApplyDrawState(this->drawState);
     int32 primGroupIndex = 0;
     for (const auto& pos : positions) {
         this->params.ModelViewProjection = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
         Gfx::Draw(primGroupIndex++);
     }
-    
     Gfx::CommitFrame();
     
-    // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnInit() {
-    // setup rendering system
     Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
-    // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
@@ -87,7 +79,6 @@ PackedNormalsApp::OnInit() {
     ps.RasterizerState.SampleCount = 4;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 
-    // setup projection and view matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

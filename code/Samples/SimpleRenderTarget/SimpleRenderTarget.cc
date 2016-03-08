@@ -23,15 +23,15 @@ private:
     Id renderTarget;
     DrawState offscreenDrawState;
     DrawState displayDrawState;
+    OffscreenShader::VSParams offscreenParams;
+    DisplayShader::VSParams displayVSParams;
+    ClearState offscreenClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    ClearState displayClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    OffscreenShader::VSParams offscreenParams;
-    DisplayShader::VSParams displayVSParams;
-    ClearState offscreenClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
-    ClearState displayClearState = ClearState::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -66,7 +66,7 @@ SimpleRenderTargetApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
-    // setup rendering system
+
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
     gfxSetup.ClearHint = this->displayClearState;
     Gfx::Setup(gfxSetup);
@@ -92,8 +92,8 @@ SimpleRenderTargetApp::OnInit() {
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36);
     this->offscreenDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 
+    // create shader and pipeline-state-object for offscreen rendering
     Id offScreenShader = Gfx::CreateResource(OffscreenShader::Setup());
-
     auto offpsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, offScreenShader);
     offpsSetup.DepthStencilState.DepthWriteEnabled = true;
     offpsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
@@ -101,7 +101,7 @@ SimpleRenderTargetApp::OnInit() {
     offpsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
     this->offscreenDrawState.Pipeline = Gfx::CreateResource(offpsSetup);
 
-    // create a sphere mesh, shader, pipeline object and texture with normals and uv coords
+    // create a sphere mesh, shader and pipeline object for rendering to display
     shapeBuilder.Layout
         .Clear()
         .Add(VertexAttr::Position, VertexFormat::Float3)

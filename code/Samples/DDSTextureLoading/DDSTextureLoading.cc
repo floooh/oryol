@@ -24,13 +24,12 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float32 distVal = 0.0f;
-    Id pipeline;
+    DrawState drawState;
     static const int32 NumTextures = 16;
+    StaticArray<Id, NumTextures> textures;
+    Shader::VSParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
-    MeshBlock meshBlock;
-    Shaders::Main::VSParams vsParams;
-    StaticArray<Shaders::Main::FSTextures, NumTextures> texBlock;
     ClearState clearState;
 };
 OryolMain(DDSTextureLoadingApp);
@@ -68,11 +67,12 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+2.75f, -1.1f, 0.0f)
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        const auto resState = Gfx::QueryResourceInfo(this->texBlock[i].Texture).State;
+        const auto resState = Gfx::QueryResourceInfo(this->textures[i]).State;
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
             this->vsParams.ModelViewProjection = this->computeMVP(p);
-            Gfx::ApplyDrawState(this->pipeline, this->meshBlock, this->texBlock[i]);
+            this->drawState.FSTexture[Shader::FSTextures::Texture] = this->textures[i];
+            Gfx::ApplyDrawState(this->drawState);
             Gfx::ApplyUniformBlock(this->vsParams);
             Gfx::Draw(0);
         }
@@ -98,7 +98,7 @@ DDSTextureLoadingApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     // setup resources
-    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
+    Id shd = Gfx::CreateResource(Shader::Setup());
 
     TextureSetup texBluePrint;
     texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
@@ -124,8 +124,7 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int32 i = 0; i < NumTextures; i++) {
-        Id tex = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint)));
-        this->texBlock[i].Texture = tex;
+        this->textures[i] = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint)));
     }
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -134,11 +133,11 @@ DDSTextureLoadingApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

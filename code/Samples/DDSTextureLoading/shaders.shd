@@ -28,4 +28,4 @@
 }
 @end
 
-@program Main vs fs
+@program Shader vs fs

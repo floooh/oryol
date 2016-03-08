@@ -27,9 +27,7 @@ private:
     void showInfo();
 
     struct Object {
-        MeshBlock meshBlock;
-        Id pipeline;
-        Id texture;
+        DrawState drawState;
         ResourceLabel label;
         glm::mat4 modelTransform;
     };
@@ -56,15 +54,14 @@ ResourceStressApp::OnRunning() {
     this->createObjects();
     this->showInfo();
 
-    Shaders::Main::VSParams vsParams;
-    Shaders::Main::FSTextures fsTextures;
+    Shader::VSParams vsParams;
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded
-        if (Gfx::QueryResourceInfo(obj.texture).State == ResourceState::Valid) {
+        const Id& tex = obj.drawState.FSTexture[Shader::FSTextures::Texture];
+        if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
             vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
-            fsTextures.Texture = obj.texture;
-            Gfx::ApplyDrawState(obj.pipeline, obj.meshBlock, fsTextures);
+            Gfx::ApplyDrawState(obj.drawState);
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(0);
         }
@@ -97,7 +94,7 @@ ResourceStressApp::OnInit() {
     Dbg::Setup();    
     
     // setup the shader that is used by all objects
-    this->shader = Gfx::CreateResource(Shaders::Main::Setup());
+    this->shader = Gfx::CreateResource(Shader::Setup());
 
     // setup matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -148,10 +145,10 @@ ResourceStressApp::createObjects() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1);
-    obj.meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    obj.drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, this->shader);
-    obj.pipeline = Gfx::CreateResource(ps);
-    obj.texture = Gfx::LoadResource(TextureLoader::Create(
+    obj.drawState.Pipeline = Gfx::CreateResource(ps);
+    obj.drawState.FSTexture[Shader::FSTextures::Texture] = Gfx::LoadResource(TextureLoader::Create(
         TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint)));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
@@ -168,7 +165,8 @@ ResourceStressApp::updateObjects() {
         // check if object should be destroyed (it will be
         // destroyed after the texture object had been valid for
         // at least 3 seconds, or if it failed to load)
-        const auto info = Gfx::QueryResourceInfo(obj.texture);
+        const Id& tex = obj.drawState.FSTexture[Shader::FSTextures::Texture];
+        const auto info = Gfx::QueryResourceInfo(tex);
         if ((info.State == ResourceState::Failed) ||
             ((info.State == ResourceState::Valid) && (info.StateAge > (20 * 60)))) {
 

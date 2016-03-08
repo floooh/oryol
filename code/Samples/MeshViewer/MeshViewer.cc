@@ -34,7 +34,7 @@ private:
     int32 frameCount = 0;
     ResourceLabel curMeshLabel;
     MeshSetup curMeshSetup;
-    MeshBlock meshBlock;
+    Id mesh;
     glm::vec3 eyePos;
     glm::mat4 view;
     glm::mat4 proj;
@@ -165,9 +165,9 @@ MeshViewerApp::OnInit() {
     style.Colors[ImGuiCol_HeaderHovered] = defaultBlue;
     style.Colors[ImGuiCol_HeaderActive] = defaultBlue;
 
-    this->shaders[Normals] = Gfx::CreateResource(Shaders::Normals::Setup());
-    this->shaders[Lambert] = Gfx::CreateResource(Shaders::Lambert::Setup());
-    this->shaders[Phong]   = Gfx::CreateResource(Shaders::Phong::Setup());
+    this->shaders[Normals] = Gfx::CreateResource(NormalsShader::Setup());
+    this->shaders[Lambert] = Gfx::CreateResource(LambertShader::Setup());
+    this->shaders[Phong]   = Gfx::CreateResource(PhongShader::Setup());
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
     // setup projection and view matrices
@@ -194,8 +194,11 @@ MeshViewerApp::OnRunning() {
 
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     this->drawUI();
+    DrawState drawState;
+    drawState.Mesh[0] = this->mesh;
     for (int i = 0; i < this->numMaterials; i++) {
-        Gfx::ApplyDrawState(this->materials[i].pipeline, this->meshBlock);
+        drawState.Pipeline = this->materials[i].pipeline;
+        Gfx::ApplyDrawState(drawState);
         this->applyVariables(i);
         Gfx::Draw(i);
     }
@@ -283,7 +286,7 @@ MeshViewerApp::updateLight() {
 void
 MeshViewerApp::drawUI() {
     const char* state;
-    switch (Gfx::QueryResourceInfo(this->meshBlock[0]).State) {
+    switch (Gfx::QueryResourceInfo(this->mesh).State) {
         case ResourceState::Valid: state = "Loaded"; break;
         case ResourceState::Failed: state = "Load Failed"; break;
         case ResourceState::Pending: state = "Loading..."; break;
@@ -356,7 +359,7 @@ MeshViewerApp::drawUI() {
 //-----------------------------------------------------------------------------
 void
 MeshViewerApp::createMaterials() {
-    o_assert_dbg(this->meshBlock[0].IsValid());
+    o_assert_dbg(this->mesh.IsValid());
     if (this->curMaterialLabel.IsValid()) {
         Gfx::DestroyResources(this->curMaterialLabel);
     }
@@ -387,7 +390,7 @@ MeshViewerApp::loadMesh(const char* path) {
     // object of the loaded mesh
     this->numMaterials = 0;
     this->curMeshLabel = Gfx::PushResourceLabel();
-    this->meshBlock[0] = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) {
+    this->mesh = Gfx::LoadResource(MeshLoader::Create(MeshSetup::FromFile(path), [this](MeshSetup& setup) {
         this->curMeshSetup = setup;
         this->numMaterials = setup.NumPrimitiveGroups();
         this->createMaterials();
@@ -402,7 +405,7 @@ MeshViewerApp::applyVariables(int matIndex) {
         case Normals:
             // Normals shader
             {
-                Shaders::Normals::VSParams vsParams;
+                NormalsShader::VSParams vsParams;
                 vsParams.ModelViewProjection = this->modelViewProj;
                 Gfx::ApplyUniformBlock(vsParams);
             }
@@ -410,12 +413,12 @@ MeshViewerApp::applyVariables(int matIndex) {
         case Lambert:
             // Lambert shader
             {
-                Shaders::Lambert::VSParams vsParams;
+                LambertShader::VSParams vsParams;
                 vsParams.ModelViewProjection = this->modelViewProj;
                 vsParams.Model = this->model;
                 Gfx::ApplyUniformBlock(vsParams);
 
-                Shaders::Lambert::FSParams fsParams;
+                LambertShader::FSParams fsParams;
                 fsParams.LightColor = this->lightColor * this->lightIntensity;
                 fsParams.LightDir = this->lightDir;
                 fsParams.MatDiffuse = this->materials[matIndex].diffuse;
@@ -426,12 +429,12 @@ MeshViewerApp::applyVariables(int matIndex) {
         case Phong:
             // Phong shader
             {
-                Shaders::Phong::VSParams vsParams;
+                PhongShader::VSParams vsParams;
                 vsParams.ModelViewProjection = this->modelViewProj;
                 vsParams.Model = this->model;
                 Gfx::ApplyUniformBlock(vsParams);
 
-                Shaders::Phong::FSParams fsParams;
+                PhongShader::FSParams fsParams;
                 fsParams.EyePos = this->eyePos;
                 fsParams.LightColor = this->lightColor * this->lightIntensity;
                 fsParams.LightDir = this->lightDir;

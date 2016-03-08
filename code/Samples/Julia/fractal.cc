@@ -27,13 +27,12 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     this->rect = rect_;
     this->pos = pos_;
     this->frameIndex = 0;
-    this->fsqMeshBlock[0] = fsqMesh;
 
     // generate a new resource label for our gfx resources
     this->label = Gfx::PushResourceLabel();
 
     // the fractal-rendering shader
-    Id fractalShader = Gfx::CreateResource(Shaders::Julia::Setup());
+    Id fractalShader = Gfx::CreateResource(JuliaShader::Setup());
 
     // create the ping-pong render target that hold the fractal state
     auto rtSetup = TextureSetup::RenderTarget(w, h);
@@ -54,19 +53,21 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->colorTexture = Gfx::CreateResource(rtSetup);
 
-    // create draw state for updating the fractal state
+    // setup draw state for updating the fractal state
+    this->fractDrawState.Mesh[0] = fsqMesh;
     auto ps = PipelineSetup::FromLayoutAndShader(fsqLayout, fractalShader);
     ps.RasterizerState.CullFaceEnabled = false;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     ps.BlendState.ColorFormat = PixelFormat::RGBA32F;
     ps.BlendState.DepthFormat = PixelFormat::None;
-    this->fractalPipeline = Gfx::CreateResource(ps);
+    this->fractDrawState.Pipeline = Gfx::CreateResource(ps);
 
-    // create draw state to map fractal state into color texture
-    Id colorShader = Gfx::CreateResource(Shaders::Color::Setup());
+    // setup draw state to map fractal state into color texture
+    this->colorDrawState.Mesh[0] = fsqMesh;
+    Id colorShader = Gfx::CreateResource(ColorShader::Setup());
     ps.Shader = colorShader;
     ps.BlendState.ColorFormat = PixelFormat::RGBA8;
-    this->colorPipeline = Gfx::CreateResource(ps);
+    this->colorDrawState.Pipeline = Gfx::CreateResource(ps);
 
     Gfx::PopResourceLabel();
 }
@@ -75,15 +76,8 @@ fractal::setup(int w, int h, const glm::vec4& rect_, const glm::vec2& pos_, Id f
 void
 fractal::discard() {
     o_assert_dbg(this->isValid());
-
     Gfx::DestroyResources(this->label);
     this->label.Invalidate();
-    this->colorTexture.Invalidate();
-    this->fractalPipeline.Invalidate();
-    for (auto& tex : this->fractalTexture) {
-        tex.Invalidate();
-    }
-    this->colorPipeline.Invalidate();
 }
 
 //------------------------------------------------------------------------------
@@ -106,23 +100,23 @@ fractal::update() {
     // update frame index, and get the indices for write and read state
     const int32 writeIndex = this->frameIndex & 1;
     const int32 readIndex  = (this->frameIndex + 1) & 1;
+    const Id& readTex = this->fractalTexture[readIndex];
+    const Id& writeTex = this->fractalTexture[writeIndex];
 
     // render next fractal iteration
-    this->fractalVSParams.Rect = this->rect;
-    this->fractalFSParams.JuliaPos = this->pos;
-    Shaders::Julia::FSTextures juliaTextures;
-    juliaTextures.Texture = this->fractalTexture[readIndex];
-    Gfx::ApplyRenderTarget(this->fractalTexture[writeIndex], ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->fractalPipeline, this->fsqMeshBlock, juliaTextures);
-    Gfx::ApplyUniformBlock(this->fractalVSParams);
-    Gfx::ApplyUniformBlock(this->fractalFSParams);
+    this->fractDrawState.FSTexture[JuliaShader::FSTextures::Texture] = readTex;
+    this->fractVSParams.Rect = this->rect;
+    this->fractFSParams.JuliaPos = this->pos;
+    Gfx::ApplyRenderTarget(writeTex, ClearState::ClearNone());
+    Gfx::ApplyDrawState(this->fractDrawState);
+    Gfx::ApplyUniformBlock(this->fractVSParams);
+    Gfx::ApplyUniformBlock(this->fractFSParams);
     Gfx::Draw(0);
 
     // map current fractal state to color texture
-    Shaders::Color::FSTextures colorTextures;
-    colorTextures.Texture = this->fractalTexture[writeIndex];
+    this->colorDrawState.FSTexture[ColorShader::FSTextures::Texture] = writeTex;
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
-    Gfx::ApplyDrawState(this->colorPipeline, this->fsqMeshBlock, colorTextures);
+    Gfx::ApplyDrawState(this->colorDrawState);
     Gfx::Draw(0);
 
     if (this->frameIndex >= this->cycleCount) {

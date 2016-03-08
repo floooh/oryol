@@ -47,38 +47,29 @@ private:
     ClearState fractalClearState = ClearState::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
     ClearState noClearState = ClearState::ClearNone();
     ResourceLabel offscreenRenderTargetLabel;
-    MeshBlock fsqFractal;
-    MeshBlock fsqDisplay;
     Id offscreenRenderTarget[2];
-    Id displayShader;
-    Id displayPipeline;
+    DrawState dispDrawState;
+    DisplayShader::FSParams dispFSParams;
     int32 frameIndex = 0;
     bool clearFlag = true;
     bool dragStarted = false;
     ImVec2 dragStartPos;
     Type fractalType = Mandelbrot;
     struct {
-        Id shader;
-        Id pipeline;
-        Shaders::Mandelbrot::VSParams vsParams;        
+        DrawState drawState;
+        Mandelbrot::VSParams vsParams;
     } mandelbrot;
     struct {
-        Id shader;
-        Id pipeline;
-        Shaders::Julia::VSParams vsParams;
-        Shaders::Julia::FSParams fsParams;
+        DrawState drawState;
+        Julia::VSParams vsParams;
+        Julia::FSParams fsParams;
     } julia;
-    Shaders::Display::FSParams displayFSParams;
 };
 OryolMain(FractalApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 FractalApp::OnRunning() {
-
-    this->frameIndex++;
-    const int32 index0 = this->frameIndex % 2;
-    const int32 index1 = (this->frameIndex + 1) % 2;
 
     // reset current fractal state if requested
     if (this->clearFlag) {
@@ -87,29 +78,32 @@ FractalApp::OnRunning() {
         Gfx::ApplyRenderTarget(this->offscreenRenderTarget[1], this->fractalClearState);
     }
 
+    this->frameIndex++;
+    const int32 index0 = this->frameIndex % 2;
+    const int32 index1 = (this->frameIndex + 1) % 2;
+    const Id& curTarget = this->offscreenRenderTarget[index0];
+    const Id& curTexture = this->offscreenRenderTarget[index1];
+
     // render next fractal iteration
-    Gfx::ApplyRenderTarget(this->offscreenRenderTarget[index0], this->noClearState);
+    Gfx::ApplyRenderTarget(curTarget, this->noClearState);
     if (Mandelbrot == this->fractalType) {
-        Shaders::Mandelbrot::FSTextures texBlock;
-        texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyDrawState(this->mandelbrot.pipeline, this->fsqFractal, texBlock);
+        this->mandelbrot.drawState.FSTexture[Mandelbrot::FSTextures::Texture] = curTexture;
+        Gfx::ApplyDrawState(this->mandelbrot.drawState);
         Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
     }
     else {
-        Shaders::Julia::FSTextures texBlock;
-        texBlock.Texture = this->offscreenRenderTarget[index1];
-        Gfx::ApplyDrawState(this->julia.pipeline, this->fsqFractal, texBlock);
+        this->julia.drawState.FSTexture[Julia::FSTextures::Texture] = curTexture;
+        Gfx::ApplyDrawState(this->julia.drawState);
         Gfx::ApplyUniformBlock(this->julia.vsParams);
         Gfx::ApplyUniformBlock(this->julia.fsParams);
     }
     Gfx::Draw(0);
 
-    // map fractal state to displat
+    // map fractal state to display
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Shaders::Display::FSTextures texBlock;
-    texBlock.Texture = this->offscreenRenderTarget[index0];
-    Gfx::ApplyDrawState(this->displayPipeline, this->fsqDisplay, texBlock);
-    Gfx::ApplyUniformBlock(this->displayFSParams);
+    this->dispDrawState.FSTexture[DisplayShader::FSTextures::Texture] = curTarget;
+    Gfx::ApplyDrawState(this->dispDrawState);
+    Gfx::ApplyUniformBlock(this->dispFSParams);
     Gfx::Draw(0);
 
     this->drawUI();
@@ -142,40 +136,40 @@ FractalApp::OnInit() {
 
     // a fullscreen quad mesh that's reused several times
     auto fsqSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    this->fsqFractal[0] = Gfx::CreateResource(fsqSetup);
+    Id fsq = Gfx::CreateResource(fsqSetup);
+    this->mandelbrot.drawState.Mesh[0] = fsq;
+    this->julia.drawState.Mesh[0] = fsq;
     fsqSetup = MeshSetup::FullScreenQuad(true);
-    this->fsqDisplay[0] = Gfx::CreateResource(fsqSetup);
-
-    // create shaders
-    this->displayShader = Gfx::CreateResource(Shaders::Display::Setup());
-    this->mandelbrot.shader = Gfx::CreateResource(Shaders::Mandelbrot::Setup());
-    this->julia.shader = Gfx::CreateResource(Shaders::Julia::Setup());
+    this->dispDrawState.Mesh[0] = Gfx::CreateResource(fsqSetup);
 
     // draw state for rendering the final result to screen
-    auto ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, this->displayShader);
+    Id shd = Gfx::CreateResource(DisplayShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, shd);
     ps.RasterizerState.CullFaceEnabled = false;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    this->displayPipeline = Gfx::CreateResource(ps);
+    this->dispDrawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup 2 ping-poing fp32 render targets which hold the current fractal state,
     // and the texture blocks which use reference these render targets
     this->recreateRenderTargets(Gfx::DisplayAttrs());
 
     // setup mandelbrot state
-    ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, this->mandelbrot.shader);
+    shd = Gfx::CreateResource(Mandelbrot::Setup());
+    ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, shd);
     ps.RasterizerState.CullFaceEnabled = false;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     ps.BlendState.ColorFormat = PixelFormat::RGBA32F;
     ps.BlendState.DepthFormat = PixelFormat::None;
-    this->mandelbrot.pipeline = Gfx::CreateResource(ps);
+    this->mandelbrot.drawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup julia state
-    ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, this->julia.shader);
+    shd = Gfx::CreateResource(Julia::Setup());
+    ps = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, shd);
     ps.RasterizerState.CullFaceEnabled = false;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     ps.BlendState.ColorFormat = PixelFormat::RGBA32F;
     ps.BlendState.DepthFormat = PixelFormat::None;
-    this->julia.pipeline = Gfx::CreateResource(ps);
+    this->julia.drawState.Pipeline = Gfx::CreateResource(ps);
 
     // initialize fractal states
     this->reset();
@@ -227,7 +221,7 @@ FractalApp::drawUI() {
         this->clearFlag |= true;
         this->reset();
     }
-    ImGui::SliderFloat("Colors", &this->displayFSParams.NumColors, 2.0f, 256.0f);
+    ImGui::SliderFloat("Colors", &this->dispFSParams.NumColors, 2.0f, 256.0f);
     ImGui::Separator();
     glm::vec2 curPos = this->convertPos(mousePos.x, mousePos.y, this->getBounds(this->fractalType));
     ImGui::Text("X: %f, Y: %f\n", curPos.x, curPos.y);
@@ -296,7 +290,7 @@ FractalApp::zoomOut() {
 void
 FractalApp::reset() {
     this->fractalType = Mandelbrot;
-    this->displayFSParams.NumColors = 8.0f;
+    this->dispFSParams.NumColors = 8.0f;
     this->zoomOut();
 }
 

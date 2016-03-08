@@ -30,13 +30,11 @@ public:
 private:
     void updateCamera();
 
-    MeshBlock quadMeshBlock;
-    MeshBlock shapeMeshBlock;
     Id particleBuffer[NumParticleBuffers];
-    Id initParticles;
-    Id updateParticles;
-    Id drawParticles;
-    
+    DrawState initParticles;
+    DrawState updParticles;
+    DrawState drawParticles;
+
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
@@ -44,11 +42,10 @@ private:
     TimePoint lastFrameTimePoint;
     int32 curNumParticles = 0;
 
-    Shaders::InitParticles::FSParams initFSParams;
-    Shaders::UpdateParticles::FSParams updFSParams;
-    Shaders::UpdateParticles::FSTextures updFSTextures;
-    Shaders::DrawParticles::VSParams drawVSParams;
-    Shaders::DrawParticles::VSTextures drawVSTextures;
+    InitShader::FSParams initFSParams;
+    UpdateShader::FSParams updFSParams;
+    DrawShader::VSParams drawVSParams;
+
     ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(GPUParticlesApp);
@@ -77,20 +74,20 @@ GPUParticlesApp::OnRunning() {
     // - we use a scissor rect around the currently active particles to make this update
     //   a bit more efficient
     const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-    this->updFSTextures.PrevState = this->particleBuffer[readIndex];
+    this->updParticles.FSTexture[UpdateShader::FSTextures::PrevState] = this->particleBuffer[readIndex];
     this->updFSParams.NumParticles = (float32) this->curNumParticles;
     Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    Gfx::ApplyDrawState(this->updateParticles, this->quadMeshBlock, this->updFSTextures);
+    Gfx::ApplyDrawState(this->updParticles);
     Gfx::ApplyUniformBlock(this->updFSParams);
     Gfx::Draw(0);
     
     // now the actual particle shape rendering:
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-    this->drawVSTextures.ParticleState = this->particleBuffer[drawIndex];
+    this->drawParticles.VSTexture[DrawShader::VSTextures::ParticleState] = this->particleBuffer[drawIndex];
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawParticles, this->shapeMeshBlock, this->drawVSTextures);
+    Gfx::ApplyDrawState(this->drawParticles);
     Gfx::ApplyUniformBlock(this->drawVSParams);
     Gfx::DrawInstanced(0, this->curNumParticles);
     
@@ -150,18 +147,20 @@ GPUParticlesApp::OnInit() {
     
     // a fullscreen mesh for the particle init- and update-shaders
     auto quadSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    this->quadMeshBlock[0] = Gfx::CreateResource(quadSetup);
-    
+    Id quadMesh = Gfx::CreateResource(quadSetup);
+    this->initParticles.Mesh[0] = quadMesh;
+    this->updParticles.Mesh[0] = quadMesh;
+
     // particle initialization and update resources
-    Id initShader = Gfx::CreateResource(Shaders::InitParticles::Setup());
-    Id updateShader = Gfx::CreateResource(Shaders::UpdateParticles::Setup());
+    Id initShader = Gfx::CreateResource(InitShader::Setup());
+    Id updShader = Gfx::CreateResource(UpdateShader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, initShader);
     ps.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
     ps.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
-    this->initParticles = Gfx::CreateResource(ps);
-    ps.Shader = updateShader;
+    this->initParticles.Pipeline = Gfx::CreateResource(ps);
+    ps.Shader = updShader;
     ps.RasterizerState.ScissorTestEnabled = true;
-    this->updateParticles = Gfx::CreateResource(ps);
+    this->updParticles.Pipeline = Gfx::CreateResource(ps);
 
     // the static geometry of a single particle is at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -171,7 +170,7 @@ GPUParticlesApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->shapeMeshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    this->drawParticles.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 
     // a instancing vertex buffer with the particleIds at mesh slot 1
     const int32 particleIdSize = MaxNumParticles * sizeof(float32);
@@ -182,18 +181,18 @@ GPUParticlesApp::OnInit() {
     auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
     particleIdSetup.NumVertices = MaxNumParticles;
     particleIdSetup.Layout.EnableInstancing().Add(VertexAttr::Instance0, VertexFormat::Float);
-    this->shapeMeshBlock[1] = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
+    this->drawParticles.Mesh[1] = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
     Memory::Free(particleIdData);
     
     // particle rendering texture blocks and draw state
-    Id drawShader = Gfx::CreateResource(Shaders::DrawParticles::Setup());
+    Id drawShader = Gfx::CreateResource(DrawShader::Setup());
     ps = PipelineSetup::FromShader(drawShader);
     ps.Layouts[0] = shapeBuilder.Layout;
     ps.Layouts[1] = particleIdSetup.Layout;
     ps.RasterizerState.CullFaceEnabled = true;
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
-    this->drawParticles = Gfx::CreateResource(ps);
+    this->drawParticles.Pipeline = Gfx::CreateResource(ps);
 
     // the static projection matrix
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
@@ -208,11 +207,11 @@ GPUParticlesApp::OnInit() {
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     Gfx::ApplyRenderTarget(this->particleBuffer[0], this->noClearState);
-    Gfx::ApplyDrawState(this->initParticles, this->quadMeshBlock);
+    Gfx::ApplyDrawState(this->initParticles);
     Gfx::ApplyUniformBlock(this->initFSParams);
     Gfx::Draw(0);
     Gfx::ApplyRenderTarget(this->particleBuffer[1], this->noClearState);
-    Gfx::ApplyDrawState(this->initParticles, this->quadMeshBlock);
+    Gfx::ApplyDrawState(this->initParticles);
     Gfx::ApplyUniformBlock(this->initFSParams);
     Gfx::Draw(0);
     

@@ -33,7 +33,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @fs MandelbrotFS
 @use_texture_block fsTextures
 @highp float
@@ -58,7 +57,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @uniform_block juliaFSParams FSParams
 @uniform vec2 juliaPos JuliaPos
 @end
@@ -91,10 +89,6 @@ _func vec4 hue2rgb(float h) {
 @end
 
 //------------------------------------------------------------------------------
-@program Mandelbrot FractalVS MandelbrotFS
-@program Julia FractalVS JuliaFS
-
-//------------------------------------------------------------------------------
 @vs DisplayVS
 @in vec4 position
 @in vec2 texcoord0
@@ -105,7 +99,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @uniform_block displayFSParams FSParams
 @uniform float numColors NumColors
 @end
@@ -128,5 +121,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
-@program Display DisplayVS DisplayFS
+@program Mandelbrot FractalVS MandelbrotFS
+@program Julia FractalVS JuliaFS
+@program DisplayShader DisplayVS DisplayFS

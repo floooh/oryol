@@ -19,9 +19,9 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     DrawState drawState;
+    Shader::Params params;
     glm::mat4 view;
     glm::mat4 proj;
-    Shader::Params params;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -31,15 +31,12 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnRunning() {
     
-    // update rotation angles
     this->angleY += 0.01f;
     this->angleX += 0.02f;
     
-    // apply state and render
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
     
-    // render shape primitive groups
     static const glm::vec3 positions[] = {
         glm::vec3(-1.0, 1.0f, -6.0f),
         glm::vec3(1.0f, 1.0f, -6.0f),
@@ -55,18 +52,16 @@ ShapeApp::OnRunning() {
     }
     Gfx::CommitFrame();
     
-    // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnInit() {
-    // setup rendering system
+
     auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
     Gfx::Setup(gfxSetup);
 
-    // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
     shapeBuilder.Layout
@@ -86,7 +81,6 @@ ShapeApp::OnInit() {
     ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 
-    // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

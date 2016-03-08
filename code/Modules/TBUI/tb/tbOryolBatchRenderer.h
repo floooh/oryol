@@ -102,9 +102,7 @@ private:
     VertexLayout vertexLayout;
     tb::TBRect tbClipRect;
     Id whiteTexture;
-    MeshBlock meshBlock;
-    Id shader;
-    Id pipeline;
+    DrawState drawState;
     Array<ResourceLabel> texturesForDeletion;
     int curBatchIndex;
     Batch batches[MaxNumBatches];

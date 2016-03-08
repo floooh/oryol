@@ -49,7 +49,7 @@ tbOryolBitmap::SetData(uint32* data) {
 void
 tbOryolBitmap::createTexture(tb::uint32* data) {
     o_assert_dbg(!this->texture.IsValid());
-    o_assert_dbg(this->renderer && this->renderer->shader.IsValid());
+    o_assert_dbg(this->renderer);
 
     const int byteSize = this->width * this->height * sizeof(tb::uint32);
 

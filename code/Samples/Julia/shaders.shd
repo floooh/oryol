@@ -64,7 +64,7 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@program Julia FractalVS JuliaFS
+@program JuliaShader FractalVS JuliaFS
 
 //------------------------------------------------------------------------------
 @vs ColorVS
@@ -92,7 +92,7 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@program Color ColorVS ColorFS
+@program ColorShader ColorVS ColorFS
 
 //------------------------------------------------------------------------------
 @uniform_block shapeVSParams VSParams
@@ -136,5 +136,4 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@program Shape ShapeVS ShapeFS
-r
+@program ShapeShader ShapeVS ShapeFS

@@ -6,7 +6,7 @@
 #include "Core/Assertion.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Setup/TextureSetup.h"
-#include "Gfx/Core/MeshBlock.h"
+#include "Gfx/Core/DrawState.h"
 #include "Paclone/shaders.h"
 #include "sprites.h"
 #include "shaders.h"
@@ -61,10 +61,7 @@ private:
     int canvasHeight;
     int numSprites;
     int numVertices;
-    Oryol::Id shader;
-    Oryol::Id pipeline;
-    Oryol::MeshBlock meshBlock;
-    Oryol::Shaders::Canvas::FSTextures textures;
+    Oryol::DrawState drawState;
 
     static const int MaxWidth = 64;
     static const int MaxHeight = 64;
