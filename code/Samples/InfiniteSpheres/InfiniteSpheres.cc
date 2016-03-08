@@ -54,7 +54,7 @@ InfiniteSpheresApp::OnRunning() {
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
     Gfx::ApplyRenderTarget(rt0);
-    this->offscreenDrawState.FSTexture[Shader::FSTextures::Texture] = rt1;
+    this->offscreenDrawState.FSTexture[Textures::Texture] = rt1;
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
@@ -63,7 +63,7 @@ InfiniteSpheresApp::OnRunning() {
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     Gfx::ApplyDefaultRenderTarget(this->clearState);
-    this->displayDrawState.FSTexture[Shader::FSTextures::Texture] = rt0;
+    this->displayDrawState.FSTexture[Textures::Texture] = rt0;
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);

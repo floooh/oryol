@@ -104,7 +104,7 @@ fractal::update() {
     const Id& writeTex = this->fractalTexture[writeIndex];
 
     // render next fractal iteration
-    this->fractDrawState.FSTexture[JuliaShader::FSTextures::Texture] = readTex;
+    this->fractDrawState.FSTexture[Textures::Texture] = readTex;
     this->fractVSParams.Rect = this->rect;
     this->fractFSParams.JuliaPos = this->pos;
     Gfx::ApplyRenderTarget(writeTex, ClearState::ClearNone());
@@ -114,7 +114,7 @@ fractal::update() {
     Gfx::Draw(0);
 
     // map current fractal state to color texture
-    this->colorDrawState.FSTexture[ColorShader::FSTextures::Texture] = writeTex;
+    this->colorDrawState.FSTexture[Textures::Texture] = writeTex;
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
     Gfx::ApplyDrawState(this->colorDrawState);
     Gfx::Draw(0);

@@ -181,7 +181,7 @@ debugTextRenderer::setupFontTexture() {
     Id tex = Gfx::CreateResource(texSetup, data);
     o_assert_dbg(tex.IsValid());
     o_assert_dbg(Gfx::QueryResourceInfo(tex).State == ResourceState::Valid);
-    this->drawState.FSTexture[DbgTextShader::FSTextures::Texture] = tex;
+    this->drawState.FSTexture[DbgTextures::Texture] = tex;
 }
 
 //------------------------------------------------------------------------------

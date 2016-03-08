@@ -80,11 +80,7 @@ PacloneApp::OnInit() {
     #endif
     auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
     this->crtDrawState.Pipeline = Gfx::CreateResource(ps);
-    #if USE_CRTEFFECT
-    this->crtDrawState.FSTexture[CRTShader::FSTextures::Canvas] = this->crtRenderTarget;
-    #else
-    this->crtDrawState.FSTexture[NoCRTShader::FSTextures::Canvas] = this->crtRenderTarget;
-    #endif
+    this->crtDrawState.FSTexture[CRTTextures::Canvas] = this->crtRenderTarget;
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);

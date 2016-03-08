@@ -87,7 +87,7 @@ JuliaApp::OnRunning() {
     this->vsParams.ModelViewProj = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0), rot);
     this->vsParams.Time = float(this->frameCount) / 60.0f;
     this->vsParams.UVScale = glm::vec2(2.0f, 2.0f);
-    this->drawState.FSTexture[ShapeShader::FSTextures::Texture] = this->test.colorTexture;
+    this->drawState.FSTexture[Textures::Texture] = this->test.colorTexture;
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
     Gfx::ApplyDrawState(this->drawState);

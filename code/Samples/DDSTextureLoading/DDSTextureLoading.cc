@@ -71,7 +71,7 @@ DDSTextureLoadingApp::OnRunning() {
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
             this->vsParams.ModelViewProjection = this->computeMVP(p);
-            this->drawState.FSTexture[Shader::FSTextures::Texture] = this->textures[i];
+            this->drawState.FSTexture[Textures::Texture] = this->textures[i];
             Gfx::ApplyDrawState(this->drawState);
             Gfx::ApplyUniformBlock(this->vsParams);
             Gfx::Draw(0);

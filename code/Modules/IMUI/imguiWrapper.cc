@@ -92,7 +92,7 @@ imguiWrapper::setupFontTexture() {
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.ImageData.Sizes[0][0] = imgSize;
     Id tex = Gfx::CreateResource(texSetup, pixels, imgSize);
-    this->drawState.FSTexture[IMUIShader::FSTextures::Texture] = tex;
+    this->drawState.FSTexture[IMUITextures::Texture] = tex;
 
     // there will only be one texture
     io.Fonts->TexID = nullptr;

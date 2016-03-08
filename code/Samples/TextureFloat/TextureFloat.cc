@@ -95,7 +95,7 @@ TextureFloatApp::OnInit() {
     Id copyShader = Gfx::CreateResource(CopyShader::Setup());
     ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
     this->copyDrawState.Pipeline = Gfx::CreateResource(ps);
-    this->copyDrawState.FSTexture[CopyShader::FSTextures::Texture] = this->renderTarget;
+    this->copyDrawState.FSTexture[Textures::Texture] = this->renderTarget;
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

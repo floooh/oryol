@@ -102,7 +102,7 @@ VertexTextureApp::OnInit() {
     psPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     psPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState.Pipeline = Gfx::CreateResource(psPlane);
-    this->planeDrawState.VSTexture[PlaneShader::VSTextures::Texture] = this->plasmaRenderTarget;
+    this->planeDrawState.VSTexture[PlaneTextures::Texture] = this->plasmaRenderTarget;
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

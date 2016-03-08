@@ -116,7 +116,7 @@ SimpleRenderTargetApp::OnInit() {
     disppsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     disppsSetup.RasterizerState.SampleCount = 4;
     this->displayDrawState.Pipeline = Gfx::CreateResource(disppsSetup);
-    this->displayDrawState.FSTexture[DisplayShader::FSTextures::Texture] = this->renderTarget;
+    this->displayDrawState.FSTexture[Textures::Texture] = this->renderTarget;
 
     // setup static transform matrices
     float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

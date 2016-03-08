@@ -6,7 +6,7 @@
 @uniform mat4 mvp ModelViewProjection
 @end
 
-@texture_block fsTextures FSTextures
+@texture_block textures Textures
 @texture sampler2D tex Texture
 @end
 
@@ -23,7 +23,7 @@
 @end
 
 @fs fs
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec4 nrm
 @in vec2 uv
     vec4 texColor = tex2D(tex, uv * vec2(5.0, 3.0));

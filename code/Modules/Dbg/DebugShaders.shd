@@ -6,7 +6,7 @@
 @uniform vec2 glyphSize GlyphSize   // glyph size on current display
 @end
 
-@texture_block fsTextures FSTextures
+@texture_block textures DbgTextures
 @texture sampler2D tex Texture
 @end
 
@@ -31,7 +31,7 @@
 //  text fragment shader
 //
 @fs fsDbgText
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 @in vec4 color
     _color = tex2D(tex, uv).xxxx * color;

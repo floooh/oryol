@@ -45,7 +45,7 @@ DDSCubeMapApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     
     // check whether the cube map has finished loading
-    const Id& tex = this->drawState.FSTexture[Shader::FSTextures::Texture];
+    const Id& tex = this->drawState.FSTexture[Textures::Texture];
     if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
         Gfx::ApplyDrawState(this->drawState);
@@ -87,7 +87,7 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->drawState.FSTexture[Shader::FSTextures::Texture] = Gfx::LoadResource(
+    this->drawState.FSTexture[Textures::Texture] = Gfx::LoadResource(
         TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint))
     );
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));

@@ -2,7 +2,7 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
-@texture_block fsTextures FSTextures
+@texture_block textures Textures
 @texture sampler2D tex Texture
 @end
 
@@ -40,7 +40,7 @@ _func vec4 hue2rgb(float h) {
 @fs JuliaFS
 @highp float
 @use_uniform_block juliaFSParams
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 @in vec2 pos
 {
@@ -78,7 +78,7 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @fs ColorFS
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 {
     vec4 params = tex2D(tex, uv);
@@ -126,7 +126,7 @@ _func vec4 hue2rgb(float h) {
 @fs ShapeFS
 @use_code_block util
 @use_uniform_block shapeFSParams
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec4 norm
 @in vec2 uv
 {

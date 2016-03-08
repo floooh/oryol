@@ -126,7 +126,7 @@ _func float snoise(vec2 v)
 //------------------------------------------------------------------------------
 //  Copy offscreen render target to back buffer
 //
-@texture_block fsTextures FSTextures
+@texture_block textures Textures
 @texture sampler2D tex Texture
 @end
 
@@ -139,7 +139,7 @@ _func float snoise(vec2 v)
 @end
 
 @fs copyFS
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
     // scale back to 0..1
     _color = vec4(tex2D(tex, uv).xyz*0.01,1.0);

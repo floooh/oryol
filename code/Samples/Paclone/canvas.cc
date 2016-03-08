@@ -61,7 +61,7 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageData.Sizes[0][0] = Sheet::NumBytes;
-    this->drawState.FSTexture[CanvasShader::FSTextures::Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    this->drawState.FSTexture[CanvasTextures::Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {

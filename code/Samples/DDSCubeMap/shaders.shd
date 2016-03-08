@@ -5,7 +5,7 @@
 @uniform_block vsParams VSParams
 @uniform mat4 mvp ModelViewProjection
 @end
-@texture_block fsTextures FSTextures
+@texture_block textures Textures
 @texture samplerCube tex Texture
 @end
 
@@ -21,7 +21,7 @@
 @end
 
 @fs fs
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec3 nrm
 {
     _color = texCUBE(tex, nrm);

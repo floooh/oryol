@@ -87,12 +87,12 @@ FractalApp::OnRunning() {
     // render next fractal iteration
     Gfx::ApplyRenderTarget(curTarget, this->noClearState);
     if (Mandelbrot == this->fractalType) {
-        this->mandelbrot.drawState.FSTexture[Mandelbrot::FSTextures::Texture] = curTexture;
+        this->mandelbrot.drawState.FSTexture[Textures::Texture] = curTexture;
         Gfx::ApplyDrawState(this->mandelbrot.drawState);
         Gfx::ApplyUniformBlock(this->mandelbrot.vsParams);
     }
     else {
-        this->julia.drawState.FSTexture[Julia::FSTextures::Texture] = curTexture;
+        this->julia.drawState.FSTexture[Textures::Texture] = curTexture;
         Gfx::ApplyDrawState(this->julia.drawState);
         Gfx::ApplyUniformBlock(this->julia.vsParams);
         Gfx::ApplyUniformBlock(this->julia.fsParams);
@@ -101,7 +101,7 @@ FractalApp::OnRunning() {
 
     // map fractal state to display
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    this->dispDrawState.FSTexture[DisplayShader::FSTextures::Texture] = curTarget;
+    this->dispDrawState.FSTexture[Textures::Texture] = curTarget;
     Gfx::ApplyDrawState(this->dispDrawState);
     Gfx::ApplyUniformBlock(this->dispFSParams);
     Gfx::Draw(0);

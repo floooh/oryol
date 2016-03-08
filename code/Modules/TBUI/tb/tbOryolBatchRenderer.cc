@@ -452,7 +452,7 @@ tbOryolBatchRenderer::drawBatches() {
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const Batch& batch = this->batches[batchIndex];
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
-            this->drawState.FSTexture[TBUIShader::FSTextures::Texture] = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
+            this->drawState.FSTexture[TBUITextures::Texture] = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
             Gfx::ApplyDrawState(drawState);
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));

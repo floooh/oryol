@@ -74,7 +74,7 @@ GPUParticlesApp::OnRunning() {
     // - we use a scissor rect around the currently active particles to make this update
     //   a bit more efficient
     const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-    this->updParticles.FSTexture[UpdateShader::FSTextures::PrevState] = this->particleBuffer[readIndex];
+    this->updParticles.FSTexture[UpdateTextures::PrevState] = this->particleBuffer[readIndex];
     this->updFSParams.NumParticles = (float32) this->curNumParticles;
     Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
@@ -85,7 +85,7 @@ GPUParticlesApp::OnRunning() {
     // now the actual particle shape rendering:
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-    this->drawParticles.VSTexture[DrawShader::VSTextures::ParticleState] = this->particleBuffer[drawIndex];
+    this->drawParticles.VSTexture[DrawTextures::ParticleState] = this->particleBuffer[drawIndex];
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawParticles);
     Gfx::ApplyUniformBlock(this->drawVSParams);

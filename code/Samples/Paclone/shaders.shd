@@ -2,7 +2,7 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
-@texture_block canvasTextures FSTextures
+@texture_block canvasTextures CanvasTextures
 @texture sampler2D tex Texture
 @end
 
@@ -180,14 +180,14 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 @uniform vec2 iResolution Resolution
 @end
 
-@texture_block crtFSTextures FSTextures
+@texture_block crtTextures CRTTextures
 @texture sampler2D iChannel0 Canvas
 @end
 
 @fs crtFS
 @use_code_block TL_CRT
 @use_uniform_block crtFSParams
-@use_texture_block crtFSTextures
+@use_texture_block crtTextures
 @in vec2 uv
 {
     _color = tl_crt(iChannel0, _fragcoord, uv);
@@ -196,7 +196,7 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 
 @fs nocrtFS
 @use_uniform_block crtFSParams
-@use_texture_block crtFSTextures
+@use_texture_block crtTextures
 @in vec2 uv
 {
     _color = vec4(tex2D(iChannel0, uv).xyz, 1.0);
