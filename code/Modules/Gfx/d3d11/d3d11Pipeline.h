@@ -1,25 +1,24 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::d3d11DrawState
+    @class Oryol::_priv::d3d11Pipeline
     @ingroup _priv
-    @brief D3D11 implementation of drawState
+    @brief D3D11 implementation of pipeline
 */
-#include "Gfx/Resource/drawStateBase.h"
+#include "Gfx/Resource/pipelineBase.h"
 #include "Gfx/d3d11/d3d11_decl.h"
-#include "Core/Containers/StaticArray.h"
 
 namespace Oryol {
 namespace _priv {
 
-class d3d11DrawState : public drawStateBase {
+class d3d11Pipeline : public pipelineBase {
 public:
     /// constructor
-    d3d11DrawState();
+    d3d11Pipeline();
     /// destructor
-    ~d3d11DrawState();
+    ~d3d11Pipeline();
 
-    /// clear the object (called from drawStateFactory::DestroyResource())
+    /// clear the object (called from pipelineFactory::DestroyResource())
     void Clear();
 
     /// pointer to input layout object

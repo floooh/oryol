@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//  d3d11DrawStateFactory.cc
+//  d3d11PipelineFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "d3d11DrawStateFactory.h"
+#include "d3d11PipelineFactory.h"
 #include "d3d11_impl.h"
 #include "d3d11Types.h"
 #include "Gfx/Core/renderer.h"
@@ -12,48 +12,48 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-d3d11DrawStateFactory::~d3d11DrawStateFactory() {
+d3d11PipelineFactory::~d3d11PipelineFactory() {
     o_assert_dbg(nullptr == this->d3d11Device);
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11DrawStateFactory::Setup(const gfxPointers& ptrs) {
+d3d11PipelineFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(nullptr == this->d3d11Device);
 
-    drawStateFactoryBase::Setup(ptrs);
+    pipelineFactoryBase::Setup(ptrs);
     this->d3d11Device = this->pointers.renderer->d3d11Device;
     o_assert_dbg(nullptr != this->d3d11Device);
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11DrawStateFactory::Discard() {
+d3d11PipelineFactory::Discard() {
     o_assert_dbg(nullptr != this->d3d11Device);
     this->d3d11Device = nullptr;
-    drawStateFactoryBase::Discard();
+    pipelineFactoryBase::Discard();
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11DrawStateFactory::SetupResource(drawState& ds) {
+d3d11PipelineFactory::SetupResource(pipeline& pip) {
     o_assert_dbg(nullptr != this->d3d11Device);
-    o_assert_dbg(nullptr == ds.d3d11InputLayout);
-    o_assert_dbg(nullptr == ds.d3d11RasterizerState);
-    o_assert_dbg(nullptr == ds.d3d11BlendState);
-    o_assert_dbg(nullptr == ds.d3d11DepthStencilState);
+    o_assert_dbg(nullptr == pip.d3d11InputLayout);
+    o_assert_dbg(nullptr == pip.d3d11RasterizerState);
+    o_assert_dbg(nullptr == pip.d3d11BlendState);
+    o_assert_dbg(nullptr == pip.d3d11DepthStencilState);
     HRESULT hr;
 
-    drawStateFactoryBase::SetupResource(ds);
-    o_assert_dbg(ds.shd);
+    pipelineFactoryBase::SetupResource(pip);
+    o_assert_dbg(pip.shd);
 
-    ds.d3d11InputLayout = this->createInputLayout(ds);
-    ds.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(ds.Setup.PrimType);
-    o_assert_dbg(ds.d3d11InputLayout);
+    pip.d3d11InputLayout = this->createInputLayout(pip);
+    pip.d3d11PrimTopology = d3d11Types::asPrimitiveTopology(pip.Setup.PrimType);
+    o_assert_dbg(pip.d3d11InputLayout);
 
     // create state objects (NOTE: creating the same state will return
     // the same d3d11 state object, so no need to implement our own reuse)
-    const RasterizerState& rastState = ds.Setup.RasterizerState;
+    const RasterizerState& rastState = pip.Setup.RasterizerState;
     D3D11_RASTERIZER_DESC rastDesc;
     Memory::Clear(&rastDesc, sizeof(rastDesc));
     rastDesc.FillMode = D3D11_FILL_SOLID;
@@ -65,11 +65,11 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     rastDesc.ScissorEnable = rastState.ScissorTestEnabled;
     rastDesc.MultisampleEnable = rastState.SampleCount > 1;
     rastDesc.AntialiasedLineEnable = FALSE;
-    hr = this->d3d11Device->CreateRasterizerState(&rastDesc, &ds.d3d11RasterizerState);
+    hr = this->d3d11Device->CreateRasterizerState(&rastDesc, &pip.d3d11RasterizerState);
     o_assert(SUCCEEDED(hr));
-    o_assert_dbg(nullptr != ds.d3d11RasterizerState);
+    o_assert_dbg(nullptr != pip.d3d11RasterizerState);
 
-    const DepthStencilState& dsState = ds.Setup.DepthStencilState;
+    const DepthStencilState& dsState = pip.Setup.DepthStencilState;
     D3D11_DEPTH_STENCIL_DESC dsDesc;
     Memory::Clear(&dsDesc, sizeof(dsDesc));
     dsDesc.DepthEnable = TRUE;      // FIXME: have DepthTestEnable in RasterizerState?
@@ -86,11 +86,11 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     dsDesc.BackFace.StencilDepthFailOp = d3d11Types::asStencilOp(dsState.StencilBack.DepthFailOp);
     dsDesc.BackFace.StencilPassOp = d3d11Types::asStencilOp(dsState.StencilBack.PassOp);
     dsDesc.BackFace.StencilFunc = d3d11Types::asComparisonFunc(dsState.StencilBack.CmpFunc);
-    hr = this->d3d11Device->CreateDepthStencilState(&dsDesc, &ds.d3d11DepthStencilState);
+    hr = this->d3d11Device->CreateDepthStencilState(&dsDesc, &pip.d3d11DepthStencilState);
     o_assert(SUCCEEDED(hr));
-    o_assert_dbg(nullptr != ds.d3d11DepthStencilState);
+    o_assert_dbg(nullptr != pip.d3d11DepthStencilState);
 
-    const BlendState& blendState = ds.Setup.BlendState;
+    const BlendState& blendState = pip.Setup.BlendState;
     D3D11_BLEND_DESC blendDesc;
     Memory::Clear(&blendDesc, sizeof(blendDesc));
     blendDesc.AlphaToCoverageEnable = FALSE;
@@ -103,42 +103,42 @@ d3d11DrawStateFactory::SetupResource(drawState& ds) {
     blendDesc.RenderTarget[0].DestBlendAlpha = d3d11Types::asBlendFactor(blendState.DstFactorAlpha);
     blendDesc.RenderTarget[0].BlendOpAlpha = d3d11Types::asBlendOp(blendState.OpAlpha);
     blendDesc.RenderTarget[0].RenderTargetWriteMask = d3d11Types::asColorWriteMask(blendState.ColorWriteMask);
-    hr = this->d3d11Device->CreateBlendState(&blendDesc, &ds.d3d11BlendState);
+    hr = this->d3d11Device->CreateBlendState(&blendDesc, &pip.d3d11BlendState);
     o_assert(SUCCEEDED(hr));
-    o_assert_dbg(nullptr != ds.d3d11BlendState);
+    o_assert_dbg(nullptr != pip.d3d11BlendState);
 
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11DrawStateFactory::DestroyResource(drawState& ds) {
-    this->pointers.renderer->invalidateDrawState();
-    if (nullptr != ds.d3d11InputLayout) {
-        ds.d3d11InputLayout->Release();
+d3d11PipelineFactory::DestroyResource(pipeline& pip) {
+    this->pointers.renderer->invalidatePipeline();
+    if (nullptr != pip.d3d11InputLayout) {
+        pip.d3d11InputLayout->Release();
     }
-    if (nullptr != ds.d3d11RasterizerState) {
-        ds.d3d11RasterizerState->Release();
+    if (nullptr != pip.d3d11RasterizerState) {
+        pip.d3d11RasterizerState->Release();
     }
-    if (nullptr != ds.d3d11BlendState) {
-        ds.d3d11BlendState->Release();
+    if (nullptr != pip.d3d11BlendState) {
+        pip.d3d11BlendState->Release();
     }
-    if (nullptr != ds.d3d11DepthStencilState) {
-        ds.d3d11DepthStencilState->Release();
+    if (nullptr != pip.d3d11DepthStencilState) {
+        pip.d3d11DepthStencilState->Release();
     }
-    drawStateFactoryBase::DestroyResource(ds);
+    pipelineFactoryBase::DestroyResource(pip);
 }
 
 //------------------------------------------------------------------------------
 ID3D11InputLayout*
-d3d11DrawStateFactory::createInputLayout(const drawState& ds) {
-    o_assert_dbg(nullptr == ds.d3d11InputLayout);
+d3d11PipelineFactory::createInputLayout(const pipeline& pip) {
+    o_assert_dbg(nullptr == pip.d3d11InputLayout);
 
     // create a new input layout object and add to cache
     D3D11_INPUT_ELEMENT_DESC d3d11Comps[VertexAttr::NumVertexAttrs] = { 0 };
     int d3d11CompIndex = 0;
     for (int mshSlotIndex = 0; mshSlotIndex < GfxConfig::MaxNumInputMeshes; mshSlotIndex++) {
-        const VertexLayout& layout = ds.Setup.Layouts[mshSlotIndex];
+        const VertexLayout& layout = pip.Setup.Layouts[mshSlotIndex];
         for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d11CompIndex++) {
             const auto& comp = layout.ComponentAt(compIndex);
             o_assert_dbg(d3d11CompIndex < VertexAttr::NumVertexAttrs);
@@ -161,7 +161,7 @@ d3d11DrawStateFactory::createInputLayout(const drawState& ds) {
     // lookup the vertex shader bytecode
     const void* vsByteCode = nullptr;
     uint32 vsSize = 0;
-    ds.shd->Setup.VertexShaderByteCode(ShaderLang::HLSL5, vsByteCode, vsSize);
+    pip.shd->Setup.VertexShaderByteCode(ShaderLang::HLSL5, vsByteCode, vsSize);
     o_assert_dbg(vsByteCode && (vsSize > 0));
 
     // create d3d11 input layout object

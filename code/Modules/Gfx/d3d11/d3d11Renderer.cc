@@ -29,7 +29,7 @@ valid(false),
 rtValid(false),
 frameIndex(0),
 curRenderTarget(nullptr),
-curDrawState(nullptr),
+curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 d3d11CurRenderTargetView(nullptr),
 d3d11CurDepthStencilView(nullptr),
@@ -95,7 +95,7 @@ d3d11Renderer::discard() {
     this->curVertexOffsets.Fill(0);
 
     this->curRenderTarget = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
 
     this->d3d11DeviceContext = nullptr;
@@ -118,7 +118,7 @@ d3d11Renderer::resetStateCache() {
 
     this->d3d11DeviceContext->ClearState();
     this->curRenderTarget = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
     this->d3d11CurRenderTargetView = nullptr;
     this->d3d11CurDepthStencilView = nullptr;
     this->d3d11CurDepthStencilState = nullptr;
@@ -162,7 +162,7 @@ d3d11Renderer::commitFrame() {
     o_assert_dbg(this->valid);
     this->rtValid = false;
     this->curRenderTarget = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
 }
@@ -253,48 +253,48 @@ d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, boo
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
+d3d11Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->d3d11DeviceContext);
-    o_assert_dbg(ds);
-    o_assert_dbg(ds->shd);
+    o_assert_dbg(pip);
+    o_assert_dbg(pip->shd);
     o_assert_dbg(meshes && numMeshes > 0);
 
     // if any of the meshes are still loading, cancel the next draw state
     for (int i = 0; i < numMeshes; i++) {
         if (nullptr == meshes[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
-    o_assert_dbg(ds->d3d11DepthStencilState);
-    o_assert_dbg(ds->d3d11RasterizerState);
-    o_assert_dbg(ds->d3d11BlendState);
-    o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-    o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+    o_assert_dbg(pip->d3d11DepthStencilState);
+    o_assert_dbg(pip->d3d11RasterizerState);
+    o_assert_dbg(pip->d3d11BlendState);
+    o_assert2(pip->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(pip->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(pip->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-    this->curDrawState = ds;
+    this->curPipeline = pip;
     this->curPrimaryMesh = meshes[0];
     o_assert_dbg(this->curPrimaryMesh);
 
     // apply state objects (if state has changed)
-    if (ds->d3d11RasterizerState != this->d3d11CurRasterizerState) {
-        this->d3d11CurRasterizerState = ds->d3d11RasterizerState;
-        this->d3d11DeviceContext->RSSetState(ds->d3d11RasterizerState);
+    if (pip->d3d11RasterizerState != this->d3d11CurRasterizerState) {
+        this->d3d11CurRasterizerState = pip->d3d11RasterizerState;
+        this->d3d11DeviceContext->RSSetState(pip->d3d11RasterizerState);
     }
-    if ((ds->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
-        (ds->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
+    if ((pip->d3d11DepthStencilState != this->d3d11CurDepthStencilState) ||
+        (pip->Setup.DepthStencilState.StencilRef != this->curStencilRef)) {
 
-        this->d3d11CurDepthStencilState = ds->d3d11DepthStencilState;
-        this->curStencilRef = ds->Setup.DepthStencilState.StencilRef;
-        this->d3d11DeviceContext->OMSetDepthStencilState(ds->d3d11DepthStencilState, ds->Setup.DepthStencilState.StencilRef);
+        this->d3d11CurDepthStencilState = pip->d3d11DepthStencilState;
+        this->curStencilRef = pip->Setup.DepthStencilState.StencilRef;
+        this->d3d11DeviceContext->OMSetDepthStencilState(pip->d3d11DepthStencilState, pip->Setup.DepthStencilState.StencilRef);
     }
-    if ((ds->d3d11BlendState != this->d3d11CurBlendState) ||
-        glm::any(glm::notEqual(ds->Setup.BlendColor, this->curBlendColor))) {
+    if ((pip->d3d11BlendState != this->d3d11CurBlendState) ||
+        glm::any(glm::notEqual(pip->Setup.BlendColor, this->curBlendColor))) {
         
-        this->d3d11CurBlendState = ds->d3d11BlendState;
-        this->curBlendColor = ds->Setup.BlendColor;
-        this->d3d11DeviceContext->OMSetBlendState(ds->d3d11BlendState, glm::value_ptr(ds->Setup.BlendColor), 0xFFFFFFFF);
+        this->d3d11CurBlendState = pip->d3d11BlendState;
+        this->curBlendColor = pip->Setup.BlendColor;
+        this->d3d11DeviceContext->OMSetBlendState(pip->d3d11BlendState, glm::value_ptr(pip->Setup.BlendColor), 0xFFFFFFFF);
     }
 
     // apply vertex buffers
@@ -325,9 +325,9 @@ d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
             &(this->curVertexStrides[0]),           // pStrides
             &(this->curVertexOffsets[0]));          // pOffsets
     }
-    if (this->d3d11CurPrimitiveTopology != ds->d3d11PrimTopology) {
-        this->d3d11CurPrimitiveTopology = ds->d3d11PrimTopology;
-        this->d3d11DeviceContext->IASetPrimitiveTopology(ds->d3d11PrimTopology);
+    if (this->d3d11CurPrimitiveTopology != pip->d3d11PrimTopology) {
+        this->d3d11CurPrimitiveTopology = pip->d3d11PrimTopology;
+        this->d3d11DeviceContext->IASetPrimitiveTopology(pip->d3d11PrimTopology);
     }
 
     // apply optional index buffer (can be nullptr!)
@@ -338,25 +338,25 @@ d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     }
 
     // apply input layout and shaders
-    if (this->d3d11CurInputLayout != ds->d3d11InputLayout) {
-        this->d3d11CurInputLayout = ds->d3d11InputLayout;
-        this->d3d11DeviceContext->IASetInputLayout(ds->d3d11InputLayout);
+    if (this->d3d11CurInputLayout != pip->d3d11InputLayout) {
+        this->d3d11CurInputLayout = pip->d3d11InputLayout;
+        this->d3d11DeviceContext->IASetInputLayout(pip->d3d11InputLayout);
     }
 
     // apply shaders
-    if (this->d3d11CurVertexShader != ds->shd->d3d11VertexShader) {
-        this->d3d11CurVertexShader = ds->shd->d3d11VertexShader;
-        this->d3d11DeviceContext->VSSetShader(ds->shd->d3d11VertexShader, NULL, 0);
+    if (this->d3d11CurVertexShader != pip->shd->d3d11VertexShader) {
+        this->d3d11CurVertexShader = pip->shd->d3d11VertexShader;
+        this->d3d11DeviceContext->VSSetShader(pip->shd->d3d11VertexShader, NULL, 0);
     }
-    if (this->d3d11CurPixelShader != ds->shd->d3d11PixelShader) {
-        this->d3d11CurPixelShader = ds->shd->d3d11PixelShader;
-        this->d3d11DeviceContext->PSSetShader(ds->shd->d3d11PixelShader, NULL, 0);
+    if (this->d3d11CurPixelShader != pip->shd->d3d11PixelShader) {
+        this->d3d11CurPixelShader = pip->shd->d3d11PixelShader;
+        this->d3d11DeviceContext->PSSetShader(pip->shd->d3d11PixelShader, NULL, 0);
     }
         
     // apply vertex-shader-stage constant buffers
     for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
         // NOTE: cb can be nullptr!
-        ID3D11Buffer* cb = ds->shd->getConstantBuffer(ShaderStage::VS, bindSlot);
+        ID3D11Buffer* cb = pip->shd->getConstantBuffer(ShaderStage::VS, bindSlot);
         if (this->d3d11CurVSCBs[bindSlot] != cb) {
             this->d3d11CurVSCBs[bindSlot] = cb;
             this->d3d11DeviceContext->VSSetConstantBuffers(bindSlot, 1, &cb);
@@ -366,7 +366,7 @@ d3d11Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     // apply fragment-shader-stage constant buffers
     for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
         // NOTE: cb can be nullptr!
-        ID3D11Buffer* cb = ds->shd->getConstantBuffer(ShaderStage::FS, bindSlot);
+        ID3D11Buffer* cb = pip->shd->getConstantBuffer(ShaderStage::FS, bindSlot);
         if (this->d3d11CurPSCBs[bindSlot] != cb) {
             this->d3d11CurPSCBs[bindSlot] = cb;
             this->d3d11DeviceContext->PSSetConstantBuffers(bindSlot, 1, &cb);
@@ -379,12 +379,12 @@ void
 d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(0 != layoutHash);
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         // currently no valid draw state set
         return;
     }
 
-    const shader* shd = this->curDrawState->shd;
+    const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     
     #if ORYOL_DEBUG
@@ -406,10 +406,10 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
+d3d11Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
     o_assert_dbg(this->d3d11DeviceContext);
-    o_assert_dbg(numTextures <= GfxConfig::MaxNumTexturesPerStage);
-    if (nullptr == this->curDrawState) {
+    o_assert_dbg(this->valid);
+    if (nullptr == this->curPipeline) {
         return;
     }
 
@@ -417,29 +417,14 @@ d3d11Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     // textures isn't valid yet, in this case, disable rendering for the next draw call
     for (int i = 0; i < numTextures; i++) {
         if (nullptr == textures[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
 
-    // check if the provided texture types are compatible
-    #if ORYOL_DEBUG
-    const shader* shd = this->curDrawState->shd;
-    o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
-    o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
-    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
-    for (int i = 0; i < numTextures; i++) {
-        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
-        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
-            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
-        }
-    }
-    #endif
-
     // apply textures and samplers
     if (ShaderStage::VS == bindStage) {
+        o_assert_dbg(numTextures <= GfxConfig::MaxNumVertexTextures);
         for (int i = 0; i < numTextures; i++) {
             if (textures[i]->d3d11ShaderResourceView != this->d3d11CurVSSRVs[i]) {
                 this->d3d11CurVSSRVs[i] = textures[i]->d3d11ShaderResourceView;
@@ -452,6 +437,7 @@ d3d11Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
         }
     }
     else {
+        o_assert_dbg(numTextures <= GfxConfig::MaxNumFragmentTextures);
         for (int i = 0; i < numTextures; i++) {
             if (textures[i]->d3d11ShaderResourceView != this->d3d11CurPSSRVs[i]) {
                 this->d3d11CurPSSRVs[i] = textures[i]->d3d11ShaderResourceView;
@@ -470,7 +456,7 @@ void
 d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert2_dbg(this->rtValid, "No render target set!\n");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -488,7 +474,7 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
 void 
 d3d11Renderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -508,7 +494,7 @@ void
 d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -526,7 +512,7 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
 void 
 d3d11Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -680,10 +666,10 @@ d3d11Renderer::invalidateShaderState() {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::invalidateDrawState() {
+d3d11Renderer::invalidatePipeline() {
     o_assert_dbg(this->d3d11DeviceContext);
 
-    Log::Info("d3d11Renderer::invalidateDrawState()\n");
+    Log::Info("d3d11Renderer::invalidatePipeline()\n");
 
     this->d3d11CurBlendState = nullptr;
     this->d3d11CurDepthStencilState = nullptr;
@@ -698,13 +684,15 @@ void
 d3d11Renderer::invalidateTextureState() {
     o_assert_dbg(this->d3d11DeviceContext);
 
-    ID3D11ShaderResourceView* const nullSRVs[GfxConfig::MaxNumTexturesPerStage] = { 0 };
-    this->d3d11DeviceContext->VSSetShaderResources(0, GfxConfig::MaxNumTexturesPerStage, nullSRVs);
-    this->d3d11DeviceContext->PSSetShaderResources(0, GfxConfig::MaxNumTexturesPerStage, nullSRVs);
+    ID3D11ShaderResourceView* const nullVSSRVs[GfxConfig::MaxNumVertexTextures] = { 0 };
+    ID3D11ShaderResourceView* const nullFSSRVs[GfxConfig::MaxNumFragmentTextures] = { 0 };
+    this->d3d11DeviceContext->VSSetShaderResources(0, GfxConfig::MaxNumVertexTextures, nullVSSRVs);
+    this->d3d11DeviceContext->PSSetShaderResources(0, GfxConfig::MaxNumFragmentTextures, nullFSSRVs);
 
-    ID3D11SamplerState* const nullSamplers[GfxConfig::MaxNumTexturesPerStage] = { 0 };
-    this->d3d11DeviceContext->VSSetSamplers(0, GfxConfig::MaxNumTexturesPerStage, nullSamplers);
-    this->d3d11DeviceContext->PSSetSamplers(0, GfxConfig::MaxNumTexturesPerStage, nullSamplers);
+    ID3D11SamplerState* const nullVSSamplers[GfxConfig::MaxNumVertexTextures] = { 0 };
+    ID3D11SamplerState* const nullFSSamplers[GfxConfig::MaxNumFragmentTextures] = { 0 };
+    this->d3d11DeviceContext->VSSetSamplers(0, GfxConfig::MaxNumVertexTextures, nullVSSamplers);
+    this->d3d11DeviceContext->PSSetSamplers(0, GfxConfig::MaxNumFragmentTextures, nullFSSamplers);
 
     this->d3d11CurVSSRVs.Fill(nullptr);
     this->d3d11CurPSSRVs.Fill(nullptr);
