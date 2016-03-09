@@ -17,7 +17,6 @@ public:
 private:
     DrawState drawState;
     Shader::Params params;
-
 };
 OryolMain(FullscreenQuadApp);
 
