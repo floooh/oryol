@@ -13,6 +13,7 @@
 #if ORYOL_WINDOWS
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
+#define NOUSER (1)
 #include <Windows.h>
 #endif
 #if ORYOL_ANDROID
