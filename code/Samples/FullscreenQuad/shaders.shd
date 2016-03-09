@@ -31,7 +31,7 @@ _func lookatResult lookat(vec3 eye, vec3 center,vec3 up) {
 //  the fragment shader.
 //
 @uniform_block params Params
-    @uniform float time Time
+float time Time
 @end
 
 @vs vs

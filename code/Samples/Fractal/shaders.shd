@@ -17,7 +17,7 @@ _func vec4 hue2rgb(float h) {
 
 //------------------------------------------------------------------------------
 @uniform_block fractalVSParams VSParams
-@uniform vec4 rect Rect
+vec4 rect Rect
 @end
 
 @vs FractalVS
@@ -58,7 +58,7 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @uniform_block juliaFSParams FSParams
-@uniform vec2 juliaPos JuliaPos
+vec2 juliaPos JuliaPos
 @end
 
 @fs JuliaFS
@@ -100,7 +100,7 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @uniform_block displayFSParams FSParams
-@uniform float numColors NumColors
+float numColors NumColors
 @end
 
 @fs DisplayFS

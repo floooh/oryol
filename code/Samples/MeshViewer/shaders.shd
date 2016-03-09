@@ -17,7 +17,7 @@ _func vec4 gamma(vec4 c) {
 //  normal visualization shader
 //
 @uniform_block normalsVSParams VSParams
-@uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
 
 @vs normalsVS
@@ -44,15 +44,15 @@ _func vec4 gamma(vec4 c) {
 //  lambert shader
 //
 @uniform_block lambertVSParams VSParams
-@uniform mat4 mvp ModelViewProjection
-@uniform mat4 model Model
+mat4 mvp ModelViewProjection
+mat4 model Model
 @end
 
 @uniform_block lambertFSParams FSParams
-@uniform vec3 lightDir LightDir     // light dir in global space
-@uniform vec4 lightColor LightColor
-@uniform vec4 matDiffuse MatDiffuse
-@uniform bool gammaCorrect GammaCorrect
+vec3 lightDir LightDir     // light dir in global space
+vec4 lightColor LightColor
+vec4 matDiffuse MatDiffuse
+bool gammaCorrect GammaCorrect
 @end
 
 @vs lambertVS
@@ -90,18 +90,18 @@ _func vec4 gamma(vec4 c) {
 //  phong shader
 //
 @uniform_block phongVSParams VSParams
-@uniform mat4 mvp ModelViewProjection
-@uniform mat4 model Model
+mat4 mvp ModelViewProjection
+mat4 model Model
 @end
 
 @uniform_block phongFSParams FSParams
-@uniform vec3 lightDir LightDir     // light dir in global space
-@uniform vec3 eyePos EyePos
-@uniform vec4 lightColor LightColor
-@uniform vec4 matDiffuse MatDiffuse
-@uniform vec4 matSpecular MatSpecular
-@uniform bool gammaCorrect GammaCorrect
-@uniform float matSpecularPower MatSpecularPower
+vec3 lightDir LightDir     // light dir in global space
+vec3 eyePos EyePos
+vec4 lightColor LightColor
+vec4 matDiffuse MatDiffuse
+vec4 matSpecular MatSpecular
+bool gammaCorrect GammaCorrect
+float matSpecularPower MatSpecularPower
 @end
 
 @vs phongVS

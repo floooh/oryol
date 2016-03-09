@@ -177,7 +177,7 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 @end
 
 @uniform_block crtFSParams FSParams
-@uniform vec2 iResolution Resolution
+vec2 iResolution Resolution
 @end
 
 @texture_block crtTextures CRTTextures

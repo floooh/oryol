@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 
 @uniform_block vsParams VSParams
-@uniform vec2 glyphSize GlyphSize   // glyph size on current display
+vec2 glyphSize GlyphSize   // glyph size on current display
 @end
 
 @texture_block textures DbgTextures

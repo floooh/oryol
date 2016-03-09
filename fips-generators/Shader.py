@@ -280,6 +280,7 @@ class UniformBlock :
         self.bindSlot = None
         self.filePath = filePath
         self.lineNumber = lineNumber
+        self.lines = []
         self.uniforms = []
         self.uniformsByType = OrderedDict()
         # uniformsByType must be in the order of greatest to smallest
@@ -297,6 +298,38 @@ class UniformBlock :
         for type in self.uniformsByType :
             for uniform in self.uniformsByType[type] :
                 dumpObj(uniform)
+
+    def parseUniformType(self, arg) :
+        return arg.split('[')[0]
+
+    def parseUniformArraySize(self, arg) :
+        tokens = arg.split('[')
+        if len(tokens) > 1 :
+            return int(tokens[1].strip(']'))
+        else : 
+            return 1
+
+    def parseUniforms(self) :
+        # parses the lines array into uniform objects
+        for line in self.lines :
+            util.setErrorLocation(line.path, line.lineNumber)
+            tokens = line.content.split()
+            if len(tokens) != 3:
+                util.fmtError("uniform must have 3 args (type name binding)")
+            type = self.parseUniformType(tokens[0])
+            num  = self.parseUniformArraySize(tokens[0])
+            name = tokens[1]
+            bind = tokens[2]
+            if type not in validUniformTypes :
+                util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
+            # additional type restrictions for uniform array types (because of alignment rules)
+            if num > 1 and type not in validUniformArrayTypes :
+                util.fmtError("invalid uniform array type '{}', must be '{}'!".format(type, ','.join(validUniformArrayTypes)))
+            if checkListDup(name, self.uniforms) :
+                util.fmtError("uniform '{}' already defined in '{}'!".format(name, self.name))
+            uniform = Uniform(type, num, name, bind, line.path, line.lineNumber)
+            self.uniforms.append(uniform)
+            self.uniformsByType[type].append(uniform)
 
     def getHash(self) :
         # returns an integer hash for the uniform block layout,
@@ -546,39 +579,6 @@ class Parser :
         self.push(ub)
 
     #---------------------------------------------------------------------------
-    def parseUniformType(self, arg) :
-        return arg.split('[')[0]
-
-    #---------------------------------------------------------------------------
-    def parseUniformArraySize(self, arg) :
-        tokens = arg.split('[')
-        if len(tokens) > 1 :
-            return int(tokens[1].strip(']'))
-        else : 
-            return 1
-
-    #---------------------------------------------------------------------------
-    def onUniform(self, args) :
-        if not self.current or self.current.getTag() != 'uniform_block' :
-            util.fmtError("@uniform must come after @uniform_block tag!")
-        if len(args) != 3:
-            util.fmtError("@uniform must have 3 args (type name binding)")
-        type = self.parseUniformType(args[0])
-        num  = self.parseUniformArraySize(args[0])
-        name = args[1]
-        bind = args[2]
-        if type not in validUniformTypes :
-            util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
-        # additional type restrictions for uniform array types (because of alignment rules)
-        if num > 1 and type not in validUniformArrayTypes :
-            util.fmtError("invalid uniform array type '{}', must be '{}'!".format(type, ','.join(validUniformArrayTypes)))
-        if checkListDup(name, self.current.uniforms) :
-            util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
-        uniform = Uniform(type, num, name, bind, self.fileName, self.lineNumber)
-        self.current.uniforms.append(uniform)
-        self.current.uniformsByType[type].append(uniform)
-
-    #---------------------------------------------------------------------------
     def onTextureBlock(self, args) :
         if self.current is not None :
             util.fmtError("@texture_block must be at top level (missing @end in '{}'?".format(self.current.name))
@@ -739,6 +739,8 @@ class Parser :
             util.fmtError("@end must not have arguments")
         if self.current.getTag() in ['code_block', 'vs', 'fs'] and len(self.current.lines) == 0 :
             util.fmtError("no source code lines in @code_block, @vs or @fs section")
+        if self.current.getTag() == 'uniform_block' :
+            self.current.parseUniforms()
         self.pop()
 
     #---------------------------------------------------------------------------
@@ -771,8 +773,6 @@ class Parser :
                 self.onIn(args)
             elif tag == 'out':
                 self.onOut(args)
-            elif tag == 'uniform':
-                self.onUniform(args)
             elif tag == 'uniform_block':
                 self.onUniformBlock(args)
             elif tag == 'texture':

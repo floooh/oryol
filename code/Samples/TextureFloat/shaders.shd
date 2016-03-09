@@ -81,7 +81,7 @@ _func float snoise(vec2 v)
 
 //------------------------------------------------------------------------------
 @uniform_block fsParams FSParams
-    @uniform float time Time
+float time Time
 @end
 
 @vs offscreenVS

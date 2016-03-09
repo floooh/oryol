@@ -27,7 +27,7 @@
 //  triangle shader
 //
 @uniform_block params Params
-@uniform vec4 translate Translate
+vec4 translate Translate
 @end
 
 @vs triangleVS

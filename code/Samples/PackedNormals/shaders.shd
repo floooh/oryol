@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 
 @uniform_block vsParams Params
-    @uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
 
 @vs vs

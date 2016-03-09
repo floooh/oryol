@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 
 @uniform_block vsParams VSParams
-@uniform mat4 ortho Ortho
+mat4 ortho Ortho
 @end
 
 @texture_block textures IMUITextures

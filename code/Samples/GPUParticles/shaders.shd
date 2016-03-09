@@ -148,7 +148,7 @@ _func float snoise(vec2 v)
 //  | p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
 //  | p3.pos | p3.vec | ...    | ...
 @uniform_block initParams FSParams
-@uniform vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
+vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 @end
 
 @fs initFS
@@ -180,8 +180,8 @@ _func float snoise(vec2 v)
 //  via ping-ponging.
 //
 @uniform_block updateParams FSParams
-@uniform vec2 bufDims BufferDims
-@uniform float numParticles NumParticles
+vec2 bufDims BufferDims
+float numParticles NumParticles
 @end
 
 @texture_block updateTextures UpdateTextures
@@ -240,8 +240,8 @@ _func float snoise(vec2 v)
 //  texture.
 //
 @uniform_block drawParams VSParams
-@uniform mat4 mvp ModelViewProjection
-@uniform vec2 bufDims BufferDims
+mat4 mvp ModelViewProjection
+vec2 bufDims BufferDims
 @end
 
 @texture_block drawTextures DrawTextures

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 
 @uniform_block vsParams VSParams
-@uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
 @texture_block textures Textures
 @texture sampler2D tex Texture
