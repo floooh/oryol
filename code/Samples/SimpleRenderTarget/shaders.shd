@@ -8,7 +8,7 @@ mat4 mvp ModelViewProjection
 @end
 
 @texture_block textures Textures
-    @texture sampler2D tex Texture
+sampler2D tex Texture
 @end
 
 //------------------------------------------------------------------------------

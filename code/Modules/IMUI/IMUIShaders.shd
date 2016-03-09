@@ -7,7 +7,7 @@ mat4 ortho Ortho
 @end
 
 @texture_block textures IMUITextures
-@texture sampler2D tex Texture
+sampler2D tex Texture
 @end
 
 @vs vsIMUI

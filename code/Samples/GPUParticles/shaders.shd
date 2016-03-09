@@ -185,7 +185,7 @@ float numParticles NumParticles
 @end
 
 @texture_block updateTextures UpdateTextures
-@texture sampler2D prevState PrevState
+sampler2D prevState PrevState
 @end
 
 @fs updateFS
@@ -245,7 +245,7 @@ vec2 bufDims BufferDims
 @end
 
 @texture_block drawTextures DrawTextures
-@texture sampler2D particleTex ParticleState
+sampler2D particleTex ParticleState
 @end
 
 @vs drawVS

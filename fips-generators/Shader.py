@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 54
+Version = 55
 
 import os
 import sys
@@ -369,6 +369,7 @@ class TextureBlock :
         self.bindStage = None
         self.filePath = filePath
         self.lineNumber = lineNumber
+        self.lines = []
         self.textures = []
 
     def getTag(self) :
@@ -378,6 +379,23 @@ class TextureBlock :
         dumpObj(self)
         for tex in self.textures :
             dumpObj(tex)
+
+    def parseTextures(self) :
+        # parses the lines array into uniform objects
+        for line in self.lines :
+            util.setErrorLocation(line.path, line.lineNumber)
+            tokens = line.content.split()
+            if len(tokens) != 3:
+                util.fmtError("texture must have 3 args (type name binding)")
+            type = tokens[0]
+            name = tokens[1]
+            bind = tokens[2]
+            if type not in validTextureTypes :
+                util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
+            if checkListDup(name, self.textures) :
+                util.fmtError("texture '{}' already defined in '{}'!".format(name, self.name))
+            tex = Texture(type, name, bind, line.path, line.lineNumber)
+            self.textures.append(tex)
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -593,22 +611,6 @@ class Parser :
         self.push(tb)
 
     #---------------------------------------------------------------------------
-    def onTexture(self, args) :
-        if not self.current or not self.current.getTag() in ['texture_block'] :
-            util.fmtError("@texture must come after @texture_block tag!")
-        if len(args) != 3:
-            util.fmtError("@texture must have 3 args (type name binding)")
-        type = args[0]
-        name = args[1]
-        bind = args[2]
-        if type not in validTextureTypes :
-            util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
-        if checkListDup(name, self.current.textures) :
-            util.fmtError("@texture '{}' already defined in '{}'!".format(name, self.current.name))
-        tex = Texture(type, name, bind, self.fileName, self.lineNumber)
-        self.current.textures.append(tex)
-
-    #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
         if len(args) != 1:
             util.fmtError("@vs must have 1 arg (name)")
@@ -741,6 +743,8 @@ class Parser :
             util.fmtError("no source code lines in @code_block, @vs or @fs section")
         if self.current.getTag() == 'uniform_block' :
             self.current.parseUniforms()
+        if self.current.getTag() == 'texture_block' :
+            self.current.parseTextures()
         self.pop()
 
     #---------------------------------------------------------------------------
@@ -775,8 +779,6 @@ class Parser :
                 self.onOut(args)
             elif tag == 'uniform_block':
                 self.onUniformBlock(args)
-            elif tag == 'texture':
-                self.onTexture(args)
             elif tag == 'texture_block':
                 self.onTextureBlock(args)
             elif tag == 'highp' :

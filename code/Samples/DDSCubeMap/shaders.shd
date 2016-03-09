@@ -6,7 +6,7 @@
 mat4 mvp ModelViewProjection
 @end
 @texture_block textures Textures
-@texture samplerCube tex Texture
+samplerCube tex Texture
 @end
 
 @vs vs

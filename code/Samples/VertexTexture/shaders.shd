@@ -136,7 +136,7 @@ float time Time
 mat4 mvp ModelViewProjection
 @end
 @texture_block planeTextures PlaneTextures
-@texture sampler2D tex Texture
+sampler2D tex Texture
 @end
 
 @vs planeVS

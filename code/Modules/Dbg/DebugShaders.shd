@@ -7,7 +7,7 @@ vec2 glyphSize GlyphSize   // glyph size on current display
 @end
 
 @texture_block textures DbgTextures
-@texture sampler2D tex Texture
+sampler2D tex Texture
 @end
 
 //------------------------------------------------------------------------------
