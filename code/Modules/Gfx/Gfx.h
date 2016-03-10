@@ -13,12 +13,11 @@
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/ClearState.h"
+#include "Gfx/Core/DrawState.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Core/GfxFrameInfo.h"
-#include "Gfx/Setup/MeshSetup.h"
-#include "Gfx/Core/MeshBlock.h"
 #include "Resource/Core/SetupAndData.h"
 #include "glm/vec4.hpp"
 
@@ -93,11 +92,7 @@ public:
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
     static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
     /// apply draw state and meshes to use for rendering without texture blocks
-    static void ApplyDrawState(const Id& id, const MeshBlock& mb);
-    /// apply draw state, meshes, and one texture block
-    template<class T0> static void ApplyDrawState(const Id& id, const MeshBlock& mb, const T0& tb0);
-    /// apply draw state, meshes and with two texture blocks (one per shader stage)
-    template<class T0, class T1> static void ApplyDrawState(const Id& id, const MeshBlock& mb, const T0& tb0, const T1& tb1);
+    static void ApplyDrawState(const DrawState& drawState);
     /// apply a uniform block
     template<class T> static void ApplyUniformBlock(const T& ub);
 
@@ -128,6 +123,12 @@ public:
     static _priv::gfxResourceContainer& resource();
 
 private:
+    #if ORYOL_DEBUG
+    /// validate mesh binding
+    static void validateMeshes(_priv::pipeline* pip, _priv::mesh** meshes, int numMeshes);
+    /// validate texture binding
+    static void validateTextures(ShaderStage::Code stage, _priv::pipeline* pip, _priv::texture** textures, int numTextures);
+    #endif
     /// private generic apply texture block method
     template<class T> static void applyTextureBlock(const T& tb);
 
@@ -141,39 +142,6 @@ private:
     };
     static _state* state;
 };
-
-//------------------------------------------------------------------------------
-template<class T> inline void
-Gfx::applyTextureBlock(const T& tb) {
-    o_assert_dbg(T::_numTextures <= GfxConfig::MaxNumTexturesPerStage);
-    _priv::texture* textures[GfxConfig::MaxNumTexturesPerStage];
-    const Id* texId = (const Id*)&tb;
-    for (int i = 0; i < T::_numTextures; i++) {
-        o_assert_dbg(GfxResourceType::Texture == texId[i].Type);
-        textures[i] = state->resourceContainer.lookupTexture(texId[i]);
-    }
-    state->renderer.applyTextureBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, textures, T::_numTextures);
-}
-
-//------------------------------------------------------------------------------
-template<class T0> inline void
-Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb, const T0& tb0) {
-    o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumApplyDrawState++;
-    Gfx::ApplyDrawState(id, mb);
-    Gfx::applyTextureBlock<T0>(tb0);
-}
-
-//------------------------------------------------------------------------------
-template<class T0, class T1> inline void
-Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb, const T0& tb0, const T1& tb1) {
-    o_assert_dbg(IsValid());
-    o_assert2(T0::_bindShaderStage != T1::_bindShaderStage, "cannot bind 2 texture blocks to same shader stage!\n");
-    state->gfxFrameInfo.NumApplyDrawState++;
-    Gfx::ApplyDrawState(id, mb);
-    Gfx::applyTextureBlock<T0>(tb0);
-    Gfx::applyTextureBlock<T1>(tb1);
-}
 
 //------------------------------------------------------------------------------
 template<class T> inline void

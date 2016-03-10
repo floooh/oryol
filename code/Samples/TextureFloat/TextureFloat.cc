@@ -20,14 +20,11 @@ public:
     
 private:
     Id renderTarget;
-    Id offscreenDrawState;
-    Id copyDrawState;
-
+    DrawState offscreenDrawState;
+    DrawState copyDrawState;
     glm::mat4 view;
     glm::mat4 proj;
-    Shaders::Offscreen::FSParams offscreenFSParams;
-    Shaders::Copy::FSTextures copyFSTextures;
-    MeshBlock quadMesh;
+    OffscreenShader::FSParams offscreenFSParams;
     TimePoint lastFrameTimePoint;
     ClearState noClearState = ClearState::ClearNone();
 };
@@ -41,13 +38,13 @@ TextureFloatApp::OnRunning() {
     
     // render plasma to offscreen render target, do not clear
     Gfx::ApplyRenderTarget(this->renderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->offscreenDrawState, this->quadMesh);
+    Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->offscreenFSParams);
     Gfx::Draw(0);
     
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Gfx::ApplyDrawState(this->copyDrawState, this->quadMesh, this->copyFSTextures);
+    Gfx::ApplyDrawState(this->copyDrawState);
     Gfx::Draw(0);
 
     Dbg::DrawTextBuffer();
@@ -82,21 +79,23 @@ TextureFloatApp::OnInit() {
 
     // fullscreen mesh, we'll reuse this several times
     auto quadSetup = MeshSetup::FullScreenQuad();
-    this->quadMesh[0] = Gfx::CreateResource(quadSetup);
+    Id quadMesh = Gfx::CreateResource(quadSetup);
+    this->offscreenDrawState.Mesh[0] = quadMesh;
+    this->copyDrawState.Mesh[0] = quadMesh;
 
     // setup draw state for offscreen rendering to float render target
-    Id offscreenShader = Gfx::CreateResource(Shaders::Offscreen::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, offscreenShader);
-    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
-    this->offscreenDrawState = Gfx::CreateResource(dss);
+    Id offscreenShader = Gfx::CreateResource(OffscreenShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, offscreenShader);
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    this->offscreenDrawState.Pipeline = Gfx::CreateResource(ps);
     this->offscreenFSParams.Time = 0.0f;
 
     // fullscreen-copy resources
-    Id copyShader = Gfx::CreateResource(Shaders::Copy::Setup());
-    dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
-    this->copyDrawState = Gfx::CreateResource(dss);
-    this->copyFSTextures.Texture = this->renderTarget;
+    Id copyShader = Gfx::CreateResource(CopyShader::Setup());
+    ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
+    this->copyDrawState.Pipeline = Gfx::CreateResource(ps);
+    this->copyDrawState.FSTexture[Textures::Texture] = this->renderTarget;
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

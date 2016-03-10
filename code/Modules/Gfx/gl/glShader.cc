@@ -38,8 +38,8 @@ glShader::bindUniform(ShaderStage::Code bindStage, int32 bindSlot, int32 uniform
 
 //------------------------------------------------------------------------------
 void
-glShader::bindSampler(ShaderStage::Code bindStage, int32 bindSlot, int32 textureIndex, int32 samplerIndex) {
-    this->samplerMappings[samplerArrayIndex(bindStage, bindSlot, textureIndex)] = samplerIndex;
+glShader::bindSampler(ShaderStage::Code bindStage, int32 textureIndex, int32 samplerIndex) {
+    this->samplerMappings[samplerArrayIndex(bindStage, textureIndex)] = samplerIndex;
 }
 
 //------------------------------------------------------------------------------

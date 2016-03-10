@@ -18,7 +18,7 @@
 #include "Gfx/Resource/meshFactory.h"
 #include "Gfx/Resource/shaderFactory.h"
 #include "Gfx/Resource/textureFactory.h"
-#include "Gfx/Resource/drawStateFactory.h"
+#include "Gfx/Resource/pipelineFactory.h"
 #include "Gfx/Resource/MeshLoaderBase.h"
 #include "Gfx/Resource/TextureLoaderBase.h"
 #include "Gfx/Core/gfxPointers.h"
@@ -67,8 +67,8 @@ public:
     shader* lookupShader(const Id& resId);
     /// lookup texture object
     texture* lookupTexture(const Id& resId);
-    /// lookup draw-state object
-    drawState* lookupDrawState(const Id& resId);
+    /// lookup pipeline object
+    pipeline* lookupPipeline(const Id& resId);
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
@@ -77,11 +77,11 @@ public:
     class meshFactory meshFactory;
     class shaderFactory shaderFactory;
     class textureFactory textureFactory;
-    class drawStateFactory drawStateFactory;
+    class pipelineFactory pipelineFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class texturePool texturePool;
-    class drawStatePool drawStatePool;
+    class pipelinePool pipelinePool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
 };
@@ -108,10 +108,10 @@ gfxResourceContainerBase::lookupTexture(const Id& resId) {
 }
 
 //------------------------------------------------------------------------------
-inline drawState*
-gfxResourceContainerBase::lookupDrawState(const Id& resId) {
+inline pipeline*
+gfxResourceContainerBase::lookupPipeline(const Id& resId) {
     o_assert_dbg(this->valid);
-    return this->drawStatePool.Lookup(resId);
+    return this->pipelinePool.Lookup(resId);
 }
 
 } // namespace _priv

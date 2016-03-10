@@ -23,16 +23,13 @@ private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
     Id plasmaRenderTarget;
-    Id plasmaDrawState;
-    Id planeDrawState;
+    DrawState plasmaDrawState;
+    DrawState planeDrawState;
     
     glm::mat4 view;
     glm::mat4 proj;
-    MeshBlock quadMesh;
-    MeshBlock planeMesh;
-    Shaders::Plane::VSParams planeVSParams;
-    Shaders::Plane::VSTextures planeVSTextures;
-    Shaders::Plasma::FSParams plasmaFSParams;    
+    PlaneShader::VSParams planeVSParams;
+    PlasmaShader::FSParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
     ClearState noClearState = ClearState::ClearNone();
 };
@@ -47,13 +44,13 @@ VertexTextureApp::OnRunning() {
 
     // render plasma to offscreen render target
     Gfx::ApplyRenderTarget(this->plasmaRenderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->plasmaDrawState, this->quadMesh);
+    Gfx::ApplyDrawState(this->plasmaDrawState);
     Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0);
 
     // render displacement mapped plane shape
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->planeDrawState, this->planeMesh, this->planeVSTextures);
+    Gfx::ApplyDrawState(this->planeDrawState);
     Gfx::ApplyUniformBlock(this->planeVSParams);
     Gfx::Draw(0);
 
@@ -85,12 +82,12 @@ VertexTextureApp::OnInit() {
 
     // setup draw state for offscreen rendering to float render target
     auto quadSetup = MeshSetup::FullScreenQuad();
-    this->quadMesh[0] = Gfx::CreateResource(quadSetup);
-    Id plasmaShader = Gfx::CreateResource(Shaders::Plasma::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, plasmaShader);
-    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
-    this->plasmaDrawState = Gfx::CreateResource(dss);
+    this->plasmaDrawState.Mesh[0] = Gfx::CreateResource(quadSetup);
+    Id plasmaShader = Gfx::CreateResource(PlasmaShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, plasmaShader);
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    this->plasmaDrawState.Pipeline = Gfx::CreateResource(ps);
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
@@ -98,14 +95,14 @@ VertexTextureApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Plane(3.0f, 3.0f, 255);
-    this->planeMesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id planeShader = Gfx::CreateResource(Shaders::Plane::Setup());
-    auto dsPlane = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, planeShader);
-    dsPlane.DepthStencilState.DepthWriteEnabled = true;
-    dsPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dsPlane.RasterizerState.SampleCount = 4;
-    this->planeDrawState = Gfx::CreateResource(dsPlane);
-    this->planeVSTextures.Texture = this->plasmaRenderTarget;
+    this->planeDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id planeShader = Gfx::CreateResource(PlaneShader::Setup());
+    auto psPlane = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, planeShader);
+    psPlane.DepthStencilState.DepthWriteEnabled = true;
+    psPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    psPlane.RasterizerState.SampleCount = 4;
+    this->planeDrawState.Pipeline = Gfx::CreateResource(psPlane);
+    this->planeDrawState.VSTexture[PlaneTextures::Texture] = this->plasmaRenderTarget;
     
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;

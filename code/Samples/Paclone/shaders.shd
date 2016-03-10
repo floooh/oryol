@@ -2,8 +2,8 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
-@texture_block canvasTextures FSTextures
-@texture sampler2D tex Texture
+@texture_block canvasTextures CanvasTextures
+sampler2D tex Texture
 @end
 
 @vs canvasVS
@@ -25,7 +25,7 @@
 }
 @end
 
-@program Canvas canvasVS canvasFS
+@program CanvasShader canvasVS canvasFS
 
 //------------------------------------------------------------------------------
 //  Timothy Lottes CRT effect shader:
@@ -177,17 +177,17 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 @end
 
 @uniform_block crtFSParams FSParams
-@uniform vec2 iResolution Resolution
+vec2 iResolution Resolution
 @end
 
-@texture_block crtFSTextures FSTextures
-@texture sampler2D iChannel0 Canvas
+@texture_block crtTextures CRTTextures
+sampler2D iChannel0 Canvas
 @end
 
 @fs crtFS
 @use_code_block TL_CRT
 @use_uniform_block crtFSParams
-@use_texture_block crtFSTextures
+@use_texture_block crtTextures
 @in vec2 uv
 {
     _color = tl_crt(iChannel0, _fragcoord, uv);
@@ -196,13 +196,13 @@ _func vec4 tl_crt(sampler2D iChannel0, vec4 fragCoord, vec2 uv) {
 
 @fs nocrtFS
 @use_uniform_block crtFSParams
-@use_texture_block crtFSTextures
+@use_texture_block crtTextures
 @in vec2 uv
 {
     _color = vec4(tex2D(iChannel0, uv).xyz, 1.0);
 }
 @end 
 
-@program CRT crtVS crtFS
-@program NoCRT crtVS nocrtFS
+@program CRTShader crtVS crtFS
+@program NoCRTShader crtVS nocrtFS
 

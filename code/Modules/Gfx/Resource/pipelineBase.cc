@@ -1,24 +1,22 @@
 //------------------------------------------------------------------------------
-//  glDrawState.cc
+//  pipelineBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "glDrawState.h"
+#include "pipelineBase.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glDrawState::glDrawState() :
-glPrimType(0) {
-    // empty
+pipelineBase::~pipelineBase() {
+    o_assert_dbg(nullptr == this->shd);
 }
 
 //------------------------------------------------------------------------------
 void
-glDrawState::Clear() {
-    this->glAttrs.Fill(glVertexAttr());
-    this->glPrimType = 0;
-    drawStateBase::Clear();
+pipelineBase::Clear() {
+    this->shd = nullptr;
+    resourceBase::Clear();
 }
 
 } // namespace _priv

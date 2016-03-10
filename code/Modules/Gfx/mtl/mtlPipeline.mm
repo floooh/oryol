@@ -1,32 +1,32 @@
 //------------------------------------------------------------------------------
-//  mtlDrawState.mm
+//  mtlPipeline.mm
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "mtlDrawState.h"
+#include "mtlPipeline.h"
 #include "mtl_impl.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlDrawState::mtlDrawState() :
+mtlPipeline::mtlPipeline() :
 mtlRenderPipelineState(nil),
 mtlDepthStencilState(nil) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-mtlDrawState::~mtlDrawState() {
+mtlPipeline::~mtlPipeline() {
     o_assert_dbg(nil == this->mtlRenderPipelineState);
     o_assert_dbg(nil == this->mtlDepthStencilState);
 }
 
 //------------------------------------------------------------------------------
 void
-mtlDrawState::Clear() {
+mtlPipeline::Clear() {
     this->mtlRenderPipelineState = nil;
     this->mtlDepthStencilState = nil;
-    drawStateBase::Clear();
+    pipelineBase::Clear();
 }
 
 } // namespace _priv

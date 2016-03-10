@@ -18,11 +18,10 @@ public:
     AppState::Code OnCleanup();
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
-    Id drawState;
+    DrawState drawState;
+    Shader::Params params;
     glm::mat4 view;
     glm::mat4 proj;
-    Shaders::Shapes::Params params;
-    MeshBlock meshBlock;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
 };
@@ -32,15 +31,12 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnRunning() {
     
-    // update rotation angles
     this->angleY += 0.01f;
     this->angleX += 0.02f;
     
-    // apply state and render
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->drawState);
     
-    // render shape primitive groups
     static const glm::vec3 positions[] = {
         glm::vec3(-1.0, 1.0f, -6.0f),
         glm::vec3(1.0f, 1.0f, -6.0f),
@@ -56,18 +52,16 @@ ShapeApp::OnRunning() {
     }
     Gfx::CommitFrame();
     
-    // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnInit() {
-    // setup rendering system
+
     auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
     Gfx::Setup(gfxSetup);
 
-    // create resources
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
     shapeBuilder.Layout
@@ -78,16 +72,15 @@ ShapeApp::OnInit() {
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::Shapes::Setup());
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id shd = Gfx::CreateResource(Shader::Setup());
     
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 
-    // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

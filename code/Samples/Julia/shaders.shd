@@ -2,8 +2,8 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
-@texture_block fsTextures FSTextures
-@texture sampler2D tex Texture
+@texture_block textures Textures
+sampler2D tex Texture
 @end
 
 @code_block util
@@ -17,7 +17,7 @@ _func vec4 hue2rgb(float h) {
 
 //------------------------------------------------------------------------------
 @uniform_block fractalVSParams VSParams
-@uniform vec4 rect Rect
+vec4 rect Rect
 @end
 
 @vs FractalVS
@@ -34,13 +34,13 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @uniform_block juliaFSParams FSParams
-@uniform vec2 juliaPos JuliaPos
+vec2 juliaPos JuliaPos
 @end
 
 @fs JuliaFS
 @highp float
 @use_uniform_block juliaFSParams
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 @in vec2 pos
 {
@@ -64,7 +64,7 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@program Julia FractalVS JuliaFS
+@program JuliaShader FractalVS JuliaFS
 
 //------------------------------------------------------------------------------
 @vs ColorVS
@@ -78,7 +78,7 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @fs ColorFS
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 {
     vec4 params = tex2D(tex, uv);
@@ -92,13 +92,13 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@program Color ColorVS ColorFS
+@program ColorShader ColorVS ColorFS
 
 //------------------------------------------------------------------------------
 @uniform_block shapeVSParams VSParams
-@uniform mat4 mvp ModelViewProj
-@uniform vec2 uvScale UVScale
-@uniform float time Time
+mat4 mvp ModelViewProj
+vec2 uvScale UVScale
+float time Time
 @end
 
 @vs ShapeVS
@@ -120,13 +120,13 @@ _func vec4 hue2rgb(float h) {
 @end
 
 @uniform_block shapeFSParams FSParams
-@uniform float numColors NumColors
+float numColors NumColors
 @end
 
 @fs ShapeFS
 @use_code_block util
 @use_uniform_block shapeFSParams
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec4 norm
 @in vec2 uv
 {
@@ -136,5 +136,4 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-@program Shape ShapeVS ShapeFS
-r
+@program ShapeShader ShapeVS ShapeFS

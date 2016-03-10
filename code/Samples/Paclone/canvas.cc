@@ -43,16 +43,16 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
         .Add(VertexAttr::Position, VertexFormat::Float2)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     meshSetup.AddPrimitiveGroup(PrimitiveGroup(0, this->numVertices));
-    this->meshBlock[0] = Gfx::CreateResource(meshSetup);
-    this->shader = Gfx::CreateResource(Shaders::Canvas::Setup());
-    auto dsSetup = DrawStateSetup::FromLayoutAndShader(meshSetup.Layout, this->shader);
-    dsSetup.BlendState.BlendEnabled = true;
-    dsSetup.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    dsSetup.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    dsSetup.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dsSetup.BlendState.DepthFormat = rtSetup.DepthFormat;
-    dsSetup.RasterizerState.CullFaceEnabled = false;
-    this->drawState = Gfx::CreateResource(dsSetup);
+    this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup);
+    Id shd = Gfx::CreateResource(CanvasShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, shd);
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    ps.RasterizerState.CullFaceEnabled = false;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
     
     // setup sprite texture
     auto texSetup = TextureSetup::FromPixelData(Sheet::Width, Sheet::Height, 1, TextureType::Texture2D, PixelFormat::RGBA8);
@@ -61,7 +61,7 @@ canvas::Setup(const TextureSetup& rtSetup, int tilesX, int tilesY, int tileW, in
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     texSetup.ImageData.Sizes[0][0] = Sheet::NumBytes;
-    this->textures.Texture = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
+    this->drawState.FSTexture[CanvasTextures::Texture] = Gfx::CreateResource(texSetup, Sheet::Pixels, Sheet::NumBytes);
     
     // initialize the tile map
     for (int y = 0; y < this->numTilesY; y++) {
@@ -93,8 +93,8 @@ canvas::Render() {
     o_assert(this->isValid);
     int32 numBytes = 0;
     const void* data = this->updateVertices(numBytes);
-    Gfx::UpdateVertices(this->meshBlock[0], data, numBytes);
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->textures);
+    Gfx::UpdateVertices(this->drawState.Mesh[0], data, numBytes);
+    Gfx::ApplyDrawState(this->drawState);
     Gfx::Draw(0);
 }
 

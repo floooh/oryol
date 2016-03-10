@@ -7,7 +7,7 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/UniformBlockLayout.h"
-#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/pipeline.h"
 #include "Gfx/Resource/mesh.h"
 #include "Gfx/Resource/shader.h"
 #include "Gfx/Resource/texture.h"
@@ -23,7 +23,7 @@ valid(false),
 frameIndex(0),
 curFrameRotateIndex(0),
 rtValid(false),
-curDrawState(nullptr),
+curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 curMTLPrimitiveType(MTLPrimitiveTypeTriangle),
 curMTLIndexType(MTLIndexTypeUInt16),
@@ -151,7 +151,7 @@ mtlRenderer::commitFrame() {
     this->curCommandEncoder = nil;
     this->curCommandBuffer = nil;
     this->curUniformBufferPtr = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
 
     // block until previous frame has finished (the semaphore
@@ -324,9 +324,9 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
+mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(ds);
+    o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
     if (nil == this->curCommandEncoder) {
@@ -335,32 +335,32 @@ mtlRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     // if any of the meshes are still loading, cancel the next draw-call
     for (int i = 0; i < numMeshes; i++) {
         if (nullptr == meshes[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
-    o_assert_dbg(ds->mtlRenderPipelineState);
-    o_assert_dbg(ds->mtlDepthStencilState);
-    o_assert2_dbg(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2_dbg(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
-    o_assert2_dbg(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+    o_assert_dbg(pip->mtlRenderPipelineState);
+    o_assert_dbg(pip->mtlDepthStencilState);
+    o_assert2_dbg(pip->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2_dbg(pip->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
+    o_assert2_dbg(pip->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
     // need to store draw state and first mesh for later draw call
-    this->curDrawState = ds;
+    this->curPipeline = pip;
     this->curPrimaryMesh = meshes[0];
     o_assert_dbg(this->curPrimaryMesh);
 
     // apply general state
-    const glm::vec4& bc = ds->Setup.BlendColor;
-    const RasterizerState& rs = ds->Setup.RasterizerState;
-    const DepthStencilState& dss = ds->Setup.DepthStencilState;
+    const glm::vec4& bc = pip->Setup.BlendColor;
+    const RasterizerState& rs = pip->Setup.RasterizerState;
+    const DepthStencilState& dss = pip->Setup.DepthStencilState;
     [this->curCommandEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
     [this->curCommandEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
     [this->curCommandEncoder setStencilReferenceValue:dss.StencilRef];
 
     // apply state objects
-    [this->curCommandEncoder setRenderPipelineState:ds->mtlRenderPipelineState];
-    [this->curCommandEncoder setDepthStencilState:ds->mtlDepthStencilState];
+    [this->curCommandEncoder setRenderPipelineState:pip->mtlRenderPipelineState];
+    [this->curCommandEncoder setDepthStencilState:pip->mtlDepthStencilState];
 
     // apply vertex buffers
     for (int meshIndex = 0; meshIndex < GfxConfig::MaxNumInputMeshes; meshIndex++) {
@@ -378,7 +378,7 @@ mtlRenderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     }
 
     // store additional state for following draw calls
-    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(ds->Setup.PrimType);
+    this->curMTLPrimitiveType = mtlTypes::asPrimitiveType(pip->Setup.PrimType);
     if (this->curPrimaryMesh->indexBufferAttrs.Type != IndexType::None) {
         this->curMTLIndexType = mtlTypes::asIndexType(this->curPrimaryMesh->indexBufferAttrs.Type);
     }
@@ -391,13 +391,13 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     if (nil == this->curCommandEncoder) {
         return;
     }
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
 
     #if ORYOL_DEBUG
     // check whether the provided struct is type-compatible with the uniform layout
-    shader* shd = this->curDrawState->shd;
+    shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
@@ -423,12 +423,14 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
+mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
+                 ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
     if (nil == this->curCommandEncoder) {
         return;
     }
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
 
@@ -436,26 +438,10 @@ mtlRenderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     // yet or has failed loading, in this case, disable the next draw call
     for (int i = 0; i < numTextures; i++) {
         if (nullptr == textures[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
-
-    //  check if the provided texture types are compatible with the shader expectations
-    #if ORYOL_DEBUG
-    const shader* shd = this->curDrawState->shd;
-    o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
-    o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
-    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
-    for (int i = 0; i < numTextures; i++) {
-        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(bindSlot));
-        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
-            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
-        }
-    }
-    #endif
 
     // apply textures and samplers
     if (ShaderStage::VS == bindStage) {
@@ -481,7 +467,7 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
     if (nil == this->curCommandEncoder) {
         return;
     }
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -511,7 +497,7 @@ mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     if (nil == this->curCommandEncoder) {
         return;
     }
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;

@@ -6,7 +6,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Resource/Id.h"
 #include "Resource/ResourceLabel.h"
-#include "Gfx/Core/MeshBlock.h"
+#include "Gfx/Core/DrawState.h"
 #include "glm/vec4.hpp"
 #include "Julia/shaders.h"
 
@@ -40,12 +40,11 @@ public:
     Oryol::Id colorTexture;
 
     Oryol::ResourceLabel label;
-    Oryol::MeshBlock fsqMeshBlock;
-    Oryol::Id fractalDrawState;
     Oryol::StaticArray<Oryol::Id, 2> fractalTexture;
-    Oryol::Id colorDrawState;
-    Oryol::Shaders::Julia::VSParams fractalVSParams;
-    Oryol::Shaders::Julia::FSParams fractalFSParams;
+    Oryol::DrawState fractDrawState;
+    Oryol::JuliaShader::VSParams fractVSParams;
+    Oryol::JuliaShader::FSParams fractFSParams;
+    Oryol::DrawState colorDrawState;
 };
 
 } // namespace Julia

@@ -15,11 +15,10 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 private:
-    Id bgDrawState;
-    Id drawStates[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
-    Shaders::Triangle::Params params;
-    MeshBlock bgQuadMesh;
-    MeshBlock triangleMesh;
+    DrawState bgDrawState;
+    Id triMesh;
+    Id pipelines[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
+    TriShader::Params params;
 };
 OryolMain(BlendTestApp);
 
@@ -29,16 +28,19 @@ BlendTestApp::OnRunning() {
     
     // draw checkboard background
     Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->bgDrawState, this->bgQuadMesh);
+    Gfx::ApplyDrawState(this->bgDrawState);
     Gfx::Draw(0);
 
     // draw blended triangles
+    DrawState triDrawState;
+    triDrawState.Mesh[0] = this->triMesh;
     float d = 1.0f / BlendFactor::NumBlendFactors;
     for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
             this->params.Translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
             this->params.Translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-            Gfx::ApplyDrawState(this->drawStates[y][x], this->triangleMesh);
+            triDrawState.Pipeline = this->pipelines[y][x];
+            Gfx::ApplyDrawState(triDrawState);
             Gfx::ApplyUniformBlock(this->params);
             Gfx::Draw(0);
         }
@@ -54,15 +56,15 @@ AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(1024, 768, "Oryol Blend Sample");
-    gfxSetup.SetPoolSize(GfxResourceType::DrawState, 512);
+    gfxSetup.SetPoolSize(GfxResourceType::Pipeline, 512);
     Gfx::Setup(gfxSetup);
 
-    // create drawstate for a patterned background
+    // create pipeline object for a patterned background
     auto ms = MeshSetup::FullScreenQuad();
-    this->bgQuadMesh[0] = Gfx::CreateResource(ms);
-    Id bgShd = Gfx::CreateResource(Shaders::Background::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(ms.Layout, bgShd);
-    this->bgDrawState = Gfx::CreateResource(dss);
+    this->bgDrawState.Mesh[0] = Gfx::CreateResource(ms);
+    Id bgShd = Gfx::CreateResource(BGShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(ms.Layout, bgShd);
+    this->bgDrawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup a triangle mesh and shader
     MeshBuilder meshBuilder;
@@ -79,19 +81,19 @@ BlendTestApp::OnInit() {
         .Vertex(1, VertexAttr::Color0, 0.0f, 0.75f, 0.0f, 0.75f)
         .Vertex(2, VertexAttr::Position, -0.05f, -0.05f, 0.5f)
         .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f);
-    this->triangleMesh[0] = Gfx::CreateResource(meshBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::Triangle::Setup());
+    this->triMesh = Gfx::CreateResource(meshBuilder.Build());
+    Id shd = Gfx::CreateResource(TriShader::Setup());
     
     // setup one draw state for each blend factor combination
-    dss = DrawStateSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
-    dss.BlendState.BlendEnabled = true;
-    dss.BlendColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
+    ps = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
     for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            dss.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
-            dss.BlendState.DstFactorRGB = (BlendFactor::Code) y;
-            this->drawStates[y][x] = Gfx::CreateResource(dss);
+            ps.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
+            ps.BlendState.DstFactorRGB = (BlendFactor::Code) y;
+            this->pipelines[y][x] = Gfx::CreateResource(ps);
         }
     }
 

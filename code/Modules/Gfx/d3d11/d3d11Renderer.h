@@ -24,7 +24,7 @@ namespace Oryol {
 namespace _priv {
 
 class texture;
-class drawState;
+class pipeline;
 class mesh;
 class textureBlock;
     
@@ -58,11 +58,11 @@ public:
     /// apply scissor rect
     void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(drawState* ds, mesh** meshes, int numMeshes);
+    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
     void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
-    /// apply a texture block
-    void applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures);
+    /// apply a textures
+    void applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
     /// submit a draw call with direct primitive group
@@ -85,7 +85,7 @@ public:
     /// invalidate currently bound shader program state
     void invalidateShaderState();
     /// invalidate currently bound draw state 
-    void invalidateDrawState();
+    void invalidatePipeline();
     /// invalidate currently bound texture state
     void invalidateTextureState();
 
@@ -102,7 +102,7 @@ private:
     DisplayAttrs rtAttrs;
 
     texture* curRenderTarget;
-    drawState* curDrawState;
+    pipeline* curPipeline;
     mesh* curPrimaryMesh;
 
     ID3D11RenderTargetView* d3d11CurRenderTargetView;
@@ -120,10 +120,10 @@ private:
     StaticArray<ID3D11Buffer*, GfxConfig::MaxNumInputMeshes> d3d11CurVBs;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexStrides;
     StaticArray<uint32, GfxConfig::MaxNumInputMeshes> curVertexOffsets;
-    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSRVs;
-    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSRVs;
-    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurVSSamplers;
-    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumTexturesPerStage> d3d11CurPSSamplers;
+    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumVertexTextures> d3d11CurVSSRVs;
+    StaticArray<ID3D11ShaderResourceView*, GfxConfig::MaxNumFragmentTextures> d3d11CurPSSRVs;
+    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumVertexTextures> d3d11CurVSSamplers;
+    StaticArray<ID3D11SamplerState*, GfxConfig::MaxNumFragmentTextures> d3d11CurPSSamplers;
 
     uint16 curStencilRef;
     glm::vec4 curBlendColor;

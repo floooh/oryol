@@ -11,7 +11,7 @@
 #include "Core/String/StringBuilder.h"
 #include "Core/Threading/RWLock.h"
 #include "Gfx/Core/VertexLayout.h"
-#include "Gfx/Core/MeshBlock.h"
+#include "Gfx/Core/DrawState.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 #include <cstdarg>
@@ -55,8 +55,8 @@ private:
     void setupFontTexture();
     /// setup the text dynamic mesh
     void setupTextMesh();
-    /// setup the text draw state
-    void  setupTextDrawState();
+    /// setup the text pipeline state object
+    void  setupTextPipeline();
     /// convert the provides string object into vertices, and return number of vertices
     int32 convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
@@ -70,10 +70,7 @@ private:
     glm::vec2 textScale;
     VertexLayout vertexLayout;
     RWLock rwLock;
-    Id textShader;
-    Id fontTexture;
-    MeshBlock textMesh;
-    Id textDrawState;
+    DrawState drawState;
     StringBuilder stringBuilder;
     bool valid;
     ResourceLabel resourceLabel;

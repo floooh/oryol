@@ -1,28 +1,28 @@
 //------------------------------------------------------------------------------
-//  drawStateFactoryBase.cc
+//  pipelineFactoryBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "drawStateFactoryBase.h"
-#include "Gfx/Resource/drawState.h"
+#include "pipelineFactoryBase.h"
+#include "Gfx/Resource/pipeline.h"
 #include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-drawStateFactoryBase::drawStateFactoryBase() :
+pipelineFactoryBase::pipelineFactoryBase() :
 isValid(false) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-drawStateFactoryBase::~drawStateFactoryBase() {
+pipelineFactoryBase::~pipelineFactoryBase() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-drawStateFactoryBase::Setup(const gfxPointers& ptrs) {
+pipelineFactoryBase::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->pointers = ptrs;
     this->isValid = true;
@@ -30,7 +30,7 @@ drawStateFactoryBase::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-drawStateFactoryBase::Discard() {
+pipelineFactoryBase::Discard() {
     o_assert_dbg(this->isValid);
     this->pointers = gfxPointers();
     this->isValid = false;
@@ -38,23 +38,23 @@ drawStateFactoryBase::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-drawStateFactoryBase::IsValid() const {
+pipelineFactoryBase::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-drawStateFactoryBase::SetupResource(drawState& ds) {
+pipelineFactoryBase::SetupResource(pipeline& pip) {
     o_assert_dbg(this->isValid);
-    ds.shd = this->pointers.shaderPool->Lookup(ds.Setup.Shader);
-    o_assert_dbg(ds.shd && (ResourceState::Valid == ds.shd->State));
+    pip.shd = this->pointers.shaderPool->Lookup(pip.Setup.Shader);
+    o_assert_dbg(pip.shd && (ResourceState::Valid == pip.shd->State));
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-drawStateFactoryBase::DestroyResource(drawState& ds) {
-    ds.Clear();
+pipelineFactoryBase::DestroyResource(pipeline& pip) {
+    pip.Clear();
 }
 
 } // namespace _priv

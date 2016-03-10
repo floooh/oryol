@@ -400,7 +400,7 @@ public:
         Texture,            ///< a texture
         Mesh,               ///< a mesh
         Shader,             ///< a shader
-        DrawState,          ///< a draw-state
+        Pipeline,           ///< a pipeline state object
 
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,

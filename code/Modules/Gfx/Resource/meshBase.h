@@ -31,9 +31,6 @@ public:
     
     /// clear the object
     void Clear();
-    /// helper method to check whether mesh config is valid for rendering
-    /// (FIXME: find a better place)
-    static void checkInputMeshes(meshBase** meshes, int num);
 };
 
 } // namespace _priv

@@ -40,10 +40,7 @@ private:
 
     bool isValid = false;
     ResourceLabel resLabel;
-    MeshBlock meshBlock;
-    Id fontTexture;
-    Id shader;
-    Id drawState;
+    DrawState drawState;
     ImDrawVert vertexData[MaxNumVertices];
     ImDrawIdx indexData[MaxNumIndices];
 };

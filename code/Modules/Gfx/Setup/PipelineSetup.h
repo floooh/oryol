@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::DrawStateSetup
+    @class Oryol::PipelineSetup
     @ingroup Gfx
-    @brief setup object for DrawState resources
+    @brief setup object for pipeline resources
 */
 #include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
@@ -17,15 +17,15 @@
 
 namespace Oryol {
 
-class DrawStateSetup {
+class PipelineSetup {
 public:
     /// construct from shader
-    static DrawStateSetup FromShader(const Id& shd);
+    static PipelineSetup FromShader(const Id& shd);
     /// construct from vertex layout and shader
-    static DrawStateSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd);
+    static PipelineSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd);
 
     /// default constructor
-    DrawStateSetup();
+    PipelineSetup();
 
     /// resource locator
     class Locator Locator;

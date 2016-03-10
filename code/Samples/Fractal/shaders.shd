@@ -2,8 +2,8 @@
 //  shaders.shd
 //------------------------------------------------------------------------------
 
-@texture_block fsTextures FSTextures
-@texture sampler2D tex Texture
+@texture_block textures Textures
+sampler2D tex Texture
 @end
 
 @code_block util
@@ -17,7 +17,7 @@ _func vec4 hue2rgb(float h) {
 
 //------------------------------------------------------------------------------
 @uniform_block fractalVSParams VSParams
-@uniform vec4 rect Rect
+vec4 rect Rect
 @end
 
 @vs FractalVS
@@ -33,9 +33,8 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @fs MandelbrotFS
-@use_texture_block fsTextures
+@use_texture_block textures
 @highp float
 @in vec2 uv
 @in vec2 pos
@@ -58,15 +57,14 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @uniform_block juliaFSParams FSParams
-@uniform vec2 juliaPos JuliaPos
+vec2 juliaPos JuliaPos
 @end
 
 @fs JuliaFS
 @highp float
 @use_uniform_block juliaFSParams
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 @in vec2 pos
 {
@@ -91,10 +89,6 @@ _func vec4 hue2rgb(float h) {
 @end
 
 //------------------------------------------------------------------------------
-@program Mandelbrot FractalVS MandelbrotFS
-@program Julia FractalVS JuliaFS
-
-//------------------------------------------------------------------------------
 @vs DisplayVS
 @in vec4 position
 @in vec2 texcoord0
@@ -105,15 +99,14 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
 @uniform_block displayFSParams FSParams
-@uniform float numColors NumColors
+float numColors NumColors
 @end
 
 @fs DisplayFS
 @use_code_block util
 @use_uniform_block displayFSParams
-@use_texture_block fsTextures
+@use_texture_block textures
 @in vec2 uv
 {
     vec4 params = tex2D(tex, uv);
@@ -128,5 +121,6 @@ _func vec4 hue2rgb(float h) {
 }
 @end
 
-//------------------------------------------------------------------------------
-@program Display DisplayVS DisplayFS
+@program Mandelbrot FractalVS MandelbrotFS
+@program Julia FractalVS JuliaFS
+@program DisplayShader DisplayVS DisplayFS

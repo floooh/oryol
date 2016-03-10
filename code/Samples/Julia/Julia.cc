@@ -27,11 +27,9 @@ private:
     int frameCount = 0;
     ClearState displayClearState;
     fractal test;
-    MeshBlock shapeMeshBlock;
-    Id shapeDrawState;
-    Shaders::Shape::VSParams shapeVSParams;
-    Shaders::Shape::FSParams shapeFSParams;
-    Shaders::Shape::FSTextures shapeFSTextures;
+    DrawState drawState;
+    ShapeShader::VSParams vsParams;
+    ShapeShader::FSParams fsParams;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -53,20 +51,20 @@ JuliaApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 64);
-    this->shapeMeshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::Shape::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    dss.RasterizerState.CullFaceEnabled = false;
-    dss.BlendState.BlendEnabled = false;
-    dss.BlendState.SrcFactorRGB = dss.BlendState.SrcFactorAlpha = BlendFactor::One;
-    dss.BlendState.DstFactorRGB = dss.BlendState.DstFactorAlpha = BlendFactor::One;
-    dss.BlendState.ColorFormat = gfxSetup.ColorFormat;
-    dss.BlendState.DepthFormat = gfxSetup.DepthFormat;
-    this->shapeDrawState = Gfx::CreateResource(dss);
-    this->shapeFSParams.NumColors = 128.0;
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id shd = Gfx::CreateResource(ShapeShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    ps.RasterizerState.CullFaceEnabled = false;
+    ps.BlendState.BlendEnabled = false;
+    ps.BlendState.SrcFactorRGB = ps.BlendState.SrcFactorAlpha = BlendFactor::One;
+    ps.BlendState.DstFactorRGB = ps.BlendState.DstFactorAlpha = BlendFactor::One;
+    ps.BlendState.ColorFormat = gfxSetup.ColorFormat;
+    ps.BlendState.DepthFormat = gfxSetup.DepthFormat;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->fsParams.NumColors = 128.0;
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -86,15 +84,15 @@ JuliaApp::OnRunning() {
 
     glm::vec2 rot = glm::vec2(0.001f, 0.002f) * float(this->frameCount);
     this->frameCount++;
-    this->shapeVSParams.ModelViewProj = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0), rot);
-    this->shapeVSParams.Time = float(this->frameCount) / 60.0f;
-    this->shapeVSParams.UVScale = glm::vec2(2.0f, 2.0f);
-    this->shapeFSTextures.Texture = this->test.colorTexture;
+    this->vsParams.ModelViewProj = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0), rot);
+    this->vsParams.Time = float(this->frameCount) / 60.0f;
+    this->vsParams.UVScale = glm::vec2(2.0f, 2.0f);
+    this->drawState.FSTexture[Textures::Texture] = this->test.colorTexture;
 
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
-    Gfx::ApplyDrawState(this->shapeDrawState, this->shapeMeshBlock, this->shapeFSTextures);
-    Gfx::ApplyUniformBlock(this->shapeVSParams);
-    Gfx::ApplyUniformBlock(this->shapeFSParams);
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyUniformBlock(this->fsParams);
     Gfx::Draw(0);
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

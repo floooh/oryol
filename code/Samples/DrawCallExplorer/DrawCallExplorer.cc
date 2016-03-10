@@ -33,16 +33,16 @@ private:
     int curNumParticles = 0;
     int numParticlesPerBatch = 1000;
 
-    MeshBlock meshBlock;
-    StaticArray<Id,3> drawStates;
+    Id mesh;
+    StaticArray<Id,3> pipelines;
 
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
 
     // FIXME: hmm these param blocks are actually compatibel across shaders
-    Shaders::Red::PerFrameParams perFrameParams;
-    Shaders::Red::PerParticleParams perParticleParams;
+    RedShader::PerFrameParams perFrameParams;
+    RedShader::PerParticleParams perParticleParams;
 
     static const int ParticleBufferSize = 1000000;
     bool updateEnabled = true;
@@ -95,10 +95,13 @@ DrawCallExplorerApp::OnRunning() {
     afterApplyRt = Clock::Now();
     int batchCount = this->numParticlesPerBatch;
     int curBatch = 0;
+    DrawState drawState;
+    drawState.Mesh[0] = this->mesh;
     for (int32 i = 0; i < this->curNumParticles; i++) {
         if (++batchCount >= this->numParticlesPerBatch) {
             batchCount = 0;
-            Gfx::ApplyDrawState(this->drawStates[curBatch++], this->meshBlock);
+            drawState.Pipeline = this->pipelines[curBatch++];
+            Gfx::ApplyDrawState(drawState);
             Gfx::ApplyUniformBlock(this->perFrameParams);
             if (curBatch >= 3) {
                 curBatch = 0;
@@ -202,21 +205,21 @@ DrawCallExplorerApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Color0, VertexFormat::Float4);
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
+    this->mesh = Gfx::CreateResource(shapeBuilder.Build());
 
-    Id redShd   = Gfx::CreateResource(Shaders::Red::Setup());
-    Id greenShd = Gfx::CreateResource(Shaders::Green::Setup());
-    Id blueShd  = Gfx::CreateResource(Shaders::Blue::Setup());
+    Id redShd   = Gfx::CreateResource(RedShader::Setup());
+    Id greenShd = Gfx::CreateResource(GreenShader::Setup());
+    Id blueShd  = Gfx::CreateResource(BlueShader::Setup());
 
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, redShd);
-    dss.RasterizerState.CullFaceEnabled = true;
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawStates[0] = Gfx::CreateResource(dss);
-    dss.Shader = greenShd;
-    this->drawStates[1] = Gfx::CreateResource(dss);
-    dss.Shader = blueShd;
-    this->drawStates[2] = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, redShd);
+    ps.RasterizerState.CullFaceEnabled = true;
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->pipelines[0] = Gfx::CreateResource(ps);
+    ps.Shader = greenShd;
+    this->pipelines[1] = Gfx::CreateResource(ps);
+    ps.Shader = blueShd;
+    this->pipelines[2] = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 
 @uniform_block vsParams Params
-    @uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
 
 @vs vs
@@ -21,4 +21,4 @@
     _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
 @end
 
-@program PackedNormals vs fs
+@program Shader vs fs

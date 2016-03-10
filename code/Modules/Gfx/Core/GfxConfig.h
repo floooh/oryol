@@ -24,10 +24,12 @@ public:
     static const int32 MaxNumPrimGroups = 8;
     /// max number of uniform blocks per stage
     static const int32 MaxNumUniformBlocksPerStage = 4;
-    /// max number of texture blocks per stage
-    static const int32 MaxNumTextureBlocksPerStage = 4;
-    /// maximum number of texture bind slots per stage
-    static const int32 MaxNumTexturesPerStage = 16;
+    /// maximum number of textures on vertex shader stage
+    static const int32 MaxNumVertexTextures = 4;
+    /// maximum number of textures on fragment shader stage
+    static const int32 MaxNumFragmentTextures = 12;
+    /// max number of textures on any stage
+    static const int32 MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
     /// max number of texture faces
     static const int32 MaxNumTextureFaces = 6;
     /// max number of texture mipmaps

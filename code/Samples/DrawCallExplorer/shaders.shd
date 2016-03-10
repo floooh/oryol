@@ -3,11 +3,11 @@
 //------------------------------------------------------------------------------
 
 @uniform_block perFrameParams PerFrameParams
-@uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
 
 @uniform_block perParticleParams PerParticleParams
-@uniform vec4 particleTranslate Translate
+vec4 particleTranslate Translate
 @end
 
 @vs vs
@@ -34,6 +34,6 @@
     _color = color * vec4(0.0, 0.0, 2.0, 1.0);
 @end
 
-@program Red vs fs_red
-@program Green vs fs_green
-@program Blue vs fs_blue
+@program RedShader vs fs_red
+@program GreenShader vs fs_green
+@program BlueShader vs fs_blue

@@ -45,8 +45,8 @@ private:
     float32 minDist;
     float32 maxDist;
 
-    MeshBlock meshBlock;
-    Id drawState;
+    DrawState drawState;
+    ClearState clearState;
     glm::vec2 startPolar;
     glm::vec2 polar;
     float32 distance = 6.0f;
@@ -56,7 +56,6 @@ private:
     glm::mat4 proj;
     glm::mat4 view;
     glm::mat4 invView;
-    ClearState clearState;
     bool pointerLock = false;
 };
 OryolMain(TestInputApp);
@@ -92,13 +91,13 @@ TestInputApp::OnInit() {
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Byte4N);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.CullFaceEnabled = true;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id shd = Gfx::CreateResource(Shader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.CullFaceEnabled = true;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
     const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
@@ -393,9 +392,9 @@ TestInputApp::handleTouchInput(const Touchpad& touchpad) {
 //------------------------------------------------------------------------------
 void
 TestInputApp::drawCube() const {
-    Shaders::Main::VSParams vsParams;
+    Shader::VSParams vsParams;
     vsParams.ModelViewProjection = this->proj * this->view;
-    Gfx::ApplyDrawState(this->drawState, this->meshBlock);
+    Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw(0);
 }

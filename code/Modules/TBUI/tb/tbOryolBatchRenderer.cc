@@ -66,8 +66,7 @@ tbOryolBatchRenderer::Discard() {
 void
 tbOryolBatchRenderer::setupWhiteTexture() {
     o_assert_dbg(!this->whiteTexture.IsValid());
-    o_assert_dbg(this->shader.IsValid());
-    
+
     const int w = 4;
     const int h = 4;
     uint32 pixels[w * h];
@@ -85,8 +84,8 @@ tbOryolBatchRenderer::setupWhiteTexture() {
 //------------------------------------------------------------------------------
 void
 tbOryolBatchRenderer::setupResources() {
-    o_assert_dbg(!this->meshBlock[0].IsValid());
-    o_assert_dbg(!this->drawState.IsValid());
+    o_assert_dbg(!this->drawState.Mesh[0].IsValid());
+    o_assert_dbg(!this->drawState.Pipeline.IsValid());
 
     this->vertexLayout
         .Add(VertexAttr::Position, VertexFormat::Float2)
@@ -96,24 +95,23 @@ tbOryolBatchRenderer::setupResources() {
     
     MeshSetup setup = MeshSetup::Empty(MaxNumVertices, Usage::Stream);
     setup.Layout = this->vertexLayout;
-    this->meshBlock[0] = Gfx::CreateResource(setup);
-    o_assert(this->meshBlock[0].IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->meshBlock[0]).State == ResourceState::Valid);
+    this->drawState.Mesh[0] = Gfx::CreateResource(setup);
+    o_assert(this->drawState.Mesh[0].IsValid());
+    o_assert(Gfx::QueryResourceInfo(this->drawState.Mesh[0]).State == ResourceState::Valid);
 
-    this->shader = Gfx::CreateResource(Shaders::TBUIShader::Setup());
-    
-    auto dss = DrawStateSetup::FromLayoutAndShader(this->vertexLayout, this->shader);
-    dss.DepthStencilState.DepthWriteEnabled = false;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    dss.BlendState.BlendEnabled = true;
-    dss.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    dss.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    dss.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
-    dss.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
-    dss.BlendState.ColorWriteMask = PixelChannel::RGB;
-    dss.RasterizerState.ScissorTestEnabled = true;
-    dss.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
-    this->drawState = Gfx::CreateResource(dss);
+    Id shd = Gfx::CreateResource(TBUIShader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorFormat = Gfx::DisplayAttrs().ColorPixelFormat;
+    ps.BlendState.DepthFormat = Gfx::DisplayAttrs().DepthPixelFormat;
+    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
+    ps.RasterizerState.ScissorTestEnabled = true;
+    ps.RasterizerState.SampleCount = Gfx::DisplayAttrs().SampleCount;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------
@@ -443,20 +441,19 @@ tbOryolBatchRenderer::drawBatches() {
     // NOTE: curBatchIndex is always one-past-end
     if (this->curBatchIndex > 1) {
 
-        Shaders::TBUIShader::VSParams vsParams;
-        Shaders::TBUIShader::FSTextures fsTextures;
+        TBUIShader::VSParams vsParams;
         vsParams.Ortho = glm::ortho(0.0f, float(this->screenRect.w),
             (float)this->screenRect.h, 0.0f,
             -1.0f, 1.0f);
         const int vertexDataSize = this->curVertexIndex * this->vertexLayout.ByteSize();
 
         this->tbClipRect = this->screenRect;
-        Gfx::UpdateVertices(this->meshBlock[0], this->vertexData, vertexDataSize);
+        Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, vertexDataSize);
         for (int batchIndex = 0; batchIndex < this->curBatchIndex; batchIndex++) {
             const Batch& batch = this->batches[batchIndex];
-            fsTextures.Texture = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
             Gfx::ApplyScissorRect(batch.clipRect.x, batch.clipRect.y, batch.clipRect.w, batch.clipRect.h);
-            Gfx::ApplyDrawState(this->drawState, this->meshBlock, fsTextures);
+            this->drawState.FSTexture[TBUITextures::Texture] = batch.texture.IsValid() ? batch.texture : this->whiteTexture;
+            Gfx::ApplyDrawState(drawState);
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(PrimitiveGroup(batch.startIndex, batch.numVertices));
         }

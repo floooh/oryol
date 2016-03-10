@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 50
+Version = 55
 
 import os
 import sys
@@ -280,6 +280,7 @@ class UniformBlock :
         self.bindSlot = None
         self.filePath = filePath
         self.lineNumber = lineNumber
+        self.lines = []
         self.uniforms = []
         self.uniformsByType = OrderedDict()
         # uniformsByType must be in the order of greatest to smallest
@@ -297,6 +298,38 @@ class UniformBlock :
         for type in self.uniformsByType :
             for uniform in self.uniformsByType[type] :
                 dumpObj(uniform)
+
+    def parseUniformType(self, arg) :
+        return arg.split('[')[0]
+
+    def parseUniformArraySize(self, arg) :
+        tokens = arg.split('[')
+        if len(tokens) > 1 :
+            return int(tokens[1].strip(']'))
+        else : 
+            return 1
+
+    def parseUniforms(self) :
+        # parses the lines array into uniform objects
+        for line in self.lines :
+            util.setErrorLocation(line.path, line.lineNumber)
+            tokens = line.content.split()
+            if len(tokens) != 3:
+                util.fmtError("uniform must have 3 args (type name binding)")
+            type = self.parseUniformType(tokens[0])
+            num  = self.parseUniformArraySize(tokens[0])
+            name = tokens[1]
+            bind = tokens[2]
+            if type not in validUniformTypes :
+                util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
+            # additional type restrictions for uniform array types (because of alignment rules)
+            if num > 1 and type not in validUniformArrayTypes :
+                util.fmtError("invalid uniform array type '{}', must be '{}'!".format(type, ','.join(validUniformArrayTypes)))
+            if checkListDup(name, self.uniforms) :
+                util.fmtError("uniform '{}' already defined in '{}'!".format(name, self.name))
+            uniform = Uniform(type, num, name, bind, line.path, line.lineNumber)
+            self.uniforms.append(uniform)
+            self.uniformsByType[type].append(uniform)
 
     def getHash(self) :
         # returns an integer hash for the uniform block layout,
@@ -334,9 +367,9 @@ class TextureBlock :
         self.name = name
         self.bindName = bindName
         self.bindStage = None
-        self.bindSlot = None
         self.filePath = filePath
         self.lineNumber = lineNumber
+        self.lines = []
         self.textures = []
 
     def getTag(self) :
@@ -347,14 +380,22 @@ class TextureBlock :
         for tex in self.textures :
             dumpObj(tex)
 
-    def getHash(self) :
-        # returns an integer hash for the texture-block layout,
-        # this is used as runtime-type check in Gfx::ApplyTextureBlock
-        # to check whether a compatible block is set
-        hashString = ''
-        for tex in self.textures :
-            hashString += tex.type
-        return hash(hashString)
+    def parseTextures(self) :
+        # parses the lines array into uniform objects
+        for line in self.lines :
+            util.setErrorLocation(line.path, line.lineNumber)
+            tokens = line.content.split()
+            if len(tokens) != 3:
+                util.fmtError("texture must have 3 args (type name binding)")
+            type = tokens[0]
+            name = tokens[1]
+            bind = tokens[2]
+            if type not in validTextureTypes :
+                util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
+            if checkListDup(name, self.textures) :
+                util.fmtError("texture '{}' already defined in '{}'!".format(name, self.name))
+            tex = Texture(type, name, bind, line.path, line.lineNumber)
+            self.textures.append(tex)
 
 #-------------------------------------------------------------------------------
 class Attr :
@@ -556,39 +597,6 @@ class Parser :
         self.push(ub)
 
     #---------------------------------------------------------------------------
-    def parseUniformType(self, arg) :
-        return arg.split('[')[0]
-
-    #---------------------------------------------------------------------------
-    def parseUniformArraySize(self, arg) :
-        tokens = arg.split('[')
-        if len(tokens) > 1 :
-            return int(tokens[1].strip(']'))
-        else : 
-            return 1
-
-    #---------------------------------------------------------------------------
-    def onUniform(self, args) :
-        if not self.current or self.current.getTag() != 'uniform_block' :
-            util.fmtError("@uniform must come after @uniform_block tag!")
-        if len(args) != 3:
-            util.fmtError("@uniform must have 3 args (type name binding)")
-        type = self.parseUniformType(args[0])
-        num  = self.parseUniformArraySize(args[0])
-        name = args[1]
-        bind = args[2]
-        if type not in validUniformTypes :
-            util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
-        # additional type restrictions for uniform array types (because of alignment rules)
-        if num > 1 and type not in validUniformArrayTypes :
-            util.fmtError("invalid uniform array type '{}', must be '{}'!".format(type, ','.join(validUniformArrayTypes)))
-        if checkListDup(name, self.current.uniforms) :
-            util.fmtError("@uniform '{}' already defined in '{}'!".format(name, self.current.name))
-        uniform = Uniform(type, num, name, bind, self.fileName, self.lineNumber)
-        self.current.uniforms.append(uniform)
-        self.current.uniformsByType[type].append(uniform)
-
-    #---------------------------------------------------------------------------
     def onTextureBlock(self, args) :
         if self.current is not None :
             util.fmtError("@texture_block must be at top level (missing @end in '{}'?".format(self.current.name))
@@ -601,22 +609,6 @@ class Parser :
         tb = TextureBlock(name, bind, self.fileName, self.lineNumber)
         self.shaderLib.textureBlocks[name] = tb
         self.push(tb)
-
-    #---------------------------------------------------------------------------
-    def onTexture(self, args) :
-        if not self.current or not self.current.getTag() in ['texture_block'] :
-            util.fmtError("@texture must come after @texture_block tag!")
-        if len(args) != 3:
-            util.fmtError("@texture must have 3 args (type name binding)")
-        type = args[0]
-        name = args[1]
-        bind = args[2]
-        if type not in validTextureTypes :
-            util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
-        if checkListDup(name, self.current.textures) :
-            util.fmtError("@texture '{}' already defined in '{}'!".format(name, self.current.name))
-        tex = Texture(type, name, bind, self.fileName, self.lineNumber)
-        self.current.textures.append(tex)
 
     #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
@@ -749,6 +741,10 @@ class Parser :
             util.fmtError("@end must not have arguments")
         if self.current.getTag() in ['code_block', 'vs', 'fs'] and len(self.current.lines) == 0 :
             util.fmtError("no source code lines in @code_block, @vs or @fs section")
+        if self.current.getTag() == 'uniform_block' :
+            self.current.parseUniforms()
+        if self.current.getTag() == 'texture_block' :
+            self.current.parseTextures()
         self.pop()
 
     #---------------------------------------------------------------------------
@@ -781,12 +777,8 @@ class Parser :
                 self.onIn(args)
             elif tag == 'out':
                 self.onOut(args)
-            elif tag == 'uniform':
-                self.onUniform(args)
             elif tag == 'uniform_block':
                 self.onUniformBlock(args)
-            elif tag == 'texture':
-                self.onTexture(args)
             elif tag == 'texture_block':
                 self.onTextureBlock(args)
             elif tag == 'highp' :
@@ -1417,7 +1409,7 @@ class ShaderLibrary :
     
     def assignBindSlotIndices(self, program) :
         '''
-        Assigns bindSlotIndex to uniform- and texture-blocks, and
+        Assigns bindSlotIndex to uniform-blocks and
         to textures inside texture blocks. These
         are counted separately for the different shader stages (each
         shader stage has its own bind slots)
@@ -1431,20 +1423,14 @@ class ShaderLibrary :
             else :
                 ub.bindSlot = fsUBSlot
                 fsUBSlot += 1
-        vsTBSlot = 0
-        fsTBSlot = 0
         vsTexSlot = 0
         fsTexSlot = 0
         for tb in program.textureBlocks :
             if tb.bindStage == 'vs' :
-                tb.bindSlot = vsTBSlot
-                vsTBSlot += 1
                 for tex in tb.textures :
                     tex.bindSlot = vsTexSlot
                     vsTexSlot += 1
             else :
-                tb.bindSlot = fsTBSlot
-                fsTBSlot += 1
                 for tex in tb.textures :
                     tex.bindSlot = fsTexSlot
                     fsTexSlot += 1
@@ -1603,11 +1589,9 @@ def writeHeaderTop(f, shdLib) :
     f.write('#include "glm/mat4x4.hpp"\n')
     f.write('#include "Resource/Id.h"\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace Shaders {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, shdLib) :
-    f.write('}\n')
     f.write('}\n')
     f.write('\n')
 
@@ -1639,25 +1623,17 @@ def writeProgramHeader(f, shdLib, program) :
                     f.write('            float32 _pad_{};\n'.format(uniform.bindName))
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
-    
-    # write texture block structs
-    for tb in program.textureBlocks :
-        if tb.bindStage == 'vs' :
-            stageName = 'VS'
-        else :
-            stageName = 'FS'
-        f.write('        #pragma pack(push,1)\n')
-        f.write('        struct {} {{\n'.format(tb.bindName))
-        f.write('            static const int32 _bindSlotIndex = {};\n'.format(tb.bindSlot))
-        f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const int64 _layoutHash = {};\n'.format(tb.getHash()))
-        f.write('            static const int32 _numTextures = {};\n'.format(len(tb.textures)))
-        for tex in tb.textures :
-            f.write('            Id {};\n'.format(tex.bindName))
-        f.write('        };\n')
-        f.write('        #pragma pack(pop)\n')
     f.write('        static ShaderSetup Setup();\n')
     f.write('    };\n')
+
+#-------------------------------------------------------------------------------
+def writeTextureBlocksHeader(f, shdLib) :
+    # write texture bind slot constants
+    for tb in shdLib.textureBlocks.values() :
+        f.write('    struct {} {{\n'.format(tb.bindName))
+        for tex in tb.textures :
+            f.write('        static const int32 {} = {};\n'.format(tex.bindName, tex.bindSlot))
+        f.write('    };\n')
 
 #-------------------------------------------------------------------------------
 def generateHeader(absHeaderPath, shdLib) :
@@ -1665,6 +1641,7 @@ def generateHeader(absHeaderPath, shdLib) :
     writeHeaderTop(f, shdLib)
     for prog in shdLib.programs.values() :
         writeProgramHeader(f, shdLib, prog)
+    writeTextureBlocksHeader(f, shdLib)
     writeHeaderBottom(f, shdLib)
     f.close()
 
@@ -1680,14 +1657,12 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
-    f.write('namespace Shaders {\n')
     f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
     f.write('typedef unsigned char BYTE;\n')
     f.write('#endif\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
-    f.write('}\n')
     f.write('}\n')
     f.write('\n')
 
@@ -1817,7 +1792,6 @@ def writeProgramSource(f, shdLib, prog) :
     for tb in prog.textureBlocks :
         layoutName = '{}_tblayout'.format(tb.bindName)
         f.write('    TextureBlockLayout {};\n'.format(layoutName))
-        f.write('    {}.TypeHash = {};\n'.format(layoutName, tb.getHash()))
         for tex in tb.textures :
             if tex.type == 'sampler2D':
                 texType = 'Texture2D'
@@ -1828,8 +1802,8 @@ def writeProgramSource(f, shdLib, prog) :
             stageName = 'VS'
         else :
             stageName = 'FS'
-        f.write('    setup.AddTextureBlock("{}", {}, ShaderStage::{}, {});\n'.format(
-            tb.name, layoutName, stageName, tb.bindSlot))
+        f.write('    setup.AddTextureBlock("{}", {}, ShaderStage::{});\n'.format(
+            tb.name, layoutName, stageName))
                 
     f.write('    return setup;\n')
     f.write('}\n')

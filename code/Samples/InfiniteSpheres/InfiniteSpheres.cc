@@ -22,18 +22,17 @@ private:
     glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    Id offscreenDrawState;
-    Id displayDrawState;
+    DrawState offscreenDrawState;
+    DrawState displayDrawState;
+    Id renderTargets[2];
+    Shader::VSParams vsParams;
+    ClearState clearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
     int32 frameIndex = 0;
-    Shaders::Main::VSParams vsParams;
-    Shaders::Main::FSTextures fsTextures[2];
-    MeshBlock sphereMesh;
-    ClearState clearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
 };
 OryolMain(InfiniteSpheresApp);
 
@@ -47,13 +46,16 @@ InfiniteSpheresApp::OnRunning() {
     this->frameIndex++;
     const int32 index0 = this->frameIndex % 2;
     const int32 index1 = (this->frameIndex + 1) % 2;
+    const Id& rt0 = this->renderTargets[index0];
+    const Id& rt1 = this->renderTargets[index1];
     
     // render sphere to offscreen render target, using the other render target as
     // source texture
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
-    Gfx::ApplyRenderTarget(this->fsTextures[index0].Texture);
-    Gfx::ApplyDrawState(this->offscreenDrawState, this->sphereMesh, this->fsTextures[index1]);
+    Gfx::ApplyRenderTarget(rt0);
+    this->offscreenDrawState.FSTexture[Textures::Texture] = rt1;
+    Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
     
@@ -61,7 +63,8 @@ InfiniteSpheresApp::OnRunning() {
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
     Gfx::ApplyDefaultRenderTarget(this->clearState);
-    Gfx::ApplyDrawState(this->displayDrawState, this->sphereMesh, this->fsTextures[index0]);
+    this->displayDrawState.FSTexture[Textures::Texture] = rt0;
+    Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
     
@@ -88,7 +91,7 @@ InfiniteSpheresApp::OnInit() {
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     for (int32 i = 0; i < 2; i++) {
-        this->fsTextures[i].Texture = Gfx::CreateResource(rtSetup);
+        this->renderTargets[i] = Gfx::CreateResource(rtSetup);
     }
 
     // create a sphere shape mesh
@@ -98,23 +101,25 @@ InfiniteSpheresApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::Byte4N)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
     shapeBuilder.Sphere(0.75f, 72, 40);
-    this->sphereMesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id sphere = Gfx::CreateResource(shapeBuilder.Build());
+    this->offscreenDrawState.Mesh[0] = sphere;
+    this->displayDrawState.Mesh[0] = sphere;
 
     // create shader which is used for both offscreen- and display-rendering
-    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
+    Id shd = Gfx::CreateResource(Shader::Setup());
 
     // create draw state for rendering into default render target
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    dss.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->displayDrawState = Gfx::CreateResource(dss);
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    this->displayDrawState.Pipeline = Gfx::CreateResource(ps);
 
     // create draw state for rendering into offscreen render target
-    dss.BlendState.ColorFormat = rtSetup.ColorFormat;
-    dss.BlendState.DepthFormat = rtSetup.DepthFormat;
-    dss.RasterizerState.SampleCount = 1;
-    this->offscreenDrawState = Gfx::CreateResource(dss);
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.DepthFormat = rtSetup.DepthFormat;
+    ps.RasterizerState.SampleCount = 1;
+    this->offscreenDrawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup static transform matrices
     const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;

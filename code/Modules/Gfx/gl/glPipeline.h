@@ -1,22 +1,22 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::glDrawState
+    @class Oryol::_priv::glPipeline
     @ingroup _priv
-    @brief GL implementation of drawState
+    @brief GL implementation of pipeline
 */
-#include "Gfx/Resource/drawStateBase.h"
+#include "Gfx/Resource/pipelineBase.h"
 #include "Gfx/gl/glVertexAttr.h"
 #include "Core/Containers/StaticArray.h"
 
 namespace Oryol {
 namespace _priv {
 
-class glDrawState : public drawStateBase {
+class glPipeline : public pipelineBase {
 public:
     /// constructor
-    glDrawState();
-    /// clear the object (called from drawStateFactory::DestroyResource()
+    glPipeline();
+    /// clear the object (called from pipelineFactory::DestroyResource()
     void Clear();
     
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;

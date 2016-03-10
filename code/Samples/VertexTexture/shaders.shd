@@ -81,7 +81,7 @@ _func float snoise(vec2 v)
 
 //------------------------------------------------------------------------------
 @uniform_block plasmaParams FSParams
-@uniform float time Time
+float time Time
 @end
 
 @vs plasmaVS
@@ -129,14 +129,14 @@ _func float snoise(vec2 v)
 }
 @end
 
-@program Plasma plasmaVS plasmaFS
+@program PlasmaShader plasmaVS plasmaFS
 
 //------------------------------------------------------------------------------
 @uniform_block planeParams VSParams
-@uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
-@texture_block planeTextures VSTextures
-@texture sampler2D tex Texture
+@texture_block planeTextures PlaneTextures
+sampler2D tex Texture
 @end
 
 @vs planeVS
@@ -161,5 +161,5 @@ _func float snoise(vec2 v)
 }
 @end
 
-@program Plane planeVS planeFS
+@program PlaneShader planeVS planeFS
 

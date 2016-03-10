@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 
 @uniform_block params Params
-@uniform mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProjection
 @end
 
 @vs vs
@@ -21,4 +21,4 @@
     _color = color;
 @end
 
-@program Shapes vs fs
+@program Shader vs fs

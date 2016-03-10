@@ -22,15 +22,13 @@ public:
     
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
-    
-    Id drawState;
+
+    DrawState drawState;
+    Shader::VSParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
     float32 angleX = 0.0f;
     float32 angleY = 0.0f;
-    MeshBlock meshBlock;
-    Shaders::Main::VSParams vsParams;
-    Shaders::Main::FSTextures fsTextures;
     ClearState clearState;
 };
 OryolMain(DDSCubeMapApp);
@@ -47,9 +45,10 @@ DDSCubeMapApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     
     // check whether the cube map has finished loading
-    if (Gfx::QueryResourceInfo(this->fsTextures.Texture).State == ResourceState::Valid) {
+    const Id& tex = this->drawState.FSTexture[Textures::Texture];
+    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState, this->meshBlock, this->fsTextures);
+        Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyUniformBlock(this->vsParams);
         Gfx::Draw(0);
     }
@@ -74,7 +73,7 @@ DDSCubeMapApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     // create resources
-    Id shd = Gfx::CreateResource(Shaders::Main::Setup());
+    Id shd = Gfx::CreateResource(Shader::Setup());
 
     TextureSetup texBluePrint;
     texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
@@ -88,18 +87,20 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->fsTextures.Texture = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint)));
+    this->drawState.FSTexture[Textures::Texture] = Gfx::LoadResource(
+        TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint))
+    );
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::Normal, VertexFormat::Float3);
     shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20);
-    this->meshBlock[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto dss = DrawStateSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    dss.DepthStencilState.DepthWriteEnabled = true;
-    dss.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState = Gfx::CreateResource(dss);
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     // setup projection and view matrices

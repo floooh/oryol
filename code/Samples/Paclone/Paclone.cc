@@ -31,15 +31,12 @@ private:
     Direction getInput();
     void applyViewPort();
 
-    Id crtEffect;
     Id crtRenderTarget;
-    MeshBlock crtMesh;
+    DrawState crtDrawState;
     #if USE_CRTEFFECT
-    Shaders::CRT::FSParams crtParams;
-    Shaders::CRT::FSTextures crtTextures;
+    CRTShader::FSParams crtParams;
     #else
-    Shaders::NoCRT::FSParams crtParams;
-    Shaders::NoCRT::FSTextures crtTextures;
+    NoCRTShader::FSParams crtParams;
     #endif
 
     canvas spriteCanvas;
@@ -75,15 +72,15 @@ PacloneApp::OnInit() {
     this->crtRenderTarget = Gfx::CreateResource(rtSetup);
 
     auto quadSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    this->crtMesh[0] = Gfx::CreateResource(quadSetup);
+    this->crtDrawState.Mesh[0] = Gfx::CreateResource(quadSetup);
     #if USE_CRTEFFECT
-    Id shd = Gfx::CreateResource(Shaders::CRT::Setup());
+    Id shd = Gfx::CreateResource(CRTShader::Setup());
     #else
-    Id shd = Gfx::CreateResource(Shaders::NoCRT::Setup());
+    Id shd = Gfx::CreateResource(NoCRTShader::Setup());
     #endif
-    auto dss = DrawStateSetup::FromLayoutAndShader(quadSetup.Layout, shd);
-    this->crtEffect = Gfx::CreateResource(dss);
-    this->crtTextures.Canvas = this->crtRenderTarget;
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
+    this->crtDrawState.Pipeline = Gfx::CreateResource(ps);
+    this->crtDrawState.FSTexture[CRTTextures::Canvas] = this->crtRenderTarget;
 
     // setup canvas and game state
     this->spriteCanvas.Setup(rtSetup, Width, Height, 8, 8, NumSprites);
@@ -122,7 +119,7 @@ PacloneApp::OnRunning() {
     this->crtParams.Resolution = glm::vec2(Gfx::DisplayAttrs().FramebufferWidth, Gfx::DisplayAttrs().FramebufferHeight);
     Gfx::ApplyDefaultRenderTarget();
     this->applyViewPort();
-    Gfx::ApplyDrawState(this->crtEffect, this->crtMesh, this->crtTextures);
+    Gfx::ApplyDrawState(this->crtDrawState);
     Gfx::ApplyUniformBlock(this->crtParams);
     Gfx::Draw(0);
     Gfx::CommitFrame();

@@ -7,11 +7,11 @@ Bla Bla Bla
 */
 
 @uniform_block vsParams VSParams
-    @uniform mat4 mvp ModelViewProj
+mat4 mvp ModelViewProj
 @end
 
 @texture_block fsTextures FSTextures
-    @texture sampler2D tex Texture
+sampler2D tex Texture
 @end
 
 @code_block TransformUtil

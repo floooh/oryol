@@ -16,4 +16,4 @@
     _color = color;
 @end
 
-@program Triangle vs fs
+@program Shader vs fs

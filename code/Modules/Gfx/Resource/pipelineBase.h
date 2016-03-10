@@ -1,12 +1,12 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::drawStateBase
+    @class Oryol::_priv::pipelineBase
     @ingroup _priv
-    @brief base class for drawState implementations
+    @brief base class for pipeline implementations
 */
 #include "Resource/Core/resourceBase.h"
-#include "Gfx/Setup/DrawStateSetup.h"
+#include "Gfx/Setup/PipelineSetup.h"
 
 namespace Oryol {
 namespace _priv {
@@ -14,10 +14,10 @@ namespace _priv {
 class shader;
 class mesh;
 
-class drawStateBase : public resourceBase<DrawStateSetup> {
+class pipelineBase : public resourceBase<PipelineSetup> {
 public:
     /// destructor
-    ~drawStateBase();
+    ~pipelineBase();
     /// clear the object
     void Clear();    
     /// shader pointer

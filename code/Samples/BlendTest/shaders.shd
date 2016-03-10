@@ -21,13 +21,13 @@
     _color = vec4(f, f, f, 1.0);
 @end
 
-@program Background backgroundVS backgroundFS
+@program BGShader backgroundVS backgroundFS
 
 //------------------------------------------------------------------------------
 //  triangle shader
 //
 @uniform_block params Params
-@uniform vec4 translate Translate
+vec4 translate Translate
 @end
 
 @vs triangleVS
@@ -44,4 +44,4 @@
     _color = color;
 @end
 
-@program Triangle triangleVS triangleFS
+@program TriShader triangleVS triangleFS

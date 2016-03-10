@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------
-//  mtlDrawStateFactory.mm
+//  mtlPipelineFactory.mm
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "mtlDrawStateFactory.h"
+#include "mtlPipelineFactory.h"
 #include "mtl_impl.h"
 #include "mtlTypes.h"
-#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/pipeline.h"
 #include "Gfx/Resource/shader.h"
 #include "Gfx/Core/renderer.h"
 
@@ -14,43 +14,40 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlDrawStateFactory::SetupResource(drawState& ds) {
+mtlPipelineFactory::SetupResource(pipeline& pip) {
     o_assert_dbg(this->isValid);
 
-    drawStateFactoryBase::SetupResource(ds);
-    o_assert_dbg(ds.shd);
-
-    // create MTLRenderPipelineState and MTLDepthStencilState
-    createRPS(ds);
-    createDSS(ds);
-
+    pipelineFactoryBase::SetupResource(pip);
+    o_assert_dbg(pip.shd);
+    this->createRPS(pip);
+    this->createDSS(pip);
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-mtlDrawStateFactory::DestroyResource(drawState& ds) {
+mtlPipelineFactory::DestroyResource(pipeline& pip) {
     o_assert_dbg(this->isValid);
-    if (nil != ds.mtlRenderPipelineState) {
-        this->pointers.renderer->releaseDeferred(ds.mtlRenderPipelineState);
+    if (nil != pip.mtlRenderPipelineState) {
+        this->pointers.renderer->releaseDeferred(pip.mtlRenderPipelineState);
     }
-    if (nil != ds.mtlDepthStencilState) {
-        this->pointers.renderer->releaseDeferred(ds.mtlDepthStencilState);
+    if (nil != pip.mtlDepthStencilState) {
+        this->pointers.renderer->releaseDeferred(pip.mtlDepthStencilState);
     }
-    drawStateFactoryBase::DestroyResource(ds);
+    pipelineFactoryBase::DestroyResource(pip);
 }
 
 //------------------------------------------------------------------------------
 void
-mtlDrawStateFactory::createRPS(drawState& ds) {
-    o_assert_dbg(nil == ds.mtlRenderPipelineState);
+mtlPipelineFactory::createRPS(pipeline& pip) {
+    o_assert_dbg(nil == pip.mtlRenderPipelineState);
 
     // create vertex-descriptor object
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
     for (int meshSlotIndex = 0; meshSlotIndex < GfxConfig::MaxNumInputMeshes; meshSlotIndex++) {
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshSlotIndex + GfxConfig::MaxNumUniformBlocksPerStage;
-        const VertexLayout& layout = ds.Setup.Layouts[meshSlotIndex];
+        const VertexLayout& layout = pip.Setup.Layouts[meshSlotIndex];
         for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++) {
             const auto& comp = layout.ComponentAt(compIndex);
             vtxDesc.attributes[comp.Attr].format = mtlTypes::asVertexFormat(comp.Format);
@@ -63,7 +60,7 @@ mtlDrawStateFactory::createRPS(drawState& ds) {
     }
 
     // create renderpipeline-state
-    const BlendState& blendState = ds.Setup.BlendState;
+    const BlendState& blendState = pip.Setup.BlendState;
     MTLRenderPipelineDescriptor* rpDesc = [[MTLRenderPipelineDescriptor alloc] init];
     rpDesc.colorAttachments[0].pixelFormat = mtlTypes::asRenderTargetColorFormat(blendState.ColorFormat);
     rpDesc.colorAttachments[0].writeMask = mtlTypes::asColorWriteMask(blendState.ColorWriteMask);
@@ -76,27 +73,27 @@ mtlDrawStateFactory::createRPS(drawState& ds) {
     rpDesc.colorAttachments[0].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
     rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
     rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
-    rpDesc.fragmentFunction = ds.shd->mtlFragmentShader;
-    rpDesc.vertexFunction = ds.shd->mtlVertexShader;
+    rpDesc.fragmentFunction = pip.shd->mtlFragmentShader;
+    rpDesc.vertexFunction = pip.shd->mtlVertexShader;
     rpDesc.vertexDescriptor = vtxDesc;
     rpDesc.rasterizationEnabled = YES;
-    rpDesc.alphaToCoverageEnabled = ds.Setup.RasterizerState.AlphaToCoverageEnabled;
+    rpDesc.alphaToCoverageEnabled = pip.Setup.RasterizerState.AlphaToCoverageEnabled;
     rpDesc.alphaToOneEnabled = NO;
-    rpDesc.sampleCount = ds.Setup.RasterizerState.SampleCount;
+    rpDesc.sampleCount = pip.Setup.RasterizerState.SampleCount;
     NSError* err = NULL;
-    ds.mtlRenderPipelineState = [this->pointers.renderer->mtlDevice newRenderPipelineStateWithDescriptor:rpDesc error:&err];
-    if (!ds.mtlRenderPipelineState) {
+    pip.mtlRenderPipelineState = [this->pointers.renderer->mtlDevice newRenderPipelineStateWithDescriptor:rpDesc error:&err];
+    if (!pip.mtlRenderPipelineState) {
         o_error("mtlDrawStateFactory: failed to create MTLRenderPipelineState with:\n  %s\n", err.localizedDescription.UTF8String);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-mtlDrawStateFactory::createDSS(drawState& ds) {
-    o_assert_dbg(nil == ds.mtlDepthStencilState);
+mtlPipelineFactory::createDSS(pipeline& pip) {
+    o_assert_dbg(nil == pip.mtlDepthStencilState);
 
     // create depth-stencil-state
-    const DepthStencilState& dss = ds.Setup.DepthStencilState;
+    const DepthStencilState& dss = pip.Setup.DepthStencilState;
     MTLDepthStencilDescriptor* dsDesc = [[MTLDepthStencilDescriptor alloc] init];
     dsDesc.depthCompareFunction = mtlTypes::asCompareFunc(dss.DepthCmpFunc);
     dsDesc.depthWriteEnabled = dss.DepthWriteEnabled;
@@ -117,8 +114,8 @@ mtlDrawStateFactory::createDSS(drawState& ds) {
         dsDesc.frontFaceStencil.readMask = dss.StencilReadMask;
         dsDesc.frontFaceStencil.writeMask = dss.StencilWriteMask;
     }
-    ds.mtlDepthStencilState = [this->pointers.renderer->mtlDevice newDepthStencilStateWithDescriptor:dsDesc];
-    o_assert(nil != ds.mtlDepthStencilState);
+    pip.mtlDepthStencilState = [this->pointers.renderer->mtlDevice newDepthStencilStateWithDescriptor:dsDesc];
+    o_assert(nil != pip.mtlDepthStencilState);
 }
 
 } // namespace _priv

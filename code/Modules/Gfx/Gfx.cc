@@ -26,7 +26,7 @@ Gfx::Setup(const class GfxSetup& setup) {
     pointers.meshPool = &state->resourceContainer.meshPool;
     pointers.shaderPool = &state->resourceContainer.shaderPool;
     pointers.texturePool = &state->resourceContainer.texturePool;
-    pointers.drawStatePool = &state->resourceContainer.drawStatePool;
+    pointers.pipelinePool = &state->resourceContainer.pipelinePool;
     
     state->displayManager.SetupDisplay(setup, pointers);
     state->renderer.setup(setup, pointers);
@@ -128,26 +128,67 @@ Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyDrawState(const Id& id, const MeshBlock& mb) {
+Gfx::ApplyDrawState(const DrawState& drawState) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
-    o_assert_dbg(id.Type == GfxResourceType::DrawState);
+    o_assert_dbg(drawState.Pipeline.Type == GfxResourceType::Pipeline);
     state->gfxFrameInfo.NumApplyDrawState++;
-    drawState* ds = state->resourceContainer.lookupDrawState(id);
+
+    // apply pipeline and meshes
+    pipeline* pip = state->resourceContainer.lookupPipeline(drawState.Pipeline);
+    o_assert_dbg(pip);
     mesh* meshes[GfxConfig::MaxNumInputMeshes] = { };
     int numMeshes = 0;
     for (; numMeshes < GfxConfig::MaxNumInputMeshes; numMeshes++) {
-        if (mb[numMeshes].IsValid()) {
-            meshes[numMeshes] = state->resourceContainer.lookupMesh(mb[numMeshes]);
+        if (drawState.Mesh[numMeshes].IsValid()) {
+            meshes[numMeshes] = state->resourceContainer.lookupMesh(drawState.Mesh[numMeshes]);
         }
         else {
             break;
         }
     }
     #if ORYOL_DEBUG
-    mesh::checkInputMeshes((meshBase**)meshes, numMeshes);
+    validateMeshes(pip, meshes, numMeshes);
     #endif
-    state->renderer.applyDrawState(ds, meshes, numMeshes);
+    state->renderer.applyDrawState(pip, meshes, numMeshes);
+
+    // apply vertex textures if any
+    texture* vsTextures[GfxConfig::MaxNumVertexTextures] = { };
+    int numVSTextures = 0;
+    for (; numVSTextures < GfxConfig::MaxNumVertexTextures; numVSTextures++) {
+        const Id& texId = drawState.VSTexture[numVSTextures];
+        if (texId.IsValid()) {
+            vsTextures[numVSTextures] = state->resourceContainer.lookupTexture(texId);
+        }
+        else {
+            break;
+        }
+    }
+    if (numVSTextures > 0) {
+        #if ORYOL_DEBUG
+        validateTextures(ShaderStage::VS, pip, vsTextures, numVSTextures);
+        #endif
+        state->renderer.applyTextures(ShaderStage::VS, vsTextures, numVSTextures);
+    }
+
+    // apply fragment textures if any
+    texture* fsTextures[GfxConfig::MaxNumFragmentTextures] = { };
+    int numFSTextures = 0;
+    for (; numFSTextures < GfxConfig::MaxNumFragmentTextures; numFSTextures++) {
+        const Id& texId = drawState.FSTexture[numFSTextures];
+        if (texId.IsValid()) {
+            fsTextures[numFSTextures] = state->resourceContainer.lookupTexture(texId);
+        }
+        else {
+            break;
+        }
+    }
+    if (numFSTextures > 0) {
+        #if ORYOL_DEBUG
+        validateTextures(ShaderStage::FS, pip, fsTextures, numFSTextures);
+        #endif
+        state->renderer.applyTextures(ShaderStage::FS, fsTextures, numFSTextures);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -334,5 +375,81 @@ Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     state->gfxFrameInfo.NumDrawInstanced++;
     state->renderer.drawInstanced(primGroup, numInstances);
 }
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num) {
+
+    // checks that:
+    //  - at least one input mesh must be attached, and it must be in slot 0
+    //  - all attached input meshes must be valid
+    //  - PrimitivesGroups may only be attached to the mesh in slot 0
+    //  - if indexed rendering is used, the mesh in slot 0 must have an index buffer
+    //  - the mesh in slot 0 cannot contain per-instance-data
+    //  - no colliding vertex attributes across all input meshes
+    //
+    // this method should only be called in debug mode
+
+    // FIXME FIXME FIXME: check for matching vertex layout!!!
+
+    o_assert_dbg(meshes && (num > 0) && (num < GfxConfig::MaxNumInputMeshes));
+    if (nullptr == meshes[0]) {
+        o_error("invalid mesh block: at least one input mesh must be provided, in slot 0!\n");
+    }
+    if ((meshes[0]->indexBufferAttrs.Type != IndexType::None) &&
+        (meshes[0]->indexBufferAttrs.NumIndices == 0)) {
+        o_error("invalid mesh block: the input mesh at slot 0 uses indexed rendering, but has no indices!\n");
+    }
+
+    StaticArray<int, VertexAttr::NumVertexAttrs> vertexAttrCounts;
+    vertexAttrCounts.Fill(0);
+    for (int mshIndex = 0; mshIndex < GfxConfig::MaxNumInputMeshes; mshIndex++) {
+        const meshBase* msh = meshes[mshIndex];
+        if (msh) {
+            if (ResourceState::Valid != msh->State) {
+                o_error("invalid mesh block: input mesh at slot '%d' not valid!\n", mshIndex);
+            }
+            if ((mshIndex > 0) && (msh->indexBufferAttrs.Type != IndexType::None)) {
+                o_error("invalid drawState: input mesh at slot '%d' has indices, only allowed for slot 0!", mshIndex);
+            }
+            if ((mshIndex > 0) && (msh->numPrimGroups > 0)) {
+                o_error("invalid mesh block: input mesh at slot '%d' has primitive groups, only allowed for slot 0!", mshIndex);
+            }
+            const int numComps = msh->vertexBufferAttrs.Layout.NumComponents();
+            for (int compIndex = 0; compIndex < numComps; compIndex++) {
+                const auto& comp = msh->vertexBufferAttrs.Layout.ComponentAt(compIndex);
+                vertexAttrCounts[comp.Attr]++;
+                if (vertexAttrCounts[comp.Attr] > 1) {
+                    o_error("invalid mesh block: same vertex attribute declared in multiple input meshes!");
+                }
+            }
+        }
+    }
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validateTextures(ShaderStage::Code stage, pipeline* pip, texture** textures, int numTextures) {
+    o_assert_dbg(pip);
+
+    // check if provided texture types are compatible with the expections shader
+    const shader* shd = pip->shd;
+    o_assert_dbg(shd);
+    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStage(stage);
+    o_assert_dbg(InvalidIndex != texBlockIndex);
+    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
+    for (int i = 0; i < numTextures; i++) {
+        if (textures[i]) {
+            const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
+            if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
+                o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+            }
+        }
+    }
+}
+#endif
 
 } // namespace Oryol

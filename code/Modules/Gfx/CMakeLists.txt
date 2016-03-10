@@ -37,6 +37,7 @@ fips_begin_module(Gfx)
         displayMgrBase.cc displayMgrBase.h
         BlendState.h
         ClearState.cc ClearState.h
+        DrawState.h
         DepthStencilState.h
         SamplerState.h
         Enums.h
@@ -46,7 +47,6 @@ fips_begin_module(Gfx)
         VertexLayout.cc VertexLayout.h
         UniformBlockLayout.cc UniformBlockLayout.h
         TextureBlockLayout.cc TextureBlockLayout.h
-        MeshBlock.h
         displayMgr.h
         renderer.h
         gfxPointers.h
@@ -57,10 +57,10 @@ fips_begin_module(Gfx)
     fips_dir(Resource)
     fips_files(
         resourcePools.h
-        drawStateBase.h drawStateBase.cc
-        drawState.h
-        drawStateFactoryBase.cc drawStateFactoryBase.h
-        drawStateFactory.h
+        pipelineBase.h pipelineBase.cc
+        pipeline.h
+        pipelineFactoryBase.cc pipelineFactoryBase.h
+        pipelineFactory.h
         meshBase.cc meshBase.h
         mesh.h
         meshFactory.h
@@ -77,7 +77,7 @@ fips_begin_module(Gfx)
     )
     fips_dir(Setup)
     fips_files(
-        DrawStateSetup.cc DrawStateSetup.h
+        PipelineSetup.cc PipelineSetup.h
         GfxSetup.cc GfxSetup.h
         MeshSetup.cc MeshSetup.h
         ShaderSetup.cc ShaderSetup.h
@@ -89,8 +89,8 @@ fips_begin_module(Gfx)
             glDebugOutput.cc glDebugOutput.h
             glExt.cc glExt.h
             glInfo.cc glInfo.h
-            glDrawState.cc glDrawState.h
-            glDrawStateFactory.cc glDrawStateFactory.h
+            glPipeline.cc glPipeline.h
+            glPipelineFactory.cc glPipelineFactory.h
             glMesh.cc glMesh.h
             glMeshFactory.cc glMeshFactory.h
             glShader.cc glShader.h
@@ -124,8 +124,8 @@ fips_begin_module(Gfx)
             d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11Texture.cc d3d11Texture.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
-            d3d11DrawState.h d3d11DrawState.cc
-            d3d11DrawStateFactory.h d3d11DrawStateFactory.cc
+            d3d11Pipeline.h d3d11Pipeline.cc
+            d3d11PipelineFactory.h d3d11PipelineFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
         )
     endif()
@@ -143,8 +143,8 @@ fips_begin_module(Gfx)
             d3d12MeshFactory.cc d3d12MeshFactory.h
             d3d12Shader.cc d3d12Shader.h
             d3d12ShaderFactory.cc d3d12ShaderFactory.h
-            d3d12DrawState.cc d3d12DrawState.h
-            d3d12DrawStateFactory.cc d3d12DrawStateFactory.h
+            d3d12Pipeline.cc d3d12Pipeline.h
+            d3d12PipelineFactory.cc d3d12PipelineFactory.h
             d3d12Texture.cc d3d12Texture.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
             d3d12Renderer.cc d3d12Renderer.h
@@ -161,8 +161,8 @@ fips_begin_module(Gfx)
             mtlMeshFactory.h mtlMeshFactory.mm
             mtlShader.h mtlShader.mm
             mtlShaderFactory.h mtlShaderFactory.mm
-            mtlDrawState.h mtlDrawState.mm
-            mtlDrawStateFactory.h mtlDrawStateFactory.mm
+            mtlPipeline.h mtlPipeline.mm
+            mtlPipelineFactory.h mtlPipelineFactory.mm
             mtlTexture.h mtlTexture.mm
             mtlTextureFactory.h mtlTextureFactory.mm
             mtlRenderer.h mtlRenderer.mm
