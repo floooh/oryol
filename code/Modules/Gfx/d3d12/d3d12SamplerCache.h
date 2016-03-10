@@ -46,7 +46,8 @@ public:
 
 private:
     static const int MaxNumSamplers = 2048;    // this is defined by d3d12
-    static const int NumSamplersPerSlot = GfxConfig::MaxNumTexturesPerStage;
+    static const int NumSamplersPerSlot = 16;
+    static_assert(NumSamplersPerSlot >= GfxConfig::MaxNumShaderTextures, "Fix NumSamplersPerSlot");
     static const int NumSlots = MaxNumSamplers / NumSamplersPerSlot;
     static_assert(NumSamplersPerSlot * NumSlots == MaxNumSamplers, "MaxNumSamplers must be multiple of num textures per stage");
 

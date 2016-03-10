@@ -33,7 +33,7 @@ d3d12SamplerCache::Setup(const gfxPointers& ptrs) {
     this->samplerHeap = this->descAllocator->AllocHeap(
         d3d12DescAllocator::Sampler,
         NumSlots,
-        GfxConfig::MaxNumTexturesPerStage,
+        GfxConfig::MaxNumShaderTextures,
         true);
     this->isValid = true;
 }
@@ -60,7 +60,7 @@ int
 d3d12SamplerCache::Lookup(const SamplerState* samplers, int numSamplers) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(samplers);
-    o_assert_range_dbg(numSamplers, GfxConfig::MaxNumTexturesPerStage);
+    o_assert_range_dbg(numSamplers, GfxConfig::MaxNumShaderTextures);
 
     // the resulting slotIndex, pointing to a new, or existing sampler heap location
     int slotIndex = InvalidIndex;

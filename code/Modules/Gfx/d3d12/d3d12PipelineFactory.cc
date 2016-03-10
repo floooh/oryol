@@ -1,13 +1,13 @@
 //------------------------------------------------------------------------------
-//  d3d12DrawStateFactory.cc
+//  d3d12PipelineFactory.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Assertion.h"
-#include "Gfx/Resource/drawState.h"
+#include "Gfx/Resource/pipeline.h"
 #include "Gfx/Resource/shader.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
-#include "d3d12DrawStateFactory.h"
+#include "d3d12PipelineFactory.h"
 #include "d3d12ResAllocator.h"
 #include "d3d12Types.h"
 #include "d3d12_impl.h"
@@ -29,11 +29,11 @@ asStencilOpDesc(const StencilState& stencilState) {
 
 //------------------------------------------------------------------------------
 static UINT
-describeInputLayout(drawState& ds, D3D12_INPUT_ELEMENT_DESC* inputLayout) {
+describeInputLayout(pipeline& pip, D3D12_INPUT_ELEMENT_DESC* inputLayout) {
 
     int d3d12CompIndex = 0;
     for (int mshSlotIndex = 0; mshSlotIndex < GfxConfig::MaxNumInputMeshes; mshSlotIndex++) {
-        const VertexLayout& layout = ds.Setup.Layouts[mshSlotIndex];
+        const VertexLayout& layout = pip.Setup.Layouts[mshSlotIndex];
         for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++, d3d12CompIndex++) {
             const auto& comp = layout.ComponentAt(compIndex);
             o_assert_dbg(d3d12CompIndex < VertexAttr::NumVertexAttrs);
@@ -57,32 +57,30 @@ describeInputLayout(drawState& ds, D3D12_INPUT_ELEMENT_DESC* inputLayout) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12DrawStateFactory::SetupResource(drawState& ds) {
-
-    drawStateFactoryBase::SetupResource(ds);
-    o_assert_dbg(ds.shd);
-    this->createPSO(ds);
-    o_assert_dbg(ds.d3d12PipelineState);
-
+d3d12PipelineFactory::SetupResource(pipeline& pip) {
+    pipelineFactoryBase::SetupResource(pip);
+    o_assert_dbg(pip.shd);
+    this->createPSO(pip);
+    o_assert_dbg(pip.d3d12PipelineState);
     return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12DrawStateFactory::DestroyResource(drawState& ds) {
+d3d12PipelineFactory::DestroyResource(pipeline& pip) {
     o_assert_dbg(this->isValid);
-    if (ds.d3d12PipelineState) {
+    if (pip.d3d12PipelineState) {
         d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
         const uint64 frameIndex = this->pointers.renderer->frameIndex;
-        resAllocator.ReleaseDeferred(frameIndex, ds.d3d12PipelineState);
+        resAllocator.ReleaseDeferred(frameIndex, pip.d3d12PipelineState);
     }
-    drawStateFactoryBase::DestroyResource(ds);
+    pipelineFactoryBase::DestroyResource(pip);
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12DrawStateFactory::createPSO(drawState& ds) {
-    o_assert_dbg(nullptr == ds.d3d12PipelineState);
+d3d12PipelineFactory::createPSO(pipeline& pip) {
+    o_assert_dbg(nullptr == pip.d3d12PipelineState);
     o_assert_dbg(this->pointers.renderer->d3d12RootSignature);
 
     // create new PSO
@@ -92,19 +90,19 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     // setup input-layout-desc
     D3D12_INPUT_ELEMENT_DESC inputLayout[VertexAttr::NumVertexAttrs];
     Memory::Clear(inputLayout, sizeof(inputLayout));
-    UINT inputLayoutNumElements = describeInputLayout(ds, inputLayout);
-    ds.d3d12PrimTopologyType = d3d12Types::asPrimitiveTopologyType(ds.Setup.PrimType);
-    ds.d3d12PrimTopology = d3d12Types::asPrimitiveTopology(ds.Setup.PrimType);
+    UINT inputLayoutNumElements = describeInputLayout(pip, inputLayout);
+    pip.d3d12PrimTopologyType = d3d12Types::asPrimitiveTopologyType(pip.Setup.PrimType);
+    pip.d3d12PrimTopology = d3d12Types::asPrimitiveTopology(pip.Setup.PrimType);
 
     // get vertex and pixel shader byte code
-    const shader::shaderBlob& vs = ds.shd->vertexShader;
-    const shader::shaderBlob& ps = ds.shd->pixelShader;
+    const shader::shaderBlob& vs = pip.shd->vertexShader;
+    const shader::shaderBlob& ps = pip.shd->pixelShader;
     o_assert_dbg(vs.ptr && (vs.size > 0) && ps.ptr && (ps.size > 0));
 
     // create the pipeline-state-object
-    const RasterizerState& rs = ds.Setup.RasterizerState;
-    const BlendState& bs = ds.Setup.BlendState;
-    const DepthStencilState& dss = ds.Setup.DepthStencilState;
+    const RasterizerState& rs = pip.Setup.RasterizerState;
+    const BlendState& bs = pip.Setup.BlendState;
+    const DepthStencilState& dss = pip.Setup.DepthStencilState;
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     Memory::Clear(&psoDesc, sizeof(psoDesc));
@@ -148,7 +146,7 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     psoDesc.InputLayout.pInputElementDescs = inputLayout;
     psoDesc.InputLayout.NumElements = inputLayoutNumElements;
     psoDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-    psoDesc.PrimitiveTopologyType = ds.d3d12PrimTopologyType;
+    psoDesc.PrimitiveTopologyType = pip.d3d12PrimTopologyType;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = d3d12Types::asRenderTargetFormat(bs.ColorFormat);
     if (bs.DepthFormat != PixelFormat::InvalidPixelFormat) {
@@ -158,8 +156,8 @@ d3d12DrawStateFactory::createPSO(drawState& ds) {
     psoDesc.SampleDesc.Quality = 0;
     psoDesc.NodeMask = 0;
     psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-    HRESULT hr = d3d12Device->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&ds.d3d12PipelineState);
-    o_assert(SUCCEEDED(hr) && ds.d3d12PipelineState);
+    HRESULT hr = d3d12Device->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&pip.d3d12PipelineState);
+    o_assert(SUCCEEDED(hr) && pip.d3d12PipelineState);
 }
 
 } // namespace _priv

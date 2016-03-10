@@ -22,7 +22,7 @@ curFrameRotateIndex(0),
 valid(false),
 rtValid(false),
 curRenderTarget(nullptr),
-curDrawState(nullptr),
+curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 d3d12Fence(nullptr),
 fenceEvent(nullptr),
@@ -159,7 +159,7 @@ d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
         // per shader stage and ApplyDrawState call, and each slot
         // has as many descriptors as can be bound to a shader stage
         const int numSlots = ShaderStage::NumShaderStages * this->gfxSetup.MaxApplyDrawStatesPerFrame;
-        const int numDescsPerSlot = GfxConfig::MaxNumTexturesPerStage;
+        const int numDescsPerSlot = GfxConfig::MaxNumShaderTextures;
         frameRes.srvHeap = this->descAllocator.AllocHeap(d3d12DescAllocator::ShaderResourceView, numSlots, numDescsPerSlot, false);
     }
 }
@@ -332,9 +332,9 @@ d3d12Renderer::createRootSignature() {
     // a single range-description for textures and samplers
     // this is the same both for vertex- and fragment-textures
     D3D12_DESCRIPTOR_RANGE texRange;
-    d3d12Types::initDescriptorRange(&texRange, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, GfxConfig::MaxNumTexturesPerStage, 0, 0);
+    d3d12Types::initDescriptorRange(&texRange, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, GfxConfig::MaxNumShaderTextures, 0, 0);
     D3D12_DESCRIPTOR_RANGE smpRange;
-    d3d12Types::initDescriptorRange(&smpRange, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, GfxConfig::MaxNumTexturesPerStage, 0, 0);
+    d3d12Types::initDescriptorRange(&smpRange, D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, GfxConfig::MaxNumShaderTextures, 0, 0);
 
     // the root parameters
     // FIXME: we should have 4 constant buffers per shader stage, but for testing's sake...
@@ -410,7 +410,7 @@ d3d12Renderer::commitFrame() {
     this->d3d12CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&cmdList);
 
     this->curRenderTarget = nullptr;
-    this->curDrawState = nullptr;
+    this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
 }
 
@@ -645,30 +645,30 @@ d3d12Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, boo
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
-    o_assert_dbg(ds);
-    o_assert_dbg(ds->shd);
+d3d12Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
+    o_assert_dbg(pip);
+    o_assert_dbg(pip->shd);
     o_assert_dbg(meshes && (numMeshes > 0));
 
     // if any of the meshes are still loading, cancel the next draw state
     for (int i = 0; i < numMeshes; i++) {
         if (nullptr == meshes[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
-    o_assert_dbg(ds->d3d12PipelineState);
-    o_assert2(ds->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2(ds->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-    o_assert2(ds->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+    o_assert_dbg(pip->d3d12PipelineState);
+    o_assert2(pip->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(pip->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(pip->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
-    this->curDrawState = ds;
+    this->curPipeline = pip;
     this->curPrimaryMesh = meshes[0];
     o_assert_dbg(this->curPrimaryMesh);
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
     // apply pipeline state
-    cmdList->SetPipelineState(ds->d3d12PipelineState);
+    cmdList->SetPipelineState(pip->d3d12PipelineState);
     
     // apply vertex and index buffers (FIXME: only if changed!)
     D3D12_VERTEX_BUFFER_VIEW vbViews[GfxConfig::MaxNumInputMeshes];
@@ -706,21 +706,21 @@ d3d12Renderer::applyDrawState(drawState* ds, mesh** meshes, int numMeshes) {
     }
     cmdList->IASetVertexBuffers(0, GfxConfig::MaxNumInputMeshes, vbViews);
     cmdList->IASetIndexBuffer(ibViewPtr);
-    cmdList->IASetPrimitiveTopology(ds->d3d12PrimTopology);
-    cmdList->OMSetBlendFactor(glm::value_ptr(ds->Setup.BlendColor));
+    cmdList->IASetPrimitiveTopology(pip->d3d12PrimTopology);
+    cmdList->OMSetBlendFactor(glm::value_ptr(pip->Setup.BlendColor));
 }
 
 //------------------------------------------------------------------------------
 void
 d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
 
     #if ORYOL_DEBUG
     // verify that the provided uniform-block is type-compatible with 
     // the uniform-block expected at the binding stage and slot
-    const shader* shd = this->curDrawState->shd;
+    const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
@@ -750,10 +750,9 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, texture** textures, int32 numTextures) {
-    o_assert_dbg(numTextures < GfxConfig::MaxNumTexturesPerStage);
-    o_assert_dbg(0 == bindSlot);
-    if (nullptr == this->curDrawState) {
+d3d12Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
+    o_assert_dbg(numTextures < GfxConfig::MaxNumShaderTextures);
+    if (nullptr == this->curPipeline) {
         return;
     }
 
@@ -761,26 +760,10 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     // textures isn't valid yet, in this case, disable rendering for the next draw call
     for (int i = 0; i < numTextures; i++) {
         if (nullptr == textures[i]) {
-            this->curDrawState = nullptr;
+            this->curPipeline = nullptr;
             return;
         }
     }
-
-    // check if the provided texture types are compatible
-    #if ORYOL_DEBUG
-    const shader* shd = this->curDrawState->shd;
-    o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStageAndSlot(bindStage, bindSlot);
-    o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
-    o_assert2(layout.TypeHash == layoutHash, "incompatible texture block!\n");
-    for (int i = 0; i < numTextures; i++) {
-        const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
-        if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
-            o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
-        }
-    }
-    #endif
 
     ID3D12GraphicsCommandList* cmdList = this->curCommandList();
 
@@ -832,7 +815,7 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     // sampler heaps can only have 2048 entries, thus we need to reuse them
     // through a static sampler cache
     // FIXME: may be a similar approach makes sense for textures as well??
-    SamplerState samplers[GfxConfig::MaxNumTexturesPerStage];
+    SamplerState samplers[GfxConfig::MaxNumShaderTextures];
     for (int i = 0; i < numTextures; i++) {
         samplers[i] = textures[i]->Setup.Sampler;
     }
@@ -846,7 +829,7 @@ d3d12Renderer::applyTextureBlock(ShaderStage::Code bindStage, int32 bindSlot, in
 void
 d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert2_dbg(this->rtValid, "No render target set!\n");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -873,7 +856,7 @@ d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
 void
 d3d12Renderer::draw(int32 primGroupIndex) {
     o_assert_dbg(this->valid);
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -892,7 +875,7 @@ d3d12Renderer::draw(int32 primGroupIndex) {
 void
 d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     o_assert2_dbg(this->rtValid, "No render target set!\n");
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;
@@ -919,7 +902,7 @@ d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
 void
 d3d12Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
     o_assert_dbg(this->valid);
-    if (nullptr == this->curDrawState) {
+    if (nullptr == this->curPipeline) {
         return;
     }
     const mesh* msh = this->curPrimaryMesh;

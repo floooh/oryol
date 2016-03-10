@@ -28,6 +28,8 @@ public:
     static const int32 MaxNumVertexTextures = 4;
     /// maximum number of textures on fragment shader stage
     static const int32 MaxNumFragmentTextures = 12;
+    /// max number of textures on any stage
+    static const int32 MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
     /// max number of texture faces
     static const int32 MaxNumTextureFaces = 6;
     /// max number of texture mipmaps

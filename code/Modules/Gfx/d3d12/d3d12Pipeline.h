@@ -1,24 +1,24 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::d3d12DrawState
+    @class Oryol::_priv::d3d12Pipeline
     @ingroup _priv
-    @brief D3D12 implementation of drawState
+    @brief D3D12 implementation of pipeline
 */
-#include "Gfx/Resource/drawStateBase.h"
+#include "Gfx/Resource/pipelineBase.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
-class d3d12DrawState : public drawStateBase {
+class d3d12Pipeline : public pipelineBase {
 public:
     /// constructor
-    d3d12DrawState();
+    d3d12Pipeline();
     /// destructor
-    ~d3d12DrawState();
+    ~d3d12Pipeline();
 
-    /// clear the object (called from drawStateFactory::DestroyResource())
+    /// clear the object (called from pipelineFactory::DestroyResource())
     void Clear();
 
     ID3D12PipelineState* d3d12PipelineState;
