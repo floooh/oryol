@@ -53,7 +53,7 @@ def writeFile(f, lines) :
     Write an array of lines to a file.
     '''
     for line in lines :
-        f.write(line.content + '\n')
+        f.write(str.encode(line.content + '\n'))
 
 #-------------------------------------------------------------------------------
 def run(cmd) :
@@ -62,7 +62,7 @@ def run(cmd) :
     child = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     out = ''
     while True :
-        out += child.stderr.read()
+        out += bytes.decode(child.stderr.read())
         if child.poll() != None :
             break
     return out

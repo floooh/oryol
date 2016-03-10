@@ -437,22 +437,22 @@ class Shader(Snippet) :
 
     def dump(self) :
         Snippet.dump(self)
-        print 'UniformBlockRefs:'
+        print('UniformBlockRefs:')
         for uniformBlockRef in self.uniformBlockRefs :
             uniformBlockRef.dump()
-        print 'UniformBlocks:'
+        print('UniformBlocks:')
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
-        print 'TextureBlockRefs:'
+        print('TextureBlockRefs:')
         for textureBlockRef in self.textureBlockRefs :
             textureBlockRef.dump()
-        print 'TextureBlocks:'
+        print('TextureBlocks:')
         for textureBlock in self.textureBlocks :
             textureBlock.dump()
-        print 'Inputs:'
+        print('Inputs:')
         for input in self.inputs :
             input.dump()
-        print 'Outputs:'
+        print('Outputs:')
         for output in self.outputs :
             output.dump()
 
@@ -1309,22 +1309,22 @@ class ShaderLibrary :
 
     def dump(self) :
         dumpObj(self)
-        print 'Blocks:'
+        print('Blocks:')
         for cb in self.codeBlocks.values() :
             cb.dump()
-        print 'UniformBlocks:'
+        print('UniformBlocks:')
         for ub in self.uniformBlocks.values() :
             ub.dump()
-        print 'TextureBlocks:'
+        print('TextureBlocks:')
         for tb in self.textureBlocks.values() :
             tb.dump()
-        print 'Vertex Shaders:'
+        print('Vertex Shaders:')
         for vs in self.vertexShaders.values() :
             vs.dump()
-        print 'Fragment Shaders:'
+        print('Fragment Shaders:')
         for fs in self.fragmentShaders.values() :
             fs.dump()
-        print 'Programs:'
+        print('Programs:')
         for prog in self.programs.values() :
             program.dump()
 

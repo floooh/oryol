@@ -70,10 +70,10 @@ class SpriteSheet :
         self.imageHeight = img[1]
         if self.clampWidth > 0 and self.clampWidth < self.imageWidth :
             self.imageWidth = self.clampWidth
-            print 'Clamped image width to {}'.format(self.imageWidth)
+            print('Clamped image width to {}'.format(self.imageWidth))
         if self.clampHeight > 0 and self.clampHeight < self.imageHeight :
             self.imageHeight = self.clampHeight
-            print 'Clamped image height to {}'.format(self.imageHeight)
+            print('Clamped image height to {}'.format(self.imageHeight))
 
         self.imagePixels = img[2]
         self.imageInfo = img[3]

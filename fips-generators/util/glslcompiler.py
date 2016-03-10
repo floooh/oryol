@@ -29,7 +29,7 @@ def writeFile(f, lines) :
     Write an array of lines to a file.
     '''
     for line in lines :
-        f.write(line.content + '\n')
+        f.write(str.encode(line.content + '\n'))
 
 def callValidator(cmd) :
     ''' 
@@ -38,7 +38,7 @@ def callValidator(cmd) :
     child = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out = ''
     while True :
-        out += child.stdout.read()
+        out += bytes.decode(child.stdout.read())
         if child.poll() != None :
             break
     return out
