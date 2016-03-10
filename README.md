@@ -23,6 +23,10 @@ http://floooh.github.io/virtualkc/
 
 ## _Public Service Announcements_
 
+- **10-Mar-2016**: Some API changes in the Gfx module which break existing 
+code have been committed in the last few days, [here's an overview of what
+has changed](http://floooh.github.io/2016/03/10/oryol-gfx-changes.html)
+
 - **17-Oct-2015**: The Metal renderer is now also running on iOS (minimum
   supported version is iOS9). **Note** that you need an actual Metal-capable
   iOS device, it's not possible to test this on the iOS simulator! Give
