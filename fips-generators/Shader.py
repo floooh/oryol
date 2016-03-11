@@ -1671,25 +1671,29 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
     # note: shd is either a VertexShader or FragmentShader object
     if isGLSL[slVersion] :
         # GLSL source code is directly inlined for runtime-compilation
-        f.write('#if ORYOL_OPENGL\n')
-        f.write('const char* {}_{}_src = \n'.format(shd.name, slVersion))
-        for line in shd.generatedSource[slVersion] :
-            f.write('"{}\\n"\n'.format(line.content))
-        f.write(';\n')
-        f.write('#endif\n')
+        for prog in shdLib.programs.values() :
+            if shdLib.fragmentShaders[prog.fs] == shd or shdLib.vertexShaders[prog.vs] == shd :
+                f.write('#if ORYOL_OPENGL\n')
+                f.write('const char* {}_{}_{}_src = \n'.format(prog.name, shd.name, slVersion))
+                for line in shd.generatedSource[slVersion] :
+                    f.write('"{}\\n"\n'.format(line.content))
+                f.write(';\n')
+                f.write('#endif\n')
     elif isHLSL[slVersion] :
         # for HLSL, the actual shader code has been compiled into a header by FXC
         # also write the generated shader source into a C comment as
         # human-readable version
-        f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
-        f.write('/*\n')
-        f.write('{}_{}_src: \n\n'.format(shd.name, slVersion))
-        for line in shd.generatedSource[slVersion] :
-            f.write('{}\n'.format(line.content))
-        f.write('*/\n')
-        rootPath = os.path.splitext(absPath)[0]
-        f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
-        f.write('#endif\n')
+        for prog in shdLib.programs.values() :
+            if shdLib.fragmentShaders[prog.fs] == shd or shdLib.vertexShaders[prog.vs] == shd :
+                f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
+                f.write('/*\n')
+                f.write('{}_{}_{}_src: \n\n'.format("foobar", shd.name, slVersion))
+                for line in shd.generatedSource[slVersion] :
+                    f.write('{}\n'.format(line.content))
+                f.write('*/\n')
+                rootPath = os.path.splitext(absPath)[0]
+                f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
+                f.write('#endif\n')
     elif isMetal[slVersion] :
         # for Metal, the shader has been compiled into a binary shader
         # library file, which needs to be embedded into the C header
@@ -1761,8 +1765,8 @@ def writeProgramSource(f, shdLib, prog) :
         elif isMetal[slVersion] :
             f.write('    #if ORYOL_METAL\n')
             f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
-        vsSource = '{}_{}_src'.format(vsName, slVersion)
-        fsSource = '{}_{}_src'.format(fsName, slVersion)
+        vsSource = '{}_{}_{}_src'.format(prog.name, vsName, slVersion)
+        fsSource = '{}_{}_{}_src'.format(prog.name, fsName, slVersion)
         if isGLSL[slVersion] :
             f.write('    setup.SetProgramFromSources({}, {}, {}, {});\n'.format(
                 slangType, vsInputLayout, vsSource, fsSource));
