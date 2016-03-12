@@ -59,6 +59,7 @@ d3d11MeshFactory::SetupResource(mesh& msh) {
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
+    o_assert_dbg(this->isValid);
     o_assert_dbg(msh.Setup.ShouldSetupFromData());
     return this->createBuffers(msh, data, size);
 }
@@ -66,6 +67,7 @@ d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
 //------------------------------------------------------------------------------
 void
 d3d11MeshFactory::DestroyResource(mesh& mesh) {
+    o_assert_dbg(this->isValid);
     this->pointers.renderer->invalidateMeshState();
     if (mesh.d3d11VertexBuffer) {
         mesh.d3d11VertexBuffer->Release();

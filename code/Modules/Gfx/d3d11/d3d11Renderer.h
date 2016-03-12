@@ -26,7 +26,6 @@ namespace _priv {
 class texture;
 class pipeline;
 class mesh;
-class textureBlock;
     
 class d3d11Renderer {
 public:

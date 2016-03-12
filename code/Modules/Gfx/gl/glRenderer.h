@@ -26,7 +26,6 @@ class texture;
 class pipeline;
 class mesh;
 class shader;
-class textureBlock;
 
 class glRenderer {
 public:

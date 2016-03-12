@@ -20,7 +20,7 @@ public:
     /// destructor
     ~d3d11MeshFactory();
     
-    /// setup with a pointer to the state wrapper object
+    /// setup the factory
     void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
