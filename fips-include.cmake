@@ -42,6 +42,14 @@ else()
     set(ORYOL_OPENAL 0)
 endif()
 
+# use Vulkan?
+if (FIPS_WINDOWS OR FIPS_LINUX OR FIPS_ANDROID)
+    option(ORYOL_USE_VULKAN "Use Vulkan 3D API" OFF)
+    if (ORYOL_USE_VULKAN)
+        set(ORYOL_VULKAN 1)
+    endif()
+endif()
+
 # use Metal on OSX/iOS?
 if (FIPS_OSX)
     option(ORYOL_USE_METAL "Use Metal 3D API on OSX/iOS" OFF)
@@ -63,7 +71,7 @@ if (FIPS_WINDOWS)
 endif()
 
 # use OpenGL?
-if (NOT ORYOL_METAL AND NOT ORYOL_D3D11 AND NOT ORYOL_D3D12)
+if (NOT ORYOL_METAL AND NOT ORYOL_D3D11 AND NOT ORYOL_D3D12 AND NOT ORYOL_VULKAN)
     set(ORYOL_OPENGL 1)
     if (FIPS_RASPBERRYPI)
         set(ORYOL_OPENGLES2 1)
@@ -125,6 +133,11 @@ if (ORYOL_OPENGL)
     if (ORYOL_OPENGL_CORE_PROFILE)
         add_definitions(-DORYOL_OPENGL_CORE_PROFILE=1)
     endif()
+endif()
+
+# Vulkan defines
+if (ORYOL_VULKAN)
+    add_definitions(-DORYOL_VULKAN=1)
 endif()
 
 # D3D11 defines

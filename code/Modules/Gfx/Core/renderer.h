@@ -29,6 +29,12 @@ namespace Oryol {
 namespace _priv {
 class renderer : public mtlRenderer { };
 } }
+#elif ORYOL_VULKAN
+#include "Gfx/vlk/vlkRenderer.h"
+namespace Oryol {
+namespace _priv {
+class renderer : public vlkRenderer { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

@@ -35,6 +35,12 @@ namespace Oryol {
 namespace _priv {
 class shader : public mtlShader { };
 } }
+#elif ORYOL_VULKAN
+#include "Gfx/Resource/shaderBase.h"
+namespace Oryol {
+namespace _priv {
+class shader : public shaderBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

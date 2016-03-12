@@ -30,6 +30,12 @@ namespace Oryol {
 namespace _priv {
 class textureFactory : public mtlTextureFactory { };
 }}
+#elif ORYOL_VULKAN
+#include "Gfx/vlk/vlkTextureFactory.h"
+namespace Oryol {
+namespace _priv {
+class textureFactory : public vlkTextureFactory { };
+} }
 #else
 #error "Platform not supported yet!"
 #endif

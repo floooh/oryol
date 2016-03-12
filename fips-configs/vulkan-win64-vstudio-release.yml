@@ -1,0 +1,8 @@
+---
+platform: win64 
+generator-platform: x64
+build_tool: cmake
+build_type: Release
+defines:
+    ORYOL_USE_VULKAN: ON
+

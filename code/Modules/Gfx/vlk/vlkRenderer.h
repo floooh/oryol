@@ -1,26 +1,13 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::_priv::mtlRenderer
-    @ingroup _priv
-    @brief Metal implementation of class 'renderer'
+    @class Oryol::_priv::vlkRenderer
+    @brief Vulkan implementation of renderer class
 */
-#include "Core/Types.h"
-#include "Core/Containers/StaticArray.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/ClearState.h"
-#include "Gfx/Core/BlendState.h"
-#include "Gfx/Core/DepthStencilState.h"
-#include "Gfx/Core/RasterizerState.h"
-#include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
-#include "Gfx/Attrs/ImageDataAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
-#include "glm/vec4.hpp"
-#include "Gfx/Core/GfxConfig.h"
-#include "Gfx/mtl/mtlReleaseQueue.h"
-#include "Gfx/mtl/mtl_decl.h"
+#include "Gfx/Core/gfxPointers.h"
+#include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Attrs/ImageDataAttrs.h"
 
 namespace Oryol {
 namespace _priv {
@@ -29,20 +16,20 @@ class texture;
 class pipeline;
 class mesh;
 
-class mtlRenderer {
+class vlkRenderer {
 public:
     /// constructor
-    mtlRenderer();
+    vlkRenderer();
     /// destructor
-    ~mtlRenderer();
-    
+    ~vlkRenderer();
+
     /// setup the renderer
     void setup(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the renderer
     void discard();
     /// return true if renderer has been setup
     bool isValid() const;
-    
+
     /// reset the internal state cache
     void resetStateCache();
     /// test if a feature is supported
@@ -62,7 +49,7 @@ public:
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
     void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
-    /// apply a texture block
+    /// apply a textures
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures);
     /// submit a draw call with primitive group index in current mesh
     void draw(int32 primGroupIndex);
@@ -81,42 +68,19 @@ public:
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(void* buf, int32 bufNumBytes);
 
-    /// defered-release a render resource
-    void releaseDeferred(ORYOL_OBJC_ID obj);
+    /// invalidate currently bound mesh state
+    void invalidateMeshState();
+    /// invalidate currently bound shader program state
+    void invalidateShaderState();
+    /// invalidate currently bound draw state 
+    void invalidatePipeline();
+    /// invalidate currently bound texture state
+    void invalidateTextureState();
 
-    #if ORYOL_MACOS
-    static const int MtlUniformAlignment = 256;
-    #else
-    static const int MtlUniformAlignment = 16;
-    #endif
-
+private:
     bool valid;
-    GfxSetup gfxSetup;
     gfxPointers pointers;
-
-    int32 frameIndex;
-    int32 curFrameRotateIndex;
-
-    bool rtValid;
     DisplayAttrs rtAttrs;
-    
-    pipeline* curPipeline;
-    mesh* curPrimaryMesh;
-    unsigned long curMTLPrimitiveType;
-    unsigned long curMTLIndexType;
-
-    ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
-    ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
-    ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
-    ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
-
-    // rotated global uniform buffers
-    uint8* curUniformBufferPtr;
-    int32 curUniformBufferOffset;
-    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MtlMaxInflightFrames> uniformBuffers;
-
-    // deferred-release-queue, release gfx resources when no longer in use by GPU
-    mtlReleaseQueue releaseQueue;
 };
 
 } // namespace _priv

@@ -32,6 +32,12 @@ namespace Oryol {
 namespace _priv {
 class texture : public mtlTexture { };
 } }
+#elif ORYOL_VULKAN
+#include "Gfx/Resource/textureBase.h"
+namespace Oryol {
+namespace _priv {
+class texture : public textureBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

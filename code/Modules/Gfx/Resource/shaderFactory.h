@@ -29,6 +29,12 @@ namespace Oryol {
 namespace _priv {
 class shaderFactory : public mtlShaderFactory { };
 } }
+#elif ORYOL_VULKAN
+#include "Gfx/vlk/vlkShaderFactory.h"
+namespace Oryol {
+namespace _priv {
+class shaderFactory : public vlkShaderFactory { };
+} }
 #else
 #error "Platform not yet supported!"
 #endif

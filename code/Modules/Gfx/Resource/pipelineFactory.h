@@ -29,6 +29,12 @@ namespace Oryol {
 namespace _priv {
 class pipelineFactory : public mtlPipelineFactory { };
 } }
+#elif ORYOL_VULKAN
+#include "Gfx/Resource/pipelineFactoryBase.h"
+namespace Oryol {
+namespace _priv {
+class pipelineFactory : public pipelineFactoryBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif

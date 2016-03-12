@@ -33,6 +33,12 @@ namespace Oryol {
 namespace _priv {
 class mesh : public mtlMesh { };
 } }
+#elif ORYOL_VULKAN
+#include "Gfx/Resource/meshBase.h"
+namespace Oryol {
+namespace _priv {
+class mesh : public meshBase { };
+} }
 #else
 #error "Target platform not yet supported!"
 #endif
