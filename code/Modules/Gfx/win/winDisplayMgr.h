@@ -101,8 +101,8 @@ public:
     DWORD dwExStyle;
     bool inCreateWindow;
     bool dpiAware;
-    float windowScale;
-    float contentScale;
+    int windowScale;
+    int contentScale;
 
     int cursorMode;
     double cursorPosX;
