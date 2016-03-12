@@ -40,8 +40,8 @@ dwStyle(0),
 dwExStyle(0),
 inCreateWindow(false),
 dpiAware(false),
-windowScale(1.0f),
-contentScale(1.0f),
+windowScale(1),
+contentScale(1),
 cursorMode(ORYOL_WIN_CURSOR_NORMAL),
 cursorPosX(0.0),
 cursorPosY(0.0),
@@ -266,16 +266,18 @@ winDisplayMgr::initDPI(bool highDpiRequested) {
         UINT dpix, dpiy;
         HRESULT hr = getDpiForMonitorProc(hm, MDT_EFFECTIVE_DPI, &dpix, &dpiy);
         o_assert(SUCCEEDED(hr));
-        this->windowScale = float(dpix) / 96.0f;
+        // don't allow fractional scales
+        this->windowScale = int(float(dpix) / 96.0f);
+        o_assert(this->windowScale >= 1);
     }
     else {
-        this->windowScale = 1.0f;
+        this->windowScale = 1;
     }
     if (highDpiRequested) {
         this->contentScale = this->windowScale;
     }
     else {
-        this->contentScale = 1.0f;
+        this->contentScale = 1;
     }
 
     if (hUser32) {
@@ -290,8 +292,8 @@ winDisplayMgr::initDPI(bool highDpiRequested) {
 void
 winDisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWidth, int& outHeight) {
     RECT rect = { 0, 0, 
-        (int) (clientWidth * this->windowScale), 
-        (int) (clientHeight * this->windowScale) };
+        clientWidth * this->windowScale, 
+        clientHeight * this->windowScale };
     ::AdjustWindowRectEx(&rect, this->dwStyle, FALSE, this->dwExStyle);
     outWidth = rect.right - rect.left;
     outHeight = rect.bottom - rect.top;
@@ -301,8 +303,8 @@ winDisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWidt
 void
 winDisplayMgr::windowResize(int newWidth, int newHeight) {
     o_assert((0 != newWidth) && (0 != newHeight));
-    const int windowWidth = int(newWidth / this->windowScale);
-    const int windowHeight = int(newHeight / this->windowScale);
+    const int windowWidth = newWidth / this->windowScale;
+    const int windowHeight = newHeight / this->windowScale;
 
     // NOTE: this method is not called when minimized, or restored from minimized
     if ((windowWidth != this->displayAttrs.WindowWidth) ||
@@ -404,8 +406,8 @@ winDisplayMgr::inputMouseClick(int button, int action, int mods) {
 void
 winDisplayMgr::inputCursorMotion(double x, double y) {
 
-    x = (x / this->windowScale) * this->contentScale;
-    y = (y / this->windowScale) * this->contentScale;
+    x = (x * this->contentScale) / this->windowScale;
+    y = (y * this->contentScale) / this->windowScale;
 
     if (this->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
         if ((x == 0.0) && (y == 0.0)) {
@@ -485,8 +487,8 @@ winDisplayMgr::inputWindowIconify(bool iconified) {
 void
 winDisplayMgr::inputFramebufferSize(int width, int height) {
 
-    width = int((width / this->windowScale) * this->contentScale);
-    height = int((height / this->windowScale) * this->contentScale);
+    width = (width * this->contentScale) / this->windowScale;
+    height = (height * this->contentScale) / this->windowScale;
 
     if (this->callbacks.fbsize) {
         this->callbacks.fbsize(width, height);
@@ -562,8 +564,8 @@ winDisplayMgr::setCursorMode(int newMode) {
     }
     else if (newMode == ORYOL_WIN_CURSOR_DISABLED) {
         this->winGetCursorPos(&this->cursorPosX, &this->cursorPosY);
-        this->windowCursorPosX = (this->cursorPosX / this->windowScale) * this->contentScale;
-        this->windowCursorPosY = (this->cursorPosY / this->windowScale) * this->contentScale;
+        this->windowCursorPosX = (this->cursorPosX * this->contentScale) / this->windowScale;
+        this->windowCursorPosY = (this->cursorPosY * this->contentScale) / this->windowScale;
         int width, height;
         this->winGetWindowSize(&width, &height);
         this->winSetCursorPos(width/2, height/2);
