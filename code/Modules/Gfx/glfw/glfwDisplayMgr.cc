@@ -3,10 +3,12 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
+#if ORYOL_OPENGL
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glInfo.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/glDebugOutput.h"
+#endif
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"
@@ -62,7 +64,8 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     glfwMakeContextCurrent(glfwWindow);
     glfwSwapInterval(setup.SwapInterval);
 
-    // setup extensions and platform-dependent constants
+    // setup GL extensions and platform-dependent constants
+    #if ORYOL_OPENGL
     ORYOL_GL_CHECK_ERROR();
     flextInit(glfwWindow);
     ORYOL_GL_CHECK_ERROR();
@@ -70,6 +73,7 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     glExt::Setup();
     #if ORYOL_DEBUG
     glDebugOutput::Enable(glDebugOutput::Medium);
+    #endif
     #endif
     
     // now set the actual display attributes
@@ -98,8 +102,10 @@ glfwDisplayMgr::DiscardDisplay() {
     
     this->destroyMainWindow();
     glfwTerminate();
+    #if ORYOL_OPENGL
     glExt::Discard();
     glInfo::Discard();
+    #endif
     
     displayMgrBase::DiscardDisplay();
 }
@@ -131,11 +137,13 @@ glfwDisplayMgr::Present() {
 }
 
 //------------------------------------------------------------------------------
+#if ORYOL_OPENGL
 void
 glfwDisplayMgr::glBindDefaultFramebuffer() {
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ORYOL_GL_CHECK_ERROR();
 }
+#endif
 
 //------------------------------------------------------------------------------
 void
@@ -163,6 +171,9 @@ void
 glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     o_assert_dbg(nullptr == glfwDisplayMgr::glfwWindow);
 
+    #if !ORYOL_OPENGL
+    o_error("FIXME!\n");
+    #else
     #if ORYOL_MACOS
     // work around a bug on OSX where a 16-bit color buffer is created when alpha-bits are set 0
     glfwWindowHint(GLFW_RED_BITS, 8);
@@ -197,14 +208,19 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     strBuilder.Append(" (GL)");
     glfwDisplayMgr::glfwWindow = glfwCreateWindow(setup.Width, setup.Height, strBuilder.AsCStr(), glfwMonitor, 0);
     o_assert(nullptr != glfwDisplayMgr::glfwWindow);
+    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::destroyMainWindow() {
     o_assert_dbg(nullptr != glfwDisplayMgr::glfwWindow);
+    #if !ORYOL_OPENGL
+    o_error("FIXME!\n");
+    #else
     glfwDestroyWindow(glfwWindow);
     glfwWindow = nullptr;
+    #endif
 }
 
 } // namespace _priv

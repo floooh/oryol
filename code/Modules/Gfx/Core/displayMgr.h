@@ -34,6 +34,7 @@ namespace _priv {
 class displayMgr : public eglDisplayMgr { };
 } }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
+// NOTE: GLFW is also used for Vulkan
 #include "Gfx/glfw/glfwDisplayMgr.h"
 namespace Oryol {
 namespace _priv {

@@ -7,7 +7,7 @@
     
     This is the display manager class for desktop platforms (OSX, Windows,
     Linux). It uses GLFW ( https://github.com/glfw/glfw ) for window and
-    GL context management, and consuming window input events.
+    GL/Vulkan context management, and consuming window input events.
 */
 #include "Gfx/Core/displayMgrBase.h"
 #include "Gfx/gl/gl_decl.h"
@@ -35,9 +35,11 @@ public:
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
     
+    #if ORYOL_OPENGL
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
-    
+    #endif
+
     /// private: get glfwWindow handle
     static GLFWwindow* getGlfwWindow();
     

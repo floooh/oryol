@@ -114,6 +114,9 @@ fips_begin_module(Gfx)
             vlk_decl.h
             vlk_impl.h
         )
+        fips_dir(glfw)
+        fips_files(glfwDisplayMgr.cc glfwDisplayMgr.h)
+        fips_deps(glfw3)
     endif()
     if (ORYOL_D3D11 OR ORYOL_D3D12)
         fips_dir(win)
