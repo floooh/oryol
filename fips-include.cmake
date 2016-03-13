@@ -1,6 +1,9 @@
 # absolute path to Oryol
 set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
 
+# additional cmake modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ORYOL_DIR}/cmake/modules/")
+
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
 set(ORYOL_SYNTH_NUM_VOICES "2" CACHE STRING "Synth module: number of voices")
@@ -51,6 +54,7 @@ if (FIPS_WINDOWS OR FIPS_LINUX OR FIPS_ANDROID)
     if (ORYOL_USE_VULKAN)
         set(ORYOL_VULKAN 1)
     endif()
+    find_package(Vulkan)
 endif()
 
 # use Metal on OSX/iOS?
