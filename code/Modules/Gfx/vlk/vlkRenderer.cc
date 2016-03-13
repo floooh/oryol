@@ -26,7 +26,7 @@ vlkRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     this->valid = true;
     this->pointers = ptrs;
-    o_error("FIXME!\n");
+    o_warn("vlkRenderer::setup() called\n");
 }
 
 //------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ vlkRenderer::discard() {
     o_assert_dbg(this->valid);
     this->pointers = gfxPointers();
     this->valid = false;
-    o_error("FIXME!\n");
+    o_warn("vlkRenderer::discard() called\n");
 }
 
 //------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ vlkRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 vlkRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    o_error("FIXME!\n");
+    o_warn("vlkRenderer::commitFrame() called\n");
 }
 
 //------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ vlkRenderer::renderTargetAttrs() const {
 void
 vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
-    o_error("FIXME!\n");
+    o_warn("vlkRenderer::applyRenderTarget() called\n");
 }
 
 //------------------------------------------------------------------------------

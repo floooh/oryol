@@ -20,7 +20,7 @@ vlkTextureFactory::Setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptrs;
-    o_error("FIXME!\n");
+    o_warn("vlkTextureFactory::Setup() called\n");
 }
 
 //------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ void
 vlkTextureFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
-    o_error("FIXME!\n");
+    o_warn("vlkTextureFactory::Discard() called\n");
 }
 
 //------------------------------------------------------------------------------

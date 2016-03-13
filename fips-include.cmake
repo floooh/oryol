@@ -53,8 +53,9 @@ if (FIPS_WINDOWS OR FIPS_LINUX OR FIPS_ANDROID)
     option(ORYOL_USE_VULKAN "Use Vulkan 3D API" OFF)
     if (ORYOL_USE_VULKAN)
         set(ORYOL_VULKAN 1)
+        find_package(Vulkan REQUIRED)
+        include_directories(${VULKAN_INCLUDE_DIR})
     endif()
-    find_package(Vulkan)
 endif()
 
 # use Metal on OSX/iOS?

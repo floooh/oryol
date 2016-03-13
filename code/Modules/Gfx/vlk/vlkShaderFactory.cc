@@ -19,7 +19,7 @@ vlkShaderFactory::Setup(const gfxPointers& ptr) {
     o_assert_dbg(!this->isValid);
     this->isValid = true;
     this->pointers = ptr;
-    o_error("FIXME!\n");
+    o_warn("vlkShaderFactory::Setup() called\n");
 }
 
 //------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ void
 vlkShaderFactory::Discard() {
     o_assert_dbg(this->isValid);
     this->isValid = false;
-    o_error("FIXME!\n");
+    o_warn("vlkShaderFactory::Discard() called\n");
 }
 
 //------------------------------------------------------------------------------

@@ -10,7 +10,11 @@
     GL/Vulkan context management, and consuming window input events.
 */
 #include "Gfx/Core/displayMgrBase.h"
+#if ORYOL_VULKAN
+#include "Gfx/vlk/vlkContext.h"
+#else
 #include "Gfx/gl/gl_decl.h"
+#endif
 
 struct GLFWwindow;
 
@@ -66,6 +70,10 @@ private:
 
     static glfwDisplayMgr* self;
     static GLFWwindow* glfwWindow;
+
+    #if ORYOL_VULKAN
+    class vlkContext vlkContext;
+    #endif
 };
     
 } // namespace _priv

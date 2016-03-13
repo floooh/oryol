@@ -107,6 +107,7 @@ fips_begin_module(Gfx)
     if (ORYOL_VULKAN)
         fips_dir(vlk)
         fips_files(
+            vlkContext.cc vlkContext.h
             vlkMeshFactory.cc vlkMeshFactory.h
             vlkShaderFactory.cc vlkShaderFactory.h
             vlkTextureFactory.cc vlkTextureFactory.h
@@ -117,6 +118,7 @@ fips_begin_module(Gfx)
         fips_dir(glfw)
         fips_files(glfwDisplayMgr.cc glfwDisplayMgr.h)
         fips_deps(glfw3)
+        fips_libs(${VULKAN_LIBRARY})
     endif()
     if (ORYOL_D3D11 OR ORYOL_D3D12)
         fips_dir(win)

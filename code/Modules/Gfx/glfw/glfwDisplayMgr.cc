@@ -123,7 +123,8 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
         // FIXME: need better error output (MessageBox)
         o_error("Failed to find Vulkan loader\n");
     }
-    // FIXME: initialize Vulkan instance and device
+    // initialize Vulkan instance and device
+    this->vlkContext.setup(setup);
 
     // Vulkan-specific window hints
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -156,7 +157,7 @@ void
 glfwDisplayMgr::discardVulkan() {
     // FIXME: destroy swapchain
     this->destroyMainWindow();
-    // FIXME: destroy device and instance
+    this->vlkContext.discard();
 }
 #endif
 
