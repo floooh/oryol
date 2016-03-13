@@ -18,7 +18,7 @@ ETCFormats = ['ETC1', 'ETC2']
 
 #-------------------------------------------------------------------------------
 def error(msg) :
-    print "ERROR: {}".format(msg)
+    print("ERROR: {}".format(msg))
     sys.exit(10)
 
 #-------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ def toDDS(srcFilename, dstFilename, linearGamma, fmt, rgbFmt=None) :
     ddsTool = getToolsBinPath() + 'nvcompress'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
-    print '=== toDDS: {} => {}:'.format(srcPath, dstPath)
+    print('=== toDDS: {} => {}:'.format(srcPath, dstPath))
     cmdLine = [ddsTool, '-'+fmt]
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
@@ -82,7 +82,7 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
     dstPath  = TexDstDirectory + '/' + dstFilename
 
-    print '=== toCubeDDS: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath)
+    print('=== toCubeDDS: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath))
 
     # call nvassemble to generate an uncompressed cube map...
     cmdLine = [nvassemble, '-cube']
@@ -115,7 +115,7 @@ def toPVR(srcFilename, dstFilename, format) :
     pvrTool = getToolsBinPath() + 'PVRTexToolCLI'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
-    print '=== toPVR: {} => {}:'.format(srcPath, dstPath)
+    print('=== toPVR: {} => {}:'.format(srcPath, dstPath))
     cmdLine = [pvrTool, '-i', srcPath, '-o', dstPath, '-square', '+', '-pot', '+', '-m', '-mfilter', 'cubic', '-f', format ]
     subprocess.call(args=cmdLine)
 
@@ -132,7 +132,7 @@ def toCubePVR(srcDir, srcExt, dstFilename, format) :
     srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
     dstPath  = TexDstDirectory + '/' + dstFilename
 
-    print '=== toCubePVR: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath)
+    print('=== toCubePVR: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath))
 
     cmdLine = [pvrTool, '-i']
     inputFiles = ''
@@ -168,7 +168,7 @@ def toETC(srcFilename, dstFilename, format) :
     srcPath  = TexSrcDirectory + '/' + srcFilename
     dstPath  = TexDstDirectory + '/' + dstFilename
     tmpPath  = tempfile.gettempdir() + '/' + tmpFilename
-    print '=== toETC2: {} => {} => {}:'.format(srcPath, tmpPath, dstPath)
+    print('=== toETC2: {} => {} => {}:'.format(srcPath, tmpPath, dstPath))
 
     # first convert file to PPM format
     subprocess.call(args=[convTool, srcPath, tmpPath])
@@ -225,5 +225,5 @@ def exportSampleTextures() :
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
-    print "{}".format(__file__)
+    print("{}".format(__file__))
     exportSampleTextures()
