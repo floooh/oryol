@@ -6,8 +6,6 @@
 #include "vlk_impl.h"
 #include "vlkContext.h"
 
-#include <vulkan/vk_layer.h>
-
 namespace Oryol {
 namespace _priv {
 
