@@ -57,25 +57,12 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     }
     glfwSetErrorCallback(glfwErrorCallback);
     
-    // setup the GLFW main window
-    this->createMainWindow(setup);
-    
-    // and make the window's GL context current
-    glfwMakeContextCurrent(glfwWindow);
-    glfwSwapInterval(setup.SwapInterval);
+    #if ORYOL_VULKAN
+    this->setupVulkan(setup);
+    #else
+    this->setupGL(setup);
+    #endif
 
-    // setup GL extensions and platform-dependent constants
-    #if ORYOL_OPENGL
-    ORYOL_GL_CHECK_ERROR();
-    flextInit(glfwWindow);
-    ORYOL_GL_CHECK_ERROR();
-    glInfo::Setup();
-    glExt::Setup();
-    #if ORYOL_DEBUG
-    glDebugOutput::Enable(glDebugOutput::Medium);
-    #endif
-    #endif
-    
     // now set the actual display attributes
     int fbWidth = 0, fbHeight = 0;
     int posX = 0, posY = 0;
@@ -95,20 +82,93 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
 }
 
 //------------------------------------------------------------------------------
+#if ORYOL_OPENGL
+void
+glfwDisplayMgr::setupGL(const GfxSetup& setup) {
+
+    // GL-specific window hints
+    #if ORYOL_DEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    #endif
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // setup the GLFW main window
+    this->createMainWindow(setup);
+
+    // and make the window's GL context current
+    glfwMakeContextCurrent(this->glfwWindow);
+    glfwSwapInterval(setup.SwapInterval);
+
+    // setup GL extensions and platform-dependent constants
+    ORYOL_GL_CHECK_ERROR();
+    flextInit(glfwWindow);
+    ORYOL_GL_CHECK_ERROR();
+    glInfo::Setup();
+    glExt::Setup();
+    #if ORYOL_DEBUG
+    glDebugOutput::Enable(glDebugOutput::Medium);
+    #endif
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_VULKAN
+void
+glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
+
+    if (!glfwVulkanSupported()) {
+        // FIXME: need better error output (MessageBox)
+        o_error("Failed to find Vulkan loader\n");
+    }
+    // FIXME: initialize Vulkan instance and device
+
+    // Vulkan-specific window hints
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        
+    // create the application window
+    this->createMainWindow(setup);
+
+    // FIXME: initialize Vulkan swap chain
+}
+#endif
+
+//------------------------------------------------------------------------------
 void
 glfwDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
     o_assert(nullptr != glfwWindow);
-    
-    this->destroyMainWindow();
+
+    #if ORYOL_VULKAN
+    this->discardVulkan();
+    #else
+    this->discardGL();
+    #endif    
     glfwTerminate();
-    #if ORYOL_OPENGL
-    glExt::Discard();
-    glInfo::Discard();
-    #endif
-    
     displayMgrBase::DiscardDisplay();
 }
+
+//------------------------------------------------------------------------------
+#if ORYOL_VULKAN
+void
+glfwDisplayMgr::discardVulkan() {
+    // FIXME: destroy swapchain
+    this->destroyMainWindow();
+    // FIXME: destroy device and instance
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_OPENGL
+void
+glfwDisplayMgr::discardGL() {
+    this->destroyMainWindow();
+    glExt::Discard();
+    glInfo::Discard();
+}
+#endif
 
 //------------------------------------------------------------------------------
 bool
@@ -131,8 +191,11 @@ glfwDisplayMgr::ProcessSystemEvents() {
 void
 glfwDisplayMgr::Present() {
     o_assert(nullptr != glfwWindow);
-    
+
+    #if ORYOL_OPENGL
     glfwSwapBuffers(glfwWindow);
+    #endif
+
     displayMgrBase::Present();
 }
 
@@ -171,9 +234,6 @@ void
 glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     o_assert_dbg(nullptr == glfwDisplayMgr::glfwWindow);
 
-    #if !ORYOL_OPENGL
-    o_error("FIXME!\n");
-    #else
     #if ORYOL_MACOS
     // work around a bug on OSX where a 16-bit color buffer is created when alpha-bits are set 0
     glfwWindowHint(GLFW_RED_BITS, 8);
@@ -189,13 +249,6 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Depth));
     glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Stencil));
     glfwWindowHint(GLFW_SAMPLES, setup.SampleCount > 1 ? setup.SampleCount : 0);
-    #if ORYOL_DEBUG
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-    #endif
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
@@ -205,22 +258,21 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     
     // now actually create the window
     StringBuilder strBuilder(setup.Title);
+    #if ORYOL_VULKAN
+    strBuilder.Append(" (Vulkan)");
+#else
     strBuilder.Append(" (GL)");
+    #endif   
     glfwDisplayMgr::glfwWindow = glfwCreateWindow(setup.Width, setup.Height, strBuilder.AsCStr(), glfwMonitor, 0);
     o_assert(nullptr != glfwDisplayMgr::glfwWindow);
-    #endif
 }
 
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::destroyMainWindow() {
     o_assert_dbg(nullptr != glfwDisplayMgr::glfwWindow);
-    #if !ORYOL_OPENGL
-    o_error("FIXME!\n");
-    #else
     glfwDestroyWindow(glfwWindow);
     glfwWindow = nullptr;
-    #endif
 }
 
 } // namespace _priv

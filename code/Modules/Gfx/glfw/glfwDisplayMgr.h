@@ -44,6 +44,17 @@ public:
     static GLFWwindow* getGlfwWindow();
     
 private:
+    #if ORYOL_VULKAN
+    /// vulkan-specific init
+    void setupVulkan(const GfxSetup& setup);
+    /// vulkan-specific teardown
+    void discardVulkan();
+    #else
+    /// GL-specific init
+    void setupGL(const GfxSetup& setup);
+    /// GL-specific teardown
+    void discardGL();
+    #endif
     /// error callback for GLFW
     static void glfwErrorCallback(int error, const char* desc);
     /// framebuffer size changed callback for GLFW
