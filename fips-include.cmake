@@ -1,3 +1,6 @@
+# absolute path to Oryol
+set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
+
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
 set(ORYOL_SYNTH_NUM_VOICES "2" CACHE STRING "Synth module: number of voices")
@@ -17,7 +20,7 @@ endif()
 
 # for TurboBadger UI support, override the search path for the 
 # tb_config.h overriden header file
-include_directories(code/Modules/TBUI/tb)
+include_directories(${ORYOL_DIR}/code/Modules/TBUI/tb)
 
 # profiling enabled?
 if (FIPS_PROFILING)
@@ -207,3 +210,4 @@ endmacro()
 macro(oryol_shader shd)
     fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE)
 endmacro()
+
