@@ -124,7 +124,9 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
         o_error("Failed to find Vulkan loader\n");
     }
     // initialize Vulkan instance and device
-    this->vlkContext.setup(setup);
+    uint32_t numRequiredExtensions = 0;
+    const char** requiredExtensions = glfwGetRequiredInstanceExtensions(&numRequiredExtensions);
+    this->vlkContext.setup(setup, requiredExtensions, numRequiredExtensions);
 
     // Vulkan-specific window hints
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
