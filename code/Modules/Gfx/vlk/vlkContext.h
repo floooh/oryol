@@ -51,6 +51,10 @@ private:
     void setupDeviceExtensions(const char** extensions, int numExtensions);
     /// discard device extension list
     void discardDeviceExtensions();
+    /// setup device queue family list
+    void setupQueueFamilies();
+    /// discard device queue family list
+    void discardQueueFamilies();
 
     /// find instance or device layer index, return InvalidIndex if not supported
     static int findLayer(const char* name, const VkLayerProperties* layers, int numLayers);
@@ -76,6 +80,8 @@ private:
     VkLayerProperties* devLayers = nullptr;
     uint32 numDevExtensions = 0;
     VkExtensionProperties* devExtensions = nullptr;
+    uint32 numQueueFamilies = 0;
+    VkQueueFamilyProperties* queueFamilies = nullptr;
 
     static const int maxSelLayers = 32;
     int numSelInstLayers = 0;

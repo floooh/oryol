@@ -20,6 +20,7 @@ vlkContext::~vlkContext() {
     o_assert(nullptr == this->physDevices);
     o_assert(nullptr == this->devLayers);
     o_assert(nullptr == this->devExtensions);
+    o_assert(nullptr == this->queueFamilies);
 }
 
 //------------------------------------------------------------------------------
@@ -58,11 +59,13 @@ vlkContext::setup(const GfxSetup& setup, const char** requiredInstanceExtensions
     this->setupPhysicalDevice(setup);
     this->setupDeviceLayers(requestedLayers, numRequestedLayers);
     this->setupDeviceExtensions(requiredDeviceExtensions, numRequiredDeviceExtensions);
+    this->setupQueueFamilies();
 }
 
 //------------------------------------------------------------------------------
 void
 vlkContext::discard() {
+    this->discardQueueFamilies();
     this->discardDeviceExtensions();
     this->discardDeviceLayers();
     this->discardPhysicalDevice();
@@ -377,6 +380,30 @@ vlkContext::discardDeviceExtensions() {
         this->devExtensions = nullptr;
     }
     this->numDevExtensions = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::setupQueueFamilies() {
+    o_assert(this->PhysicalDevice);
+    o_assert(nullptr == this->queueFamilies);
+    o_assert(0 == this->numQueueFamilies);
+
+    vkGetPhysicalDeviceQueueFamilyProperties(this->PhysicalDevice, &this->numQueueFamilies, nullptr);
+    o_assert(this->numQueueFamilies >= 1);
+    const int size = sizeof(VkQueueFamilyProperties) * this->numQueueFamilies;
+    this->queueFamilies = (VkQueueFamilyProperties*) Memory::Alloc(size);
+    vkGetPhysicalDeviceQueueFamilyProperties(this->PhysicalDevice, &this->numQueueFamilies, this->queueFamilies);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardQueueFamilies() {
+    if (this->queueFamilies) {
+        Memory::Free(this->queueFamilies);
+        this->queueFamilies = nullptr;
+    }
+    this->numQueueFamilies = 0;
 }
 
 } // namespace _priv

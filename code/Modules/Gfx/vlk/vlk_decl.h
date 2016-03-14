@@ -20,6 +20,7 @@ VK_DEFINE_HANDLE(VkQueue)
 
 typedef void VkLayerProperties;
 typedef void VkExtensionProperties;
+typedef void VkQueueFamilyProperties;
 
 typedef enum VkPhysicalDeviceType VkPhysicalDeviceType;
 
