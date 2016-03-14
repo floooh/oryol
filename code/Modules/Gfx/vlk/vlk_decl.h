@@ -21,6 +21,8 @@ VK_DEFINE_HANDLE(VkQueue)
 typedef void VkLayerProperties;
 typedef void VkExtensionProperties;
 
+typedef enum VkPhysicalDeviceType VkPhysicalDeviceType;
+
 typedef struct VkAllocationCallbacks {
     void*                                   pUserData;
     void (*pfnAllocation)();

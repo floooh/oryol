@@ -107,6 +107,7 @@ fips_begin_module(Gfx)
     if (ORYOL_VULKAN)
         fips_dir(vlk)
         fips_files(
+            vlkTypes.cc vlkTypes.h
             vlkContext.cc vlkContext.h
             vlkMeshFactory.cc vlkMeshFactory.h
             vlkShaderFactory.cc vlkShaderFactory.h

@@ -5,6 +5,7 @@
 #include "Pre.h"
 #include "vlk_impl.h"
 #include "vlkContext.h"
+#include "vlkTypes.h"
 
 namespace Oryol {
 namespace _priv {
@@ -12,17 +13,20 @@ namespace _priv {
 //------------------------------------------------------------------------------
 vlkContext::~vlkContext() {
     o_assert(nullptr == this->Instance);
-    o_assert(nullptr == this->Gpu);
+    o_assert(nullptr == this->PhysicalDevice);
     o_assert(nullptr == this->Device);
     o_assert(nullptr == this->instLayers);
     o_assert(nullptr == this->instExtensions);
+    o_assert(nullptr == this->physDevices);
+    o_assert(nullptr == this->devLayers);
+    o_assert(nullptr == this->devExtensions);
 }
 
 //------------------------------------------------------------------------------
 void
-vlkContext::setup(const GfxSetup& setup, const char** requiredExtensions, int numRequiredExtensions) {
+vlkContext::setup(const GfxSetup& setup, const char** requiredInstanceExtensions, int numRequiredInstanceExtensions) {
     o_assert(nullptr == this->Instance);
-    o_assert(nullptr == this->Gpu);
+    o_assert(nullptr == this->PhysicalDevice);
     o_assert(nullptr == this->Device);
 
     #if ORYOL_DEBUG
@@ -38,16 +42,30 @@ vlkContext::setup(const GfxSetup& setup, const char** requiredExtensions, int nu
         "VK_LAYER_LUNARG_threading",
         "VK_LAYER_GOOGLE_unique_objects",
     };
+    const int numRequestedLayers = int(std::size(requestedLayers));
+    #else
+    const char** requestedLayers = nullptr;
+    int numRequestedLayers = 0;
     #endif
+    const char* requiredDeviceExtensions[] = {
+        "VK_KHR_swapchain"
+    };
+    const int numRequiredDeviceExtensions = int(std::size(requiredDeviceExtensions));
 
-    this->setupInstanceLayers(requestedLayers, int(std::size(requestedLayers)));
-    this->setupInstanceExtensions(requiredExtensions, numRequiredExtensions);
+    this->setupInstanceLayers(requestedLayers, numRequestedLayers);
+    this->setupInstanceExtensions(requiredInstanceExtensions, numRequiredInstanceExtensions);
     this->setupInstance(setup);
+    this->setupPhysicalDevice(setup);
+    this->setupDeviceLayers(requestedLayers, numRequestedLayers);
+    this->setupDeviceExtensions(requiredDeviceExtensions, numRequiredDeviceExtensions);
 }
 
 //------------------------------------------------------------------------------
 void
 vlkContext::discard() {
+    this->discardDeviceExtensions();
+    this->discardDeviceLayers();
+    this->discardPhysicalDevice();
     this->discardInstance();
     this->discardInstanceExtensions();
     this->discardInstanceLayers();
@@ -55,10 +73,10 @@ vlkContext::discard() {
 
 //------------------------------------------------------------------------------
 int
-vlkContext::findInstanceLayer(const char* name) const {
-    o_assert_dbg(name);
-    for (uint32 i = 0; i < this->numInstLayers; i++) {
-        if (0 == std::strcmp(name, this->instLayers[i].layerName)) {
+vlkContext::findLayer(const char* name, const VkLayerProperties* layers, int numLayers) {
+    o_assert_dbg(name && layers && (numLayers >= 0));
+    for (int i = 0; i < numLayers; i++) {
+        if (0 == std::strcmp(name, layers[i].layerName)) {
             return i;
         }
     }
@@ -67,10 +85,89 @@ vlkContext::findInstanceLayer(const char* name) const {
 
 //------------------------------------------------------------------------------
 void
+vlkContext::dumpLayerInfo(const char* title, const VkLayerProperties* layerProps, int numLayers) {
+    o_assert_dbg(title && layerProps && (numLayers >= 0));
+    Log::Info(">>> %s:\n", title);
+    for (int i = 0; i < numLayers; i++) {
+        const VkLayerProperties& cur = layerProps[i];
+        Log::Info("  Name: %s\n    spec version: %x\n    impl version: %x\n    desc: %s\n\n",
+            cur.layerName, cur.specVersion, cur.implementationVersion, cur.description);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::selectLayers(const char** reqLayers, int numReqLayers, 
+                         const VkLayerProperties* availLayers, int numAvailLayers,
+                         const char** outSelLayers, int& outNumSelLayers) {
+
+    outNumSelLayers = 0;
+    if (reqLayers) {
+        o_assert(numReqLayers <= maxSelLayers);
+        for (int i = 0; i < numReqLayers; i++) {
+            o_assert_dbg(reqLayers[i]);
+            int availLayerIndex = findLayer(reqLayers[i], availLayers, numAvailLayers);
+            if (InvalidIndex != availLayerIndex) {
+                outSelLayers[outNumSelLayers++] = availLayers[availLayerIndex].layerName;
+            }
+            else {
+                o_warn("vlkContext: requested instance layer '%s' not found!\n", reqLayers[i]);
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+int
+vlkContext::findExtension(const char* name, const VkExtensionProperties* exts, int numExts) {
+    o_assert_dbg(name && exts && (numExts >= 0));
+    for (int i = 0; i < numExts; i++) {
+        if (0 == std::strcmp(name, exts[i].extensionName)) {
+            return i;
+        }
+    }
+    return InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::dumpExtensionInfo(const char* title, const VkExtensionProperties* exts, int numExts) {
+    o_assert_dbg(title && exts && (numExts >= 0));
+    Log::Info(">>> %s:\n", title);
+    for (int i = 0; i < numExts; i++) {
+        const VkExtensionProperties& cur = exts[i];
+        Log::Info("  %s (ver %x)\n", cur.extensionName, cur.specVersion);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::selectExtensions(const char** reqExts, int numReqExts, 
+                             const VkExtensionProperties* availExts, int numAvailExts,
+                             const char** outSelExts, int& outNumSelExts) {
+
+    outNumSelExts = 0;
+    if (reqExts) {
+        o_assert(numReqExts < maxSelExtensions);
+        for (int i = 0; i < numReqExts; i++) {
+            o_assert_dbg(reqExts[i]);
+            int availExtIndex = findExtension(reqExts[i], availExts, numAvailExts);
+            if (InvalidIndex != availExtIndex) {
+                outSelExts[outNumSelExts++] = availExts[availExtIndex].extensionName;
+            }
+            else {
+                o_warn("vlkContext: requested instance extension '%s' not found!\n", reqExts[i]);
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 vlkContext::setupInstanceLayers(const char** layers, int numLayers) {
     o_assert(nullptr == this->instLayers);
     o_assert(0 == this->numInstLayers);
-    o_assert(0 == this->numReqInstLayers);
+    o_assert(0 == this->numSelInstLayers);
 
     // first get number of instance layers, allocate room, and get layer properties
     VkResult err = vkEnumerateInstanceLayerProperties(&this->numInstLayers, nullptr);
@@ -82,27 +179,10 @@ vlkContext::setupInstanceLayers(const char** layers, int numLayers) {
     }
 
     // dump out all instance layers
-    Log::Info(">>> Vulkan Instance Layers:\n");
-    for (uint32 i = 0; i < this->numInstLayers; i++) {
-        const VkLayerProperties& cur = this->instLayers[i];
-        Log::Info("  Name: %s\n    spec version: %x\n    impl version: %x\n    desc: %s\n\n",
-            cur.layerName, cur.specVersion, cur.implementationVersion, cur.description);
-    }
+    this->dumpLayerInfo("Instance Layers", this->instLayers, this->numInstLayers);
 
-    // filter requested layers against available layers
-    if (layers) {
-        o_assert(numLayers <= maxReqInstLayers);
-        for (int i = 0; i < numLayers; i++) {
-            o_assert_dbg(layers[i]);
-            int layerIndex = this->findInstanceLayer(layers[i]);
-            if (InvalidIndex != layerIndex) {
-                this->reqInstLayers[this->numReqInstLayers++] = this->instLayers[layerIndex].layerName;
-            }
-            else {
-                o_warn("vlkContext: requested instance layer '%s' not found!\n", layers[i]);
-            }
-        }
-    }
+    // select requested layers
+    this->selectLayers(layers, numLayers, this->instLayers, this->numInstLayers, this->selInstLayers, this->numSelInstLayers);
 }
 
 //------------------------------------------------------------------------------
@@ -116,23 +196,11 @@ vlkContext::discardInstanceLayers() {
 }
 
 //------------------------------------------------------------------------------
-int
-vlkContext::findInstanceExtension(const char* name) const {
-    o_assert_dbg(name);
-    for (uint32 i = 0; i < this->numInstExtensions; i++) {
-        if (0 == std::strcmp(name, this->instExtensions[i].extensionName)) {
-            return i;
-        }
-    }
-    return InvalidIndex;
-}
-
-//------------------------------------------------------------------------------
 void
-vlkContext::setupInstanceExtensions(const char** extensions, int numExtensions) {
+vlkContext::setupInstanceExtensions(const char** exts, int numExts) {
     o_assert(nullptr == this->instExtensions);
     o_assert(0 == this->numInstExtensions);
-    o_assert(0 == this->numReqInstExtensions);
+    o_assert(0 == this->numSelInstExtensions);
 
     // enumerate available extensions
     VkResult err = vkEnumerateInstanceExtensionProperties(nullptr, &this->numInstExtensions, nullptr);
@@ -144,27 +212,11 @@ vlkContext::setupInstanceExtensions(const char** extensions, int numExtensions) 
     }
 
     // dump extension info
-    Log::Info(">>> Vulkan Instance Extensions:\n");
-    for (uint32 i = 0; i < this->numInstExtensions; i++) {
-        const VkExtensionProperties& cur = this->instExtensions[i];
-        Log::Info("  %s (ver %x)\n", cur.extensionName, cur.specVersion);
-    }
+    dumpExtensionInfo("Instance Extensions", this->instExtensions, this->numInstExtensions); 
 
     // filter requested extensions against available extensions
     // FIXME: need to distinguish between optional and required extensions!
-    if (extensions) {
-        o_assert(numExtensions < maxReqInstExtensions);
-        for (int i = 0; i < numExtensions; i++) {
-            o_assert_dbg(extensions[i]);
-            int extIndex = this->findInstanceExtension(extensions[i]);
-            if (InvalidIndex != extIndex) {
-                this->reqInstExtensions[this->numReqInstExtensions++] = this->instExtensions[extIndex].extensionName;
-            }
-            else {
-                o_warn("vlkContext: requested instance extension '%s' not found!\n", extensions[i]);
-            }
-        }
-    }
+    selectExtensions(exts, numExts, this->instExtensions, this->numInstExtensions, this->selInstExtensions, this->numSelInstExtensions);
 }
 
 //------------------------------------------------------------------------------
@@ -196,10 +248,10 @@ vlkContext::setupInstance(const GfxSetup& setup) {
     instInfo.pNext = nullptr;
     instInfo.flags = 0;
     instInfo.pApplicationInfo = &appInfo;
-    instInfo.enabledLayerCount = this->numReqInstLayers;
-    instInfo.ppEnabledLayerNames = this->reqInstLayers;
-    instInfo.enabledExtensionCount = this->numReqInstExtensions;
-    instInfo.ppEnabledExtensionNames = this->reqInstExtensions;
+    instInfo.enabledLayerCount = this->numSelInstLayers;
+    instInfo.ppEnabledLayerNames = this->selInstLayers;
+    instInfo.enabledExtensionCount = this->numSelInstExtensions;
+    instInfo.ppEnabledExtensionNames = this->selInstExtensions;
     
     VkResult err = vkCreateInstance(&instInfo, nullptr, &this->Instance);
     o_assert(!err); // FIXME: better error messages
@@ -212,6 +264,119 @@ vlkContext::discardInstance() {
     o_assert(this->Instance);
     vkDestroyInstance(this->Instance, nullptr);
     this->Instance = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::setupPhysicalDevice(const GfxSetup& setup) {
+    o_assert(nullptr == this->PhysicalDevice);
+    o_assert(nullptr == this->physDevices);
+    o_assert(0 == this->numPhysDevices);
+    o_assert(this->Instance);
+
+    // get number of physical devices
+    VkResult err = vkEnumeratePhysicalDevices(this->Instance, &this->numPhysDevices, nullptr);
+    o_assert(!err);
+    if (this->numPhysDevices <= 0) {
+        o_error("No Vulkan-enabled GPUs in system!\n");
+    }
+    this->physDevices = (VkPhysicalDevice*) Memory::Alloc(this->numPhysDevices * sizeof(VkPhysicalDevice));
+    err = vkEnumeratePhysicalDevices(this->Instance, &this->numPhysDevices, this->physDevices);
+    o_assert(!err);
+
+    // dump device info, and also pick first dedicated GPU
+    int firstDiscreteGPU = InvalidIndex;
+    VkPhysicalDeviceProperties props = { };
+    for (uint32 i = 0; i < this->numPhysDevices; i++) {
+        vkGetPhysicalDeviceProperties(this->physDevices[i], &props);
+        Log::Info("GPU %d: %s (type: %s)\n", i, props.deviceName, vlkTypes::physicalDeviceTypeAsString(props.deviceType));
+        if ((InvalidIndex == firstDiscreteGPU) &&
+            (VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == props.deviceType)) {
+            firstDiscreteGPU = i;
+        }
+    }
+    
+    // choose the 'best' physical device
+    // FIXME: might want to have more control over this
+    if (InvalidIndex != firstDiscreteGPU) {
+        this->PhysicalDevice = this->physDevices[firstDiscreteGPU];
+    }
+    else {
+        this->PhysicalDevice = this->physDevices[0];
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardPhysicalDevice() {
+    o_assert(this->PhysicalDevice);
+    o_assert(this->physDevices);
+
+    Memory::Free(this->physDevices);
+    this->physDevices = nullptr;
+    this->PhysicalDevice = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::setupDeviceLayers(const char** layers, int numLayers) {
+    o_assert(this->PhysicalDevice);
+    o_assert(0 == this->numDevLayers);
+    o_assert(nullptr == this->devLayers);
+
+    VkResult err = vkEnumerateDeviceLayerProperties(this->PhysicalDevice, &this->numDevLayers, nullptr);
+    o_assert(!err);
+    if (this->numDevLayers > 0) {
+        const int size = this->numDevLayers * sizeof(VkLayerProperties);
+        this->devLayers = (VkLayerProperties*) Memory::Alloc(size);
+        err = vkEnumerateDeviceLayerProperties(this->PhysicalDevice, &this->numDevLayers, this->devLayers);
+    }
+    dumpLayerInfo("Device Layers", this->devLayers, this->numDevLayers);
+    selectLayers(layers, numLayers, this->devLayers, this->numDevLayers, this->selDevLayers, this->numSelDevLayers);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardDeviceLayers() {
+    if (this->devLayers) {
+        Memory::Free(this->devLayers);
+        this->devLayers = nullptr;
+    }
+    this->numDevLayers = 0;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::setupDeviceExtensions(const char** exts, int numExts) {
+    o_assert(nullptr == this->devExtensions);
+    o_assert(0 == this->numDevExtensions);
+    o_assert(0 == this->numSelDevExtensions);
+
+    // enumerate available device extensions
+    VkResult err = vkEnumerateDeviceExtensionProperties(this->PhysicalDevice, nullptr, &this->numDevExtensions, nullptr);
+    o_assert(!err);
+    if (this->numDevExtensions > 0) {
+        const int size = this->numDevExtensions * sizeof(VkExtensionProperties);
+        this->devExtensions = (VkExtensionProperties*)Memory::Alloc(size);
+        err = vkEnumerateDeviceExtensionProperties(this->PhysicalDevice, nullptr, &this->numDevExtensions, this->devExtensions);
+    }
+
+    // dump device extension info
+    dumpExtensionInfo("Device Extensions", this->devExtensions, this->numDevExtensions);
+
+    // filter requested extensions against available extensions
+    // FIXME: need to distinguish between optional and required extensions!
+    selectExtensions(exts, numExts, this->devExtensions, this->numDevExtensions, this->selDevExtensions, this->numSelDevExtensions);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardDeviceExtensions() {
+    if (this->devExtensions) {
+        Memory::Free(this->devExtensions);
+        this->devExtensions = nullptr;
+    }
+    this->numDevExtensions = 0;
 }
 
 } // namespace _priv
