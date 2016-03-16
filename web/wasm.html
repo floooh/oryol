@@ -29,12 +29,12 @@
   <script type="text/javascript" src="../wasm.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '${name}.wasm')
+    xhr.open('GET', '${name}.wasm.txt')
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
       Module.wasmBinary = xhr.response;
       (function() {
-        var memoryInitializer = '${name}.html.mem';
+        var memoryInitializer = '${name}.html.mem.txt';
         if (typeof Module['locateFile'] === 'function') {
           memoryInitializer = Module['locateFile'](memoryInitializer);
         } else if (Module['memoryInitializerPrefixURL']) {

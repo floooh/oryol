@@ -96,10 +96,14 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             name = sample['name']
             if name != '__end__' and 'emscripten' in sample['type'] :
                 log.info('> generate wasm HTML page: {}'.format(name))
-                for ext in ['js', 'html.mem', 'wasm', 'wasm.mappedGlobals'] :
+                for ext in ['js', 'wasm.mappedGlobals'] :
                     src_path = '{}/{}.{}'.format(wasm_deploy_dir, name, ext)
                     if os.path.isfile(src_path) :
                         shutil.copy(src_path, '{}/wasm/'.format(webpage_dir))
+                for ext in ['html.mem', 'wasm'] :
+                    src_path = '{}/{}.{}'.format(wasm_deploy_dir, name, ext)
+                    if os.path.isfile(src_path) :
+                        shutil.copy(src_path, '{}/wasm/{}.{}.txt'.format(webpage_dir, name, ext))
                 with open(proj_dir + '/web/wasm.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
