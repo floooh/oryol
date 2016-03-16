@@ -108,11 +108,6 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/Fractal/Fractal.jpg
   src: Fractal/Fractal.cc
-- name: PBRendering
-  desc: Physically based rendering sample
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/PBRendering/PBRendering.jpg
-  src: PBRendering/PBRendering.cc
 - name: TestInput
   desc: Test Input module functionality
   type: emscripten,pnacl,android
