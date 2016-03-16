@@ -367,8 +367,10 @@ glRenderer::applyMeshes(pipeline* pip, mesh** meshes, int numMeshes) {
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
         const glVertexAttr& attr = pip->glAttrs[attrIndex];
+        o_assert_dbg(attr.vbIndex < numMeshes);
         glVertexAttr& curAttr = this->glAttrs[attrIndex];
         const mesh* msh = meshes[attr.vbIndex];
+        o_assert_dbg(msh);
         const auto& vb = msh->buffers[mesh::vb];
         const GLuint glVB = vb.glBuffers[vb.activeSlot];
 
