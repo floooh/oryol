@@ -2,7 +2,7 @@
 set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # cmake options
-set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
+set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/data/" CACHE STRING "Sample data URL")
 set(ORYOL_SYNTH_NUM_VOICES "2" CACHE STRING "Synth module: number of voices")
 add_definitions(-DORYOL_SYNTH_NUM_VOICES=${ORYOL_SYNTH_NUM_VOICES})
 set(ORYOL_SYNTH_NUM_TRACKS_PER_VOICE "2" CACHE STRING "Synth module: number of tracks per voice")
@@ -178,7 +178,7 @@ if (FIPS_FORCE_NO_THREADS)
     add_definitions(-DORYOL_FORCE_NO_THREADS=1)
 endif()
 if (FIPS_EMSCRIPTEN OR FIPS_PNACL)
-    add_definitions(-DORYOL_SAMPLE_URL=\"http://localhost/\")
+    add_definitions(-DORYOL_SAMPLE_URL=\"http://localhost/../data/\") # HACK
 else()
     add_definitions(-DORYOL_SAMPLE_URL=\"${ORYOL_SAMPLE_URL}\")
 endif()

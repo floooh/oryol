@@ -14,7 +14,7 @@ GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
 BuildEmscripten = True
 BuildPNaCl = True
-BuildAndroid = True
+BuildWasm = True
 
 #-------------------------------------------------------------------------------
 def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
@@ -24,6 +24,12 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
     # load the websamples.yml file, should have been created during the last build
     with open(webpage_dir + '/websamples.yml', 'r') as f :
         samples = yaml.load(f.read())
+
+    # create directories
+    for platform in ['asmjs', 'wasm', 'pnacl'] :
+        platform_dir = '{}/{}'.format(webpage_dir, platform)
+        if not os.path.isdir(platform_dir) :
+            os.makedirs(platform_dir)
 
     # build the thumbnail gallery
     content = ''
@@ -40,15 +46,15 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 imgFileName = tail
             content += '<div class="thumb">\n'
             content += '  <div class="thumb-title">{}</div>\n'.format(name)
-            content += '  <div class="img-frame"><a href="{}.html"><img class="image" src="{}" title="{}"></img></a></div>\n'.format(name,imgFileName,desc)
+            content += '  <div class="img-frame"><a href="asmjs/{}.html"><img class="image" src="{}" title="{}"></img></a></div>\n'.format(name,imgFileName,desc)
             content += '  <div class="thumb-bar">\n'
             content += '    <ul class="thumb-list">\n'
             if 'emscripten' in types :
-                content += '      <li class="thumb-item"><a class="thumb-link" href="{}.html">emsc</a></li>\n'.format(name)
+                content += '      <li class="thumb-item"><a class="thumb-link" href="asmjs/{}.html">asm.js</a></li>\n'.format(name)
             if 'pnacl' in types :
-                content += '      <li class="thumb-item"><a class="thumb-link" href="{}_pnacl.html">pnacl</a></li>\n'.format(name)
-            if 'android' in types :
-                content += '      <li class="thumb-item"><a class="thumb-link" href="{}-debug.apk">apk</a></li>\n'.format(name)
+                content += '      <li class="thumb-item"><a class="thumb-link" href="pnacl/{}.html">pnacl</a></li>\n'.format(name)
+            if 'emscripten' in types :
+                content += '      <li class="thumb-item"><a class="thumb-link" href="wasm/{}.html">wasm</a></li>\n'.format(name)
             content += '    </ul>\n'
             content += '  </div>\n'
             content += '</div>\n'
@@ -61,7 +67,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         f.write(html)
 
     # copy other required files
-    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'about.html', 'favicon.png'] :
+    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png'] :
         log.info('> copy file: {}'.format(name))
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
@@ -75,15 +81,33 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 for ext in ['js', 'html.mem'] :
                     src_path = '{}/{}.{}'.format(emsc_deploy_dir, name, ext)
                     if os.path.isfile(src_path) :
-                        shutil.copy(src_path, webpage_dir)
+                        shutil.copy(src_path, '{}/asmjs/'.format(webpage_dir))
                 with open(proj_dir + '/web/emsc.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
                 html = templ.safe_substitute(name=name, source=src_url)
-                with open('{}/{}.html'.format(webpage_dir, name), 'w') as f :
+                with open('{}/asmjs/{}.html'.format(webpage_dir, name, name), 'w') as f :
                     f.write(html)
 
-    # copy PNaCl HTML pages
+    # generate WebAssembly HTML pages
+    if BuildWasm and emscripten.check_exists(fips_dir) :
+        wasm_deploy_dir = '{}/fips-deploy/oryol/wasm-ninja-release'.format(ws_dir)
+        for sample in samples :
+            name = sample['name']
+            if name != '__end__' and 'emscripten' in sample['type'] :
+                log.info('> generate wasm HTML page: {}'.format(name))
+                for ext in ['js', 'html.mem', 'wasm', 'wasm.mappedGlobals'] :
+                    src_path = '{}/{}.{}'.format(wasm_deploy_dir, name, ext)
+                    if os.path.isfile(src_path) :
+                        shutil.copy(src_path, '{}/wasm/'.format(webpage_dir))
+                with open(proj_dir + '/web/wasm.html', 'r') as f :
+                    templ = Template(f.read())
+                src_url = GitHubSamplesURL + sample['src'];
+                html = templ.safe_substitute(name=name, source=src_url)
+                with open('{}/wasm/{}.html'.format(webpage_dir, name), 'w') as f :
+                    f.write(html)
+
+    # generate PNaCl HTML pages
     if BuildPNaCl and nacl.check_exists(fips_dir) :
         pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-ninja-release'.format(ws_dir)
         for sample in samples :
@@ -91,12 +115,14 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             if name != '__end__' and 'pnacl' in sample['type'] :
                 log.info('> generate PNaCl HTML page: {}'.format(name))
                 for ext in ['nmf', 'pexe'] :
-                    shutil.copy('{}/{}.{}'.format(pnacl_deploy_dir, name, ext), webpage_dir)
+                    src_path = '{}/{}.{}'.format(pnacl_deploy_dir, name, ext)
+                    if os.path.isfile(src_path) :
+                        shutil.copy(src_path, '{}/pnacl/'.format(webpage_dir))
                 with open(proj_dir + '/web/pnacl.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
                 html = templ.safe_substitute(name=name, source=src_url)
-                with open('{}/{}_pnacl.html'.format(webpage_dir, name), 'w') as f :
+                with open('{}/pnacl/{}.html'.format(webpage_dir, name), 'w') as f :
                     f.write(html)
 
     # copy the screenshots
@@ -108,28 +134,17 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 log.info('> copy screenshot: {}'.format(tail))
                 shutil.copy(img_path, webpage_dir + '/' + tail)
 
-    # copy the Android sample files over
-    if BuildAndroid and android.check_exists(fips_dir) :
-        android_deploy_dir = '{}/fips-deploy/oryol/android-ninja-release'.format(ws_dir)
-        for sample in samples :
-            if sample['name'] != '__end__' and 'android' in sample['type'] :
-                log.info('> copy android sample files: {}'.format(sample['name']))
-                shutil.copy('{}/{}-debug.apk'.format(android_deploy_dir, sample['name']), webpage_dir)
-
-
 #-------------------------------------------------------------------------------
 def export_assets(fips_dir, proj_dir, webpage_dir) :
 
     tex_srcdir = proj_dir + '/data'
-    tex_dstdir = webpage_dir
+    tex_dstdir = webpage_dir + '/data'
     texexport.configure(proj_dir, tex_srcdir, tex_dstdir)
     texexport.exportSampleTextures()
-    for dataFile in glob.glob(proj_dir + '/data/nanovg/*') :
-        shutil.copy(dataFile, webpage_dir)
     for dataFile in glob.glob(proj_dir + '/data/*.txt') :
         shutil.copy(dataFile, webpage_dir)
     tbui_from = '{}/data/tbui'.format(proj_dir)
-    tbui_to   = '{}/tbui'.format(webpage_dir)
+    tbui_to   = '{}/data/tbui'.format(webpage_dir)
     shutil.copytree(tbui_from, tbui_to)
 
 #-------------------------------------------------------------------------------
@@ -145,12 +160,12 @@ def build_deploy_webpage(fips_dir, proj_dir) :
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'emsc-ninja-release')
         project.build(fips_dir, proj_dir, 'emsc-ninja-release')
+    if BuildWasm and emscripten.check_exists(fips_dir) :
+        project.gen(fips_dir, proj_dir, 'wasm-ninja-release')
+        project.build(fips_dir, proj_dir, 'wasm-ninja-release')
     if BuildPNaCl and nacl.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'pnacl-ninja-release')
         project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
-    if BuildAndroid and android.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'android-ninja-release')
-        project.build(fips_dir, proj_dir, 'android-ninja-release')
     
     # export sample assets
     export_assets(fips_dir, proj_dir, webpage_dir)

@@ -4,16 +4,16 @@
 <meta charset="UTF-8"/>
 <title>${name}</title>
 <link href='http://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" type="text/css" href="style.css"/>
-<link rel="icon" type="image/png" href="favicon.png"/>
+<link rel="stylesheet" type="text/css" href="../style.css"/>
+<link rel="icon" type="image/png" href="../favicon.png"/>
 </head>
 <body>
-  <div class="game-title">${name}<span class="game-subtitle"><a class="game-sdk-link" href="http://kripken.github.io/emscripten-site/">emscripten</a></span></div>
+  <div class="game-title">${name}<span class="game-subtitle"><a class="game-sdk-link" href="http://kripken.github.io/emscripten-site/">asm.js</a></span></div>
   <div class="game-rainbow"></div>
 
   <div class="nav-bar" style="width:400px">
     <ul class="nav-list">
-        <li class="nav-item"><a class="nav-link" style="width:133px" href="index.html">home</a></li>
+        <li class="nav-item"><a class="nav-link" style="width:133px" href="../index.html">home</a></li>
         <li class="nav-item"><a class="nav-link" style="width:133px" href="${source}" target="_blank">source</a></li>
         <li class="nav-item"><a class="nav-link" style="width:133px" onclick="Module.requestFullScreen(false, true)" href="javascript:void(0);">fullscreen</a></li>
         <div class="break"></div>
@@ -27,7 +27,7 @@
   <textarea class="game-output" readonly hidden id="output" rows="8" cols="80"></textarea>
   <div class="bottom"></div>
 
-  <script type="text/javascript" src="emsc.js"></script>
+  <script type="text/javascript" src="../emsc.js"></script>
   <script async type="text/javascript" src="${name}.js"></script>
 </body>
 </html>
