@@ -51,7 +51,8 @@ public:
     int32 GetInt(const String& arg, int32 defaultValue=0) const;
     /// get float after 'arg', or default value if 'arg' doesn't exist
     float32 GetFloat(const String& arg, float32 defaultValue=0.0f) const;
-    
+    /// gives you access to all of the arguments that were provided to the application
+    const Array<String>& GetArgs() const;
 private:
     Array<String> args;
 };

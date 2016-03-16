@@ -74,5 +74,11 @@ Args::GetFloat(const String& arg, float32 defaultValue) const {
         return defaultValue;
     }
 }
-    
+
+//------------------------------------------------------------------------------
+const Array<String>&
+Args::GetArgs() const {
+    return this->args;
+}
+
 } // namespace Oryol
