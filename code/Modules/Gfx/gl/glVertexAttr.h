@@ -28,11 +28,19 @@ public:
     };
     /// test for equality
     bool operator==(const glVertexAttr& rhs) const {
-        return 0 == std::memcmp(this, &rhs, sizeof(glVertexAttr));
+        return (this->index == rhs.index) &&
+               (this->enabled == rhs.enabled) &&
+               (this->vbIndex == rhs.vbIndex) &&
+               (this->divisor == rhs.divisor) &&
+               (this->stride == rhs.stride) &&
+               (this->size == rhs.size) &&
+               (this->normalized == rhs.normalized) &&
+               (this->offset == rhs.offset) &&
+               (this->type == rhs.type);
     };
     /// test for inequality
     bool operator!=(const glVertexAttr& rhs) const {
-        return 0 != std::memcmp(this, &rhs, sizeof(glVertexAttr));
+        return !operator==(rhs);
     };
 
     uint8 index;
