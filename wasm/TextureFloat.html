@@ -29,12 +29,12 @@
   <script type="text/javascript" src="../wasm.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'TextureFloat.wasm')
+    xhr.open('GET', 'TextureFloat.wasm.txt')
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
       Module.wasmBinary = xhr.response;
       (function() {
-        var memoryInitializer = 'TextureFloat.html.mem';
+        var memoryInitializer = 'TextureFloat.html.mem.txt';
         if (typeof Module['locateFile'] === 'function') {
           memoryInitializer = Module['locateFile'](memoryInitializer);
         } else if (Module['memoryInitializerPrefixURL']) {

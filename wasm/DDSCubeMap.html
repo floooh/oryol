@@ -29,12 +29,12 @@
   <script type="text/javascript" src="../wasm.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'DDSCubeMap.wasm')
+    xhr.open('GET', 'DDSCubeMap.wasm.txt')
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
       Module.wasmBinary = xhr.response;
       (function() {
-        var memoryInitializer = 'DDSCubeMap.html.mem';
+        var memoryInitializer = 'DDSCubeMap.html.mem.txt';
         if (typeof Module['locateFile'] === 'function') {
           memoryInitializer = Module['locateFile'](memoryInitializer);
         } else if (Module['memoryInitializerPrefixURL']) {

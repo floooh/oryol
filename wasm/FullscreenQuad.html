@@ -29,12 +29,12 @@
   <script type="text/javascript" src="../wasm.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'FullscreenQuad.wasm')
+    xhr.open('GET', 'FullscreenQuad.wasm.txt')
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
       Module.wasmBinary = xhr.response;
       (function() {
-        var memoryInitializer = 'FullscreenQuad.html.mem';
+        var memoryInitializer = 'FullscreenQuad.html.mem.txt';
         if (typeof Module['locateFile'] === 'function') {
           memoryInitializer = Module['locateFile'](memoryInitializer);
         } else if (Module['memoryInitializerPrefixURL']) {
