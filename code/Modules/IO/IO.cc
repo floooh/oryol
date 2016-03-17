@@ -136,6 +136,17 @@ IO::LoadFile(const URL& url) {
 }
 
 //------------------------------------------------------------------------------
+Ptr<IOProtocol::Write>
+IO::WriteFile(const URL& url, const Buffer& data) {
+    o_assert_dbg(IsValid());
+    Ptr<IOProtocol::Write> ioReq = IOProtocol::Write::Create();
+    ioReq->Url = url;
+    ioReq->Data.Add(data.Data(), data.Size());
+    state->requestRouter->Put(ioReq);
+    return ioReq;
+}
+
+//------------------------------------------------------------------------------
 void
 IO::Put(const Ptr<IOProtocol::Request>& ioReq) {
     o_assert_dbg(IsValid());
