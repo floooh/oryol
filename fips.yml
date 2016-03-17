@@ -33,6 +33,7 @@ exports:
         # engine modules
         Core :          code/Modules/Core
         IO :            code/Modules/IO
+        LocalFS :       code/Modules/LocalFS
         Messaging :     code/Modules/Messaging
         HTTP :          code/Modules/HTTP
         Gfx :           code/Modules/Gfx
