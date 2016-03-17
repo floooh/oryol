@@ -20,7 +20,7 @@ public:
     /// default constructor
     FileSystem();
     /// destructor
-    ~FileSystem();
+    virtual ~FileSystem();
 
     /// called once on main-thread
     virtual void Init(const StringAtom& scheme);
