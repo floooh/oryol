@@ -13,6 +13,7 @@ imports:
         git: https://github.com/floooh/fips-zlib.git
     fips-glfw:
         git: https://github.com/floooh/fips-glfw.git
+        rev: 62319ab9
     fips-libcurl:
         git: https://github.com/floooh/fips-libcurl.git
     fips-remotery:
