@@ -6,7 +6,8 @@
 */
 #include "Core/Types.h"
 #include "Gfx/Setup/GfxSetup.h"
-#include "vlk_decl.h"
+#include "Gfx/vlk/vlk_decl.h"
+#include "Gfx/vlk/vlkConfig.h"
 
 namespace Oryol {
 namespace _priv {
@@ -18,13 +19,15 @@ public:
     /// setup instance and device
     void setup(const GfxSetup& setup, const char** instExtensions, int numInstExtensions);
     /// setup the swap chain
-    void setupSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs);
+    void setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf);
     /// discard everything
     void discard();
 
     VkInstance Instance = nullptr;
     VkPhysicalDevice PhysicalDevice = nullptr;
     VkDevice Device = nullptr;
+    VkSurfaceKHR Surface = 0;
+    VkQueue Queue = nullptr; 
 
 private:
     /// enumerate available instance layers, and find requested layers
@@ -35,6 +38,14 @@ private:
     void setupInstanceExtensions(const char** extensions, int numExtensions);
     /// discard instance extension list
     void discardInstanceExtensions();
+    /// setup the error reporting callback
+    #if ORYOL_DEBUG
+    void setupErrorReporting();
+    #endif
+    /// discard the error reporting callback
+    #if ORYOL_DEBUG
+    void discardErrorReporting();
+    #endif
     /// setup the Vulkan instance
     void setupInstance(const GfxSetup& setup);
     /// discard the Vulkan instance
@@ -55,20 +66,34 @@ private:
     void setupQueueFamilies();
     /// discard device queue family list
     void discardQueueFamilies();
+    /// initialize the graphics and present queue indices
+    void initQueueIndices(VkSurfaceKHR surf);
+    /// setup the logical device
+    void setupDevice();
+    /// discard the logical device and KHR surface
+    void discardDeviceAndSurface();
+    /// setup the supported surface formats
+    void setupSurfaceFormats(const GfxSetup& setup);
+    /// discard the surface format list
+    void discardSurfaceFormats();
+    /// setup the command pool and command buffers
+    void setupCommandPoolAndBuffers();
+    /// discard the command pool and command buffers
+    void discardCommandPoolAndBuffers();
 
     /// find instance or device layer index, return InvalidIndex if not supported
     static int findLayer(const char* name, const VkLayerProperties* layers, int numLayers);
     /// dump layer information to console
     static void dumpLayerInfo(const char* title, const VkLayerProperties* layers, int numLayers);
     /// select requested layers from available layers
-    static void selectLayers(const char** reqLayers, int numReqLayers, const VkLayerProperties* availLayers, int numAvailLayers, const char** outSelLayers, int& outNumSelLayers);
+    static void selectLayers(const char** reqLayers, int numReqLayers, const VkLayerProperties* availLayers, int numAvailLayers, const char** outSelLayers, int& inOutNumSelLayers);
 
     /// find instance or device extension index, return InvalidIndex if not supported
     static int findExtension(const char* name, const VkExtensionProperties* exts, int numExts);
     /// dump extension information to console
     static void dumpExtensionInfo(const char* title, const VkExtensionProperties* exts, int numExts);
     /// select requested extensions from available extensions
-    static void selectExtensions(const char** reqExts, int numReqExts, const VkExtensionProperties* availExts, int numAvailExts, const char** outSelExts, int& outNumSelExts);
+    static void selectExtensions(const char** reqExts, int numReqExts, const VkExtensionProperties* availExts, int numAvailExts, const char** outSelExts, int& inOutNumSelExts);
 
     uint32 numInstLayers = 0;
     VkLayerProperties* instLayers = nullptr;
@@ -80,8 +105,16 @@ private:
     VkLayerProperties* devLayers = nullptr;
     uint32 numDevExtensions = 0;
     VkExtensionProperties* devExtensions = nullptr;
-    uint32 numQueueFamilies = 0;
-    VkQueueFamilyProperties* queueFamilies = nullptr;
+    uint32 numQueues = 0;
+    VkQueueFamilyProperties* queueProps = nullptr;
+    int graphicsQueueIndex = InvalidIndex;
+    int presentQueueIndex = InvalidIndex;
+    uint32 numSurfaceFormats = 0;
+    VkSurfaceFormatKHR* surfaceFormats = nullptr;
+    VkFormat format = VK_FORMAT_MAX_ENUM;
+    VkColorSpaceKHR colorSpace = VK_COLORSPACE_MAX_ENUM;
+    VkCommandPool cmdPool = nullptr;
+    VkCommandBuffer cmdBuffers[vlkConfig::NumFrames] = { };
 
     static const int maxSelLayers = 32;
     int numSelInstLayers = 0;
@@ -94,6 +127,10 @@ private:
     const char* selInstExtensions[maxSelExtensions] = { };
     int numSelDevExtensions = 0;
     const char* selDevExtensions[maxSelExtensions] = { };
+
+    #ifdef ORYOL_DEBUG
+    VkDebugReportCallbackEXT debugReportCallback = nullptr;
+    #endif
 };
 
 } // namespace _priv

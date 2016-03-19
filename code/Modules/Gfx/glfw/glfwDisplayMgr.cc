@@ -9,6 +9,9 @@
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/glDebugOutput.h"
 #endif
+#if ORYOL_VULKAN
+#include "Gfx/vlk/vlk_impl.h"
+#endif
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"
@@ -134,7 +137,11 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     // create the application window
     this->createMainWindow(setup);
 
-    // FIXME: initialize Vulkan swap chain
+    // initialize Vulkan swap chain
+    VkSurfaceKHR surf = 0;
+    glfwCreateWindowSurface(this->vlkContext.Instance, this->glfwWindow, nullptr, &surf);
+    o_assert_dbg(surf);
+    this->vlkContext.setupDeviceAndSwapChain(setup, this->displayAttrs, surf);
 }
 #endif
 

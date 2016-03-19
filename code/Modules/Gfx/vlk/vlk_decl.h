@@ -17,12 +17,23 @@ VK_DEFINE_HANDLE(VkInstance)
 VK_DEFINE_HANDLE(VkPhysicalDevice)
 VK_DEFINE_HANDLE(VkDevice)
 VK_DEFINE_HANDLE(VkQueue)
+VK_DEFINE_HANDLE(VkCommandBuffer)
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkCommandPool)
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDebugReportCallbackEXT)
 
 typedef void VkLayerProperties;
 typedef void VkExtensionProperties;
 typedef void VkQueueFamilyProperties;
 
 typedef enum VkPhysicalDeviceType VkPhysicalDeviceType;
+typedef struct VkSurfaceFormatKHR VkSurfaceFormatKHR;
+typedef enum VkFormat {
+    VK_FORMAT_MAX_ENUM = 0x7FFFFFFF
+} VkFormat;
+typedef enum VkColorSpaceKHR {
+    VK_COLORSPACE_MAX_ENUM = 0x7FFFFFFF
+} VkColorSpaceKHR;
 
 typedef struct VkAllocationCallbacks {
     void*                                   pUserData;
@@ -32,4 +43,5 @@ typedef struct VkAllocationCallbacks {
     void (*pfnInternalAllocation)();
     void (*pfnInternalFree)();
 } VkAllocationCallbacks;
+
 #endif // __vulkan_h_
