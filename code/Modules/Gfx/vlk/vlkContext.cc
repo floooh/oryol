@@ -692,32 +692,40 @@ vlkContext::discardCommandPoolAndBuffers() {
 
 //------------------------------------------------------------------------------
 void
+vlkContext::beginCmdBuffer() {
+    VkCommandBufferInheritanceInfo inhInfo = {};
+    inhInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    VkCommandBufferBeginInfo bgnInfo = {};
+    bgnInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    bgnInfo.pInheritanceInfo = &inhInfo;
+    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+    VkResult err = vkBeginCommandBuffer(cmdBuf, &bgnInfo);
+    o_assert(!err);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::submitCmdBuffer() {
+    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+    VkResult err = vkEndCommandBuffer(cmdBuf);
+    o_assert(!err);
+
+    const VkCommandBuffer cmdBufs[] = { cmdBuf };
+    VkFence nullFence = { VK_NULL_HANDLE };
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = cmdBufs;
+    err = vkQueueSubmit(this->Queue, 1, &submitInfo, nullFence);
+    o_assert(!err);
+}
+
+//------------------------------------------------------------------------------
+void
 vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout) {
     o_assert(this->Device);
     o_assert(this->cmdPool);
     o_assert(img);
-    VkResult err;
-
-    // allocate and begin command buffer on demand
-    // FIXME: I think state transitions should run on the normal draw command buffers, just like on D3D12?
-    if (!this->imageLayoutCmdBuffer) {
-        VkCommandBufferAllocateInfo createInfo = { };
-        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        createInfo.pNext = nullptr;
-        createInfo.commandPool = this->cmdPool;
-        createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        createInfo.commandBufferCount = 1;
-        err = vkAllocateCommandBuffers(this->Device, &createInfo, &this->imageLayoutCmdBuffer);
-        assert(!err);
-
-        VkCommandBufferInheritanceInfo inhInfo = { };
-        inhInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        VkCommandBufferBeginInfo bgnInfo = { };
-        bgnInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        bgnInfo.pInheritanceInfo = &inhInfo;
-        err = vkBeginCommandBuffer(this->imageLayoutCmdBuffer, &bgnInfo);
-        o_assert(!err);
-    }
 
     VkImageMemoryBarrier imgMemBarrier = { };
     imgMemBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -740,7 +748,8 @@ vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, Vk
             break;
     }
     const VkImageMemoryBarrier* pImgMemBarriers = &imgMemBarrier;
-    vkCmdPipelineBarrier(this->imageLayoutCmdBuffer,            // commandBuffer
+    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+    vkCmdPipelineBarrier(cmdBuf,                                // commandBuffer
                          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,     // srcStageMask
                          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,     // dstStageMask
                          0,                                     // dependencyFLags
@@ -750,32 +759,6 @@ vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, Vk
                          nullptr,                               // pBufferMemoryBarriers
                          1,                                     // imageMemoryBarrierCount
                          pImgMemBarriers);                      // pImageMemoryBarriers
-}
-
-//------------------------------------------------------------------------------
-void
-vlkContext::flushImageLayouts() {
-    o_assert(this->Queue);
-
-    if (!this->imageLayoutCmdBuffer) {
-        return;
-    }
-
-    VkResult err = vkEndCommandBuffer(this->imageLayoutCmdBuffer);
-    o_assert(!err);
-
-    const VkCommandBuffer cmdBufs[] = { this->imageLayoutCmdBuffer };
-    VkFence nullFence = { VK_NULL_HANDLE };
-    VkSubmitInfo submitInfo = { };
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = cmdBufs;
-    err = vkQueueSubmit(this->Queue, 1, &submitInfo, nullFence);
-    o_assert(!err);
-    err = vkQueueWaitIdle(this->Queue);
-    o_assert(!err);
-    vkFreeCommandBuffers(this->Device, this->cmdPool, 1, cmdBufs);
-    this->imageLayoutCmdBuffer = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -925,9 +908,12 @@ vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& a
     vkGetDeviceQueue(this->Device, this->graphicsQueueIndex, 0, &this->Queue);
     this->setupSurfaceFormats(setup);
     this->setupCommandPoolAndBuffers();
-    DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
 
-    this->flushImageLayouts();
+    this->beginCmdBuffer();
+    DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
+    this->submitCmdBuffer();
+    vkQueueWaitIdle(this->Queue);
+
     return outAttrs;
 }
 

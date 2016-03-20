@@ -102,8 +102,15 @@ private:
 
     /// transition image layout from old to new state
     void transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
-    /// flush image layout transitions
-    void flushImageLayouts();
+
+    /// begin writing commands to current command buffer
+    void beginCmdBuffer();
+    /// submit commands in current command buffer
+    void submitCmdBuffer();
+    /// get current command buffer for this frame
+    VkCommandBuffer curCmdBuffer() {
+        return this->cmdBuffers[this->curFrameRotateIndex];
+    };
 
     uint32 numInstLayers = 0;
     VkLayerProperties* instLayers = nullptr;
@@ -125,6 +132,7 @@ private:
     VkColorSpaceKHR colorSpace = VK_COLORSPACE_MAX_ENUM;
     VkCommandPool cmdPool = nullptr;
     VkCommandBuffer cmdBuffers[vlkConfig::NumFrames] = { };
+    int curFrameRotateIndex = 0;
     static const int MaxNumSwapChainBuffers = 4;
     uint32 numSwapChainBuffers = 0;
     struct SwapChainBuffer {
@@ -132,8 +140,6 @@ private:
         VkImageView imageView = nullptr;
     };
     SwapChainBuffer swapChainBuffers[MaxNumSwapChainBuffers];
-
-    VkCommandBuffer imageLayoutCmdBuffer = nullptr;
 
     static const int maxSelLayers = 32;
     int numSelInstLayers = 0;
