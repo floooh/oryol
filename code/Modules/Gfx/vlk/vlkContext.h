@@ -19,7 +19,7 @@ public:
     /// setup instance and device
     void setup(const GfxSetup& setup, const char** instExtensions, int numInstExtensions);
     /// setup the swap chain
-    void setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf);
+    DisplayAttrs setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf);
     /// discard everything
     void discard();
 
@@ -28,6 +28,7 @@ public:
     VkDevice Device = nullptr;
     VkSurfaceKHR Surface = 0;
     VkQueue Queue = nullptr; 
+    VkSwapchainKHR SwapChain = nullptr;
 
 private:
     /// enumerate available instance layers, and find requested layers
@@ -80,6 +81,10 @@ private:
     void setupCommandPoolAndBuffers();
     /// discard the command pool and command buffers
     void discardCommandPoolAndBuffers();
+    /// setup the actual swap chain
+    DisplayAttrs setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs);
+    /// discard the swap chain, will not destroy actual swap chain if this is a resize
+    void discardSwapchain(bool forResize);
 
     /// find instance or device layer index, return InvalidIndex if not supported
     static int findLayer(const char* name, const VkLayerProperties* layers, int numLayers);
@@ -94,6 +99,11 @@ private:
     static void dumpExtensionInfo(const char* title, const VkExtensionProperties* exts, int numExts);
     /// select requested extensions from available extensions
     static void selectExtensions(const char** reqExts, int numReqExts, const VkExtensionProperties* availExts, int numAvailExts, const char** outSelExts, int& inOutNumSelExts);
+
+    /// transition image layout from old to new state
+    void transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
+    /// flush image layout transitions
+    void flushImageLayouts();
 
     uint32 numInstLayers = 0;
     VkLayerProperties* instLayers = nullptr;
@@ -115,6 +125,15 @@ private:
     VkColorSpaceKHR colorSpace = VK_COLORSPACE_MAX_ENUM;
     VkCommandPool cmdPool = nullptr;
     VkCommandBuffer cmdBuffers[vlkConfig::NumFrames] = { };
+    static const int MaxNumSwapChainBuffers = 4;
+    uint32 numSwapChainBuffers = 0;
+    struct SwapChainBuffer {
+        VkImage image = nullptr;
+        VkImageView imageView = nullptr;
+    };
+    SwapChainBuffer swapChainBuffers[MaxNumSwapChainBuffers];
+
+    VkCommandBuffer imageLayoutCmdBuffer = nullptr;
 
     static const int maxSelLayers = 32;
     int numSelInstLayers = 0;

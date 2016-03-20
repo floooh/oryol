@@ -18,9 +18,16 @@ VK_DEFINE_HANDLE(VkPhysicalDevice)
 VK_DEFINE_HANDLE(VkDevice)
 VK_DEFINE_HANDLE(VkQueue)
 VK_DEFINE_HANDLE(VkCommandBuffer)
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkImage)
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkImageView)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkCommandPool)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDebugReportCallbackEXT)
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSwapchainKHR)
+
+typedef uint32_t VkFlags;
+typedef VkFlags VkImageAspectFlags;
+typedef enum VkImageLayout vkImageLayout;
 
 typedef void VkLayerProperties;
 typedef void VkExtensionProperties;

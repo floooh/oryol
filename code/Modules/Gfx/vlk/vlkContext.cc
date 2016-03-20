@@ -17,7 +17,12 @@
 static PFN_vkCreateDebugReportCallbackEXT fpCreateDebugReportCallbackEXT = nullptr;
 static PFN_vkDestroyDebugReportCallbackEXT fpDestroyDebugReportCallbackEXT = nullptr;
 static PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR = nullptr;
-static PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR = nullptr;;
+static PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+static PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR = nullptr;
+static PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+static PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR = nullptr;
+static PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR = nullptr;
+static PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR = nullptr;
 
 namespace Oryol {
 namespace _priv {
@@ -82,6 +87,7 @@ vlkContext::setup(const GfxSetup& setup, const char** requiredInstanceExtensions
 //------------------------------------------------------------------------------
 void
 vlkContext::discard() {
+    this->discardSwapchain(false);
     this->discardCommandPoolAndBuffers();
     this->discardSurfaceFormats();
     this->discardDeviceAndSurface();
@@ -686,6 +692,228 @@ vlkContext::discardCommandPoolAndBuffers() {
 
 //------------------------------------------------------------------------------
 void
+vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout) {
+    o_assert(this->Device);
+    o_assert(this->cmdPool);
+    o_assert(img);
+    VkResult err;
+
+    // allocate and begin command buffer on demand
+    // FIXME: I think state transitions should run on the normal draw command buffers, just like on D3D12?
+    if (!this->imageLayoutCmdBuffer) {
+        VkCommandBufferAllocateInfo createInfo = { };
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.commandPool = this->cmdPool;
+        createInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        createInfo.commandBufferCount = 1;
+        err = vkAllocateCommandBuffers(this->Device, &createInfo, &this->imageLayoutCmdBuffer);
+        assert(!err);
+
+        VkCommandBufferInheritanceInfo inhInfo = { };
+        inhInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        VkCommandBufferBeginInfo bgnInfo = { };
+        bgnInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        bgnInfo.pInheritanceInfo = &inhInfo;
+        err = vkBeginCommandBuffer(this->imageLayoutCmdBuffer, &bgnInfo);
+        o_assert(!err);
+    }
+
+    VkImageMemoryBarrier imgMemBarrier = { };
+    imgMemBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    imgMemBarrier.oldLayout = oldLayout;
+    imgMemBarrier.newLayout = newLayout;
+    imgMemBarrier.image = img;
+    imgMemBarrier.subresourceRange = { aspectMask, 0, 1, 0, 1 };
+    switch (newLayout) {
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL: 
+            imgMemBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT; 
+            break;
+        case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+            imgMemBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+            imgMemBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            break;
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            imgMemBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT|VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+            break;
+    }
+    const VkImageMemoryBarrier* pImgMemBarriers = &imgMemBarrier;
+    vkCmdPipelineBarrier(this->imageLayoutCmdBuffer,            // commandBuffer
+                         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,     // srcStageMask
+                         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,     // dstStageMask
+                         0,                                     // dependencyFLags
+                         0,                                     // memoryBarrierCount
+                         nullptr,                               // pMemoryBarriers
+                         0,                                     // bufferMemoryBarrierCount
+                         nullptr,                               // pBufferMemoryBarriers
+                         1,                                     // imageMemoryBarrierCount
+                         pImgMemBarriers);                      // pImageMemoryBarriers
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::flushImageLayouts() {
+    o_assert(this->Queue);
+
+    if (!this->imageLayoutCmdBuffer) {
+        return;
+    }
+
+    VkResult err = vkEndCommandBuffer(this->imageLayoutCmdBuffer);
+    o_assert(!err);
+
+    const VkCommandBuffer cmdBufs[] = { this->imageLayoutCmdBuffer };
+    VkFence nullFence = { VK_NULL_HANDLE };
+    VkSubmitInfo submitInfo = { };
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = cmdBufs;
+    err = vkQueueSubmit(this->Queue, 1, &submitInfo, nullFence);
+    o_assert(!err);
+    err = vkQueueWaitIdle(this->Queue);
+    o_assert(!err);
+    vkFreeCommandBuffers(this->Device, this->cmdPool, 1, cmdBufs);
+    this->imageLayoutCmdBuffer = 0;
+}
+
+//------------------------------------------------------------------------------
+DisplayAttrs
+vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs) {
+
+    // NOTE: this will also destroy the previous swap chain (if one exists)
+    // do NOT call discardSwapChain() during a resize operation, only
+    // on final cleanup
+    o_assert(this->Instance);
+    o_assert(this->PhysicalDevice);
+    o_assert(this->Device);
+    o_assert(this->Surface);
+
+    // lookup required function pointers
+    INST_FUNC_PTR(this->Instance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
+    INST_FUNC_PTR(this->Instance, GetPhysicalDeviceSurfacePresentModesKHR);
+    INST_FUNC_PTR(this->Instance, CreateSwapchainKHR);
+    INST_FUNC_PTR(this->Instance, DestroySwapchainKHR);
+    INST_FUNC_PTR(this->Instance, GetSwapchainImagesKHR);
+
+    VkSurfaceCapabilitiesKHR surfCaps = { };
+    VkResult err = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(this->PhysicalDevice, this->Surface, &surfCaps);
+    o_assert(!err);
+    o_assert(surfCaps.currentExtent.width != (uint32)-1);
+    o_assert(surfCaps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
+    o_assert(surfCaps.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+
+    // FIXME: this doesn't seem to have any purpose except supressing a validation layer error(?)
+    static const int maxPresentModeCount = 8;
+    uint32 presentModeCount = 0;
+    err = fpGetPhysicalDeviceSurfacePresentModesKHR(this->PhysicalDevice, this->Surface, &presentModeCount, nullptr);
+    o_assert(presentModeCount < maxPresentModeCount);
+    VkPresentModeKHR presentModes[maxPresentModeCount] = { };
+    err = fpGetPhysicalDeviceSurfacePresentModesKHR(this->PhysicalDevice, this->Surface, &presentModeCount, presentModes);
+    o_assert(presentModeCount < maxPresentModeCount);
+
+    // Determine the number of VkImage's to use in the swap chain (we desire to 
+    // own only 1 image at a time, besides the images being displayed and
+    // queued for display):
+    uint32 desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
+    if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount)) {
+        // Application must settle for fewer images than desired:
+        desiredNumberOfSwapchainImages = surfCaps.maxImageCount;
+    }
+    o_assert(desiredNumberOfSwapchainImages < MaxNumSwapChainBuffers);
+
+    VkSwapchainKHR oldSwapChain = this->SwapChain;
+    this->SwapChain = nullptr;
+
+    VkSwapchainCreateInfoKHR swapChainInfo = { };
+    swapChainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapChainInfo.pNext = nullptr;
+    swapChainInfo.surface = this->Surface;
+    swapChainInfo.minImageCount = desiredNumberOfSwapchainImages;
+    swapChainInfo.imageFormat = this->format;
+    swapChainInfo.imageColorSpace = this->colorSpace;
+    swapChainInfo.imageExtent = surfCaps.currentExtent;
+    swapChainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapChainInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapChainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapChainInfo.imageArrayLayers = 1;
+    swapChainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapChainInfo.queueFamilyIndexCount = 0;
+    swapChainInfo.pQueueFamilyIndices = nullptr;
+    swapChainInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    swapChainInfo.oldSwapchain = oldSwapChain;
+    swapChainInfo.clipped = true;
+    err = fpCreateSwapchainKHR(this->Device, &swapChainInfo, nullptr, &this->SwapChain);
+    o_assert(!err && this->SwapChain);
+
+    // If we just re-created an existing swapchain, we should destroy the old
+    // swapchain at this point.
+    // Note: destroying the swapchain also cleans up all its associated
+    // presentable images once the platform is done with them.
+    if (oldSwapChain) {
+        fpDestroySwapchainKHR(this->Device, oldSwapChain, nullptr);
+    }
+
+    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->numSwapChainBuffers, nullptr);
+    o_assert(!err && (this->numSwapChainBuffers < MaxNumSwapChainBuffers));
+    VkImage swapChainImages[MaxNumSwapChainBuffers];
+    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->numSwapChainBuffers, swapChainImages);
+    o_assert(!err);
+    for (uint32 i = 0; i < this->numSwapChainBuffers; i++) {
+        this->swapChainBuffers[i].image = swapChainImages[i];
+
+        // Render loop will expect image to have been used before and in
+        // VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        // layout and will change to COLOR_ATTACHMENT_OPTIMAL, so init the image
+        // to that state
+        this->transitionImageLayout(swapChainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+        VkImageViewCreateInfo imgViewCreateInfo = { };
+        imgViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        imgViewCreateInfo.pNext = nullptr;
+        imgViewCreateInfo.format = this->format;
+        imgViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+        imgViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+        imgViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+        imgViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+        imgViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imgViewCreateInfo.subresourceRange.baseMipLevel = 0;
+        imgViewCreateInfo.subresourceRange.levelCount = 1;
+        imgViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+        imgViewCreateInfo.subresourceRange.layerCount = 1;
+        imgViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imgViewCreateInfo.flags = 0;
+        imgViewCreateInfo.image = swapChainImages[i];
+        err = vkCreateImageView(this->Device, &imgViewCreateInfo, nullptr, &this->swapChainBuffers[i].imageView);
+        o_assert(!err && this->swapChainBuffers[i].imageView);
+    }
+    DisplayAttrs result = attrs;
+    result.FramebufferWidth = surfCaps.currentExtent.width;
+    result.FramebufferHeight = surfCaps.currentExtent.height;
+    return result;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardSwapchain(bool forResize) {
+    o_assert(this->Device);
+    o_assert(fpDestroySwapchainKHR);
+    for (uint32 i = 0; i < this->numSwapChainBuffers; i++) {
+        o_assert(this->swapChainBuffers[i].imageView);
+        vkDestroyImageView(this->Device, this->swapChainBuffers[i].imageView, nullptr);
+        this->swapChainBuffers[i].image = nullptr;
+        this->swapChainBuffers[i].imageView = nullptr;
+    }
+    if (!forResize) {
+        o_assert(this->SwapChain);
+        fpDestroySwapchainKHR(this->Device, this->SwapChain, nullptr);
+        this->SwapChain = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+DisplayAttrs
 vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf) {
     o_assert(this->PhysicalDevice);
     o_assert(0 == this->Surface);
@@ -697,6 +925,10 @@ vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& a
     vkGetDeviceQueue(this->Device, this->graphicsQueueIndex, 0, &this->Queue);
     this->setupSurfaceFormats(setup);
     this->setupCommandPoolAndBuffers();
+    DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
+
+    this->flushImageLayouts();
+    return outAttrs;
 }
 
 } // namespace _priv
