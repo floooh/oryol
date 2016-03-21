@@ -328,5 +328,41 @@ TEST(ArrayTest) {
     CHECK(popArray.PopFront() == 1);
     CHECK(popArray.Size() == 6);
     CHECK(popArray.Front() == 2);
-}
 
+    // resize
+    Array<int> resizeArray({ 0, 1, 2, 3, 4, 5});
+    CHECK(resizeArray.Size() == 6);
+    resizeArray.Resize(3);
+    CHECK(resizeArray.Size() == 3);
+    CHECK(resizeArray[0] == 0);
+    CHECK(resizeArray[1] == 1);
+    CHECK(resizeArray[2] == 2);
+    resizeArray.Resize(7, 6);
+    CHECK(resizeArray.Size() == 7);
+    CHECK(resizeArray[0] == 0);
+    CHECK(resizeArray[1] == 1);
+    CHECK(resizeArray[2] == 2);
+    CHECK(resizeArray[3] == 6);
+    CHECK(resizeArray[4] == 6);
+    CHECK(resizeArray[5] == 6);
+    CHECK(resizeArray[6] == 6);
+    resizeArray.Resize(0);
+    CHECK(resizeArray.Empty());
+
+    // data pointers
+    Array<int> dataArray;
+    CHECK(nullptr == dataArray.Data());
+    dataArray.Add({ 0, 1, 2, 3 });
+    CHECK(dataArray.Size() == 4);
+    CHECK(nullptr != dataArray.Data());
+    CHECK(0 == dataArray.Data()[0]);
+    CHECK(1 == dataArray.Data()[1]);
+    CHECK(2 == dataArray.Data()[2]);
+    CHECK(3 == dataArray.Data()[3]);
+    dataArray.PopBack();
+    dataArray.PopBack();
+    dataArray.PopBack();
+    dataArray.PopBack();
+    CHECK(dataArray.Empty());
+    CHECK(nullptr == dataArray.Data());
+}

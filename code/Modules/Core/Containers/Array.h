@@ -89,6 +89,8 @@ public:
     void Trim();
     /// clear the array (deletes elements, keeps capacity)
     void Clear();
+    /// resize to given size by adding or removing elements
+    void Resize(int32 newSize, const TYPE& val=TYPE());
     
     /// copy-add element to back of array
     void Add(const TYPE& elm);
@@ -96,6 +98,9 @@ public:
     void Add(TYPE&& elm);
     /// construct-add new element at back of array
     template<class... ARGS> void Add(ARGS&&... args);
+    /// add elements from initializer list
+    void Add(std::initializer_list<TYPE> l);
+
     /// copy-insert element at index, keep array order
     void Insert(int32 index, const TYPE& elm);
     /// move-insert element at index, keep array order
@@ -117,6 +122,11 @@ public:
     /// find element index with slow linear search, return InvalidIndex if not found
     int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex) const;
     
+    /// get pointer to first element, or nullptr if empty
+    TYPE* Data();
+    /// get pointer to first element, or nullptr if empty
+    const TYPE* Data() const;
+
     /// C++ conform begin
     TYPE* begin();
     /// C++ conform begin
@@ -305,6 +315,23 @@ Array<TYPE>::Clear() {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
+Array<TYPE>::Resize(int newSize, const TYPE& val) {
+    int32 curSize = this->buffer.size();
+    if (newSize > curSize) {
+        this->Reserve(newSize - curSize);
+        for (; curSize < newSize; curSize++) {
+            this->Add(val);
+        }
+    }
+    else if (newSize < curSize) {
+        for (; curSize > newSize; curSize--) {
+            this->PopBack();
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
 Array<TYPE>::Add(const TYPE& elm) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
@@ -320,7 +347,16 @@ Array<TYPE>::Add(TYPE&& elm) {
     }
     this->buffer.pushBack(std::move(elm));
 }
-    
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+Array<TYPE>::Add(std::initializer_list<TYPE> l) {
+    this->Reserve(int32(l.size()));
+    for (const auto& elm : l) {
+        this->Add(elm);
+    }
+}
+
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Insert(int32 index, const TYPE& elm) {
@@ -407,7 +443,29 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) 
     // fallthrough: not found
     return InvalidIndex;
 }
-    
+
+//------------------------------------------------------------------------------
+template<class TYPE> TYPE*
+Array<TYPE>::Data() {
+    if (this->Empty()) {
+        return nullptr;
+    }
+    else {
+        return this->buffer.elmStart;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> const TYPE*
+Array<TYPE>::Data() const {
+    if (this->Empty()) {
+        return nullptr;
+    }
+    else {
+        return this->buffer.elmStart;
+    }
+}
+
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::begin() {
