@@ -132,6 +132,7 @@ private:
     /// private generic apply texture block method
     template<class T> static void applyTextureBlock(const T& tb);
 
+    // FIXME: _state should be forward-declared, so that Gfx.h doesn't need to include all these headers
     struct _state {
         class GfxSetup gfxSetup;
         GfxFrameInfo gfxFrameInfo;

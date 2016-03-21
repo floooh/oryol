@@ -129,7 +129,12 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     // initialize Vulkan instance and device
     uint32_t numRequiredExtensions = 0;
     const char** requiredExtensions = glfwGetRequiredInstanceExtensions(&numRequiredExtensions);
-    this->vlkContext.setup(setup, requiredExtensions, numRequiredExtensions);
+    Array<const char*> exts;
+    exts.Reserve(numRequiredExtensions);
+    for (uint32_t i = 0; i < numRequiredExtensions; i++) {
+        exts.Add(requiredExtensions[i]);
+    }
+    this->vlkContext.setup(setup, exts);
 
     // Vulkan-specific window hints
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
