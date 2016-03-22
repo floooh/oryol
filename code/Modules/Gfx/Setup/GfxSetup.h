@@ -47,7 +47,7 @@ public:
     int32 SwapInterval = 1;
     /// window title
     String Title = "Oryol";
-    /// optional clear-hint how the default render target is clear, used in D3D12 for MSAA backbuffer
+    /// how to clear the default render target
     ClearState ClearHint;
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;

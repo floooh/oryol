@@ -30,6 +30,10 @@ public:
     VkSurfaceKHR Surface = nullptr;
     VkQueue Queue = nullptr; 
     VkSwapchainKHR SwapChain = nullptr;
+    VkRenderPass RenderPass = nullptr;
+    static const int MaxNumBuffers = 4;
+    uint32 NumBuffers = 0;
+    VkFramebuffer Framebuffers[MaxNumBuffers];
 
 private:
     /// enumerate available instance layers, and find requested layers
@@ -90,6 +94,14 @@ private:
     void setupDepthBuffer(const GfxSetup& setup, const DisplayAttrs& attrs);
     /// discard the depth/stencil buffer
     void discardDepthBuffer();
+    /// setup default render pass
+    void setupRenderPass(const GfxSetup& setup);
+    /// discard default render pass
+    void discardRenderPass();
+    /// setup framebuffers
+    void setupFramebuffers(const DisplayAttrs& attrs);
+    /// discard framebuffers
+    void discardFramebuffers();
 
     /// find instance or device layer index, return InvalidIndex if not supported
     static int findLayer(const char* name, const Array<VkLayerProperties>& layers);
@@ -135,13 +147,12 @@ private:
     VkCommandPool cmdPool = nullptr;
     VkCommandBuffer cmdBuffers[vlkConfig::NumFrames] = { };
     int curFrameRotateIndex = 0;
-    static const int MaxNumSwapChainBuffers = 4;
-    uint32 numSwapChainBuffers = 0;
     struct SwapChainBuffer {
         VkImage image = nullptr;
         VkImageView view = nullptr;
     };
-    SwapChainBuffer swapChainBuffers[MaxNumSwapChainBuffers];
+    SwapChainBuffer swapChainBuffers[MaxNumBuffers];
+    VkFramebuffer frameBuffers[MaxNumBuffers] = { };
     struct DepthBuffer {
         VkFormat format = VK_FORMAT_UNDEFINED;
         VkImage image = nullptr;

@@ -77,6 +77,8 @@ vlkContext::setup(const GfxSetup& setup, const Array<const char*>& requestedInst
 //------------------------------------------------------------------------------
 void
 vlkContext::discard() {
+    this->discardFramebuffers();
+    this->discardRenderPass();
     this->discardDepthBuffer();
     this->discardSwapchain(false);
     this->discardCommandPoolAndBuffers();
@@ -745,7 +747,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs) {
         // Application must settle for fewer images than desired:
         desiredNumberOfSwapchainImages = surfCaps.maxImageCount;
     }
-    o_assert(desiredNumberOfSwapchainImages < MaxNumSwapChainBuffers);
+    o_assert(desiredNumberOfSwapchainImages < MaxNumBuffers);
 
     VkSwapchainKHR oldSwapChain = this->SwapChain;
     this->SwapChain = nullptr;
@@ -778,12 +780,12 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs) {
         fpDestroySwapchainKHR(this->Device, oldSwapChain, nullptr);
     }
 
-    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->numSwapChainBuffers, nullptr);
-    o_assert(!err && (this->numSwapChainBuffers < MaxNumSwapChainBuffers));
-    VkImage swapChainImages[MaxNumSwapChainBuffers];
-    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->numSwapChainBuffers, swapChainImages);
+    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->NumBuffers, nullptr);
+    o_assert(!err && (this->NumBuffers < MaxNumBuffers));
+    VkImage swapChainImages[MaxNumBuffers];
+    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->NumBuffers, swapChainImages);
     o_assert(!err);
-    for (uint32 i = 0; i < this->numSwapChainBuffers; i++) {
+    for (uint32 i = 0; i < this->NumBuffers; i++) {
         this->swapChainBuffers[i].image = swapChainImages[i];
 
         // Render loop will expect image to have been used before and in
@@ -814,7 +816,7 @@ void
 vlkContext::discardSwapchain(bool forResize) {
     o_assert(this->Device);
     o_assert(fpDestroySwapchainKHR);
-    for (uint32 i = 0; i < this->numSwapChainBuffers; i++) {
+    for (uint32 i = 0; i < this->NumBuffers; i++) {
         o_assert(this->swapChainBuffers[i].view);
         vkDestroyImageView(this->Device, this->swapChainBuffers[i].view, nullptr);
         this->swapChainBuffers[i].image = nullptr;
@@ -834,6 +836,7 @@ vlkContext::setupDepthBuffer(const GfxSetup& setup, const DisplayAttrs& attrs) {
     o_assert(nullptr == this->depthBuffer.image);
     o_assert(nullptr == this->depthBuffer.mem);
     o_assert(nullptr == this->depthBuffer.view);
+    o_assert(VK_FORMAT_UNDEFINED == this->depthBuffer.format);
     
     if (PixelFormat::None == attrs.DepthPixelFormat) {
         // no depth buffer requested
@@ -909,6 +912,124 @@ vlkContext::discardDepthBuffer() {
 }
 
 //------------------------------------------------------------------------------
+void
+vlkContext::setupRenderPass(const GfxSetup& setup) {
+    o_assert(this->Device);
+    o_assert(nullptr == this->RenderPass);    
+    
+    // one color and one depth attachment
+    int numAttachments = 1;
+    VkAttachmentDescription attachments[2] = { };
+    attachments[0].format = this->format;
+    attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+    if (setup.ClearHint.Actions & ClearState::ColorBit) {
+        attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    }
+    else {
+        attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    }
+    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    if (VK_FORMAT_UNDEFINED != this->depthBuffer.format) {
+        numAttachments++;
+        attachments[1].format = this->depthBuffer.format;
+        attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+        if (setup.ClearHint.Actions & ClearState::DepthBit) {
+            attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        }
+        else {
+            attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        }
+        attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        if (setup.ClearHint.Actions & ClearState::StencilBit) {
+            attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        }
+        else {
+            attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        }
+        attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    }
+    VkAttachmentReference colorRef = { };
+    colorRef.attachment = 0;
+    colorRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;    
+    VkAttachmentReference depthRef = { };
+    depthRef.attachment = 1;
+    depthRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkSubpassDescription subpass = { };
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorRef;
+    if (VK_FORMAT_UNDEFINED != this->depthBuffer.format) {
+        subpass.pDepthStencilAttachment = &depthRef;
+    }
+    VkRenderPassCreateInfo passInfo = { };
+    passInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    passInfo.attachmentCount = numAttachments;
+    passInfo.pAttachments = attachments;
+    passInfo.subpassCount = 1;
+    passInfo.pSubpasses = &subpass;
+    
+    VkResult err = vkCreateRenderPass(this->Device, &passInfo, nullptr, &this->RenderPass);
+    o_assert(!err && this->RenderPass);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardRenderPass() {
+    o_assert(this->Device);
+    o_assert(this->RenderPass);
+    vkDestroyRenderPass(this->Device, this->RenderPass, nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::setupFramebuffers(const DisplayAttrs& attrs) {
+    o_assert(this->Device);
+    o_assert(this->RenderPass);
+    
+    VkImageView attachments[2] = { };
+    int attachmentCount = 1;
+    if (VK_FORMAT_UNDEFINED != this->depthBuffer.format) {
+        attachments[1] = this->depthBuffer.view;
+        attachmentCount++;
+    }
+
+    VkFramebufferCreateInfo fbInfo = { };
+    fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    fbInfo.renderPass = this->RenderPass;
+    fbInfo.attachmentCount = attachmentCount;
+    fbInfo.pAttachments = attachments;
+    fbInfo.width = attrs.FramebufferWidth;
+    fbInfo.height = attrs.FramebufferHeight;
+    fbInfo.layers = 1; // ???
+    o_assert((this->NumBuffers > 0) && (this->NumBuffers < MaxNumBuffers));
+    VkResult err;
+    for (uint32 i = 0; i < this->NumBuffers; i++) {
+        o_assert(nullptr == this->Framebuffers[i]);
+        attachments[0] = this->swapChainBuffers[i].view;
+        err = vkCreateFramebuffer(this->Device, &fbInfo, nullptr, &(this->Framebuffers[i]));
+        o_assert(!err && this->Framebuffers[i]);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardFramebuffers() {
+    o_assert(this->Device);
+    for (int i = 0; i < MaxNumBuffers; i++) {
+        if (this->Framebuffers[i]) {
+            vkDestroyFramebuffer(this->Device, this->Framebuffers[i], nullptr);
+            this->Framebuffers[i] = nullptr;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 DisplayAttrs
 vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf) {
     o_assert(this->PhysicalDevice);
@@ -925,6 +1046,8 @@ vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& a
     this->beginCmdBuffer();
     DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
     this->setupDepthBuffer(setup, outAttrs);
+    this->setupRenderPass(setup);
+    this->setupFramebuffers(outAttrs);
     this->submitCmdBuffer();
     vkQueueWaitIdle(this->Queue);
 
