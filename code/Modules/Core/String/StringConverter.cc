@@ -223,4 +223,20 @@ StringConverter::FromString(const String& str) {
     return (float32) std::atof(str.AsCStr());
 }
 
+//------------------------------------------------------------------------------
+template<>
+String StringConverter::ToString(const int32& val) {
+    StringBuilder sb;
+    sb.Format(32, "%i", val);
+    return sb.GetString();
+}
+
+//------------------------------------------------------------------------------
+template<>
+String StringConverter::ToString(const float32& val) {
+    StringBuilder sb;
+    sb.Format(32, "%f", val);
+    return sb.GetString();
+}
+
 } // namespace Oryol
