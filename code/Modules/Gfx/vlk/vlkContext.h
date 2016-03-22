@@ -27,7 +27,7 @@ public:
     VkInstance Instance = nullptr;
     VkPhysicalDevice PhysicalDevice = nullptr;
     VkDevice Device = nullptr;
-    VkSurfaceKHR Surface = 0;
+    VkSurfaceKHR Surface = nullptr;
     VkQueue Queue = nullptr; 
     VkSwapchainKHR SwapChain = nullptr;
 
@@ -86,6 +86,10 @@ private:
     DisplayAttrs setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs);
     /// discard the swap chain, will not destroy actual swap chain if this is a resize
     void discardSwapchain(bool forResize);
+    /// setup the optional depth/stencil buffer
+    void setupDepthBuffer(const GfxSetup& setup, const DisplayAttrs& attrs);
+    /// discard the depth/stencil buffer
+    void discardDepthBuffer();
 
     /// find instance or device layer index, return InvalidIndex if not supported
     static int findLayer(const char* name, const Array<VkLayerProperties>& layers);
@@ -100,6 +104,9 @@ private:
     static void dumpExtensionInfo(const char* title, const Array<VkExtensionProperties>& exts);
     /// select requested extensions from available extensions
     static Array<const char*> selectExtensions(const Array<const char*>& reqExts, const Array<VkExtensionProperties>& availExts);
+
+    /// find matching memory type index from memory properties, return InvalidIndex if no match
+    int findMemoryType(uint32 typeBits, VkFlags requirementsMask);
 
     /// transition image layout from old to new state
     void transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -116,6 +123,7 @@ private:
     Array<VkLayerProperties> instLayers;
     Array<VkExtensionProperties> instExtensions;
     Array<VkPhysicalDevice> physDevices;
+    VkPhysicalDeviceMemoryProperties memoryProps = { };
     Array<VkLayerProperties> devLayers;
     Array<VkExtensionProperties> devExtensions;
     Array<VkQueueFamilyProperties> queueProps;
@@ -131,9 +139,16 @@ private:
     uint32 numSwapChainBuffers = 0;
     struct SwapChainBuffer {
         VkImage image = nullptr;
-        VkImageView imageView = nullptr;
+        VkImageView view = nullptr;
     };
     SwapChainBuffer swapChainBuffers[MaxNumSwapChainBuffers];
+    struct DepthBuffer {
+        VkFormat format = VK_FORMAT_UNDEFINED;
+        VkImage image = nullptr;
+        VkDeviceMemory mem = nullptr;
+        VkImageView view= nullptr;
+    };
+    DepthBuffer depthBuffer;
 
     Array<const char*> selInstLayers;
     Array<const char*> selDevLayers;
