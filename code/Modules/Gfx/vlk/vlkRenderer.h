@@ -8,6 +8,7 @@
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/Attrs/ImageDataAttrs.h"
+#include "Gfx/vlk/vlk_impl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -15,6 +16,7 @@ namespace _priv {
 class texture;
 class pipeline;
 class mesh;
+class vlkContext;
 
 class vlkRenderer {
 public:
@@ -81,6 +83,8 @@ private:
     bool valid;
     gfxPointers pointers;
     DisplayAttrs rtAttrs;
+    vlkContext* context;
+    VkCommandBuffer cmdBuf;
 };
 
 } // namespace _priv

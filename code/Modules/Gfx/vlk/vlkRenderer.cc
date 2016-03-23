@@ -4,13 +4,18 @@
 #include "Pre.h"
 #include "vlkRenderer.h"
 #include "Core/Assertion.h"
+#include "Gfx/Core/displayMgr.h"
+#include "Gfx/Core/gfxPointers.h"
+#include "vlk_impl.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
 vlkRenderer::vlkRenderer() :
-valid(false) {
+valid(false),
+context(nullptr),
+cmdBuf(nullptr) {
     // empty
 }
 
@@ -26,16 +31,19 @@ vlkRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     this->valid = true;
     this->pointers = ptrs;
-    o_warn("vlkRenderer::setup() called\n");
+    this->context = &ptrs.displayMgr->vlkContext;
 }
 
 //------------------------------------------------------------------------------
 void
 vlkRenderer::discard() {
     o_assert_dbg(this->valid);
+    o_assert_dbg(this->context);
+    o_assert_dbg(this->context->Device);
+
+    vkDeviceWaitIdle(this->context->Device);
     this->pointers = gfxPointers();
     this->valid = false;
-    o_warn("vlkRenderer::discard() called\n");
 }
 
 //------------------------------------------------------------------------------
@@ -62,7 +70,50 @@ vlkRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 vlkRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    o_warn("vlkRenderer::commitFrame() called\n");
+    o_assert_dbg(this->cmdBuf);
+    o_assert_dbg(this->context);
+    o_assert_dbg(this->context->Queue);
+    VkResult err;
+
+    vkCmdEndRenderPass(this->cmdBuf);
+
+    // transition swapchain image back from attachment to present state
+    VkImageMemoryBarrier prePresentBarrier = { };
+    prePresentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    prePresentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    prePresentBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    prePresentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    prePresentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    prePresentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    prePresentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    prePresentBarrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    prePresentBarrier.image = this->context->curSwapChainImage();
+    VkImageMemoryBarrier* imageBarriers = &prePresentBarrier;
+    vkCmdPipelineBarrier(this->cmdBuf,
+        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,         // srcStateMask
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,       // dstStageMask
+        0,                                          // dependencyFlags
+        0, nullptr,                                 // memoryBarrierCount, pMemoryBarriers
+        0, nullptr,                                 // bufferMemoryBarrierCount, pBufferMemoryBarriers
+        1, imageBarriers);                          // imageMemoryBarrierCount, pImageMemoryBarriers
+    err = vkEndCommandBuffer(this->cmdBuf);
+
+    // submit the command buffer
+    VkFence nullFence = VK_NULL_HANDLE;
+    VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    VkSemaphore presentCompleteSemaphore = this->context->curPresentCompleteSemaphore();
+    VkSubmitInfo submitInfo = { };
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &presentCompleteSemaphore;
+    submitInfo.pWaitDstStageMask = &pipeStageFlags;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &this->cmdBuf;
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
+    err = vkQueueSubmit(this->context->Queue, 1, &submitInfo, nullFence);
+
+    this->cmdBuf = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -75,7 +126,68 @@ vlkRenderer::renderTargetAttrs() const {
 void
 vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
-    o_warn("vlkRenderer::applyRenderTarget() called\n");
+    o_assert_dbg(this->context);
+    o_assert_dbg(this->context->RenderPass);
+
+    // first call in the frame?
+    if (!this->cmdBuf) {
+        this->context->beginFrame();
+        this->cmdBuf = this->context->beginCmdBuffer();
+    }
+
+    VkRenderPass renderPass = nullptr;
+    VkFramebuffer frameBuffer = nullptr;
+    if (nullptr == rt) {
+        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+        renderPass = this->context->RenderPass;
+        frameBuffer = this->context->curFramebuffer();
+
+        // transition swapchain image from present to attachment state
+        VkImage swapChainImage = this->context->curSwapChainImage();
+        this->context->transitionImageLayout(swapChainImage, 
+            VK_IMAGE_ASPECT_COLOR_BIT, 
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
+    else {
+        o_error("FIXME!\n");
+    }
+    o_assert_dbg(this->rtAttrs.FramebufferWidth > 0);
+    o_assert_dbg(this->rtAttrs.FramebufferHeight > 0);
+    o_assert_dbg(renderPass);
+    o_assert_dbg(frameBuffer);
+
+    VkClearValue clearValues[2] = { };
+    clearValues[0].color.float32[0] = clearState.Color.r;
+    clearValues[0].color.float32[1] = clearState.Color.g;
+    clearValues[0].color.float32[2] = clearState.Color.b;
+    clearValues[0].color.float32[3] = clearState.Color.a;
+    clearValues[1].depthStencil.depth = clearState.Depth;
+    clearValues[1].depthStencil.stencil = clearState.Stencil;
+
+    VkRenderPassBeginInfo rpBegin = { };
+    rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    rpBegin.renderPass = renderPass;
+    rpBegin.framebuffer = frameBuffer;
+    rpBegin.renderArea.offset.x = 0;
+    rpBegin.renderArea.offset.y = 0;
+    rpBegin.renderArea.extent.width = this->rtAttrs.FramebufferWidth;
+    rpBegin.renderArea.extent.height = this->rtAttrs.FramebufferHeight;
+    rpBegin.clearValueCount = 2;
+    rpBegin.pClearValues = clearValues;
+    vkCmdBeginRenderPass(this->cmdBuf, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport vp = { };
+    vp.width = (float) this->rtAttrs.FramebufferWidth;
+    vp.height = (float) this->rtAttrs.FramebufferHeight;
+    vp.minDepth = 0.0f;
+    vp.maxDepth = 1.0f;
+    vkCmdSetViewport(this->cmdBuf, 0, 1, &vp);
+
+    VkRect2D scissor = { };
+    scissor.extent.width = this->rtAttrs.FramebufferWidth;
+    scissor.extent.height = this->rtAttrs.FramebufferHeight;
+    vkCmdSetScissor(this->cmdBuf, 0, 1, &scissor);
 }
 
 //------------------------------------------------------------------------------

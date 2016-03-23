@@ -23,6 +23,8 @@ static PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceC
 static PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR = nullptr;
 static PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR = nullptr;
 static PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR = nullptr;
+static PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR = nullptr;
+static PFN_vkQueuePresentKHR fpQueuePresentKHR = nullptr;
 
 namespace Oryol {
 namespace _priv {
@@ -75,6 +77,31 @@ vlkContext::setup(const GfxSetup& setup, const Array<const char*>& requestedInst
 }
 
 //------------------------------------------------------------------------------
+DisplayAttrs
+vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf) {
+    o_assert(this->PhysicalDevice);
+    o_assert(nullptr == this->Surface);
+    o_assert(surf);
+
+    this->Surface = surf;
+    this->initQueueIndices(surf);
+    this->setupDevice();
+    vkGetDeviceQueue(this->Device, this->graphicsQueueIndex, 0, &this->Queue);
+    this->setupSurfaceFormats(setup);
+    this->setupCommandPoolAndBuffers();
+
+    this->beginCmdBuffer();
+    DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
+    this->setupDepthBuffer(setup, outAttrs);
+    this->setupRenderPass(setup);
+    this->setupFramebuffers(outAttrs);
+    this->submitCmdBuffer();
+    vkQueueWaitIdle(this->Queue);
+
+    return outAttrs;
+}
+
+//------------------------------------------------------------------------------
 void
 vlkContext::discard() {
     this->discardFramebuffers();
@@ -94,6 +121,86 @@ vlkContext::discard() {
     this->discardInstance();
     this->discardInstanceExtensions();
     this->discardInstanceLayers();
+}
+
+//------------------------------------------------------------------------------
+VkCommandBuffer
+vlkContext::beginCmdBuffer() {
+    VkCommandBufferInheritanceInfo inhInfo = {};
+    inhInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    VkCommandBufferBeginInfo bgnInfo = {};
+    bgnInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    bgnInfo.pInheritanceInfo = &inhInfo;
+    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+    VkResult err = vkBeginCommandBuffer(cmdBuf, &bgnInfo);
+    o_assert(!err);
+    return cmdBuf;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::submitCmdBuffer() {
+    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+    VkResult err = vkEndCommandBuffer(cmdBuf);
+    o_assert(!err);
+
+    // FIXME: need a fence here?
+    const VkCommandBuffer cmdBufs[] = { cmdBuf };
+    VkFence nullFence = { VK_NULL_HANDLE };
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = cmdBufs;
+    err = vkQueueSubmit(this->Queue, 1, &submitInfo, nullFence);
+    o_assert(!err);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::beginFrame() {
+    o_assert_dbg(this->Device);
+    o_assert_dbg(this->SwapChain);
+    o_assert_dbg(fpAcquireNextImageKHR);
+
+    VkSemaphore presentCompleteSemaphore = nullptr;
+    VkSemaphoreCreateInfo semInfo = { };
+    semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    VkResult err = vkCreateSemaphore(this->Device, &semInfo, nullptr, &presentCompleteSemaphore);
+    o_assert(!err && presentCompleteSemaphore);
+
+    err = fpAcquireNextImageKHR(this->Device, 
+        this->SwapChain, 
+        UINT64_MAX, 
+        presentCompleteSemaphore,
+        (VkFence)0,
+        &this->curBufferIndex);
+    o_assert(!err);
+    this->swapChainBuffers[this->curBufferIndex].semaphore = presentCompleteSemaphore;
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::present() {
+    o_assert_dbg(this->Device);
+    o_assert_dbg(this->Queue);
+    o_assert_dbg(this->SwapChain);
+    VkResult err;
+
+    VkPresentInfoKHR presentInfo = { };
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &this->SwapChain;
+    presentInfo.pImageIndices = &this->curBufferIndex;
+    err = fpQueuePresentKHR(this->Queue, &presentInfo);
+    o_assert(!err); // FIXME
+
+    // FIXME???? 
+    err = vkQueueWaitIdle(this->Queue);
+    assert(!err);
+
+    // FIXME???
+    vkDestroySemaphore(this->Device, this->swapChainBuffers[this->curBufferIndex].semaphore, nullptr);
+    this->swapChainBuffers[this->curBufferIndex].semaphore = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -634,37 +741,6 @@ vlkContext::discardCommandPoolAndBuffers() {
 
 //------------------------------------------------------------------------------
 void
-vlkContext::beginCmdBuffer() {
-    VkCommandBufferInheritanceInfo inhInfo = {};
-    inhInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-    VkCommandBufferBeginInfo bgnInfo = {};
-    bgnInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    bgnInfo.pInheritanceInfo = &inhInfo;
-    VkCommandBuffer cmdBuf = this->curCmdBuffer();
-    VkResult err = vkBeginCommandBuffer(cmdBuf, &bgnInfo);
-    o_assert(!err);
-}
-
-//------------------------------------------------------------------------------
-void
-vlkContext::submitCmdBuffer() {
-    VkCommandBuffer cmdBuf = this->curCmdBuffer();
-    VkResult err = vkEndCommandBuffer(cmdBuf);
-    o_assert(!err);
-
-    // FIXME: need a fence here?
-    const VkCommandBuffer cmdBufs[] = { cmdBuf };
-    VkFence nullFence = { VK_NULL_HANDLE };
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = cmdBufs;
-    err = vkQueueSubmit(this->Queue, 1, &submitInfo, nullFence);
-    o_assert(!err);
-}
-
-//------------------------------------------------------------------------------
-void
 vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout) {
     o_assert(this->Device);
     o_assert(this->cmdPool);
@@ -722,6 +798,8 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs) {
     INST_FUNC_PTR(this->Instance, CreateSwapchainKHR);
     INST_FUNC_PTR(this->Instance, DestroySwapchainKHR);
     INST_FUNC_PTR(this->Instance, GetSwapchainImagesKHR);
+    INST_FUNC_PTR(this->Instance, AcquireNextImageKHR);
+    INST_FUNC_PTR(this->Instance, QueuePresentKHR);
 
     VkSurfaceCapabilitiesKHR surfCaps = { };
     VkResult err = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(this->PhysicalDevice, this->Surface, &surfCaps);
@@ -742,12 +820,12 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs) {
     // Determine the number of VkImage's to use in the swap chain (we desire to 
     // own only 1 image at a time, besides the images being displayed and
     // queued for display):
-    uint32 desiredNumberOfSwapchainImages = surfCaps.minImageCount + 1;
+    uint32 desiredNumberOfSwapchainImages = vlkConfig::NumFrames;
     if ((surfCaps.maxImageCount > 0) && (desiredNumberOfSwapchainImages > surfCaps.maxImageCount)) {
         // Application must settle for fewer images than desired:
         desiredNumberOfSwapchainImages = surfCaps.maxImageCount;
     }
-    o_assert(desiredNumberOfSwapchainImages < MaxNumBuffers);
+    o_assert(desiredNumberOfSwapchainImages == vlkConfig::NumFrames);   // FIXME
 
     VkSwapchainKHR oldSwapChain = this->SwapChain;
     this->SwapChain = nullptr;
@@ -780,12 +858,13 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs) {
         fpDestroySwapchainKHR(this->Device, oldSwapChain, nullptr);
     }
 
-    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->NumBuffers, nullptr);
-    o_assert(!err && (this->NumBuffers < MaxNumBuffers));
-    VkImage swapChainImages[MaxNumBuffers];
-    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &this->NumBuffers, swapChainImages);
+    uint32 numBuffers = 0;
+    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &numBuffers, nullptr);
+    o_assert(!err && (numBuffers == vlkConfig::NumFrames));
+    VkImage swapChainImages[vlkConfig::NumFrames];
+    err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &numBuffers, swapChainImages);
     o_assert(!err);
-    for (uint32 i = 0; i < this->NumBuffers; i++) {
+    for (uint32 i = 0; i < vlkConfig::NumFrames; i++) {
         this->swapChainBuffers[i].image = swapChainImages[i];
 
         // Render loop will expect image to have been used before and in
@@ -816,7 +895,7 @@ void
 vlkContext::discardSwapchain(bool forResize) {
     o_assert(this->Device);
     o_assert(fpDestroySwapchainKHR);
-    for (uint32 i = 0; i < this->NumBuffers; i++) {
+    for (uint32 i = 0; i < vlkConfig::NumFrames; i++) {
         o_assert(this->swapChainBuffers[i].view);
         vkDestroyImageView(this->Device, this->swapChainBuffers[i].view, nullptr);
         this->swapChainBuffers[i].image = nullptr;
@@ -1007,13 +1086,12 @@ vlkContext::setupFramebuffers(const DisplayAttrs& attrs) {
     fbInfo.width = attrs.FramebufferWidth;
     fbInfo.height = attrs.FramebufferHeight;
     fbInfo.layers = 1; // ???
-    o_assert((this->NumBuffers > 0) && (this->NumBuffers < MaxNumBuffers));
     VkResult err;
-    for (uint32 i = 0; i < this->NumBuffers; i++) {
-        o_assert(nullptr == this->Framebuffers[i]);
+    for (uint32 i = 0; i < vlkConfig::NumFrames; i++) {
+        o_assert(nullptr == this->swapChainBuffers[i].framebuffer);
         attachments[0] = this->swapChainBuffers[i].view;
-        err = vkCreateFramebuffer(this->Device, &fbInfo, nullptr, &(this->Framebuffers[i]));
-        o_assert(!err && this->Framebuffers[i]);
+        err = vkCreateFramebuffer(this->Device, &fbInfo, nullptr, &(this->swapChainBuffers[i].framebuffer));
+        o_assert(!err && this->swapChainBuffers[i].framebuffer);
     }
 }
 
@@ -1021,37 +1099,12 @@ vlkContext::setupFramebuffers(const DisplayAttrs& attrs) {
 void
 vlkContext::discardFramebuffers() {
     o_assert(this->Device);
-    for (int i = 0; i < MaxNumBuffers; i++) {
-        if (this->Framebuffers[i]) {
-            vkDestroyFramebuffer(this->Device, this->Framebuffers[i], nullptr);
-            this->Framebuffers[i] = nullptr;
+    for (int i = 0; i < vlkConfig::NumFrames; i++) {
+        if (this->swapChainBuffers[i].framebuffer) {
+            vkDestroyFramebuffer(this->Device, this->swapChainBuffers[i].framebuffer, nullptr);
+            this->swapChainBuffers[i].framebuffer = nullptr;
         }
     }
-}
-
-//------------------------------------------------------------------------------
-DisplayAttrs
-vlkContext::setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf) {
-    o_assert(this->PhysicalDevice);
-    o_assert(nullptr == this->Surface);
-    o_assert(surf);
-    
-    this->Surface = surf;
-    this->initQueueIndices(surf);
-    this->setupDevice();
-    vkGetDeviceQueue(this->Device, this->graphicsQueueIndex, 0, &this->Queue);
-    this->setupSurfaceFormats(setup);
-    this->setupCommandPoolAndBuffers();
-
-    this->beginCmdBuffer();
-    DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
-    this->setupDepthBuffer(setup, outAttrs);
-    this->setupRenderPass(setup);
-    this->setupFramebuffers(outAttrs);
-    this->submitCmdBuffer();
-    vkQueueWaitIdle(this->Queue);
-
-    return outAttrs;
 }
 
 } // namespace _priv

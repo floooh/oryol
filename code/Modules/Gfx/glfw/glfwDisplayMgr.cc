@@ -207,7 +207,9 @@ void
 glfwDisplayMgr::Present() {
     o_assert(nullptr != glfwWindow);
 
-    #if ORYOL_OPENGL
+    #if ORYOL_VULKAN
+    this->vlkContext.present();
+    #else
     glfwSwapBuffers(glfwWindow);
     #endif
 

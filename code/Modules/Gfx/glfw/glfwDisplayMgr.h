@@ -47,7 +47,6 @@ public:
     /// private: get glfwWindow handle
     static GLFWwindow* getGlfwWindow();
     
-private:
     #if ORYOL_VULKAN
     /// vulkan-specific init
     void setupVulkan(const GfxSetup& setup);

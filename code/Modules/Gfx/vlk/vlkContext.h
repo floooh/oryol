@@ -23,6 +23,32 @@ public:
     DisplayAttrs setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf);
     /// discard everything
     void discard();
+    /// begin writing commands to current command buffer
+    VkCommandBuffer beginCmdBuffer();
+    /// submit commands in current command buffer
+    void submitCmdBuffer();
+    /// get current command buffer for this frame
+    VkCommandBuffer curCmdBuffer() {
+        return this->cmdBuffers[this->curBufferIndex];
+    };
+    /// start a new frame
+    void beginFrame();
+    /// present the current swap chain image and do frame sync
+    void present();
+    /// get current default framebuffer for this frame
+    VkFramebuffer curFramebuffer() {
+        return this->swapChainBuffers[this->curBufferIndex].framebuffer;
+    };
+    /// get current swapchain image
+    VkImage curSwapChainImage() {
+        return this->swapChainBuffers[this->curBufferIndex].image;
+    };
+    /// get current present complete semaphore
+    VkSemaphore curPresentCompleteSemaphore() {
+        return this->swapChainBuffers[this->curBufferIndex].semaphore;
+    }
+    /// transition image layout from old to new state
+    void transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     VkInstance Instance = nullptr;
     VkPhysicalDevice PhysicalDevice = nullptr;
@@ -31,9 +57,6 @@ public:
     VkQueue Queue = nullptr; 
     VkSwapchainKHR SwapChain = nullptr;
     VkRenderPass RenderPass = nullptr;
-    static const int MaxNumBuffers = 4;
-    uint32 NumBuffers = 0;
-    VkFramebuffer Framebuffers[MaxNumBuffers];
 
 private:
     /// enumerate available instance layers, and find requested layers
@@ -120,18 +143,6 @@ private:
     /// find matching memory type index from memory properties, return InvalidIndex if no match
     int findMemoryType(uint32 typeBits, VkFlags requirementsMask);
 
-    /// transition image layout from old to new state
-    void transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
-
-    /// begin writing commands to current command buffer
-    void beginCmdBuffer();
-    /// submit commands in current command buffer
-    void submitCmdBuffer();
-    /// get current command buffer for this frame
-    VkCommandBuffer curCmdBuffer() {
-        return this->cmdBuffers[this->curFrameRotateIndex];
-    };
-
     Array<VkLayerProperties> instLayers;
     Array<VkExtensionProperties> instExtensions;
     Array<VkPhysicalDevice> physDevices;
@@ -146,13 +157,15 @@ private:
     VkColorSpaceKHR colorSpace = VK_COLORSPACE_MAX_ENUM;
     VkCommandPool cmdPool = nullptr;
     VkCommandBuffer cmdBuffers[vlkConfig::NumFrames] = { };
-    int curFrameRotateIndex = 0;
     struct SwapChainBuffer {
+        VkFramebuffer framebuffer = nullptr;
         VkImage image = nullptr;
         VkImageView view = nullptr;
+        VkSemaphore semaphore = nullptr;
     };
-    SwapChainBuffer swapChainBuffers[MaxNumBuffers];
-    VkFramebuffer frameBuffers[MaxNumBuffers] = { };
+    static const int NumSwapChainBuffers = vlkConfig::NumFrames;
+    uint32 curBufferIndex = 0;  // both swapchain and command buffer index
+    SwapChainBuffer swapChainBuffers[NumSwapChainBuffers];
     struct DepthBuffer {
         VkFormat format = VK_FORMAT_UNDEFINED;
         VkImage image = nullptr;
