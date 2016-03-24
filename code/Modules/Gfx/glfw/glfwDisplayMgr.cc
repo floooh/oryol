@@ -129,12 +129,29 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     // initialize Vulkan instance and device
     uint32_t numRequiredExtensions = 0;
     const char** requiredExtensions = glfwGetRequiredInstanceExtensions(&numRequiredExtensions);
-    Array<const char*> exts;
-    exts.Reserve(numRequiredExtensions);
+    Array<const char*> instExts;
+    instExts.Reserve(numRequiredExtensions+1);
+#if ORYOL_DEBUG
+    Array<const char*> layers({
+        "VK_LAYER_LUNARG_api_dump",
+        "VK_LAYER_LUNARG_device_limits",
+        "VK_LAYER_LUNARG_draw_state",
+        "VK_LAYER_LUNARG_image",
+        "VK_LAYER_LUNARG_mem_tracker",
+        "VK_LAYER_LUNARG_object_tracker",
+        "VK_LAYER_LUNARG_param_checker",
+        "VK_LAYER_LUNARG_swapchain",
+        "VK_LAYER_LUNARG_threading",
+        "VK_LAYER_GOOGLE_unique_objects",
+    });
+    instExts.Add(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    #else
+    Array<const char*> layers;
+    #endif
     for (uint32_t i = 0; i < numRequiredExtensions; i++) {
-        exts.Add(requiredExtensions[i]);
+        instExts.Add(requiredExtensions[i]);
     }
-    this->vlkContext.setup(setup, exts);
+    this->vlkContext.setupBeforeWindow(layers, instExts);
 
     // Vulkan-specific window hints
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -143,10 +160,13 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     this->createMainWindow(setup);
 
     // initialize Vulkan swap chain
+    Array<const char*> devExts({
+        "VK_KHR_swapchain"
+    });
     VkSurfaceKHR surf = 0;
     glfwCreateWindowSurface(this->vlkContext.Instance, this->glfwWindow, nullptr, &surf);
     o_assert_dbg(surf);
-    this->vlkContext.setupDeviceAndSwapChain(setup, this->displayAttrs, surf);
+    this->vlkContext.setupAfterWindow(setup, this->displayAttrs, layers, devExts, surf);
 }
 #endif
 
@@ -169,7 +189,6 @@ glfwDisplayMgr::DiscardDisplay() {
 #if ORYOL_VULKAN
 void
 glfwDisplayMgr::discardVulkan() {
-    // FIXME: destroy swapchain
     this->destroyMainWindow();
     this->vlkContext.discard();
 }

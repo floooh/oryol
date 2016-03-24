@@ -17,41 +17,34 @@ class vlkContext {
 public:
     /// destructor
     ~vlkContext();
-    /// setup instance and device
-    void setup(const GfxSetup& setup, const Array<const char*>& reqestedInstanceExtensions);
-    /// setup the swap chain
-    DisplayAttrs setupDeviceAndSwapChain(const GfxSetup& setup, const DisplayAttrs& attrs, VkSurfaceKHR surf);
+    /// perform setup before GLFW window has been opened
+    void setupBeforeWindow(const Array<const char*>& layers, const Array<const char*>& exts);
+    /// perform setup after GLFW window has been opened
+    DisplayAttrs setupAfterWindow(const GfxSetup& setup, const DisplayAttrs& attrs, const Array<const char*>& layers, const Array<const char*>& exts, VkSurfaceKHR surf);
     /// discard everything
     void discard();
+
+    /// start a new frame
+    void beginFrame();
+    /// present the current swap chain image and do frame sync
+    void present();
     /// begin writing commands to current command buffer
     VkCommandBuffer beginCmdBuffer();
     /// submit commands in current command buffer
     void submitCmdBuffer();
     /// get current command buffer for this frame
-    VkCommandBuffer curCmdBuffer() {
-        return this->cmdBuffers[this->curBufferIndex];
-    };
-    /// start a new frame
-    void beginFrame();
-    /// present the current swap chain image and do frame sync
-    void present();
+    VkCommandBuffer curCmdBuffer() const;
     /// get current default framebuffer for this frame
-    VkFramebuffer curFramebuffer() {
-        return this->swapChainBuffers[this->curBufferIndex].framebuffer;
-    };
+    VkFramebuffer curFramebuffer() const;
     /// get current swapchain image
-    VkImage curSwapChainImage() {
-        return this->swapChainBuffers[this->curBufferIndex].image;
-    };
+    VkImage curSwapChainImage() const;
     /// get current present complete semaphore
-    VkSemaphore curPresentCompleteSemaphore() {
-        return this->swapChainBuffers[this->curBufferIndex].semaphore;
-    }
+    VkSemaphore curPresentCompleteSemaphore() const;
     /// transition image layout from old to new state
     void transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     VkInstance Instance = nullptr;
-    VkPhysicalDevice PhysicalDevice = nullptr;
+    VkPhysicalDevice GPU = nullptr;
     VkDevice Device = nullptr;
     VkSurfaceKHR Surface = nullptr;
     VkQueue Queue = nullptr; 
@@ -59,101 +52,38 @@ public:
     VkRenderPass RenderPass = nullptr;
 
 private:
-    /// enumerate available instance layers, and find requested layers
-    void setupInstanceLayers(const Array<const char*>& requestedLayers);
-    /// discard instance layer list
-    void discardInstanceLayers();
-    /// enumerate available instance extensions, and find requested extensions
-    void setupInstanceExtensions(const Array<const char*>& requestedExtensions);
-    /// discard instance extension list
-    void discardInstanceExtensions();
-    /// setup the error reporting callback
-    #if ORYOL_DEBUG
-    void setupErrorReporting();
-    #endif
-    /// discard the error reporting callback
-    #if ORYOL_DEBUG
-    void discardErrorReporting();
-    #endif
     /// setup the Vulkan instance
-    void setupInstance(const GfxSetup& setup);
+    void setupInstance(const Array<const char*>& layers, const Array<const char*>& exts);
     /// discard the Vulkan instance
     void discardInstance();
-    /// enumerate available physical devices, and pick the 'best'
-    void setupPhysicalDevice(const GfxSetup& setup);
-    /// discard physics devices
-    void discardPhysicalDevice();
-    /// enumerate available device layers, and select requested layers
-    void setupDeviceLayers(const Array<const char*>& requestedLayers);
-    /// discard device layers list
-    void discardDeviceLayers();
-    /// enumerate available device extensions, and selected requested extensions
-    void setupDeviceExtensions(const Array<const char*>& requestedExtensions);
-    /// discard device extension list
-    void discardDeviceExtensions();
-    /// setup device queue family list
-    void setupQueueFamilies();
-    /// discard device queue family list
-    void discardQueueFamilies();
-    /// initialize the graphics and present queue indices
-    void initQueueIndices(VkSurfaceKHR surf);
+    /// setup the physical device
+    void setupGPU();
+    /// discard the physical device
+    void discardGPU();
     /// setup the logical device
-    void setupDevice();
-    /// discard the logical device and KHR surface
-    void discardDeviceAndSurface();
-    /// setup the supported surface formats
-    void setupSurfaceFormats(const GfxSetup& setup);
-    /// discard the surface format list
-    void discardSurfaceFormats();
-    /// setup the command pool and command buffers
-    void setupCommandPoolAndBuffers();
-    /// discard the command pool and command buffers
-    void discardCommandPoolAndBuffers();
-    /// setup the actual swap chain
+    void setupDevice(const Array<const char*>& layers, const Array<const char*>& exts);
+    /// discard the logical device
+    void discardDevice();
+    /// setup the swapchain and default framebuffer
     DisplayAttrs setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs);
-    /// discard the swap chain, will not destroy actual swap chain if this is a resize
+    /// discard swapchain and default framebuffer
     void discardSwapchain(bool forResize);
-    /// setup the optional depth/stencil buffer
-    void setupDepthBuffer(const GfxSetup& setup, const DisplayAttrs& attrs);
-    /// discard the depth/stencil buffer
-    void discardDepthBuffer();
-    /// setup default render pass
-    void setupRenderPass(const GfxSetup& setup);
-    /// discard default render pass
-    void discardRenderPass();
-    /// setup framebuffers
-    void setupFramebuffers(const DisplayAttrs& attrs);
-    /// discard framebuffers
-    void discardFramebuffers();
 
     /// find instance or device layer index, return InvalidIndex if not supported
     static int findLayer(const char* name, const Array<VkLayerProperties>& layers);
-    /// dump layer information to console
-    static void dumpLayerInfo(const char* title, const Array<VkLayerProperties>& layers);
     /// select requested layers from available layers
     static Array<const char*> selectLayers(const Array<const char*>& reqLayers, const Array<VkLayerProperties>& availLayers);
-
     /// find instance or device extension index, return InvalidIndex if not supported
     static int findExtension(const char* name, const Array<VkExtensionProperties>& exts);
-    /// dump extension information to console
-    static void dumpExtensionInfo(const char* title, const Array<VkExtensionProperties>& exts);
     /// select requested extensions from available extensions
     static Array<const char*> selectExtensions(const Array<const char*>& reqExts, const Array<VkExtensionProperties>& availExts);
-
     /// find matching memory type index from memory properties, return InvalidIndex if no match
     int findMemoryType(uint32 typeBits, VkFlags requirementsMask);
 
-    Array<VkLayerProperties> instLayers;
-    Array<VkExtensionProperties> instExtensions;
-    Array<VkPhysicalDevice> physDevices;
     VkPhysicalDeviceMemoryProperties memoryProps = { };
-    Array<VkLayerProperties> devLayers;
-    Array<VkExtensionProperties> devExtensions;
-    Array<VkQueueFamilyProperties> queueProps;
     int graphicsQueueIndex = InvalidIndex;
     int presentQueueIndex = InvalidIndex;
-    Array<VkSurfaceFormatKHR> surfaceFormats;
-    VkFormat format = VK_FORMAT_MAX_ENUM;
+    VkFormat pixelFormat = VK_FORMAT_MAX_ENUM;
     VkColorSpaceKHR colorSpace = VK_COLORSPACE_MAX_ENUM;
     VkCommandPool cmdPool = nullptr;
     VkCommandBuffer cmdBuffers[vlkConfig::NumFrames] = { };
@@ -173,16 +103,34 @@ private:
         VkImageView view= nullptr;
     };
     DepthBuffer depthBuffer;
-
-    Array<const char*> selInstLayers;
-    Array<const char*> selDevLayers;
-    Array<const char*> selInstExtensions;
-    Array<const char*> selDevExtensions;
-
     #ifdef ORYOL_DEBUG
     VkDebugReportCallbackEXT debugReportCallback = nullptr;
     #endif
 };
+
+//------------------------------------------------------------------------------
+inline VkCommandBuffer 
+vlkContext::curCmdBuffer() const {
+    return this->cmdBuffers[this->curBufferIndex];
+};
+
+//------------------------------------------------------------------------------
+inline VkFramebuffer 
+vlkContext::curFramebuffer() const {
+    return this->swapChainBuffers[this->curBufferIndex].framebuffer;
+}
+
+//------------------------------------------------------------------------------
+inline VkImage 
+vlkContext::curSwapChainImage() const {
+    return this->swapChainBuffers[this->curBufferIndex].image;
+}
+
+//------------------------------------------------------------------------------
+inline VkSemaphore 
+vlkContext::curPresentCompleteSemaphore() const {
+    return this->swapChainBuffers[this->curBufferIndex].semaphore;
+}
 
 } // namespace _priv
 } // namespace Oryol
