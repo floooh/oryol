@@ -74,56 +74,93 @@ vlkContext::discard() {
 //------------------------------------------------------------------------------
 VkCommandBuffer
 vlkContext::beginCmdBuffer() {
+    VkResult err;
+
+    // may need to wait for command buffer to become available
+    const auto& curFrame = this->frameDatas[this->CurFrameRotateIndex];
+    if (curFrame.cmdBufferFenceSet) {
+        vkWaitForFences(this->Device, 1, &curFrame.cmdBufferFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(this->Device, 1, &curFrame.cmdBufferFence);
+    }
+    err = vkResetCommandBuffer(curFrame.cmdBuffer, 0);
     VkCommandBufferInheritanceInfo inhInfo = {};
     inhInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
     VkCommandBufferBeginInfo bgnInfo = {};
     bgnInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     bgnInfo.pInheritanceInfo = &inhInfo;
-    VkCommandBuffer cmdBuf = this->curCmdBuffer();
-    VkResult err = vkBeginCommandBuffer(cmdBuf, &bgnInfo);
+    err = vkBeginCommandBuffer(curFrame.cmdBuffer, &bgnInfo);
     o_assert(!err);
-    return cmdBuf;
+    return curFrame.cmdBuffer;
 }
 
 //------------------------------------------------------------------------------
 void
-vlkContext::submitCmdBuffer() {
-    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+vlkContext::endAndSubmitCmdBuffer(VkCommandBuffer cmdBuf, VkSemaphore waitSem, VkSemaphore doneSem) {
+
     VkResult err = vkEndCommandBuffer(cmdBuf);
     o_assert(!err);
 
-    // FIXME: need a fence here?
-    const VkCommandBuffer cmdBufs[] = { cmdBuf };
-    VkFence nullFence = { VK_NULL_HANDLE };
+    auto& curFrame = this->frameDatas[this->CurFrameRotateIndex];
+    const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    if (waitSem) {
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = &waitSem;
+        submitInfo.pWaitDstStageMask = &waitDstStageMask;
+    }
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = cmdBufs;
-    err = vkQueueSubmit(this->Queue, 1, &submitInfo, nullFence);
+    submitInfo.pCommandBuffers = &cmdBuf;
+    if (doneSem) {
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &doneSem;
+    }
+    err = vkQueueSubmit(this->Queue, 1, &submitInfo, curFrame.cmdBufferFence);
     o_assert(!err);
+    curFrame.cmdBufferFenceSet = true;
 }
 
 //------------------------------------------------------------------------------
-void
+VkCommandBuffer
 vlkContext::beginFrame() {
     o_assert_dbg(this->Device);
     o_assert_dbg(this->SwapChain);
     o_assert_dbg(fpAcquireNextImageKHR);
+    VkResult err;
 
-    VkSemaphore presentCompleteSemaphore = nullptr;
-    VkSemaphoreCreateInfo semInfo = { };
-    semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    VkResult err = vkCreateSemaphore(this->Device, &semInfo, nullptr, &presentCompleteSemaphore);
-    o_assert(!err && presentCompleteSemaphore);
+    // wait on previous frame-rotate-fence for v-sync
+    auto& curFrame = this->frameDatas[this->CurFrameRotateIndex];
+    if (curFrame.presentFenceSet) {
+        vkWaitForFences(this->Device, 1, &curFrame.presentFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(this->Device, 1, &curFrame.presentFence);
+    }
 
+    // get new semaphores
+    VkSemaphore imageAcquiredSemaphore = this->syncPool.allocSemaphore();
+    VkSemaphore presentWaitSemaphore = this->syncPool.allocSemaphore();
+
+    // get next available buffer index from the swap chain
     err = fpAcquireNextImageKHR(this->Device, 
-        this->SwapChain, 
-        UINT64_MAX, 
-        presentCompleteSemaphore,
-        (VkFence)0,
-        &this->curBufferIndex);
-    o_assert(!err);
-    this->swapChainBuffers[this->curBufferIndex].semaphore = presentCompleteSemaphore;
+        this->SwapChain,            // swapchain
+        UINT64_MAX,                 // timeout
+        imageAcquiredSemaphore,     // semaphore (signaled when presentation engine has released ownership of image)
+        curFrame.presentFence,      // fence (same as semaphore)
+        &this->curSwapChainBufferIndex);
+    o_assert(!err && (this->curSwapChainBufferIndex >= 0));
+    curFrame.presentFenceSet = true;
+
+    // free old and set new semaphore handles
+    auto& curBuf = this->swapChainBuffers[this->curSwapChainBufferIndex];
+    if (curBuf.imageAcquiredSemaphore) {
+        this->syncPool.freeSemaphore(curBuf.imageAcquiredSemaphore);
+    }
+    if (curBuf.presentWaitSemaphore) {
+        this->syncPool.freeSemaphore(curBuf.presentWaitSemaphore);
+    }
+    curBuf.imageAcquiredSemaphore = imageAcquiredSemaphore;
+    curBuf.presentWaitSemaphore = presentWaitSemaphore;
+
+    return this->beginCmdBuffer();
 }
 
 //------------------------------------------------------------------------------
@@ -133,22 +170,25 @@ vlkContext::present() {
     o_assert_dbg(this->Queue);
     o_assert_dbg(this->SwapChain);
     VkResult err;
+    VkCommandBuffer cmdBuf = this->curCmdBuffer();
+    const auto& curBuf = this->swapChainBuffers[this->curSwapChainBufferIndex];
 
+    // submit the command buffer
+    this->endAndSubmitCmdBuffer(cmdBuf, curBuf.imageAcquiredSemaphore, curBuf.presentWaitSemaphore);
+    
+    // present the frame
     VkPresentInfoKHR presentInfo = { };
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &curBuf.presentWaitSemaphore;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &this->SwapChain;
-    presentInfo.pImageIndices = &this->curBufferIndex;
+    presentInfo.pImageIndices = &this->curSwapChainBufferIndex;
     err = fpQueuePresentKHR(this->Queue, &presentInfo);
-    o_assert(!err); // FIXME
+    o_assert(!err); // FIXME (swap chain may have been lost)
 
-    // FIXME???? 
-    err = vkQueueWaitIdle(this->Queue);
-    assert(!err);
-
-    // FIXME???
-    vkDestroySemaphore(this->Device, this->swapChainBuffers[this->curBufferIndex].semaphore, nullptr);
-    this->swapChainBuffers[this->curBufferIndex].semaphore = nullptr;
+    this->CurFrameIndex++;
+    this->CurFrameRotateIndex = this->CurFrameRotateIndex % vlkConfig::NumFrames;
 }
 
 //------------------------------------------------------------------------------
@@ -414,7 +454,6 @@ vlkContext::setupDevice(const Array<const char*>& reqLayers, const Array<const c
     o_assert(InvalidIndex == this->graphicsQueueIndex);
     o_assert(InvalidIndex == this->presentQueueIndex);
     o_assert(!this->cmdPool);
-    o_assert(!this->cmdBuffers[0]);
 
     // enumerate device layers and match against requested layers
     Array<VkLayerProperties> availLayers;
@@ -507,6 +546,9 @@ vlkContext::setupDevice(const Array<const char*>& reqLayers, const Array<const c
     err = vkCreateDevice(this->GPU, &devCreateInfo, nullptr, &this->Device);
     o_assert(!err && this->Device);
 
+    // setup semaphore and fence pool
+    this->syncPool.setup(this->Device);
+
     // get graphics queue handle
     vkGetDeviceQueue(this->Device, this->graphicsQueueIndex, 0, &this->Queue);
     
@@ -522,9 +564,14 @@ vlkContext::setupDevice(const Array<const char*>& reqLayers, const Array<const c
     bufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     bufInfo.commandPool = this->cmdPool;
     bufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    bufInfo.commandBufferCount = vlkConfig::NumFrames;
-    err = vkAllocateCommandBuffers(this->Device, &bufInfo, this->cmdBuffers);
-    o_assert(!err);
+    bufInfo.commandBufferCount = 1;
+    for (auto& frame : this->frameDatas) {
+        frame.presentFence = this->syncPool.allocFence();
+        frame.cmdBufferFence = this->syncPool.allocFence();        
+        o_assert(!frame.cmdBuffer);
+        err = vkAllocateCommandBuffers(this->Device, &bufInfo, &frame.cmdBuffer);
+        o_assert(!err && frame.cmdBuffer);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -534,13 +581,17 @@ vlkContext::discardDevice() {
     o_assert(this->Device);
     o_assert(this->Surface);
     o_assert(this->cmdPool);
-    o_assert(this->cmdBuffers[0]);
-    vkFreeCommandBuffers(this->Device, this->cmdPool, vlkConfig::NumFrames, this->cmdBuffers);
-    for (int i = 0; i < vlkConfig::NumFrames; i++) {
-        this->cmdBuffers[i] = nullptr;
+    for (auto& frame : this->frameDatas) {
+        this->syncPool.freeFence(frame.presentFence);
+        frame.presentFence = nullptr;
+        this->syncPool.freeFence(frame.cmdBufferFence);
+        frame.cmdBufferFence = nullptr;
+        vkFreeCommandBuffers(this->Device, this->cmdPool, 1, &frame.cmdBuffer);
+        frame.cmdBuffer = nullptr;
     }
     vkDestroyCommandPool(this->Device, this->cmdPool, nullptr);
     this->cmdPool = nullptr;
+    this->syncPool.discard(this->Device);
     vkDestroyDevice(this->Device, nullptr);
     this->Device = nullptr;
     vkDestroySurfaceKHR(this->Instance, this->Surface, nullptr);
@@ -563,7 +614,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
     o_assert(!this->RenderPass);
     
     // start recording commands
-    this->beginCmdBuffer();
+    VkCommandBuffer cmdBuf = this->beginCmdBuffer();
 
     // this will be modified with the actual framebuffer size, and returned
     DisplayAttrs attrs = inAttrs;
@@ -656,14 +707,18 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
     err = fpGetSwapchainImagesKHR(this->Device, this->SwapChain, &numBuffers, swapChainImages);
     o_assert(!err);
     for (uint32 i = 0; i < vlkConfig::NumFrames; i++) {
-        this->swapChainBuffers[i].image = swapChainImages[i];
+        auto& curBuf = this->swapChainBuffers[i];
+
+        o_assert(!curBuf.image);
+        curBuf.image = swapChainImages[i];
 
         // Render loop will expect image to have been used before and in
         // VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
         // layout and will change to COLOR_ATTACHMENT_OPTIMAL, so init the image
         // to that state
-        this->transitionImageLayout(swapChainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        this->transitionImageLayout(cmdBuf, swapChainImages[i], VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
+        o_assert(!curBuf.view);
         VkImageViewCreateInfo imgViewCreateInfo = {};
         imgViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imgViewCreateInfo.format = this->pixelFormat;
@@ -672,8 +727,8 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         imgViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         imgViewCreateInfo.flags = 0;
         imgViewCreateInfo.image = swapChainImages[i];
-        err = vkCreateImageView(this->Device, &imgViewCreateInfo, nullptr, &this->swapChainBuffers[i].view);
-        o_assert(!err && this->swapChainBuffers[i].view);
+        err = vkCreateImageView(this->Device, &imgViewCreateInfo, nullptr, &curBuf.view);
+        o_assert(!err && curBuf.view);
     }
 
     // create optional depth buffer
@@ -712,7 +767,8 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         o_assert(!err);
 
         // transition to initial state
-        this->transitionImageLayout(this->depthBuffer.image,
+        this->transitionImageLayout(cmdBuf,
+            this->depthBuffer.image,
             VK_IMAGE_ASPECT_DEPTH_BIT,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -809,7 +865,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         o_assert(!err && this->swapChainBuffers[i].framebuffer);
     }
 
-    this->submitCmdBuffer();
+    this->endAndSubmitCmdBuffer(cmdBuf, nullptr, nullptr);
     vkQueueWaitIdle(this->Queue);
     return attrs;
 }
@@ -841,11 +897,17 @@ vlkContext::discardSwapchain(bool forResize) {
         vkFreeMemory(this->Device, this->depthBuffer.mem, nullptr);
         this->depthBuffer.mem = nullptr;
     }
-    for (uint32 i = 0; i < vlkConfig::NumFrames; i++) {
-        o_assert(this->swapChainBuffers[i].view);
-        vkDestroyImageView(this->Device, this->swapChainBuffers[i].view, nullptr);
-        this->swapChainBuffers[i].image = nullptr;
-        this->swapChainBuffers[i].view = nullptr;
+    for (auto& curBuf : this->swapChainBuffers) {
+        curBuf.image = nullptr;
+        o_assert(curBuf.view);
+        vkDestroyImageView(this->Device, curBuf.view, nullptr);
+        curBuf.view = nullptr;
+        o_assert(curBuf.imageAcquiredSemaphore);
+        vkDestroySemaphore(this->Device, curBuf.imageAcquiredSemaphore, nullptr);
+        curBuf.imageAcquiredSemaphore = nullptr;
+        o_assert(curBuf.presentWaitSemaphore);
+        vkDestroySemaphore(this->Device, curBuf.presentWaitSemaphore, nullptr);
+        curBuf.presentWaitSemaphore = nullptr;
     }
     if (!forResize) {
         o_assert(this->SwapChain);
@@ -856,7 +918,7 @@ vlkContext::discardSwapchain(bool forResize) {
 
 //------------------------------------------------------------------------------
 void
-vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout) {
+vlkContext::transitionImageLayout(VkCommandBuffer cmdBuf, VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout) {
     o_assert(this->Device);
     o_assert(this->cmdPool);
     o_assert(img);
@@ -882,7 +944,6 @@ vlkContext::transitionImageLayout(VkImage img, VkImageAspectFlags aspectMask, Vk
             break;
     }
     const VkImageMemoryBarrier* pImgMemBarriers = &imgMemBarrier;
-    VkCommandBuffer cmdBuf = this->curCmdBuffer();
     vkCmdPipelineBarrier(cmdBuf,                                // commandBuffer
                          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,     // srcStageMask
                          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,     // dstStageMask

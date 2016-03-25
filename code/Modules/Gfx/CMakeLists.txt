@@ -108,6 +108,7 @@ fips_begin_module(Gfx)
         fips_dir(vlk)
         fips_files(
             vlkTypes.cc vlkTypes.h
+            vlkSyncPool.cc vlkSyncPool.h
             vlkContext.cc vlkContext.h
             vlkMeshFactory.cc vlkMeshFactory.h
             vlkShaderFactory.cc vlkShaderFactory.h

@@ -73,7 +73,6 @@ vlkRenderer::commitFrame() {
     o_assert_dbg(this->cmdBuf);
     o_assert_dbg(this->context);
     o_assert_dbg(this->context->Queue);
-    VkResult err;
 
     vkCmdEndRenderPass(this->cmdBuf);
 
@@ -96,23 +95,9 @@ vlkRenderer::commitFrame() {
         0, nullptr,                                 // memoryBarrierCount, pMemoryBarriers
         0, nullptr,                                 // bufferMemoryBarrierCount, pBufferMemoryBarriers
         1, imageBarriers);                          // imageMemoryBarrierCount, pImageMemoryBarriers
-    err = vkEndCommandBuffer(this->cmdBuf);
 
-    // submit the command buffer
-    VkFence nullFence = VK_NULL_HANDLE;
-    VkPipelineStageFlags pipeStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    VkSemaphore presentCompleteSemaphore = this->context->curPresentCompleteSemaphore();
-    VkSubmitInfo submitInfo = { };
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &presentCompleteSemaphore;
-    submitInfo.pWaitDstStageMask = &pipeStageFlags;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &this->cmdBuf;
-    submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = nullptr;
-    err = vkQueueSubmit(this->context->Queue, 1, &submitInfo, nullFence);
-
+    // NOTE: ending and submitting the command buffer to the queue will happen 
+    // inside vlkContext::present() which will be called right after this function
     this->cmdBuf = nullptr;
 }
 
@@ -131,8 +116,7 @@ vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // first call in the frame?
     if (!this->cmdBuf) {
-        this->context->beginFrame();
-        this->cmdBuf = this->context->beginCmdBuffer();
+        this->cmdBuf = this->context->beginFrame();
     }
 
     VkRenderPass renderPass = nullptr;
@@ -144,7 +128,9 @@ vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
         // transition swapchain image from present to attachment state
         VkImage swapChainImage = this->context->curSwapChainImage();
-        this->context->transitionImageLayout(swapChainImage, 
+        this->context->transitionImageLayout(
+            this->cmdBuf,
+            swapChainImage, 
             VK_IMAGE_ASPECT_COLOR_BIT, 
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
