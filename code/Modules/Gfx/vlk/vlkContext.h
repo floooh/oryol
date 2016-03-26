@@ -66,7 +66,7 @@ private:
     /// allocate a new command buffer and begin recording
     VkCommandBuffer beginCmdBuffer();
     /// submit and free command buffer
-    void submitCmdBuffer(VkCommandBuffer cmdBuf, VkSemaphore waitSem, VkSemaphore doneSem);
+    void submitCmdBuffer(VkCommandBuffer cmdBuf, VkPipelineStageFlags waitDstStageMask, VkSemaphore waitSem, VkSemaphore doneSem);
 
     /// find matching memory type index from memory properties, return InvalidIndex if no match
     int findMemoryType(uint32 typeBits, VkFlags requirementsMask);

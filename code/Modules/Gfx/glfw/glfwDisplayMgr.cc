@@ -135,7 +135,7 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     Array<const char*> layers({
         "VK_LAYER_LUNARG_api_dump",
         "VK_LAYER_LUNARG_device_limits",
-        /* "VK_LAYER_LUNARG_draw_state", */ // FIXME FIXME FIXME
+        /*"VK_LAYER_LUNARG_draw_state",*/ // FIXME: draw_state layer contains bugs in SDK 1.0.3
         "VK_LAYER_LUNARG_image",
         "VK_LAYER_LUNARG_mem_tracker",
         "VK_LAYER_LUNARG_object_tracker",

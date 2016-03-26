@@ -69,10 +69,7 @@ vlkContext::discard() {
 VkCommandBuffer
 vlkContext::beginCmdBuffer() {
     VkCommandBuffer cmdBuf = this->resAllocator.allocCommandBuffer(this->Device, this->cmdPool);
-    VkCommandBufferInheritanceInfo inhInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO };
     VkCommandBufferBeginInfo bgnInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-    bgnInfo.pInheritanceInfo = &inhInfo;
-    bgnInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     VkResult err = vkBeginCommandBuffer(cmdBuf, &bgnInfo);
     o_assert(!err);
     return cmdBuf;
@@ -80,14 +77,14 @@ vlkContext::beginCmdBuffer() {
 
 //------------------------------------------------------------------------------
 void
-vlkContext::submitCmdBuffer(VkCommandBuffer cmdBuf, VkSemaphore waitSem, VkSemaphore doneSem) {
+vlkContext::submitCmdBuffer(VkCommandBuffer cmdBuf, VkPipelineStageFlags waitDstStageMask, VkSemaphore waitSem, VkSemaphore doneSem) {
 
     VkResult err = vkEndCommandBuffer(cmdBuf);
     o_assert(!err);
 
     VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
     if (waitSem) {
-        const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        o_assert_dbg(0 != waitDstStageMask);
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = &waitSem;
         submitInfo.pWaitDstStageMask = &waitDstStageMask;
@@ -158,7 +155,7 @@ vlkContext::present(VkCommandBuffer cmdBuf) {
 
     // submit (and free) the command buffer
     const auto& curBuf = this->swapChainBuffers[this->curSwapChainBufferIndex];
-    this->submitCmdBuffer(cmdBuf, curBuf.imageAcquiredSemaphore, curBuf.renderingFinishedSemaphore);
+    this->submitCmdBuffer(cmdBuf, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, curBuf.imageAcquiredSemaphore, curBuf.renderingFinishedSemaphore);
     cmdBuf = nullptr;
 
     // present the frame
@@ -674,7 +671,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         o_assert(!err && this->swapChainBuffers[i].framebuffer);
     }
 
-    this->submitCmdBuffer(cmdBuf, nullptr, nullptr);
+    this->submitCmdBuffer(cmdBuf, 0, nullptr, nullptr);
     vkQueueWaitIdle(this->Queue);
     return attrs;
 }
