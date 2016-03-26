@@ -135,7 +135,7 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     Array<const char*> layers({
         "VK_LAYER_LUNARG_api_dump",
         "VK_LAYER_LUNARG_device_limits",
-        "VK_LAYER_LUNARG_draw_state",
+        /* "VK_LAYER_LUNARG_draw_state", */ // FIXME FIXME FIXME
         "VK_LAYER_LUNARG_image",
         "VK_LAYER_LUNARG_mem_tracker",
         "VK_LAYER_LUNARG_object_tracker",
@@ -226,9 +226,8 @@ void
 glfwDisplayMgr::Present() {
     o_assert(nullptr != glfwWindow);
 
-    #if ORYOL_VULKAN
-    this->vlkContext.present();
-    #else
+    // NOTE: on Vulkan, present is handled from within vlkRenderer::commitFrame()
+    #if ORYOL_OPENGL
     glfwSwapBuffers(glfwWindow);
     #endif
 

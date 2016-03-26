@@ -10,6 +10,8 @@
 #include "Gfx/vlk/vlk_impl.h"
 #include "Gfx/vlk/vlkConfig.h"
 #include "Gfx/vlk/vlkSyncPool.h"
+#include "Gfx/vlk/vlkResAllocator.h"
+#include "Gfx/vlk/vlkExt.h"
 
 namespace Oryol {
 namespace _priv {
@@ -27,14 +29,12 @@ public:
 
     /// start a new frame
     VkCommandBuffer beginFrame();
-    /// present the current swap chain image and do frame sync
-    void present();
+    /// present the current swap chain image and handle frame sync
+    void present(VkCommandBuffer cmdBuf);
     /// get current default framebuffer for this frame
     VkFramebuffer curFramebuffer() const;
     /// get current swapchain image
     VkImage curSwapChainImage() const;
-    /// transition image layout from old to new state
-    void transitionImageLayout(VkCommandBuffer cmdBuf, VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     VkInstance Instance = nullptr;
     VkPhysicalDevice GPU = nullptr;
@@ -43,8 +43,8 @@ public:
     VkQueue Queue = nullptr; 
     VkSwapchainKHR SwapChain = nullptr;
     VkRenderPass RenderPass = nullptr;
-    int CurFrameIndex = 0;
-    int CurFrameRotateIndex = 0;
+    uint64 CurFrameIndex = 0;
+    uint64 CurFrameRotateIndex = 0;
 private:
     /// setup the Vulkan instance
     void setupInstance(const Array<const char*>& layers, const Array<const char*>& exts);
@@ -62,25 +62,19 @@ private:
     DisplayAttrs setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs);
     /// discard swapchain and default framebuffer
     void discardSwapchain(bool forResize);
-    /// get current command buffer for this frame
-    VkCommandBuffer curCmdBuffer() const;
-    /// begin recording into current frame command buffer
-    VkCommandBuffer beginCmdBuffer();
-    /// submit commands in current command buffer
-    void endAndSubmitCmdBuffer(VkCommandBuffer cmdBuf, VkSemaphore waitSem, VkSemaphore doneSem);
 
-    /// find instance or device layer index, return InvalidIndex if not supported
-    static int findLayer(const char* name, const Array<VkLayerProperties>& layers);
-    /// select requested layers from available layers
-    static Array<const char*> selectLayers(const Array<const char*>& reqLayers, const Array<VkLayerProperties>& availLayers);
-    /// find instance or device extension index, return InvalidIndex if not supported
-    static int findExtension(const char* name, const Array<VkExtensionProperties>& exts);
-    /// select requested extensions from available extensions
-    static Array<const char*> selectExtensions(const Array<const char*>& reqExts, const Array<VkExtensionProperties>& availExts);
+    /// allocate a new command buffer and begin recording
+    VkCommandBuffer beginCmdBuffer();
+    /// submit and free command buffer
+    void submitCmdBuffer(VkCommandBuffer cmdBuf, VkSemaphore waitSem, VkSemaphore doneSem);
+
     /// find matching memory type index from memory properties, return InvalidIndex if no match
     int findMemoryType(uint32 typeBits, VkFlags requirementsMask);
 
+    vlkExt ext;
     vlkSyncPool syncPool;
+    vlkResAllocator resAllocator;
+
     VkPhysicalDeviceMemoryProperties memoryProps = { };
     int graphicsQueueIndex = InvalidIndex;
     int presentQueueIndex = InvalidIndex;
@@ -92,7 +86,7 @@ private:
         VkImage image = nullptr;
         VkImageView view = nullptr;
         VkSemaphore imageAcquiredSemaphore = nullptr;
-        VkSemaphore presentWaitSemaphore = nullptr;
+        VkSemaphore renderingFinishedSemaphore = nullptr;
     };
     static const int NumSwapChainBuffers = vlkConfig::NumFrames;    // FIXME: NumSwapChainBuffers may have to be dynamic (minRequired + NumFrames)
     uint32 curSwapChainBufferIndex = 0;
@@ -104,24 +98,11 @@ private:
         VkImageView view= nullptr;
     };
     DepthBuffer depthBuffer;
-    #ifdef ORYOL_DEBUG
-    VkDebugReportCallbackEXT debugReportCallback = nullptr;
-    #endif
-
     struct FrameData {
         bool presentFenceSet = false;
         VkFence presentFence = nullptr;
-        bool cmdBufferFenceSet = false;
-        VkFence cmdBufferFence = nullptr;
-        VkCommandBuffer cmdBuffer = nullptr;
     };
     FrameData frameDatas[vlkConfig::NumFrames];
-};
-
-//------------------------------------------------------------------------------
-inline VkCommandBuffer 
-vlkContext::curCmdBuffer() const {
-    return this->frameDatas[this->curFrameRotateIndex].cmdBuffer;
 };
 
 //------------------------------------------------------------------------------

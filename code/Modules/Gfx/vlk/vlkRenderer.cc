@@ -96,8 +96,8 @@ vlkRenderer::commitFrame() {
         0, nullptr,                                 // bufferMemoryBarrierCount, pBufferMemoryBarriers
         1, imageBarriers);                          // imageMemoryBarrierCount, pImageMemoryBarriers
 
-    // NOTE: ending and submitting the command buffer to the queue will happen 
-    // inside vlkContext::present() which will be called right after this function
+    // submit command buffer and present the frame
+    this->context->present(this->cmdBuf);
     this->cmdBuf = nullptr;
 }
 
@@ -128,7 +128,7 @@ vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
         // transition swapchain image from present to attachment state
         VkImage swapChainImage = this->context->curSwapChainImage();
-        this->context->transitionImageLayout(
+        vlkResAllocator::transitionImageLayout(this->context->Device,
             this->cmdBuf,
             swapChainImage, 
             VK_IMAGE_ASPECT_COLOR_BIT, 
