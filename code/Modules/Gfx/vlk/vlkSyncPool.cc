@@ -21,15 +21,13 @@ vlkSyncPool::setup(VkDevice dev) {
     this->valid = true;
 
     VkResult err;
-    VkSemaphoreCreateInfo semInfo = { };
-    semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    VkSemaphoreCreateInfo semInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
     this->semaphores.Resize(MaxNumSemaphores, nullptr);
     for (int i = 0; i < MaxNumSemaphores; i++) {
         err = vkCreateSemaphore(dev, &semInfo, nullptr, &this->semaphores[i]);
         o_assert(!err && this->semaphores[i]);
     }
-    VkFenceCreateInfo fenceInfo = { };
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    VkFenceCreateInfo fenceInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
     this->fences.Resize(MaxNumFences, nullptr);
     for (int i = 0; i < MaxNumFences; i++) {
         err = vkCreateFence(dev, &fenceInfo, nullptr, &this->fences[i]);

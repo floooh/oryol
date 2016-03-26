@@ -77,8 +77,7 @@ vlkRenderer::commitFrame() {
     vkCmdEndRenderPass(this->cmdBuf);
 
     // transition swapchain image back from attachment to present state
-    VkImageMemoryBarrier prePresentBarrier = { };
-    prePresentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier prePresentBarrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
     prePresentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     prePresentBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
     prePresentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -151,8 +150,7 @@ vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     clearValues[1].depthStencil.depth = clearState.Depth;
     clearValues[1].depthStencil.stencil = clearState.Stencil;
 
-    VkRenderPassBeginInfo rpBegin = { };
-    rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    VkRenderPassBeginInfo rpBegin = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
     rpBegin.renderPass = renderPass;
     rpBegin.framebuffer = frameBuffer;
     rpBegin.renderArea.offset.x = 0;

@@ -162,8 +162,7 @@ vlkContext::present(VkCommandBuffer cmdBuf) {
     cmdBuf = nullptr;
 
     // present the frame
-    VkPresentInfoKHR presentInfo = { };
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = &curBuf.renderingFinishedSemaphore;
     presentInfo.swapchainCount = 1;
@@ -204,15 +203,13 @@ vlkContext::setupInstance(const Array<const char*>& reqLayers, const Array<const
     Array<const char*> instanceExtensions = this->ext.queryInstanceExtensions(reqExts);
 
     // setup instance
-    VkApplicationInfo appInfo = { };
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
     appInfo.pApplicationName = "ORYOL_APP";    // FIXME
     appInfo.applicationVersion = 0;
     appInfo.pEngineName = "ORYOL";
     appInfo.engineVersion = 0;
     appInfo.apiVersion = VK_API_VERSION;
-    VkInstanceCreateInfo instInfo = { };
-    instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    VkInstanceCreateInfo instInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     instInfo.pApplicationInfo = &appInfo;
     instInfo.enabledLayerCount = instanceLayers.Size();
     instInfo.ppEnabledLayerNames = instanceLayers.Data();
@@ -357,13 +354,11 @@ vlkContext::setupDevice(const Array<const char*>& reqLayers, const Array<const c
 
     // create logical device
     float queuePrios[] = { 1.0 };
-    VkDeviceQueueCreateInfo queueCreateInfo = {};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    VkDeviceQueueCreateInfo queueCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
     queueCreateInfo.queueFamilyIndex = this->graphicsQueueIndex;
     queueCreateInfo.queueCount = 1;
     queueCreateInfo.pQueuePriorities = queuePrios;
-    VkDeviceCreateInfo devCreateInfo = {};
-    devCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    VkDeviceCreateInfo devCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     devCreateInfo.queueCreateInfoCount = 1;
     devCreateInfo.pQueueCreateInfos = &queueCreateInfo;
     devCreateInfo.enabledLayerCount = devLayers.Size();
@@ -381,8 +376,7 @@ vlkContext::setupDevice(const Array<const char*>& reqLayers, const Array<const c
     vkGetDeviceQueue(this->Device, this->graphicsQueueIndex, 0, &this->Queue);
     
     // create command pool
-    VkCommandPoolCreateInfo poolInfo = {};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    VkCommandPoolCreateInfo poolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
     poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
     poolInfo.queueFamilyIndex = this->graphicsQueueIndex;
     err = vkCreateCommandPool(this->Device, &poolInfo, nullptr, &this->cmdPool);
@@ -488,8 +482,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
     VkSwapchainKHR oldSwapChain = this->SwapChain;
     this->SwapChain = nullptr;
 
-    VkSwapchainCreateInfoKHR swapChainInfo = {};
-    swapChainInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    VkSwapchainCreateInfoKHR swapChainInfo = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR };
     swapChainInfo.surface = this->Surface;
     swapChainInfo.minImageCount = desiredNumberOfSwapchainImages;
     swapChainInfo.imageFormat = this->pixelFormat;
@@ -540,8 +533,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
         o_assert(!curBuf.view);
-        VkImageViewCreateInfo imgViewCreateInfo = {};
-        imgViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        VkImageViewCreateInfo imgViewCreateInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
         imgViewCreateInfo.format = this->pixelFormat;
         imgViewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
         imgViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
@@ -557,8 +549,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         this->depthBuffer.format = vlkTypes::asRenderTargetFormat(attrs.DepthPixelFormat);
 
         // create image objct
-        VkImageCreateInfo imgInfo = {};
-        imgInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        VkImageCreateInfo imgInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
         imgInfo.imageType = VK_IMAGE_TYPE_2D;
         imgInfo.format = this->depthBuffer.format;
         imgInfo.extent.width = attrs.FramebufferWidth;
@@ -575,8 +566,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         // allocate memory
         VkMemoryRequirements memReqs = {};
         vkGetImageMemoryRequirements(this->Device, this->depthBuffer.image, &memReqs);
-        VkMemoryAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        VkMemoryAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
         allocInfo.allocationSize = memReqs.size;
         allocInfo.memoryTypeIndex = this->findMemoryType(memReqs.memoryTypeBits, 0);
         o_assert(InvalidIndex != allocInfo.memoryTypeIndex);
@@ -596,8 +586,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
         // create image view object
-        VkImageViewCreateInfo viewInfo = {};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
         viewInfo.format = this->depthBuffer.format;
         viewInfo.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -656,8 +645,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
     if (VK_FORMAT_UNDEFINED != this->depthBuffer.format) {
         subpass.pDepthStencilAttachment = &depthRef;
     }
-    VkRenderPassCreateInfo passInfo = {};
-    passInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    VkRenderPassCreateInfo passInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
     passInfo.attachmentCount = numRpAttachments;
     passInfo.pAttachments = rpAttachments;
     passInfo.subpassCount = 1;
@@ -672,8 +660,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         fbAttachments[1] = this->depthBuffer.view;
         fbAttachmentCount++;
     }
-    VkFramebufferCreateInfo fbInfo = {};
-    fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    VkFramebufferCreateInfo fbInfo = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO };
     fbInfo.renderPass = this->RenderPass;
     fbInfo.attachmentCount = fbAttachmentCount;
     fbInfo.pAttachments = fbAttachments;

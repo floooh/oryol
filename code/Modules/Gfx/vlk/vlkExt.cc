@@ -62,8 +62,7 @@ vlkExt::setupDebugReporting(VkInstance inst) {
     INST_FUNC_PTR(inst, CreateDebugReportCallbackEXT);
     INST_FUNC_PTR(inst, DestroyDebugReportCallbackEXT);
 
-    VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
-    dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+    VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = { VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT };
     dbgCreateInfo.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
         VK_DEBUG_REPORT_ERROR_BIT_EXT |
         VK_DEBUG_REPORT_WARNING_BIT_EXT |

@@ -88,8 +88,7 @@ void
 vlkResAllocator::transitionImageLayout(VkDevice dev, VkCommandBuffer cmdBuf, VkImage img, VkImageAspectFlags aspectMask, VkImageLayout oldLayout, VkImageLayout newLayout) {
     o_assert(dev && cmdBuf && img);
 
-    VkImageMemoryBarrier imgMemBarrier = {};
-    imgMemBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier imgMemBarrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
     imgMemBarrier.oldLayout = oldLayout;
     imgMemBarrier.newLayout = newLayout;
     imgMemBarrier.image = img;
