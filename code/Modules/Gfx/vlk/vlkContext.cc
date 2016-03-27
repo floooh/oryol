@@ -59,7 +59,7 @@ vlkContext::discard() {
     o_assert(this->Device);
     vkDeviceWaitIdle(this->Device);
     this->discardSwapchain(false);
-    this->resAllocator.destroyAll(this->Device, this->cmdPool);
+    this->resAllocator.discard(this->Device, this->cmdPool);
     this->discardDevice();
     this->discardGPU();
     this->discardInstance();
@@ -177,20 +177,6 @@ vlkContext::present(VkCommandBuffer cmdBuf) {
 }
 
 //------------------------------------------------------------------------------
-int
-vlkContext::findMemoryType(uint32 typeBits, VkFlags reqMask) {
-    for (int i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
-        if (typeBits & (1<<i)) {
-            VkMemoryPropertyFlags propMask = this->memoryProps.memoryTypes[i].propertyFlags;
-            if ((propMask & reqMask) == reqMask) {
-                return i;
-            }
-        }
-    }
-    return InvalidIndex;
-}
-
-//------------------------------------------------------------------------------
 void
 vlkContext::setupInstance(const Array<const char*>& reqLayers, const Array<const char*>& reqExts) {
     o_assert(!this->Instance);
@@ -279,8 +265,8 @@ vlkContext::setupGPU() {
         this->GPU = gpus[0];
     }
 
-    // get memory properties
-    vkGetPhysicalDeviceMemoryProperties(this->GPU, &this->memoryProps);
+    // setup the resource allocator
+    this->resAllocator.setup(this->GPU);
 }
 
 //------------------------------------------------------------------------------
@@ -522,7 +508,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         // VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
         // layout and will change to COLOR_ATTACHMENT_OPTIMAL, so init the image
         // to that state
-        vlkResAllocator::transitionImageLayout(this->Device, 
+        vlkResAllocator::transitionImageLayout( 
             cmdBuf, 
             swapChainImages[i], 
             VK_IMAGE_ASPECT_COLOR_BIT, 
@@ -565,7 +551,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         vkGetImageMemoryRequirements(this->Device, this->depthBuffer.image, &memReqs);
         VkMemoryAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
         allocInfo.allocationSize = memReqs.size;
-        allocInfo.memoryTypeIndex = this->findMemoryType(memReqs.memoryTypeBits, 0);
+        allocInfo.memoryTypeIndex = this->resAllocator.findMemoryType(memReqs.memoryTypeBits, 0);
         o_assert(InvalidIndex != allocInfo.memoryTypeIndex);
         err = vkAllocateMemory(this->Device, &allocInfo, nullptr, &this->depthBuffer.mem);
         o_assert(!err);
@@ -575,7 +561,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         o_assert(!err);
 
         // transition to initial state
-        vlkResAllocator::transitionImageLayout(this->Device, 
+        vlkResAllocator::transitionImageLayout( 
             cmdBuf,
             this->depthBuffer.image,
             VK_IMAGE_ASPECT_DEPTH_BIT,

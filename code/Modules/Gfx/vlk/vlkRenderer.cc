@@ -127,7 +127,7 @@ vlkRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
         // transition swapchain image from present to attachment state
         VkImage swapChainImage = this->context->curSwapChainImage();
-        vlkResAllocator::transitionImageLayout(this->context->Device,
+        vlkResAllocator::transitionImageLayout(
             this->cmdBuf,
             swapChainImage, 
             VK_IMAGE_ASPECT_COLOR_BIT, 

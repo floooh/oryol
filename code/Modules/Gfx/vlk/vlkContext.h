@@ -68,14 +68,10 @@ private:
     /// submit and free command buffer
     void submitCmdBuffer(VkCommandBuffer cmdBuf, VkPipelineStageFlags waitDstStageMask, VkSemaphore waitSem, VkSemaphore doneSem);
 
-    /// find matching memory type index from memory properties, return InvalidIndex if no match
-    int findMemoryType(uint32 typeBits, VkFlags requirementsMask);
-
     vlkExt ext;
     vlkSyncPool syncPool;
     vlkResAllocator resAllocator;
 
-    VkPhysicalDeviceMemoryProperties memoryProps = { };
     int graphicsQueueIndex = InvalidIndex;
     int presentQueueIndex = InvalidIndex;
     VkFormat pixelFormat = VK_FORMAT_MAX_ENUM;
