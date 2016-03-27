@@ -135,7 +135,7 @@ d3d12ResAllocator::CopyBufferData(ID3D12Device* d3d12Device, ID3D12GraphicsComma
     o_assert_dbg(data && (size > 0));
 
     // NOTE: if an upload buffer is provided, but no dst buffer, then the data is only
-    // copied into the upload buffer, but no copy-region command is aded to the cmdList.
+    // copied into the upload buffer, but no copy-region command is added to the cmdList.
     // This makes sense for data that is updated per frame, and the GPU renders directly
     // from the update buffer.
     o_assert_dbg(dstResource || optUploadBuffer);
