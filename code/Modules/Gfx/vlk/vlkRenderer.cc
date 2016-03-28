@@ -96,7 +96,7 @@ vlkRenderer::commitFrame() {
         1, imageBarriers);                          // imageMemoryBarrierCount, pImageMemoryBarriers
 
     // submit command buffer and present the frame
-    this->context->present(this->cmdBuf);
+    this->context->present();
     this->cmdBuf = nullptr;
 }
 

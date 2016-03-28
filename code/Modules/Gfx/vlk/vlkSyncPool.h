@@ -6,7 +6,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
-#include "Gfx/vlk/vlk_decl.h"
+#include "Gfx/vlk/vlk_impl.h"
 
 namespace Oryol {
 namespace _priv {

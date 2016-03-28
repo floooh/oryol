@@ -153,7 +153,7 @@ vlkResAllocator::allocDeviceBuffer(VkDevice dev, VkBufferUsageFlags usage, uint3
 
 //------------------------------------------------------------------------------
 vlkResAllocator::BufferItem
-vlkResAllocator::allocStagingBuffer(VkDevice dev, uint32 size) {
+vlkResAllocator::allocStagingBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32 size) {
     o_assert_dbg(this->valid);
     o_assert_dbg(dev);
     o_assert_dbg(size >= 0);
@@ -162,7 +162,7 @@ vlkResAllocator::allocStagingBuffer(VkDevice dev, uint32 size) {
     // allocate buffer object
     VkBufferCreateInfo bufInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
     bufInfo.size = size;
-    bufInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    bufInfo.usage = usage | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VkResult err = vkCreateBuffer(dev, &bufInfo, nullptr, &result.buffer);
     o_assert(!err && result.buffer);
@@ -179,7 +179,7 @@ vlkResAllocator::allocStagingBuffer(VkDevice dev, uint32 size) {
 
     // bind memory to buffer
     err = vkBindBufferMemory(dev, result.buffer, result.memory, 0);
-    o_assert(err);
+    o_assert(!err);
 
     return result;
 }
@@ -249,7 +249,7 @@ vlkResAllocator::copyBufferData(VkDevice dev, VkCommandBuffer cmdBuf, uint64 fra
     stagingItem.buffer = optStagingBuf;
     stagingItem.memory = optStagingMem;
     if (!stagingItem.buffer) {
-        stagingItem = this->allocStagingBuffer(dev, size);
+        stagingItem = this->allocStagingBuffer(dev, 0, size);
     }
 
     // copy data into staging buffer

@@ -27,15 +27,20 @@ public:
     /// discard everything
     void discard();
 
+    /// get current frame's command buffer, create if not exists yet
+    VkCommandBuffer curCommandBuffer();
     /// start a new frame
     VkCommandBuffer beginFrame();
     /// present the current swap chain image and handle frame sync
-    void present(VkCommandBuffer cmdBuf);
+    void present();
     /// get current default framebuffer for this frame
     VkFramebuffer curFramebuffer() const;
     /// get current swapchain image
     VkImage curSwapChainImage() const;
 
+    vlkExt Ext;
+    vlkSyncPool SyncPool;
+    vlkResAllocator ResAllocator;
     VkInstance Instance = nullptr;
     VkPhysicalDevice GPU = nullptr;
     VkDevice Device = nullptr;
@@ -45,7 +50,7 @@ public:
     VkRenderPass RenderPass = nullptr;
     uint64 CurFrameIndex = 0;
     uint64 CurFrameRotateIndex = 0;
-private:
+
     /// setup the Vulkan instance
     void setupInstance(const Array<const char*>& layers, const Array<const char*>& exts);
     /// discard the Vulkan instance
@@ -64,14 +69,11 @@ private:
     void discardSwapchain(bool forResize);
 
     /// allocate a new command buffer and begin recording
-    VkCommandBuffer beginCmdBuffer();
+    void beginCmdBuffer();
     /// submit and free command buffer
-    void submitCmdBuffer(VkCommandBuffer cmdBuf, VkPipelineStageFlags waitDstStageMask, VkSemaphore waitSem, VkSemaphore doneSem);
+    void submitCmdBuffer(VkPipelineStageFlags waitDstStageMask, VkSemaphore waitSem, VkSemaphore doneSem);
 
-    vlkExt ext;
-    vlkSyncPool syncPool;
-    vlkResAllocator resAllocator;
-
+    VkCommandBuffer commandBuffer = nullptr;
     int graphicsQueueIndex = InvalidIndex;
     int presentQueueIndex = InvalidIndex;
     VkFormat pixelFormat = VK_FORMAT_MAX_ENUM;
@@ -100,6 +102,15 @@ private:
     };
     FrameData frameDatas[vlkConfig::NumFrames];
 };
+
+//------------------------------------------------------------------------------
+inline VkCommandBuffer
+vlkContext::curCommandBuffer() {
+    if (!this->commandBuffer) {
+        this->beginCmdBuffer();
+    }
+    return this->commandBuffer;
+}
 
 //------------------------------------------------------------------------------
 inline VkFramebuffer 

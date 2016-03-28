@@ -6,7 +6,7 @@
 */
 #include "Core/Types.h"
 #include "Gfx/Core/Enums.h"
-#include "vlk_decl.h"
+#include "vlk_impl.h"
 
 namespace Oryol {
 namespace _priv {

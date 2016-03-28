@@ -112,12 +112,12 @@ fips_begin_module(Gfx)
             vlkSyncPool.cc vlkSyncPool.h
             vlkResAllocator.cc vlkResAllocator.h
             vlkContext.cc vlkContext.h
+            vlkMesh.cc vlkMesh.h
             vlkMeshFactory.cc vlkMeshFactory.h
             vlkShaderFactory.cc vlkShaderFactory.h
             vlkTextureFactory.cc vlkTextureFactory.h
             vlkRenderer.cc vlkRenderer.h
             vlkConfig.h
-            vlk_decl.h
             vlk_impl.h
         )
         fips_dir(glfw)

@@ -8,7 +8,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/Queue.h"
-#include "Gfx/vlk/vlk_decl.h"
+#include "Gfx/vlk/vlk_impl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -41,7 +41,7 @@ public:
     /// allocate a generic buffer object in device memory (transfer-dst usage bit will be added)
     BufferItem allocDeviceBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32 size);
     /// allocate a staging buffer object and optionally copy data into it
-    BufferItem allocStagingBuffer(VkDevice dev, uint32 size);
+    BufferItem allocStagingBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32 size);
     /// allocate a buffer object and optionally fill it with data
     BufferItem allocStaticBuffer(VkDevice dev, VkCommandBuffer cmdBuf, uint64 frameIndex, VkBufferUsageFlags usage, const void* data, uint32 size);
     /// release a buffer object
