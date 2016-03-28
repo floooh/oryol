@@ -135,14 +135,15 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     Array<const char*> layers({
         "VK_LAYER_LUNARG_api_dump",
         "VK_LAYER_LUNARG_device_limits",
-        /*"VK_LAYER_LUNARG_draw_state",*/ // FIXME: draw_state layer contains bugs in SDK 1.0.3
+        "VK_LAYER_LUNARG_draw_state",
         "VK_LAYER_LUNARG_image",
         "VK_LAYER_LUNARG_mem_tracker",
         "VK_LAYER_LUNARG_object_tracker",
         "VK_LAYER_LUNARG_param_checker",
         "VK_LAYER_LUNARG_swapchain",
-        "VK_LAYER_LUNARG_threading",
+        "VK_LAYER_GOOGLE_threading",
         "VK_LAYER_GOOGLE_unique_objects",
+        "VK_LAYER_LUNARG_standard_validation"
     });
     instExts.Add(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     #else
