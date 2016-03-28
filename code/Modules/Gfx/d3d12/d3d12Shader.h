@@ -6,7 +6,6 @@
     @brief D3D12 implementation of shader
 */
 #include "Gfx/Resource/shaderBase.h"
-#include "Core/Containers/StaticArray.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 
 namespace Oryol {

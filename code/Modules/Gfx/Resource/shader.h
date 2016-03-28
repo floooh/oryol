@@ -36,10 +36,10 @@ namespace _priv {
 class shader : public mtlShader { };
 } }
 #elif ORYOL_VULKAN
-#include "Gfx/Resource/shaderBase.h"
+#include "Gfx/vlk/vlkShader.h"
 namespace Oryol {
 namespace _priv {
-class shader : public shaderBase { };
+class shader : public vlkShader { };
 } }
 #else
 #error "Target platform not yet supported!"
