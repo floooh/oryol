@@ -565,10 +565,14 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         o_assert(!err);
 
         // transition to initial state
+        VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+        if (PixelFormat::IsDepthStencilFormat(attrs.DepthPixelFormat)) {
+            aspectFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
         vlkResAllocator::transitionImageLayout( 
             this->commandBuffer,
             this->depthBuffer.image,
-            VK_IMAGE_ASPECT_DEPTH_BIT,
+            aspectFlags,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -624,7 +628,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
     colorRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     VkAttachmentReference depthRef = {};
     depthRef.attachment = 1;
-    depthRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
