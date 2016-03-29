@@ -57,9 +57,6 @@ vlkResAllocator::destroy(VkDevice dev, VkCommandPool cmdPool, const freeItem& it
     o_assert_dbg(this->valid);
     o_assert_dbg(item.res);
     switch (item.type) {
-        case freeItem::CommandBuffer:
-            this->destroyCommandBuffer(dev, cmdPool, (VkCommandBuffer)item.res);
-            break;
         case freeItem::Buffer:
             this->destroyBuffer(dev, (VkBuffer)item.res, item.mem);
             break;
@@ -85,37 +82,6 @@ vlkResAllocator::garbageCollect(VkDevice dev, VkCommandPool cmdPool, uint64 fram
             this->destroy(dev, cmdPool, item);
         }
     }
-}
-
-//------------------------------------------------------------------------------
-VkCommandBuffer
-vlkResAllocator::allocCommandBuffer(VkDevice dev, VkCommandPool cmdPool) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(dev && cmdPool);
-    VkCommandBufferAllocateInfo bufInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-    bufInfo.commandPool = cmdPool;
-    bufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    bufInfo.commandBufferCount = 1;
-    VkCommandBuffer cmdBuf = nullptr;
-    VkResult err = vkAllocateCommandBuffers(dev, &bufInfo, &cmdBuf);
-    o_assert(!err && cmdBuf);
-    return cmdBuf;
-}
-
-//------------------------------------------------------------------------------
-void
-vlkResAllocator::destroyCommandBuffer(VkDevice dev, VkCommandPool cmdPool, VkCommandBuffer cmdBuf) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(dev && cmdPool && cmdBuf);
-    vkFreeCommandBuffers(dev, cmdPool, 1, &cmdBuf);
-}
-
-//------------------------------------------------------------------------------
-void
-vlkResAllocator::releaseCommandBuffer(uint64 frameIndex, VkCommandBuffer cmdBuf) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(cmdBuf);
-    this->releaseQueue.Enqueue(freeItem(frameIndex, uint64(cmdBuf), freeItem::CommandBuffer));
 }
 
 //------------------------------------------------------------------------------

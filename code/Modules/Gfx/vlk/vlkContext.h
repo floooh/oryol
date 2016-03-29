@@ -99,6 +99,9 @@ public:
     struct FrameData {
         bool presentFenceSet = false;
         VkFence presentFence = nullptr;
+        bool cmdBufDoneFenceSet = false;
+        VkFence cmdBufDoneFence = nullptr;
+        VkCommandBuffer cmdBuf = nullptr;
     };
     FrameData frameDatas[vlkConfig::NumFrames];
 };

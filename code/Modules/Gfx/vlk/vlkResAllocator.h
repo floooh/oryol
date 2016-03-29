@@ -33,11 +33,6 @@ public:
     /// find matching memory type index from memory properties, return InvalidIndex if no match
     int findMemoryType(uint32 typeBits, VkFlags requirementsMask);
 
-    /// allocate a new command buffer
-    VkCommandBuffer allocCommandBuffer(VkDevice dev, VkCommandPool cmdPool);
-    /// defer-release command buffer
-    void releaseCommandBuffer(uint64 frameIndex, VkCommandBuffer cmdBuf);
-
     /// allocate a generic buffer object in device memory (transfer-dst usage bit will be added)
     BufferItem allocDeviceBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32 size);
     /// allocate a staging buffer object and optionally copy data into it
@@ -64,7 +59,6 @@ private:
         VkDeviceMemory mem;     // optional
         VkFence fence;          // optional
         enum type_t {
-            CommandBuffer,
             Buffer,
             InvalidType,
         } type;
@@ -79,8 +73,6 @@ private:
     };
     /// generic call to destroy a resource
     void destroy(VkDevice dev, VkCommandPool cmdPool, const freeItem& item);
-    /// destroy a VkCommandBuffer object
-    void destroyCommandBuffer(VkDevice dev, VkCommandPool cmdPool, VkCommandBuffer cmdBuf);
     /// destroy a VkBuffer object and associated memory
     void destroyBuffer(VkDevice dev, VkBuffer buf, VkDeviceMemory mem);
 

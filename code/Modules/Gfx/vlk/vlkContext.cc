@@ -1,5 +1,4 @@
 //------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 //  vlkContext.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
@@ -68,8 +67,15 @@ vlkContext::discard() {
 //------------------------------------------------------------------------------
 void
 vlkContext::beginCmdBuffer() {
-    o_assert(!this->commandBuffer);
-    this->commandBuffer = this->ResAllocator.allocCommandBuffer(this->Device, this->cmdPool);
+    o_assert_dbg(!this->commandBuffer);
+    o_assert_dbg(this->Device);
+    const auto& frame = this->frameDatas[this->CurFrameRotateIndex];
+    this->commandBuffer = frame.cmdBuf;
+    o_assert_dbg(this->commandBuffer);
+    if (frame.cmdBufDoneFenceSet) {
+        vkWaitForFences(this->Device, 1, &frame.cmdBufDoneFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(this->Device, 1, &frame.cmdBufDoneFence);
+    }
     VkCommandBufferBeginInfo bgnInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
     VkResult err = vkBeginCommandBuffer(this->commandBuffer, &bgnInfo);
     o_assert(!err);
@@ -82,6 +88,8 @@ vlkContext::submitCmdBuffer(VkPipelineStageFlags waitDstStageMask, VkSemaphore w
 
     VkResult err = vkEndCommandBuffer(this->commandBuffer);
     o_assert(!err);
+    auto& frame = this->frameDatas[this->CurFrameRotateIndex];
+    o_assert_dbg(this->commandBuffer == frame.cmdBuf);
 
     VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
     if (waitSem) {
@@ -96,11 +104,10 @@ vlkContext::submitCmdBuffer(VkPipelineStageFlags waitDstStageMask, VkSemaphore w
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = &doneSem;
     }
-    err = vkQueueSubmit(this->Queue, 1, &submitInfo, VK_NULL_HANDLE);
+    err = vkQueueSubmit(this->Queue, 1, &submitInfo, frame.cmdBufDoneFence);
     o_assert(!err);
+    frame.cmdBufDoneFenceSet = true;
 
-    // defer-release the command buffer
-    this->ResAllocator.releaseCommandBuffer(this->CurFrameIndex, this->commandBuffer);
     this->commandBuffer = nullptr;
 }
 
@@ -364,14 +371,21 @@ vlkContext::setupDevice(const Array<const char*>& reqLayers, const Array<const c
     
     // create command pool
     VkCommandPoolCreateInfo poolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = this->graphicsQueueIndex;
     err = vkCreateCommandPool(this->Device, &poolInfo, nullptr, &this->cmdPool);
     o_assert(!err && this->cmdPool);
 
-    // create frame-sync fences
+    // create per-frame fences and command buffers
     for (auto& frame : this->frameDatas) {
         frame.presentFence = this->SyncPool.allocFence();
+        frame.cmdBufDoneFence = this->SyncPool.allocFence();
+        VkCommandBufferAllocateInfo bufInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+        bufInfo.commandPool = this->cmdPool;
+        bufInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        bufInfo.commandBufferCount = 1;
+        VkResult err = vkAllocateCommandBuffers(this->Device, &bufInfo, &frame.cmdBuf);
+        o_assert(!err && frame.cmdBuf);
     }
 }
 
@@ -385,6 +399,9 @@ vlkContext::discardDevice() {
     for (auto& frame : this->frameDatas) {
         this->SyncPool.freeFence(frame.presentFence);
         frame.presentFence = nullptr;
+        this->SyncPool.freeFence(frame.cmdBufDoneFence);
+        frame.cmdBufDoneFence = nullptr;
+        vkFreeCommandBuffers(this->Device, cmdPool, 1, &frame.cmdBuf);
     }
     vkDestroyCommandPool(this->Device, this->cmdPool, nullptr);
     this->cmdPool = nullptr;
@@ -547,6 +564,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         imgInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imgInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imgInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        imgInfo.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         VkResult err = vkCreateImage(this->Device, &imgInfo, nullptr, &this->depthBuffer.image);
         o_assert(!err && this->depthBuffer.image);
 
@@ -563,18 +581,6 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         // bind memory
         err = vkBindImageMemory(this->Device, this->depthBuffer.image, this->depthBuffer.mem, 0);
         o_assert(!err);
-
-        // transition to initial state
-        VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
-        if (PixelFormat::IsDepthStencilFormat(attrs.DepthPixelFormat)) {
-            aspectFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
-        }
-        vlkResAllocator::transitionImageLayout( 
-            this->commandBuffer,
-            this->depthBuffer.image,
-            aspectFlags,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
         // create image view object
         VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
