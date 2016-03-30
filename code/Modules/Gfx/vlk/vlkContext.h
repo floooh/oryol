@@ -21,7 +21,7 @@ public:
     /// destructor
     ~vlkContext();
     /// perform setup before GLFW window has been opened
-    void setupBeforeWindow(const Array<const char*>& layers, const Array<const char*>& exts);
+    void setupBeforeWindow(const GfxSetup& setup, const Array<const char*>& layers, const Array<const char*>& exts);
     /// perform setup after GLFW window has been opened
     DisplayAttrs setupAfterWindow(const GfxSetup& setup, const DisplayAttrs& attrs, const Array<const char*>& layers, const Array<const char*>& exts, VkSurfaceKHR surf);
     /// discard everything
@@ -56,7 +56,7 @@ public:
     /// discard the Vulkan instance
     void discardInstance();
     /// setup the physical device
-    void setupGPU();
+    void setupGPU(const GfxSetup& setup);
     /// discard the physical device
     void discardGPU();
     /// setup the logical device

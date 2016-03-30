@@ -81,7 +81,8 @@ vlkExt::discardDebugReporting(VkInstance inst) {
     o_assert_dbg(inst);
     o_assert_dbg(this->debugReportCallback);
     o_assert_dbg(fpDestroyDebugReportCallbackEXT);
-    fpDestroyDebugReportCallbackEXT(inst, this->debugReportCallback, nullptr);
+// this crashes with a nullptr access the VulkanSDK 1.0.5
+//    fpDestroyDebugReportCallbackEXT(inst, this->debugReportCallback, nullptr);
     this->debugReportCallback = nullptr;
 }
 #endif

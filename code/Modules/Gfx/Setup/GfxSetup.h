@@ -51,6 +51,8 @@ public:
     ClearState ClearHint;
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
+    /// if several GPUs in system, prefer the discrete GPU (only supported in Vulkan backend ATM)
+    bool PreferDiscreteGPU = false;
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(GfxResourceType::Code type, int32 poolSize);

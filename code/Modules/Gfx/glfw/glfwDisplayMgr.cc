@@ -152,7 +152,7 @@ glfwDisplayMgr::setupVulkan(const GfxSetup& setup) {
     for (uint32_t i = 0; i < numRequiredExtensions; i++) {
         instExts.Add(requiredExtensions[i]);
     }
-    this->vlkContext.setupBeforeWindow(layers, instExts);
+    this->vlkContext.setupBeforeWindow(setup, layers, instExts);
 
     // Vulkan-specific window hints
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

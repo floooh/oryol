@@ -32,11 +32,11 @@ vlkContext::~vlkContext() {
 
 //------------------------------------------------------------------------------
 void
-vlkContext::setupBeforeWindow(const Array<const char*>& layers, const Array<const char*>& exts) {
+vlkContext::setupBeforeWindow(const GfxSetup& setup, const Array<const char*>& layers, const Array<const char*>& exts) {
     o_assert(nullptr == this->Instance);
     o_assert(nullptr == this->GPU);
     this->setupInstance(layers, exts);
-    this->setupGPU();
+    this->setupGPU(setup);
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ vlkContext::discardInstance() {
 
 //------------------------------------------------------------------------------
 void
-vlkContext::setupGPU() {
+vlkContext::setupGPU(const GfxSetup& setup) {
     o_assert(this->Instance);
     o_assert(!this->GPU);
 
@@ -258,9 +258,10 @@ vlkContext::setupGPU() {
     // dump device info, and also pick first dedicated GPU
     int firstDiscreteGPU = InvalidIndex;
     VkPhysicalDeviceProperties props = { };
+    Log::Info("Available GPUs:\n");
     for (int i = 0; i < gpus.Size(); i++) {
         vkGetPhysicalDeviceProperties(gpus[i], &props);
-        Log::Info("GPU %d: %s (type: %s)\n", i, props.deviceName, vlkTypes::physicalDeviceTypeAsString(props.deviceType));
+        Log::Info("  GPU %d: %s (type: %s)\n", i, props.deviceName, vlkTypes::physicalDeviceTypeAsString(props.deviceType));
         if ((InvalidIndex == firstDiscreteGPU) &&
             (VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == props.deviceType)) {
             firstDiscreteGPU = i;
@@ -268,13 +269,12 @@ vlkContext::setupGPU() {
     }
     
     // choose the 'best' physical device
-    // FIXME: might want to have more control over this
-    if (InvalidIndex != firstDiscreteGPU) {
-        this->GPU = gpus[firstDiscreteGPU];
+    int selectedGPU = 0;
+    if (setup.PreferDiscreteGPU && (InvalidIndex != firstDiscreteGPU)) {
+        selectedGPU = firstDiscreteGPU;
     }
-    else {
-        this->GPU = gpus[0];
-    }
+    Log::Info("Selected GPU: %d\n", selectedGPU);
+    this->GPU = gpus[selectedGPU];
 
     // setup the resource allocator
     this->ResAllocator.setup(this->GPU);
