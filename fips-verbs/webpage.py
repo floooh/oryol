@@ -13,8 +13,9 @@ from tools import texexport
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
 BuildEmscripten = True
-BuildPNaCl = True
+BuildPNaCl = True 
 BuildWasm = True
+ExportAssets = True
 
 #-------------------------------------------------------------------------------
 def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
@@ -172,7 +173,8 @@ def build_deploy_webpage(fips_dir, proj_dir) :
         project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
     
     # export sample assets
-    export_assets(fips_dir, proj_dir, webpage_dir)
+    if ExportAssets :
+        export_assets(fips_dir, proj_dir, webpage_dir)
 
     # deploy the webpage
     deploy_webpage(fips_dir, proj_dir, webpage_dir)

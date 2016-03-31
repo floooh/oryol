@@ -25,11 +25,10 @@ public:
     
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
+    /// emscripten callback when canvas size has changed
+    static EM_BOOL emscCanvasSizeChanged(int eventType, const void* reserved, void* userData);
 
-private:    
-    /// emscripten callback for switching fullscreen mode
-    static EM_BOOL emscFullscreenChanged(int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData);
-
+    static emscDisplayMgr* self;
     int storedCanvasWidth;
     int storedCanvasHeight;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx;

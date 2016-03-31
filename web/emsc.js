@@ -44,6 +44,16 @@ window.onerror = function(event) {
     console.log("onerror: " + event);
 };
 
+function callAsEventHandler(func_name) {
+    // this is some hackery to make the browser module believe that it
+    // is running in an event handler
+    var eventHandler = { allowsDeferredCalls: true };
+    ++JSEvents.inEventHandler;
+    JSEvents.currentEventHandler = eventHandler;
+    Module.cwrap(func_name)()
+    --JSEvents.inEventHandler;
+}
+
 var spinnerFrameCount = 0;
 function drawSpinner() {
 
