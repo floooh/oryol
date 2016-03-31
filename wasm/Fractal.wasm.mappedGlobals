@@ -10,9 +10,9 @@
 ,"I": { "address": 216, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"J": { "address": 224, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"K": { "address": 232, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"Kc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"L": { "address": 240, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"M": { "address": 248, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"Sc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"i": { "address": 8, "type": 1, "import": 1, "module": "env", "base": "STACKTOP" }
 ,"j": { "address": 16, "type": 1, "import": 1, "module": "env", "base": "STACK_MAX" }
 ,"k": { "address": 24, "type": 1, "import": 1, "module": "env", "base": "tempDoublePtr" }

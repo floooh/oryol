@@ -1,5 +1,5 @@
 function integrateWasmJS(Module) {
- var method = Module["wasmJSMethod"] || Module["wasmJSMethod"] || "native-wasm" || "native-wasm,wasm-s-parser";
+ var method = Module["wasmJSMethod"] || Module["wasmJSMethod"] || "native-wasm" || "native-wasm,interpret-s-expr";
  var wasmTextFile = Module["wasmTextFile"] || "IOQueueSample.wasm";
  var wasmBinaryFile = Module["wasmBinaryFile"] || "IOQueueSample.wasm";
  var asmjsCodeFile = Module["asmjsCodeFile"] || "IOQueueSample.asm.js";
@@ -15,11 +15,12 @@ function integrateWasmJS(Module) {
   })
  };
  var info = {
-  global: null,
-  env: null,
-  asm2wasm: asm2wasmImports,
-  parent: Module
+  "global": null,
+  "env": null,
+  "asm2wasm": asm2wasmImports,
+  "parent": Module
  };
+ var exports = null;
  function lookupImport(mod, base) {
   var lookup = info;
   if (mod.indexOf(".") < 0) {
@@ -52,7 +53,7 @@ function integrateWasmJS(Module) {
   updateGlobalBufferViews();
   Module["reallocBuffer"] = (function(size) {
    var old = Module["buffer"];
-   wasmJS["asmExports"]["__growWasmMemory"](size);
+   exports["__growWasmMemory"](size);
    return Module["buffer"] !== old ? Module["buffer"] : null;
   });
  }
@@ -107,7 +108,9 @@ function integrateWasmJS(Module) {
   return binary;
  }
  function doJustAsm() {
-  eval(Module["read"](asmjsCodeFile));
+  if (typeof Module["asm"] !== "function") {
+   eval(Module["read"](asmjsCodeFile));
+  }
   if (typeof Module["asm"] !== "function") {
    Module["printErr"]("asm evalling did not set the module properly");
    return false;
@@ -130,10 +133,12 @@ function integrateWasmJS(Module) {
    info["env"] = env;
    var instance;
    instance = Wasm.instantiateModule(getBinary(), info);
-   mergeMemory(instance.exports.memory);
+   exports = instance.exports;
+   mergeMemory(exports.memory);
    applyMappedGlobals(wasmBinaryFile);
-   return instance.exports;
+   return exports;
   });
+  Module["usingWasm"] = true;
   return true;
  }
  function doWasmPolyfill(method) {
@@ -151,28 +156,23 @@ function integrateWasmJS(Module) {
    assert(providedBuffer === Module["buffer"]);
    info.global = global;
    info.env = env;
-   Module["reallocBuffer"] = (function(size) {
-    var old = Module["buffer"];
-    wasmJS["asmExports"]["__growWasmMemory"](size);
-    return Module["buffer"] !== old ? Module["buffer"] : null;
-   });
    wasmJS["providedTotalMemory"] = Module["buffer"].byteLength;
    var code;
-   if (method === "wasm-binary") {
+   if (method === "interpret-binary") {
     code = getBinary();
    } else {
-    code = Module["read"](method == "asm2wasm" ? asmjsCodeFile : wasmTextFile);
+    code = Module["read"](method == "interpret-asm2wasm" ? asmjsCodeFile : wasmTextFile);
    }
    var temp;
-   if (method == "asm2wasm") {
+   if (method == "interpret-asm2wasm") {
     temp = wasmJS["_malloc"](code.length + 1);
     wasmJS["writeAsciiToMemory"](code, temp);
     wasmJS["_load_asm2wasm"](temp);
-   } else if (method === "wasm-s-parser") {
+   } else if (method === "interpret-s-expr") {
     temp = wasmJS["_malloc"](code.length + 1);
     wasmJS["writeAsciiToMemory"](code, temp);
     wasmJS["_load_s_expr2wasm"](temp);
-   } else if (method === "wasm-binary") {
+   } else if (method === "interpret-binary") {
     temp = wasmJS["_malloc"](code.length);
     wasmJS["HEAPU8"].set(code, temp);
     wasmJS["_load_binary2wasm"](temp, code.length);
@@ -185,12 +185,13 @@ function integrateWasmJS(Module) {
     mergeMemory(Module["newBuffer"]);
     Module["newBuffer"] = null;
    }
-   if (method == "wasm-s-parser") {
+   if (method == "interpret-s-expr") {
     applyMappedGlobals(wasmTextFile);
-   } else if (method == "wasm-binary") {
+   } else if (method == "interpret-binary") {
     applyMappedGlobals(wasmBinaryFile);
    }
-   return wasmJS["asmExports"];
+   exports = wasmJS["asmExports"];
+   return exports;
   });
   return true;
  }
@@ -199,9 +200,9 @@ function integrateWasmJS(Module) {
   var curr = methods[i];
   if (curr === "native-wasm") {
    if (doNativeWasm()) return;
-  } else if (curr === "just-asm") {
+  } else if (curr === "asmjs") {
    if (doJustAsm()) return;
-  } else if (curr === "asm2wasm" || curr === "wasm-s-parser" || curr === "wasm-binary") {
+  } else if (curr === "interpret-asm2wasm" || curr === "interpret-s-expr" || curr === "interpret-binary") {
    if (doWasmPolyfill(curr)) return;
   } else {
    throw "bad method: " + curr;
@@ -249,12 +250,7 @@ if (ENVIRONMENT_IS_NODE) {
   if (!nodePath) nodePath = require("path");
   filename = nodePath["normalize"](filename);
   var ret = nodeFS["readFileSync"](filename);
-  if (!ret && filename != nodePath["resolve"](filename)) {
-   filename = path.join(__dirname, "..", "src", filename);
-   ret = nodeFS["readFileSync"](filename);
-  }
-  if (ret && !binary) ret = ret.toString();
-  return ret;
+  return binary ? ret : ret.toString();
  };
  Module["readBinary"] = function readBinary(filename) {
   var ret = Module["read"](filename, true);
@@ -971,13 +967,12 @@ function demangle(func) {
    if (getValue(status, "i32") === 0 && ret) {
     return Pointer_stringify(ret);
    }
-  } catch (e) {
-   return func;
-  } finally {
+  } catch (e) {} finally {
    if (buf) _free(buf);
    if (status) _free(status);
    if (ret) _free(ret);
   }
+  return func;
  }
  Runtime.warnOnce("warning: build with  -s DEMANGLE_SUPPORT=1  to link in libcxxabi demangling");
  return func;
@@ -1003,7 +998,9 @@ function jsStackTrace() {
  return err.stack.toString();
 }
 function stackTrace() {
- return demangleAll(jsStackTrace());
+ var js = jsStackTrace();
+ if (Module["extraStackTrace"]) js += "\n" + Module["extraStackTrace"]();
+ return demangleAll(js);
 }
 Module["stackTrace"] = stackTrace;
 function alignMemoryPage(x) {
@@ -1259,7 +1256,7 @@ Module["preloadedAudios"] = {};
 var memoryInitializer = null;
 var ASM_CONSTS = [];
 STATIC_BASE = 1024;
-STATICTOP = STATIC_BASE + 9072;
+STATICTOP = STATIC_BASE + 9232;
 __ATINIT__.push({
  func: (function() {
   __GLOBAL__sub_I_IOQueueSample_cc();
@@ -1274,7 +1271,7 @@ __ATINIT__.push({
  })
 });
 memoryInitializer = "IOQueueSample.html.mem";
-var STATIC_BUMP = 9072;
+var STATIC_BUMP = 9232;
 var tempDoublePtr = STATICTOP;
 STATICTOP += 16;
 function _atexit(func, arg) {
@@ -1402,7 +1399,8 @@ function _emscripten_set_main_loop_timing(mode, value) {
  }
  if (mode == 0) {
   Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
-   setTimeout(Browser.mainLoop.runner, value);
+   var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
+   setTimeout(Browser.mainLoop.runner, timeUntilNextTick);
   };
   Browser.mainLoop.method = "timeout";
  } else if (mode == 1) {
@@ -1433,11 +1431,22 @@ function _emscripten_set_main_loop_timing(mode, value) {
  }
  return 0;
 }
+function _emscripten_get_now() {
+ abort();
+}
 function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTiming) {
  Module["noExitRuntime"] = true;
  assert(!Browser.mainLoop.func, "emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.");
  Browser.mainLoop.func = func;
  Browser.mainLoop.arg = arg;
+ var argArray = [ arg ];
+ var browserIterationFunc = (function() {
+  if (typeof arg !== "undefined") {
+   Runtime.dynCall("vi", func, argArray);
+  } else {
+   Runtime.dynCall("v", func);
+  }
+ });
  var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
  Browser.mainLoop.runner = function Browser_mainLoop_runner() {
   if (ABORT) return;
@@ -1466,18 +1475,14 @@ function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTi
   if (Browser.mainLoop.timingMode == 1 && Browser.mainLoop.timingValue > 1 && Browser.mainLoop.currentFrameNumber % Browser.mainLoop.timingValue != 0) {
    Browser.mainLoop.scheduler();
    return;
+  } else if (Browser.mainLoop.timingMode == 0) {
+   Browser.mainLoop.tickStartTime = _emscripten_get_now();
   }
   if (Browser.mainLoop.method === "timeout" && Module.ctx) {
    Module.printErr("Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!");
    Browser.mainLoop.method = "";
   }
-  Browser.mainLoop.runIter((function() {
-   if (typeof arg !== "undefined") {
-    Runtime.dynCall("vi", func, [ arg ]);
-   } else {
-    Runtime.dynCall("v", func);
-   }
-  }));
+  Browser.mainLoop.runIter(browserIterationFunc);
   if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
   if (typeof SDL === "object" && SDL.audio && SDL.audio.queueNewAudioData) SDL.audio.queueNewAudioData();
   Browser.mainLoop.scheduler();
@@ -2249,6 +2254,24 @@ Module["getUserMedia"] = function Module_getUserMedia() {
 Module["createContext"] = function Module_createContext(canvas, useWebGL, setInModule, webGLContextAttributes) {
  return Browser.createContext(canvas, useWebGL, setInModule, webGLContextAttributes);
 };
+if (ENVIRONMENT_IS_NODE) {
+ _emscripten_get_now = function _emscripten_get_now_actual() {
+  var t = process["hrtime"]();
+  return t[0] * 1e3 + t[1] / 1e6;
+ };
+} else if (typeof dateNow !== "undefined") {
+ _emscripten_get_now = dateNow;
+} else if (typeof self === "object" && self["performance"] && typeof self["performance"]["now"] === "function") {
+ _emscripten_get_now = (function() {
+  return self["performance"]["now"]();
+ });
+} else if (typeof performance === "object" && typeof performance["now"] === "function") {
+ _emscripten_get_now = (function() {
+  return performance["now"]();
+ });
+} else {
+ _emscripten_get_now = Date.now;
+}
 __ATEXIT__.push((function() {
  var fflush = Module["_fflush"];
  if (fflush) fflush(0);
@@ -2384,6 +2407,7 @@ Module.asmLibraryArg = {
  "_llvm_trap": _llvm_trap,
  "___syscall54": ___syscall54,
  "_emscripten_set_main_loop": _emscripten_set_main_loop,
+ "_emscripten_get_now": _emscripten_get_now,
  "___cxa_atexit": ___cxa_atexit,
  "___cxa_throw": ___cxa_throw,
  "_abort": _abort,

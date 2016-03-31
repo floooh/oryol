@@ -15,7 +15,6 @@
 ,"i": { "address": 8, "type": 1, "import": 1, "module": "env", "base": "STACKTOP" }
 ,"j": { "address": 16, "type": 1, "import": 1, "module": "env", "base": "STACK_MAX" }
 ,"k": { "address": 24, "type": 1, "import": 1, "module": "env", "base": "tempDoublePtr" }
-,"kc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"l": { "address": 32, "type": 1, "import": 1, "module": "env", "base": "ABORT" }
 ,"m": { "address": 40, "type": 1, "import": 1, "module": "env", "base": "cttz_i8" }
 ,"n": { "address": 48, "type": 1, "import": 1, "module": "env", "base": "___dso_handle" }
@@ -25,6 +24,7 @@
 ,"r": { "address": 80, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"s": { "address": 88, "type": 4, "import": 1, "module": "global", "base": "NaN" }
 ,"t": { "address": 96, "type": 4, "import": 1, "module": "global", "base": "Infinity" }
+,"tc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"u": { "address": 104, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"v": { "address": 112, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"w": { "address": 120, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }

@@ -3,6 +3,7 @@
 ,"B": { "address": 160, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"C": { "address": 168, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"D": { "address": 176, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"Dc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"E": { "address": 184, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"F": { "address": 192, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"G": { "address": 200, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
@@ -25,7 +26,6 @@
 ,"s": { "address": 88, "type": 4, "import": 1, "module": "global", "base": "NaN" }
 ,"t": { "address": 96, "type": 4, "import": 1, "module": "global", "base": "Infinity" }
 ,"u": { "address": 104, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"uc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"v": { "address": 112, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"w": { "address": 120, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"x": { "address": 128, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }

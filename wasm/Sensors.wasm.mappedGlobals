@@ -1,6 +1,7 @@
 {
 "A": { "address": 152, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"B": { "address": 160, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"Bc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"C": { "address": 168, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"D": { "address": 176, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"E": { "address": 184, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
@@ -23,7 +24,6 @@
 ,"q": { "address": 72, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"r": { "address": 80, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"s": { "address": 88, "type": 4, "import": 1, "module": "global", "base": "NaN" }
-,"sc": { "address": 256, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"t": { "address": 96, "type": 4, "import": 1, "module": "global", "base": "Infinity" }
 ,"u": { "address": 104, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"v": { "address": 112, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
