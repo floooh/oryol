@@ -178,6 +178,14 @@ a.thumb-link:hover, a.thumb-link:active {
     margin-right: auto;
     border: 0px none;
     display: block;
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
 }
 .game:-webkit-full-screen {
     width: 100%;
