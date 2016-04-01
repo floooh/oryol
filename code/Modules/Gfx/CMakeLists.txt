@@ -168,10 +168,7 @@ fips_begin_module(Gfx)
             mtlRenderer.h mtlRenderer.mm
             mtlReleaseQueue.h mtlReleaseQueue.mm
         )
-        if (FIPS_MACOS)
-            fips_frameworks_osx(QuartzCore)
-        endif()
-        fips_frameworks_osx(Metal)
+        fips_frameworks_osx(Metal QuartzCore)
     endif()
     if (FIPS_ANDROID)
         fips_dir(egl)
