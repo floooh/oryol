@@ -52,14 +52,14 @@ public:
 private:
     struct item {
         Ptr<IOProtocol::Read> ioRequest;
-        successFunc successFunc;
-        failFunc failFunc;
+        successFunc onSuccess;
+        failFunc onFail;
     };
     Array<item> items;
     struct groupItem {
         Array<Ptr<IOProtocol::Read>> ioRequests;
-        groupSuccessFunc successFunc;
-        failFunc failFunc;
+        groupSuccessFunc onSuccess;
+        failFunc onFail;
     };
     Array<groupItem> groupItems;
 };

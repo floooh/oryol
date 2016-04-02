@@ -33,8 +33,8 @@ loadQueue::addGroup(const Array<URL>& urls, groupSuccessFunc onSuccess, failFunc
         ioReq->Url = url;
         IO::Put(ioReq);
         item.ioRequests.Add(ioReq);
-        item.successFunc = onSuccess;
-        item.failFunc = onFail;
+        item.onSuccess = onSuccess;
+        item.onFail = onFail;
     }
     this->groupItems.Add(item);
 }
@@ -57,12 +57,12 @@ loadQueue::update() {
             // io request has been handled
             if (IOStatus::OK == ioReq->Status) {
                 // io request was successful
-                curItem.successFunc(result(ioReq->Url, std::move(ioReq->Data)));
+                curItem.onSuccess(result(ioReq->Url, std::move(ioReq->Data)));
             }
             else {
                 // io request failed
-                if (curItem.failFunc) {
-                    curItem.failFunc(ioReq->Url, ioReq->Status);
+                if (curItem.onFail) {
+                    curItem.onFail(ioReq->Url, ioReq->Status);
                 }
                 else {
                     // no fail handler was set, just print a warning
@@ -84,8 +84,8 @@ loadQueue::update() {
             if (ioReq->Handled()) {
                 if (IOStatus::OK != ioReq->Status) {
                     anyFailed = true;
-                    if (curItem.failFunc) {
-                        curItem.failFunc(ioReq->Url, ioReq->Status);
+                    if (curItem.onFail) {
+                        curItem.onFail(ioReq->Url, ioReq->Status);
                     }
                     else {
                         o_warn("loadQueue:: failed to load file '%s' with '%s'\n",
@@ -100,7 +100,7 @@ loadQueue::update() {
         }
         
         // if all request in this group have been handled, remove item, and
-        // if all were successful, call the successFunc
+        // if all were successful, call the success-callback
         if (allHandled) {
             if (!anyFailed) {
                 Array<result> result;
@@ -108,12 +108,12 @@ loadQueue::update() {
                 for (const auto& ioReq : curItem.ioRequests) {
                     result.Add(ioReq->Url, std::move(ioReq->Data));
                 }
-                curItem.successFunc(std::move(result));
+                curItem.onSuccess(std::move(result));
             }
             this->groupItems.Erase(i);
         }
-        
     }
 }
 
 } // namespace Oryol
+

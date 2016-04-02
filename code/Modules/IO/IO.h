@@ -78,7 +78,7 @@ private:
         _priv::schemeRegistry schemeReg;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         Ptr<_priv::ioRequestRouter> requestRouter;
-        loadQueue loadQueue;
+        class loadQueue loadQueue;
     };
     static _state* state;
 };
