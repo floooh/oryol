@@ -9,13 +9,9 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Live Demos_
 
-The Oryol samples page:
-
-http://floooh.github.io/oryol/
-
-A KC85 emulator using Oryol as app-wrapper:
-
-http://floooh.github.io/virtualkc/
+- the Oryol **samples page**: http://floooh.github.io/oryol/
+- **KC85 emulator** using Oryol as app-wrapper: http://floooh.github.io/virtualkc/
+- **voxel demo** built on top of stb\_voxel\_render.h: http://floooh.github.io/voxel-test/ ([source](https://github.com/floooh/oryol/blob/master/code/Modules/IO/README.md))
 
 ## _Build_
 
