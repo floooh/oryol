@@ -19,6 +19,12 @@ TextureLoaderBase(setup_) {
 }
 
 //------------------------------------------------------------------------------
+TextureLoader::TextureLoader(const TextureSetup& setup_, LoadedFunc loadedFunc_) :
+TextureLoaderBase(setup_, loadedFunc_) {
+  // empty
+}
+
+//------------------------------------------------------------------------------
 TextureLoader::~TextureLoader() {
     o_assert_dbg(!this->ioRequest);
 }
@@ -68,6 +74,14 @@ TextureLoader::Continue() {
             ctx.enable_etc2(true);
             if (ctx.load(data, numBytes)) {
                 TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
+
+                // call the Loaded callback if defined, this
+                // gives the app a chance to look at the
+                // setup object, and possibly modify it
+                if (this->onLoaded) {
+                  this->onLoaded(texSetup);
+                }
+
                 // NOTE: the prepared texture resource might have already been
                 // destroyed at this point, if this happens, initAsync will
                 // silently fail and return ResourceState::InvalidState

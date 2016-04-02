@@ -15,6 +15,14 @@ setup(setup_) {
 }
 
 //------------------------------------------------------------------------------
+TextureLoaderBase::TextureLoaderBase(const TextureSetup& setup_, LoadedFunc loadedFunc) :
+setup(setup_),
+onLoaded(loadedFunc)
+{
+  // empty
+}
+
+//------------------------------------------------------------------------------
 class Locator
 TextureLoaderBase::Locator() const {
     return this->setup.Locator;
