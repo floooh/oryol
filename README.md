@@ -83,6 +83,7 @@ has changed](http://floooh.github.io/2016/03/10/oryol-gfx-changes.html)
 * [Design Manifesto](doc/DESIGN-MANIFESTO.md)
 * [10,000ft View](doc/OVERVIEW.md)
 * [Core Module](code/Modules/Core/README.md)
+* [IO Module](code/Modules/IO/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
 
 ## Try
