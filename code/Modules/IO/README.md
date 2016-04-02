@@ -34,7 +34,7 @@ IO module:
 #### Assigns (aka Path Aliases)
 
 A path **assign** is an old AmigaOS concept which simplifies working with 
-filesystem paths. Technically they are simply short string at the start
+filesystem paths. Technically they are simply a short string at the start
 of a path which are replaced (or 'resolved') at runtime with actual directory 
 names.
 
@@ -63,7 +63,7 @@ tex:brick.dds => C:/Program Files (x86)/My Game/assets/textures/brick.dds
 Assigns are resolved recursively, this is useful to remove any hardcoded 
 absolute paths from the application. For instance, the LocalFS filesystem -
 which wraps access to the local hard disc - defines a _root:_ assign
-pointing to the directory where the application executable is located, the
+pointing to the directory where the application executable is located. The
 above _tex:_ assign would then point to _root:assets/textures_ instead
 of some hardcoded absolute path, and the resolve happens in 2 steps:
 
@@ -83,7 +83,7 @@ An Oryol URL consists of the following parts (most of them optional):
 scheme://user:password@host:port/path#fragment?query
 ```
 
-A typical HTTP URL looks could look like this:
+A typical HTTP URL could look like this:
 ```
 http://floooh.github.com/oryol/data/lok_dxt1.dds
 ```
@@ -124,11 +124,11 @@ time of writing, Oryol comes with 2 standard filesystem implementations:
 
 Before attempting to load data, the IO module must be initialized by 
 calling the IO::Setup() function. IO::Setup() takes an IOSetup object
-as argument which allows to register the initial set of filesystems
+as argument which allows to define the initial set of filesystems
 and assigns.
 
 The following code associates the HTTP filesystem with the 'http' 
-scheme, defines an assign 'data:' which points to a web server:
+scheme and defines an assign 'data:' which points to a web server:
 
 ```cpp
 #include "IO/IO.h"
@@ -144,7 +144,7 @@ Note that you don't provide a HTTPFileSystem _object_, but instead
 a _creator function_. This is necessary because the HTTPFileSystem
 may be instantiated multiple times in separate IO threads (where and
 how often a FileSystem object is instantianed is an implementation detail
-which differes between platforms).
+which differs between platforms).
 
 > NOTE: There's one important caveat on web platforms like HTML5 or PNaCl:
 > both platforms are limited by the 'same-origin policy', which basically
@@ -153,7 +153,8 @@ which differes between platforms).
 > for those platforms ignores the URL host-platform. It is not possible
 > to load data from other domains.
 
-At application shutdown, call the **IO::Discard()** method.
+At application shutdown, call the **IO::Discard()** method, this will
+cancel any pending IO requests and cleanly shutdown any IO threads.
 
 #### Loading Data
 
@@ -194,8 +195,8 @@ loaded. This is implemented by the **IO::LoadGroup()** function:
                 const uint8* ptr = res.Data.Data();
                 const int size = res.Data.Size();
                 ...
-        }
-    });
+            }
+        });
 ```
 
 An application probably wants to know about loading errors (the standard
