@@ -41,15 +41,8 @@ TextureLoader::Cancel() {
 //------------------------------------------------------------------------------
 Id
 TextureLoader::Start() {
-    
-    // prepare the Gfx resource
     this->resId = Gfx::resource().prepareAsync(this->setup);
-    
-    // fire IO request to start loading the texture data
-    this->ioRequest = IOProtocol::Read::Create();
-    this->ioRequest->Url = setup.Locator.Location();
-    IO::Put(this->ioRequest);
-    
+    this->ioRequest = IO::LoadFile(setup.Locator.Location());
     return this->resId;
 }
 
