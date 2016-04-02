@@ -50,10 +50,9 @@ that directory, and texture paths would be defined like this:
 ...
 ```
 
-Before those textures are actually loaded, the _tex:_ assign
-would be replaced with an absolute directory location (which may differ
-depending on host platform and where the user has installed the game), for
-instance:
+Before those textures are actually loaded, the _tex:_ assign is replaced with
+an absolute directory location (which may differ depending on host platform and
+where the user has installed the game), for instance:
 
 ```
 tex:wood.dds => C:/Program Files (x86)/My Game/assets/textures/wood.dds
@@ -61,7 +60,7 @@ tex:brick.dds => C:/Program Files (x86)/My Game/assets/textures/brick.dds
 ```
 
 Assigns are resolved recursively, this is useful to remove any hardcoded 
-absolute paths from the application. For instance, the LocalFS filesystem -
+absolute paths from an application. For instance, the LocalFS filesystem -
 which wraps access to the local hard disc - defines a _root:_ assign
 pointing to the directory where the application executable is located. The
 above _tex:_ assign would then point to _root:assets/textures_ instead
@@ -150,7 +149,7 @@ which differs between platforms).
 > both platforms are limited by the 'same-origin policy', which basically
 > means that a web page must only load assets from the same domain it was
 > served from. For this reason, the current implementation of HTTPFileSystem
-> for those platforms ignores the URL host-platform. It is not possible
+> for those platforms ignores the URL host address. It is not possible
 > to load data from other domains.
 
 At application shutdown, call the **IO::Discard()** method, this will
@@ -231,7 +230,7 @@ place where data is loaded from with a single line of code without touching
 any of the actual loading code.
 
 For instance to switch between loading data from the local hard disc versus a
-remote web server based on a preprocessor define:
+web server based on a preprocessor define:
 
 ```cpp
 IOSetup ioSetup;
@@ -267,7 +266,7 @@ by clearing the smart pointer.
 
 ```cpp
 
-// need to store a Ptr<IO::Read> at a persistent place
+// need to store Ptr<IO::Read> at a persistent place
 class MyClass {
     ...
     Ptr<IO::Read> ioRequest;
