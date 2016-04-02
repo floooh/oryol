@@ -80,7 +80,7 @@ public:
     const TYPE& Front() const;
     /// read/write access to last element
     TYPE& Back();
-    /// read-only access to first element
+    /// read-only access to last element
     const TYPE& Back() const;
 
     /// increase capacity to hold at least numElements more elements

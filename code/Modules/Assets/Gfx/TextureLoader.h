@@ -17,8 +17,10 @@ namespace Oryol {
 class TextureLoader : public TextureLoaderBase {
     OryolClassDecl(TextureLoader);
 public:
-    /// constructor
+    /// constructor without success-callback
     TextureLoader(const TextureSetup& setup);
+    /// constructor with success callback
+    TextureLoader(const TextureSetup& setup, LoadedFunc onLoaded);
     /// destructor
     ~TextureLoader();
     /// start loading, return a resource id
