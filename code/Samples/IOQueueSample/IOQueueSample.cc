@@ -48,6 +48,17 @@ IOQueueApp::OnInit() {
     IO::Load("res:lok_dxt3.dds", [](IO::LoadResult res) {
         Log::Info("File '%s' loaded!\n", res.Url.Path().AsCStr());
     });
+
+    // try to load the files as group
+    IO::LoadGroup(Array<URL>({
+        "res:lok_dxt1.dds",
+        "res:lok_dxt3.dds",
+        "res:lok_dxt5.dds"
+    }), [](Array<IO::LoadResult> results) {
+        for (const auto& res : results) {
+            Log::Info("LoadGroup: file '%s' loaded!\n", res.Url.Path().AsCStr());
+        }
+    });
     
     // this tries to load a non-existing file, this should invoke the failure callback
     IO::Load("res:blablabla.xxx",
