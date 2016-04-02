@@ -266,10 +266,10 @@ by clearing the smart pointer.
 
 ```cpp
 
-// need to store Ptr<IO::Read> at a persistent place
+// need to store Ptr<IOProtocol::Read> at a persistent place
 class MyClass {
     ...
-    Ptr<IO::Read> ioRequest;
+    Ptr<IOProtocol::Read> ioRequest;
     ...
 };
 
