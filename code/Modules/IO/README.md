@@ -107,7 +107,7 @@ The Oryol IO module itself doesn't contain any code that talks
 to host-platform IO-APIs, instead it only forwards IO requests to pluggable 
 filesystem wrappers which are derived from the IO::FileSystem class.
 
-Pluggable filesystems are associated with an HTTP scheme either
+Pluggable filesystems are associated with an URL scheme either
 at startup or later through the IO::RegisterFileSystem() function. At the
 time of writing, Oryol comes with 2 standard filesystem implementations:
 
@@ -128,7 +128,7 @@ as argument which allows to define the initial set of filesystems
 and assigns.
 
 The following code associates the HTTP filesystem with the 'http' 
-scheme and defines an assign 'data:' which points to a web server:
+scheme and defines an assign 'data:' which points to a web server location:
 
 ```cpp
 #include "IO/IO.h"
@@ -141,7 +141,7 @@ IO::Setup(ioSetup);
 ```
 
 Note that you don't provide a HTTPFileSystem _object_, but instead
-a _creator function_. This is necessary because the HTTPFileSystem
+a _creator object_. This is necessary because the HTTPFileSystem
 may be instantiated multiple times in separate IO threads (where and
 how often a FileSystem object is instantianed is an implementation detail
 which differs between platforms).
@@ -199,11 +199,9 @@ loaded. This is implemented by the **IO::LoadGroup()** function:
         });
 ```
 
-An application probably wants to know about loading errors (the standard
-way to handle those is to simply dump a warning and never call the
-load-callback). This is done by providing a second 'failed-callback' to the 
-**IO::Load()** or **IO::LoadGroup()** which is called if something goes 
-wrong:
+An application probably wants to know about loading errors. This is done by
+providing a second 'failed-callback' to the **IO::Load()** or
+**IO::LoadGroup()** which is called if something goes wrong:
 
 ```cpp
 // asynchronously load wood.dds, with a second 'failure-callback'
