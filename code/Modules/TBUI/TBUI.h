@@ -12,7 +12,6 @@
 #include "TBUI/tb/tbMgr.h"
 #include "TBUI/tb/tbResourceContainer.h"
 #include "TBUI/TBUISetup.h"
-#include "IO/Core/IOQueue.h"
 
 namespace tb {
 class TBFile;
@@ -57,7 +56,6 @@ private:
 
     struct _state {
         TBUISetup setup;
-        IOQueue ioQueue;
         _priv::tbMgr mgr;
         _priv::tbResourceContainer resourceContainer;
     };

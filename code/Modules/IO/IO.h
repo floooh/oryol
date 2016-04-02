@@ -16,6 +16,7 @@
 #include "IO/FS/ioRequestRouter.h"
 #include "IO/Core/assignRegistry.h"
 #include "IO/Core/schemeRegistry.h"
+#include "IO/Core/loadQueue.h"
 #include "Core/RunLoop.h"
 
 namespace Oryol {
@@ -44,12 +45,28 @@ public:
     static void UnregisterFileSystem(const StringAtom& scheme);
     /// test if a filesystem has been registered
     static bool IsFileSystemRegistered(const StringAtom& scheme);
+
+    /// success-callback for Load()
+    typedef loadQueue::successFunc LoadSuccessFunc;
+    /// success-callback for LoadGroup()
+    typedef loadQueue::groupSuccessFunc LoadGroupSuccessFunc;
+    /// failed-callback for Load functions
+    typedef loadQueue::failFunc LoadFailedFunc;
+    /// result of an asynchronous loading operation
+    typedef loadQueue::result LoadResult;
     
-    /// start async loading of file from URL (also see IOQueue!)
+    /// async load a file, with success and fail callbacks
+    static void Load(const URL& url, LoadSuccessFunc onSuccess, LoadFailedFunc onFailed=LoadFailedFunc());
+    /// async load a group of files, with success and fail callbacks
+    static void LoadGroup(const Array<URL>& urls, LoadGroupSuccessFunc onSuccess, LoadFailedFunc onFailed=LoadFailedFunc());
+    /// get number of pending Load() and LoadGroup() actions
+    static int NumPendingLoads();
+
+    /// low-level: start async loading of file from URL, return message for polling result
     static Ptr<IOProtocol::Read> LoadFile(const URL& url);
-    /// start async writing of file via URL (also see IOQueue!)
+    /// low-level: start async writing of file via URL, return message for polling result
     static Ptr<IOProtocol::Write> WriteFile(const URL& url, const Buffer& data);
-    /// push a generic asynchronous IO request
+    /// low-level: push a generic asynchronous IO request
     static void Put(const Ptr<IOProtocol::Request>& ioReq);
     
 private:
@@ -61,6 +78,7 @@ private:
         _priv::schemeRegistry schemeReg;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         Ptr<_priv::ioRequestRouter> requestRouter;
+        loadQueue loadQueue;
     };
     static _state* state;
 };

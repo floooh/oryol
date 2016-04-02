@@ -11,13 +11,13 @@ fips_begin_module(IO)
     fips_files(
         ContentType.cc ContentType.h
         IOConfig.h
-        IOQueue.cc IOQueue.h
         IOSetup.h
         IOStatus.cc IOStatus.h
         URL.cc URL.h
         URLBuilder.cc URLBuilder.h
         assignRegistry.cc assignRegistry.h
         schemeRegistry.cc schemeRegistry.h
+        loadQueue.cc loadQueue.h
     )
     fips_dir(FS)
     fips_files(

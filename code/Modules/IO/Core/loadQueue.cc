@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-//  IOQueue.cc
+//  loadQueue.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "IOQueue.h"
+#include "loadQueue.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "IO/IO.h"
@@ -10,68 +10,20 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-IOQueue::IOQueue() :
-isStarted(false),
-runLoopId(RunLoop::InvalidId) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-IOQueue::~IOQueue() {
-    o_assert_dbg(!this->isStarted);
-}
-
-//------------------------------------------------------------------------------
 void
-IOQueue::Start() {
-    o_assert_dbg(!this->isStarted);
-    this->isStarted = true;
-    this->runLoopId = Core::PreRunLoop()->Add([this]() { this->update(); });
-}
-
-//------------------------------------------------------------------------------
-void
-IOQueue::Stop() {
-    // FIXME: it should be possible to Stop the IOQueue from within
-    // its success or fail func (currently this crashes because the
-    // update loop is confused)
-
-    o_assert(this->isStarted);
-    this->isStarted = false;
-    Core::PreRunLoop()->Remove(this->runLoopId);
-    this->items.Clear();
-    this->groupItems.Clear();
-}
-
-//------------------------------------------------------------------------------
-bool
-IOQueue::IsStarted() const {
-    return this->isStarted;
-}
-
-//------------------------------------------------------------------------------
-bool
-IOQueue::Empty() const {
-    return this->items.Empty();
-}
-
-//------------------------------------------------------------------------------
-void
-IOQueue::Add(const URL& url, SuccessFunc onSuccess, FailFunc onFail) {
+loadQueue::add(const URL& url, successFunc onSuccess, failFunc onFail) {
     o_assert_dbg(onSuccess);
 
-    // create IO request and push into IO facade
     Ptr<IOProtocol::Read> ioReq = IOProtocol::Read::Create();
     ioReq->Url = url;
     IO::Put(ioReq);
     
-    // add to our queue if pending requests
     this->items.Add(item{ ioReq, onSuccess, onFail });
 }
 
 //------------------------------------------------------------------------------
 void
-IOQueue::AddGroup(const Array<URL>& urls, GroupSuccessFunc onSuccess, FailFunc onFail) {
+loadQueue::addGroup(const Array<URL>& urls, groupSuccessFunc onSuccess, failFunc onFail) {
     o_assert_dbg(onSuccess);
     
     groupItem item;
@@ -88,11 +40,14 @@ IOQueue::AddGroup(const Array<URL>& urls, GroupSuccessFunc onSuccess, FailFunc o
 }
 
 //------------------------------------------------------------------------------
-/**
-    This is called per frame from the thread-local run-loop.
-*/
+int
+loadQueue::numPending() const {
+    return this->items.Size() + this->groupItems.Size();
+}
+
+//------------------------------------------------------------------------------
 void
-IOQueue::update() {
+loadQueue::update() {
 
     // check single items
     for (int i = this->items.Size() - 1; i >= 0; --i) {
@@ -102,7 +57,7 @@ IOQueue::update() {
             // io request has been handled
             if (IOStatus::OK == ioReq->Status) {
                 // io request was successful
-                curItem.successFunc(Result(ioReq->Url, std::move(ioReq->Data)));
+                curItem.successFunc(result(ioReq->Url, std::move(ioReq->Data)));
             }
             else {
                 // io request failed
@@ -111,7 +66,7 @@ IOQueue::update() {
                 }
                 else {
                     // no fail handler was set, just print a warning
-                    o_warn("IOQueue:: failed to load file '%s' with '%s'\n",
+                    o_warn("loadQueue:: failed to load file '%s' with '%s'\n",
                         ioReq->Url.AsCStr(), IOStatus::ToString(ioReq->Status));
                 }
             }
@@ -133,7 +88,7 @@ IOQueue::update() {
                         curItem.failFunc(ioReq->Url, ioReq->Status);
                     }
                     else {
-                        o_warn("IOQueue:: failed to load file '%s' with '%s'\n",
+                        o_warn("loadQueue:: failed to load file '%s' with '%s'\n",
                             ioReq->Url.AsCStr(), IOStatus::ToString(ioReq->Status));
                     }
                 }
@@ -148,7 +103,7 @@ IOQueue::update() {
         // if all were successful, call the successFunc
         if (allHandled) {
             if (!anyFailed) {
-                Array<Result> result;
+                Array<result> result;
                 result.Reserve(curItem.ioRequests.Size());
                 for (const auto& ioReq : curItem.ioRequests) {
                     result.Add(ioReq->Url, std::move(ioReq->Data));

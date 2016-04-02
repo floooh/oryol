@@ -7,7 +7,6 @@
 #include "Core/Types.h"
 #include "Core/RunLoop.h"
 #include "Core/Containers/Queue.h"
-#include "IO/Core/IOQueue.h"
 #include "TBUI/TBUISetup.h"
 #include "TBUI/tb/tbOryolBatchRenderer.h"
 #include "TBUI/tb/tbOryolRootWidget.h"

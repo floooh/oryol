@@ -52,6 +52,7 @@ void
 IO::doWork() {
     o_assert_dbg(IsValid());
     o_assert_dbg(Core::IsMainThread());
+    state->loadQueue.update();
     if (state->requestRouter.isValid()) {
         state->requestRouter->DoWork();
     }
@@ -123,6 +124,27 @@ bool
 IO::IsFileSystemRegistered(const StringAtom& scheme) {
     o_assert_dbg(IsValid());
     return state->schemeReg.IsFileSystemRegistered(scheme);
+}
+
+//------------------------------------------------------------------------------
+void
+IO::Load(const URL& url, LoadSuccessFunc onSuccess, LoadFailedFunc onFailed) {
+    o_assert_dbg(IsValid());
+    state->loadQueue.add(url, onSuccess, onFailed);
+}
+
+//------------------------------------------------------------------------------
+void
+IO::LoadGroup(const Array<URL>& urls, LoadGroupSuccessFunc onSuccess, LoadFailedFunc onFailed) {
+    o_assert_dbg(IsValid());
+    state->loadQueue.addGroup(urls, onSuccess, onFailed);
+}
+
+//------------------------------------------------------------------------------
+int
+IO::NumPendingLoads() {
+    o_assert_dbg(IsValid());
+    return state->loadQueue.numPending();
 }
 
 //------------------------------------------------------------------------------
