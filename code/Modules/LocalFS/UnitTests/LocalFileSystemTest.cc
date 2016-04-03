@@ -87,4 +87,108 @@ TEST(LocalFileSystemTest) {
     Core::Discard();
 }
 
+TEST(SameExtensionTest) {
+    Core::Setup();
+    IOSetup ioSetup;
+    ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
+    IO::Setup(ioSetup);
+
+    // write 2 files with the same extension
+    const String helloJSON("Hello JSON! Bla bla bla bla");
+    const String helloDDS("Hello DDS! Dupdidum");
+    auto writeJSON = IOProtocol::Write::Create();
+    writeJSON->Url = "root:hello.json";
+    writeJSON->Data.Add((const uint8*)helloJSON.AsCStr(), helloJSON.Length());
+    IO::Put(writeJSON);
+    wait(writeJSON);
+    auto writeDDS = IOProtocol::Write::Create();
+    writeDDS->Url = "root:hello.dds";
+    writeDDS->Data.Add((const uint8*)helloDDS.AsCStr(), helloDDS.Length());
+    IO::Put(writeDDS);
+    wait(writeDDS);
+
+    // read the 2 files back, using the
+    bool jsonDone = false, jsonSuccess = false;
+    bool ddsDone = false, ddsSuccess = false;
+    IO::Load("root:hello.dds",
+        // success?
+        [&ddsDone, &ddsSuccess](IO::LoadResult res) {
+            String payload((const char*)res.Data.Data(), 0, res.Data.Size());
+            Log::Info("1: Successfully loaded '%s': '%s'!\n", res.Url.Path().AsCStr(), payload.AsCStr());
+            ddsDone = ddsSuccess = true;
+        },
+        // failure
+        [&ddsDone](const URL& url, IOStatus::Code ioStatus) {
+            Log::Info("1: Failed to load '%s' with '%s!\n", url.Path().AsCStr(), IOStatus::ToString(ioStatus));
+            ddsDone = true;
+        });
+    IO::Load("root:hello.json",
+        // success?
+        [&jsonDone, &jsonSuccess](IO::LoadResult res) {
+            String payload((const char*)res.Data.Data(), 0, res.Data.Size());
+            Log::Info("1: Successfully loaded '%s': '%s'!\n", res.Url.Path().AsCStr(), payload.AsCStr());
+            jsonDone = jsonSuccess = true;
+        },
+        // failure?
+        [&jsonDone](const URL& url, IOStatus::Code ioStatus) {
+            Log::Info("1: Failed to load '%s' with '%s!\n", url.Path().AsCStr(), IOStatus::ToString(ioStatus));
+            jsonDone = true;
+        });
+
+    // pump the runloop until both files are loaded (or have failed)
+    while (!(ddsDone && jsonDone)) {
+        Core::PreRunLoop()->Run();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        Core::PostRunLoop()->Run();
+    }
+    CHECK(ddsSuccess);
+    CHECK(jsonSuccess);
+
+    // and the same sequentially
+    ddsDone = false; ddsSuccess = false;
+    IO::Load("root:hello.dds",
+        // success?
+        [&ddsDone, &ddsSuccess](IO::LoadResult res) {
+            String payload((const char*)res.Data.Data(), 0, res.Data.Size());
+            Log::Info("2: Successfully loaded '%s': '%s'!\n", res.Url.Path().AsCStr(), payload.AsCStr());
+            ddsDone = ddsSuccess = true;
+        },
+        // failure
+        [&ddsDone](const URL& url, IOStatus::Code ioStatus) {
+            Log::Info("2: Failed to load '%s' with '%s!\n", url.Path().AsCStr(), IOStatus::ToString(ioStatus));
+            ddsDone = true;
+        });
+    while (!ddsDone) {
+        Core::PreRunLoop()->Run();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        Core::PostRunLoop()->Run();
+    }
+    CHECK(ddsSuccess);
+
+    jsonDone = false; jsonSuccess = false;
+    IO::Load("root:hello.json",
+        // success?
+        [&jsonDone, &jsonSuccess](IO::LoadResult res) {
+            String payload((const char*)res.Data.Data(), 0, res.Data.Size());
+            Log::Info("2: Successfully loaded '%s': '%s'!\n", res.Url.Path().AsCStr(), payload.AsCStr());
+            jsonDone = jsonSuccess = true;
+        },
+        // failure?
+        [&jsonDone](const URL& url, IOStatus::Code ioStatus) {
+            Log::Info("2: Failed to load '%s' with '%s!\n", url.Path().AsCStr(), IOStatus::ToString(ioStatus));
+            jsonDone = true;
+        });
+    // pump the runloop until both files are loaded (or have failed)
+    while (!jsonDone) {
+        Core::PreRunLoop()->Run();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        Core::PostRunLoop()->Run();
+    }
+    CHECK(jsonSuccess);
+
+    IO::Discard();
+    Core::Discard();
+}
+
+
 
