@@ -222,7 +222,7 @@ Map<KEY, VALUE>::Size() const {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> bool
 Map<KEY, VALUE>::Empty() const {
-    return this->buffer.elmStart == this->buffer.elmEnd;
+    return this->buffer.size() == 0;
 }
 
 //------------------------------------------------------------------------------
@@ -235,16 +235,16 @@ Map<KEY, VALUE>::Capacity() const {
 template<class KEY, class VALUE> bool
 Map<KEY, VALUE>::Contains(const KEY& key) const {
     o_assert_dbg(!this->inBulkMode);
-    return std::binary_search(this->buffer.elmStart, this->buffer.elmEnd, key);
+    return std::binary_search(this->buffer._begin(), this->buffer._end(), key);
 }
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> VALUE&
 Map<KEY, VALUE>::operator[](const KEY& key) {
     o_assert_dbg(!this->inBulkMode);
-    o_assert_dbg(this->buffer.elmStart);
-    auto kvp = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    o_assert((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
+    o_assert_dbg(this->buffer.buf);
+    auto kvp = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    o_assert((kvp != this->buffer._end()) && (key == kvp->key));    // not found if this triggers
     return kvp->value;
 }
 
@@ -252,9 +252,9 @@ Map<KEY, VALUE>::operator[](const KEY& key) {
 template<class KEY, class VALUE> const VALUE&
 Map<KEY, VALUE>::operator[](const KEY& key) const {
     o_assert_dbg(!this->inBulkMode);
-    o_assert_dbg(this->buffer.elmStart);
-    auto kvp = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    o_assert_dbg((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
+    o_assert_dbg(this->buffer.buf);
+    auto kvp = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    o_assert_dbg((kvp != this->buffer._end()) && (key == kvp->key));    // not found if this triggers
     return kvp->value;
 }
     
@@ -289,8 +289,8 @@ Map<KEY, VALUE>::Add(const KeyValuePair<KEY, VALUE>& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    int32 index = ptr - this->buffer.elmStart;
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    int32 index = int32(ptr - this->buffer._begin());
     this->buffer.insert(index, kvp);
 }
 
@@ -301,8 +301,8 @@ Map<KEY, VALUE>::Add(KeyValuePair<KEY, VALUE>&& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    int32 index = int32(ptr - this->buffer.elmStart);
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    int32 index = int32(ptr - this->buffer._begin());
     this->buffer.insert(index, std::move(kvp));
 }
 
@@ -319,12 +319,12 @@ Map<KEY, VALUE>::AddUnique(const KeyValuePair<KEY, VALUE>& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    if ((ptr != this->buffer.elmEnd) && (ptr->key == kvp.key)) {
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    if ((ptr != this->buffer._end()) && (ptr->key == kvp.key)) {
         return false;
     }
     else {
-        int32 index = ptr - this->buffer.elmStart;
+        int32 index = int32(ptr - this->buffer._begin());
         this->buffer.insert(index, kvp);
         return true;
     }
@@ -337,12 +337,12 @@ Map<KEY, VALUE>::AddUnique(KeyValuePair<KEY, VALUE>&& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    if ((ptr != this->buffer.elmEnd) && (ptr->key == kvp.key)) {
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    if ((ptr != this->buffer._end()) && (ptr->key == kvp.key)) {
         return false;
     }
     else {
-        int32 index = int32(ptr - this->buffer.elmStart);
+        int32 index = int32(ptr - this->buffer._begin());
         this->buffer.insert(index, std::move(kvp));
         return true;
     }
@@ -357,9 +357,9 @@ Map<KEY, VALUE>::AddUnique(const KEY& key, const VALUE& value) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::Erase(const KEY& key) {
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    if (ptr != this->buffer.elmEnd) {
-        const int32 index = int32(ptr - this->buffer.elmStart);
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    if (ptr != this->buffer._end()) {
+        const int32 index = int32(ptr - this->buffer._begin());
         while ((index < this->buffer.size()) && (this->buffer[index].key == key)) {
             this->buffer.erase(index);
         }
@@ -420,7 +420,7 @@ template<class KEY, class VALUE> void
 Map<KEY, VALUE>::EndBulk() {
     o_assert(this->inBulkMode);
     this->inBulkMode = false;
-    std::sort(this->buffer.elmStart, this->buffer.elmEnd);
+    std::sort(this->buffer._begin(), this->buffer._end());
 }
 
 //------------------------------------------------------------------------------
@@ -442,9 +442,9 @@ Map<KEY, VALUE>::FindDuplicate(int32 startIndex) const {
 template<class KEY, class VALUE> int32
 Map<KEY, VALUE>::FindIndex(const KEY& key) const {
     o_assert(!this->inBulkMode);
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    if ((ptr != this->buffer.elmEnd) && (key == ptr->key)) {
-        return int32(ptr - this->buffer.elmStart);
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    if ((ptr != this->buffer._end()) && (key == ptr->key)) {
+        return int32(ptr - this->buffer._begin());
     }
     else {
         return InvalidIndex;
@@ -478,25 +478,25 @@ Map<KEY, VALUE>::ValueAtIndex(int32 index) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::begin() {
-    return this->buffer.elmStart;
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::begin() const {
-    return this->buffer.elmStart;
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::end() {
-    return this->buffer.elmEnd;
+    return this->buffer._end();
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::end() const {
-    return this->buffer.elmEnd;
+    return this->buffer._end();
 }
 
 //------------------------------------------------------------------------------

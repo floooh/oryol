@@ -96,21 +96,23 @@ public:
 bool
 TestMemory(const elementBuffer<_test>& buf) {
     // test that front-spare is completely destructed
-    for (_test* ptr = buf.bufStart; ptr < buf.elmStart; ptr++) {
-        if (ptr->canary != ORYOL_MEMORY_DEBUG_INT) {
-            return false;
+    if (buf.buf) {
+        for (_test* ptr = buf.buf; ptr < &buf.buf[buf.start]; ptr++) {
+            if (ptr->canary != ORYOL_MEMORY_DEBUG_INT) {
+                return false;
+            }
         }
-    }
-    // test that elements are all constructed
-    for (_test* ptr = buf.elmStart; ptr < buf.elmEnd; ptr++) {
-        if (ptr->canary != 0xABBAABBA) {
-            return false;
+        // test that elements are all constructed
+        for (_test* ptr = &buf.buf[buf.start]; ptr < &buf.buf[buf.end]; ptr++) {
+            if (ptr->canary != 0xABBAABBA) {
+                return false;
+            }
         }
-    }
-    // test that back-spare is completely destructed
-    for (_test* ptr = buf.elmEnd; ptr < buf.bufEnd; ptr++) {
-        if (ptr->canary != ORYOL_MEMORY_DEBUG_INT) {
-            return false;
+        // test that back-spare is completely destructed
+        for (_test* ptr = &buf.buf[buf.end]; ptr < buf.buf+buf.cap; ptr++) {
+            if (ptr->canary != ORYOL_MEMORY_DEBUG_INT) {
+                return false;
+            }
         }
     }
     return true;

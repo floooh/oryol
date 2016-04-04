@@ -228,7 +228,7 @@ Array<TYPE>::Size() const {
 //------------------------------------------------------------------------------
 template<class TYPE> bool
 Array<TYPE>::Empty() const {
-    return this->buffer.elmStart == this->buffer.elmEnd;
+    return this->buffer.size() == 0;
 }
 
 //------------------------------------------------------------------------------
@@ -390,6 +390,7 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) 
     const int32 size = this->buffer.size();
     if (size > 0) {
         o_assert_dbg(startIndex < size);
+        o_assert_dbg(this->buffer.buf);
         if (InvalidIndex == endIndex) {
             endIndex = size;
         }
@@ -398,7 +399,7 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) 
         }
         o_assert_dbg(startIndex <= endIndex);
         for (int32 i = startIndex; i < endIndex; i++) {
-            TYPE* ptr = this->buffer.elmStart + i;
+            TYPE* ptr = &(this->buffer.buf[this->buffer.start + i]);
             if (elm == *ptr) {
                 return i;
             }
@@ -411,25 +412,25 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::begin() {
-    return this->buffer.elmStart;
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
 Array<TYPE>::begin() const {
-    return this->buffer.elmStart;
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::end() {
-    return this->buffer.elmEnd;
+    return this->buffer._end();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
 Array<TYPE>::end() const {
-    return this->buffer.elmEnd;
+    return this->buffer._end();
 }
 
 //------------------------------------------------------------------------------

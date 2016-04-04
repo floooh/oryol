@@ -143,9 +143,9 @@ template<class TYPE> void
 Queue<TYPE>::moveToFront() {
     const int32 num = this->buffer.size();
     if (num > 0) {
-        o_assert_dbg(this->buffer.elmStart);
-        const TYPE* from = this->buffer.elmStart;
-        TYPE* to = this->buffer.bufStart;
+        o_assert_dbg(this->buffer.buf);
+        const TYPE* from = this->buffer._begin();
+        TYPE* to = this->buffer.buf;
         for (int32 i = 0; i < num; i++) {
             new(to) TYPE(std::move(*from));
             from->~TYPE();
@@ -153,8 +153,8 @@ Queue<TYPE>::moveToFront() {
             from++;
         }
     }
-    this->buffer.elmStart = this->buffer.bufStart;
-    this->buffer.elmEnd = this->buffer.elmStart + num;
+    this->buffer.start = 0;
+    this->buffer.end = this->buffer.start + num;
 }
 
 //------------------------------------------------------------------------------
