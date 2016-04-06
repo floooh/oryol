@@ -23,6 +23,7 @@ def copy_build_files(fips_dir, proj_dir, webpage_dir) :
         shutil.rmtree(dst_dir)
     shutil.copytree(src_dir, dst_dir)
     shutil.copy('{}/web/wasmsuite-readme.md'.format(proj_dir), '{}/README.md'.format(dst_dir))
+    shutil.copy('{}/LICENSE'.format(proj_dir), '{}/LICENSE'.format(dst_dir))
 
 #-------------------------------------------------------------------------------
 def export_assets(fips_dir, proj_dir, webpage_dir) :
