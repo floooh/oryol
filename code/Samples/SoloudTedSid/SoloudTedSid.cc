@@ -69,49 +69,49 @@ SoloudTedSidApp::OnRunning() {
         sidregs[i] = this->soloud.getInfo(this->musicHandle1, i);
     }
     ImGui::PlotHistogram("##SID", sidregs, 32 + 5, 0, "          SID               TED", 0, 0xff, ImVec2(264, 80), 4);
-	ImGui::Text("SID: %02X %02X %02X %02X %02X %02X %02X %02X",
-                (int)this->soloud.getInfo(this->musicHandle1, 0),
-                (int)this->soloud.getInfo(this->musicHandle1, 1),
-                (int)this->soloud.getInfo(this->musicHandle1, 2),
-                (int)this->soloud.getInfo(this->musicHandle1, 3),
-                (int)this->soloud.getInfo(this->musicHandle1, 4),
-                (int)this->soloud.getInfo(this->musicHandle1, 5),
-                (int)this->soloud.getInfo(this->musicHandle1, 6),
-                (int)this->soloud.getInfo(this->musicHandle1, 7));
-	ImGui::Text("     %02X %02X %02X %02X %02X %02X %02X %02X",
-                (int)this->soloud.getInfo(this->musicHandle1, 8),
-                (int)this->soloud.getInfo(this->musicHandle1, 9),
-                (int)this->soloud.getInfo(this->musicHandle1, 10),
-                (int)this->soloud.getInfo(this->musicHandle1, 11),
-                (int)this->soloud.getInfo(this->musicHandle1, 12),
-                (int)this->soloud.getInfo(this->musicHandle1, 13),
-                (int)this->soloud.getInfo(this->musicHandle1, 14),
-                (int)this->soloud.getInfo(this->musicHandle1, 15));
-	ImGui::Text("     %02X %02X %02X %02X %02X %02X %02X %02X",
-                (int)this->soloud.getInfo(this->musicHandle1, 16),
-                (int)this->soloud.getInfo(this->musicHandle1, 17),
-                (int)this->soloud.getInfo(this->musicHandle1, 18),
-                (int)this->soloud.getInfo(this->musicHandle1, 19),
-                (int)this->soloud.getInfo(this->musicHandle1, 20),
-                (int)this->soloud.getInfo(this->musicHandle1, 21),
-                (int)this->soloud.getInfo(this->musicHandle1, 22),
-                (int)this->soloud.getInfo(this->musicHandle1, 23));
-	ImGui::Text("     %02X %02X %02X %02X %02X %02X %02X %02X",
-                (int)this->soloud.getInfo(this->musicHandle1, 24),
-                (int)this->soloud.getInfo(this->musicHandle1, 25),
-                (int)this->soloud.getInfo(this->musicHandle1, 26),
-                (int)this->soloud.getInfo(this->musicHandle1, 27),
-                (int)this->soloud.getInfo(this->musicHandle1, 28),
-                (int)this->soloud.getInfo(this->musicHandle1, 29),
-                (int)this->soloud.getInfo(this->musicHandle1, 30),
-                (int)this->soloud.getInfo(this->musicHandle1, 31));
+    ImGui::Text("SID: %02X %02X %02X %02X %02X %02X %02X %02X",
+        (int)this->soloud.getInfo(this->musicHandle1, 0),
+        (int)this->soloud.getInfo(this->musicHandle1, 1),
+        (int)this->soloud.getInfo(this->musicHandle1, 2),
+        (int)this->soloud.getInfo(this->musicHandle1, 3),
+        (int)this->soloud.getInfo(this->musicHandle1, 4),
+        (int)this->soloud.getInfo(this->musicHandle1, 5),
+        (int)this->soloud.getInfo(this->musicHandle1, 6),
+        (int)this->soloud.getInfo(this->musicHandle1, 7));
+    ImGui::Text("     %02X %02X %02X %02X %02X %02X %02X %02X",
+        (int)this->soloud.getInfo(this->musicHandle1, 8),
+        (int)this->soloud.getInfo(this->musicHandle1, 9),
+        (int)this->soloud.getInfo(this->musicHandle1, 10),
+        (int)this->soloud.getInfo(this->musicHandle1, 11),
+        (int)this->soloud.getInfo(this->musicHandle1, 12),
+        (int)this->soloud.getInfo(this->musicHandle1, 13),
+        (int)this->soloud.getInfo(this->musicHandle1, 14),
+        (int)this->soloud.getInfo(this->musicHandle1, 15));
+    ImGui::Text("     %02X %02X %02X %02X %02X %02X %02X %02X",
+        (int)this->soloud.getInfo(this->musicHandle1, 16),
+        (int)this->soloud.getInfo(this->musicHandle1, 17),
+        (int)this->soloud.getInfo(this->musicHandle1, 18),
+        (int)this->soloud.getInfo(this->musicHandle1, 19),
+        (int)this->soloud.getInfo(this->musicHandle1, 20),
+        (int)this->soloud.getInfo(this->musicHandle1, 21),
+        (int)this->soloud.getInfo(this->musicHandle1, 22),
+        (int)this->soloud.getInfo(this->musicHandle1, 23));
+    ImGui::Text("     %02X %02X %02X %02X %02X %02X %02X %02X",
+        (int)this->soloud.getInfo(this->musicHandle1, 24),
+        (int)this->soloud.getInfo(this->musicHandle1, 25),
+        (int)this->soloud.getInfo(this->musicHandle1, 26),
+        (int)this->soloud.getInfo(this->musicHandle1, 27),
+        (int)this->soloud.getInfo(this->musicHandle1, 28),
+        (int)this->soloud.getInfo(this->musicHandle1, 29),
+        (int)this->soloud.getInfo(this->musicHandle1, 30),
+        (int)this->soloud.getInfo(this->musicHandle1, 31));
     ImGui::Text("TED: %02X %02X %02X %02X %02X",
-                (int)this->soloud.getInfo(this->musicHandle2, 64),
-                (int)this->soloud.getInfo(this->musicHandle2, 65),
-                (int)this->soloud.getInfo(this->musicHandle2, 66),
-                (int)this->soloud.getInfo(this->musicHandle2, 67),
-                (int)this->soloud.getInfo(this->musicHandle2, 68));
-	ImGui::End();
+        (int)this->soloud.getInfo(this->musicHandle2, 64),
+        (int)this->soloud.getInfo(this->musicHandle2, 65),
+        (int)this->soloud.getInfo(this->musicHandle2, 66),
+        (int)this->soloud.getInfo(this->musicHandle2, 67),
+        (int)this->soloud.getInfo(this->musicHandle2, 68));
+    ImGui::End();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
     ImGui::Begin("Control", nullptr, ImVec2(300, -1));
