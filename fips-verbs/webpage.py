@@ -148,6 +148,8 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
     texexport.exportSampleTextures()
     for dataFile in glob.glob(proj_dir + '/data/*.txt') :
         shutil.copy(dataFile, webpage_dir)
+    for dataFile in glob.glob(proj_dir + '/data/*.dump') :
+        shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
     tbui_from = '{}/data/tbui'.format(proj_dir)
     tbui_to   = '{}/data/tbui'.format(webpage_dir)
     shutil.copytree(tbui_from, tbui_to)
