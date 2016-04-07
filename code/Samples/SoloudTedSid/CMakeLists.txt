@@ -5,5 +5,5 @@ fips_begin_app(SoloudTedSid windowed)
         SoloudTedSid.cc
     )
     fips_deps(Gfx IMUI IO HTTP soloud)
-    oryol_add_web_sample(SoloudTedSid "Soloud integration" "emscripten" none "SoloudTedSid/SoloudTedSid.cc")
+    oryol_add_web_sample(SoloudTedSid "Soloud integration" "emscripten" SoloudTedSid.jpg "SoloudTedSid/SoloudTedSid.cc")
 fips_end_app()
