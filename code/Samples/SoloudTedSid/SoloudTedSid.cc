@@ -38,8 +38,9 @@ private:
     float filterParam0[4];
     float filterParam1[4];
     float filterParam2[4];
-    float song1Volume = 1.0f;
-    float song2Volume = 0.0f;
+    float music1Volume = 1.0f;
+    float music2Volume = 0.0f;
+    Buffer music1Data, music2Data;
 };
 OryolMain(SoloudTedSidApp);
 
@@ -116,11 +117,11 @@ SoloudTedSidApp::OnRunning() {
     ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
     ImGui::Begin("Control", nullptr, ImVec2(300, -1));
     ImGui::Text("Song volumes");
-    if (ImGui::SliderFloat("Song1 vol", &this->song1Volume, 0, 1)) {
-        this->soloud.setVolume(this->musicHandle1, this->song1Volume);
+    if (ImGui::SliderFloat("Song1 vol", &this->music1Volume, 0, 1)) {
+        this->soloud.setVolume(this->musicHandle1, this->music1Volume);
     }
-    if (ImGui::SliderFloat("Song2 vol", &this->song2Volume, 0, 1)) {
-        this->soloud.setVolume(this->musicHandle2, this->song2Volume);
+    if (ImGui::SliderFloat("Song2 vol", &this->music2Volume, 0, 1)) {
+        this->soloud.setVolume(this->musicHandle2, this->music2Volume);
     }
     ImGui::Separator();
     ImGui::Text("Biquad filter (lowpass)");
@@ -150,7 +151,11 @@ SoloudTedSidApp::OnInit() {
 
     IOSetup ioSetup;
     ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
+    #if ORYOL_DEBUG
+    ioSetup.Assigns.Add("snd:", "http://localhost:8000/");
+    #else
     ioSetup.Assigns.Add("snd:", ORYOL_SAMPLE_URL);
+    #endif
     IO::Setup(ioSetup);
 
     Gfx::Setup(GfxSetup::Window(800, 460, "SoLoud TED/SID Demo"));
@@ -175,14 +180,14 @@ SoloudTedSidApp::OnInit() {
     this->soloud.init(SoLoud::Soloud::CLIP_ROUNDOFF|SoLoud::Soloud::ENABLE_VISUALIZATION);
 
     IO::Load("snd:modulation.sid.dump", [this](IO::LoadResult res) {
-        this->music1.loadMem(res.Data.Data(), res.Data.Size(), true, true);
-        this->musicHandle1 = this->soloud.play(this->music1);
-        this->soloud.setVolume(this->musicHandle1, this->song1Volume);
+        this->music1Data = std::move(res.Data);
+        this->music1.loadMem(this->music1Data.Data(), this->music1Data.Size(), false, false);
+        this->musicHandle1 = this->soloud.play(this->music1, this->music1Volume);
     });
     IO::Load("snd:ted_storm.prg.dump", [this](IO::LoadResult res) {
-        this->music2.loadMem(res.Data.Data(), res.Data.Size(), true, true);
-        this->musicHandle2 = this->soloud.play(this->music2);
-        this->soloud.setVolume(this->musicHandle2, this->song2Volume);
+        this->music2Data = std::move(res.Data);
+        this->music2.loadMem(this->music2Data.Data(), this->music2Data.Size(), false, false);
+        this->musicHandle2 = this->soloud.play(this->music2, this->music2Volume);
     });
     return App::OnInit();
 }
