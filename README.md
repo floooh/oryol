@@ -19,6 +19,10 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_
 
+- **07-Apr-2016**: I have added a new sample which demonstrates how
+to integrate the [SoLoud audio lib](http://sol.gfxile.net/soloud/), here's
+the web demo: [SoloudTedSid](http://floooh.github.io/oryol/asmjs/SoloudTedSid.html)
+ 
 - **10-Mar-2016**: Some API changes in the Gfx module which break existing 
 code have been committed in the last few days, [here's an overview of what
 has changed](http://floooh.github.io/2016/03/10/oryol-gfx-changes.html)

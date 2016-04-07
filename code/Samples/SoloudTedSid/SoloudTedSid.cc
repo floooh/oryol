@@ -192,7 +192,6 @@ SoloudTedSidApp::OnInit() {
     return App::OnInit();
 }
 
-
 //------------------------------------------------------------------------------
 AppState::Code
 SoloudTedSidApp::OnCleanup() {
