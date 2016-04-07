@@ -35,9 +35,9 @@ private:
     SoLoud::BassboostFilter bassBoost;
     int musicHandle1 = 0;
     int musicHandle2 = 0;
-    float filterParam0[4] = { 0, 0, 0, 0 };
-    float filterParam1[4] = { 1000, 2, 0, 0 };
-    float filterParam2[4] = { 2, 0, 0, 0 };
+    float filterParam0[4];
+    float filterParam1[4];
+    float filterParam2[4];
     float song1Volume = 1.0f;
     float song2Volume = 0.0f;
 };
@@ -157,6 +157,13 @@ SoloudTedSidApp::OnInit() {
     Input::Setup();
     IMUI::Setup();
 
+    // need to compile in VS2013, can't use new initializers
+    Memory::Clear(this->filterParam0, sizeof(this->filterParam0));
+    Memory::Clear(this->filterParam1, sizeof(this->filterParam1));
+    Memory::Clear(this->filterParam2, sizeof(this->filterParam2));
+    this->filterParam1[0] = 1000;   
+    this->filterParam1[1] = 2;
+    this->filterParam2[0] = 2;
     this->music1.setLooping(true);
     this->music2.setLooping(true);
     this->echo.setParams(0.2f, 0.5f, 0.05f);
