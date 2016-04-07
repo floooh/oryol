@@ -108,6 +108,11 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/Fractal/Fractal.jpg
   src: Fractal/Fractal.cc
+- name: SoloudTedSid
+  desc: Soloud integration
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/SoloudTedSid/SoloudTedSid.jpg
+  src: SoloudTedSid/SoloudTedSid.cc
 - name: TestInput
   desc: Test Input module functionality
   type: emscripten,pnacl,android

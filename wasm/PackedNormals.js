@@ -3,6 +3,7 @@ function integrateWasmJS(Module) {
  var wasmTextFile = Module["wasmTextFile"] || "PackedNormals.wasm";
  var wasmBinaryFile = Module["wasmBinaryFile"] || "PackedNormals.wasm";
  var asmjsCodeFile = Module["asmjsCodeFile"] || "PackedNormals.asm.js";
+ var wasmPageSize = 64 * 1024;
  var asm2wasmImports = {
   "f64-rem": (function(x, y) {
    return x % y;
@@ -52,8 +53,9 @@ function integrateWasmJS(Module) {
   updateGlobalBuffer(newBuffer);
   updateGlobalBufferViews();
   Module["reallocBuffer"] = (function(size) {
+   size = Math.ceil(size / wasmPageSize) * wasmPageSize;
    var old = Module["buffer"];
-   exports["__growWasmMemory"](size);
+   exports["__growWasmMemory"](size / wasmPageSize);
    return Module["buffer"] !== old ? Module["buffer"] : null;
   });
  }
@@ -448,9 +450,7 @@ var Runtime = {
  }),
  dynCall: (function(sig, ptr, args) {
   if (args && args.length) {
-   if (!args.splice) args = Array.prototype.slice.call(args);
-   args.splice(0, 0, ptr);
-   return Module["dynCall_" + sig].apply(null, args);
+   return Module["dynCall_" + sig].apply(null, [ ptr ].concat(args));
   } else {
    return Module["dynCall_" + sig].call(null, ptr);
   }
@@ -483,9 +483,19 @@ var Runtime = {
   }
   var sigCache = Runtime.funcWrappers[sig];
   if (!sigCache[func]) {
-   sigCache[func] = function dynCall_wrapper() {
-    return Runtime.dynCall(sig, func, arguments);
-   };
+   if (sig.length === 1) {
+    sigCache[func] = function dynCall_wrapper() {
+     return Runtime.dynCall(sig, func);
+    };
+   } else if (sig.length === 2) {
+    sigCache[func] = function dynCall_wrapper(arg) {
+     return Runtime.dynCall(sig, func, [ arg ]);
+    };
+   } else {
+    sigCache[func] = function dynCall_wrapper() {
+     return Runtime.dynCall(sig, func, Array.prototype.slice.call(arguments));
+    };
+   }
   }
   return sigCache[func];
  }),
@@ -1256,29 +1266,12 @@ Module["preloadedAudios"] = {};
 var memoryInitializer = null;
 var ASM_CONSTS = [];
 STATIC_BASE = 1024;
-STATICTOP = STATIC_BASE + 11264;
-__ATINIT__.push({
- func: (function() {
-  __GLOBAL__sub_I_PackedNormals_cc();
- })
-}, {
- func: (function() {
-  __GLOBAL__sub_I_Log_cc();
- })
-});
+STATICTOP = STATIC_BASE + 11184;
+__ATINIT__.push();
 memoryInitializer = "PackedNormals.html.mem";
-var STATIC_BUMP = 11264;
+var STATIC_BUMP = 11184;
 var tempDoublePtr = STATICTOP;
 STATICTOP += 16;
-function _atexit(func, arg) {
- __ATEXIT__.unshift({
-  func: func,
-  arg: arg
- });
-}
-function ___cxa_atexit() {
- return _atexit.apply(null, arguments);
-}
 var GL = {
  counter: 1,
  lastError: 0,
@@ -2921,14 +2914,17 @@ function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTi
  assert(!Browser.mainLoop.func, "emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.");
  Browser.mainLoop.func = func;
  Browser.mainLoop.arg = arg;
- var argArray = [ arg ];
- var browserIterationFunc = (function() {
-  if (typeof arg !== "undefined") {
+ var browserIterationFunc;
+ if (typeof arg !== "undefined") {
+  var argArray = [ arg ];
+  browserIterationFunc = (function() {
    Runtime.dynCall("vi", func, argArray);
-  } else {
+  });
+ } else {
+  browserIterationFunc = (function() {
    Runtime.dynCall("v", func);
-  }
- });
+  });
+ }
  var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
  Browser.mainLoop.runner = function Browser_mainLoop_runner() {
   if (ABORT) return;
@@ -3277,6 +3273,8 @@ var Browser = {
   canvasContainer.appendChild(canvas);
   canvasContainer.requestFullScreen = canvasContainer["requestFullScreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullScreen"] ? (function() {
    canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
+  }) : null) || (canvasContainer["webkitRequestFullscreen"] ? (function() {
+   canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"]);
   }) : null);
   if (vrDevice) {
    canvasContainer.requestFullScreen({
@@ -4060,8 +4058,6 @@ function ___syscall146(which, varargs) {
   return -e.errno;
  }
 }
-var ___dso_handle = STATICTOP;
-STATICTOP += 16;
 var GLctx;
 GL.init();
 Module["requestFullScreen"] = function Module_requestFullScreen(lockPointer, resizeCanvas, vrDevice) {
@@ -4227,7 +4223,6 @@ Module.asmLibraryArg = {
  "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
  "_glGenBuffers": _glGenBuffers,
  "_glShaderSource": _glShaderSource,
- "___cxa_atexit": ___cxa_atexit,
  "_pthread_cleanup_push": _pthread_cleanup_push,
  "___syscall140": ___syscall140,
  "___syscall146": ___syscall146,
@@ -4300,7 +4295,6 @@ Module.asmLibraryArg = {
  "_glDisable": _glDisable,
  "_emscripten_cancel_main_loop": _emscripten_cancel_main_loop,
  "_glBlendColor": _glBlendColor,
- "_atexit": _atexit,
  "_glStencilMask": _glStencilMask,
  "_glBlendEquationSeparate": _glBlendEquationSeparate,
  "_glStencilFuncSeparate": _glStencilFuncSeparate,
@@ -4309,8 +4303,7 @@ Module.asmLibraryArg = {
  "STACK_MAX": STACK_MAX,
  "tempDoublePtr": tempDoublePtr,
  "ABORT": ABORT,
- "cttz_i8": cttz_i8,
- "___dso_handle": ___dso_handle
+ "cttz_i8": cttz_i8
 };
 // EMSCRIPTEN_START_ASM
 
@@ -4319,7 +4312,6 @@ var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
 var _free = Module["_free"] = asm["_free"];
 var _main = Module["_main"] = asm["_main"];
-var __GLOBAL__sub_I_Log_cc = Module["__GLOBAL__sub_I_Log_cc"] = asm["__GLOBAL__sub_I_Log_cc"];
 var _enter_fullscreen = Module["_enter_fullscreen"] = asm["_enter_fullscreen"];
 var runPostSets = Module["runPostSets"] = asm["runPostSets"];
 var _pthread_self = Module["_pthread_self"] = asm["_pthread_self"];
@@ -4330,7 +4322,6 @@ var _i64Add = Module["_i64Add"] = asm["_i64Add"];
 var _memcpy = Module["_memcpy"] = asm["_memcpy"];
 var _enter_soft_fullscreen = Module["_enter_soft_fullscreen"] = asm["_enter_soft_fullscreen"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
-var __GLOBAL__sub_I_PackedNormals_cc = Module["__GLOBAL__sub_I_PackedNormals_cc"] = asm["__GLOBAL__sub_I_PackedNormals_cc"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
 var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];
@@ -4518,6 +4509,7 @@ var shouldRunNow = true;
 if (Module["noInitialRun"]) {
  shouldRunNow = false;
 }
+Module["noExitRuntime"] = true;
 run();
 
 

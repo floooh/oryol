@@ -3,6 +3,7 @@ function integrateWasmJS(Module) {
  var wasmTextFile = Module["wasmTextFile"] || "IOQueueSample.wasm";
  var wasmBinaryFile = Module["wasmBinaryFile"] || "IOQueueSample.wasm";
  var asmjsCodeFile = Module["asmjsCodeFile"] || "IOQueueSample.asm.js";
+ var wasmPageSize = 64 * 1024;
  var asm2wasmImports = {
   "f64-rem": (function(x, y) {
    return x % y;
@@ -52,8 +53,9 @@ function integrateWasmJS(Module) {
   updateGlobalBuffer(newBuffer);
   updateGlobalBufferViews();
   Module["reallocBuffer"] = (function(size) {
+   size = Math.ceil(size / wasmPageSize) * wasmPageSize;
    var old = Module["buffer"];
-   exports["__growWasmMemory"](size);
+   exports["__growWasmMemory"](size / wasmPageSize);
    return Module["buffer"] !== old ? Module["buffer"] : null;
   });
  }
@@ -448,9 +450,7 @@ var Runtime = {
  }),
  dynCall: (function(sig, ptr, args) {
   if (args && args.length) {
-   if (!args.splice) args = Array.prototype.slice.call(args);
-   args.splice(0, 0, ptr);
-   return Module["dynCall_" + sig].apply(null, args);
+   return Module["dynCall_" + sig].apply(null, [ ptr ].concat(args));
   } else {
    return Module["dynCall_" + sig].call(null, ptr);
   }
@@ -483,9 +483,19 @@ var Runtime = {
   }
   var sigCache = Runtime.funcWrappers[sig];
   if (!sigCache[func]) {
-   sigCache[func] = function dynCall_wrapper() {
-    return Runtime.dynCall(sig, func, arguments);
-   };
+   if (sig.length === 1) {
+    sigCache[func] = function dynCall_wrapper() {
+     return Runtime.dynCall(sig, func);
+    };
+   } else if (sig.length === 2) {
+    sigCache[func] = function dynCall_wrapper(arg) {
+     return Runtime.dynCall(sig, func, [ arg ]);
+    };
+   } else {
+    sigCache[func] = function dynCall_wrapper() {
+     return Runtime.dynCall(sig, func, Array.prototype.slice.call(arguments));
+    };
+   }
   }
   return sigCache[func];
  }),
@@ -1256,245 +1266,16 @@ Module["preloadedAudios"] = {};
 var memoryInitializer = null;
 var ASM_CONSTS = [];
 STATIC_BASE = 1024;
-STATICTOP = STATIC_BASE + 9232;
+STATICTOP = STATIC_BASE + 9184;
 __ATINIT__.push({
- func: (function() {
-  __GLOBAL__sub_I_IOQueueSample_cc();
- })
-}, {
  func: (function() {
   __GLOBAL__sub_I_ThreadedQueue_cc();
  })
-}, {
- func: (function() {
-  __GLOBAL__sub_I_Log_cc();
- })
 });
 memoryInitializer = "IOQueueSample.html.mem";
-var STATIC_BUMP = 9232;
+var STATIC_BUMP = 9184;
 var tempDoublePtr = STATICTOP;
 STATICTOP += 16;
-function _atexit(func, arg) {
- __ATEXIT__.unshift({
-  func: func,
-  arg: arg
- });
-}
-function ___cxa_atexit() {
- return _atexit.apply(null, arguments);
-}
-Module["_i64Subtract"] = _i64Subtract;
-Module["_i64Add"] = _i64Add;
-function __ZSt18uncaught_exceptionv() {
- return !!__ZSt18uncaught_exceptionv.uncaught_exception;
-}
-var EXCEPTIONS = {
- last: 0,
- caught: [],
- infos: {},
- deAdjust: (function(adjusted) {
-  if (!adjusted || EXCEPTIONS.infos[adjusted]) return adjusted;
-  for (var ptr in EXCEPTIONS.infos) {
-   var info = EXCEPTIONS.infos[ptr];
-   if (info.adjusted === adjusted) {
-    return ptr;
-   }
-  }
-  return adjusted;
- }),
- addRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  info.refcount++;
- }),
- decRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  assert(info.refcount > 0);
-  info.refcount--;
-  if (info.refcount === 0) {
-   if (info.destructor) {
-    Runtime.dynCall("vi", info.destructor, [ ptr ]);
-   }
-   delete EXCEPTIONS.infos[ptr];
-   ___cxa_free_exception(ptr);
-  }
- }),
- clearRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  info.refcount = 0;
- })
-};
-function ___resumeException(ptr) {
- if (!EXCEPTIONS.last) {
-  EXCEPTIONS.last = ptr;
- }
- EXCEPTIONS.clearRef(EXCEPTIONS.deAdjust(ptr));
- throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
-}
-function ___cxa_find_matching_catch() {
- var thrown = EXCEPTIONS.last;
- if (!thrown) {
-  return (asm["setTempRet0"](0), 0) | 0;
- }
- var info = EXCEPTIONS.infos[thrown];
- var throwntype = info.type;
- if (!throwntype) {
-  return (asm["setTempRet0"](0), thrown) | 0;
- }
- var typeArray = Array.prototype.slice.call(arguments);
- var pointer = Module["___cxa_is_pointer_type"](throwntype);
- if (!___cxa_find_matching_catch.buffer) ___cxa_find_matching_catch.buffer = _malloc(4);
- HEAP32[___cxa_find_matching_catch.buffer >> 2] = thrown;
- thrown = ___cxa_find_matching_catch.buffer;
- for (var i = 0; i < typeArray.length; i++) {
-  if (typeArray[i] && Module["___cxa_can_catch"](typeArray[i], throwntype, thrown)) {
-   thrown = HEAP32[thrown >> 2];
-   info.adjusted = thrown;
-   return (asm["setTempRet0"](typeArray[i]), thrown) | 0;
-  }
- }
- thrown = HEAP32[thrown >> 2];
- return (asm["setTempRet0"](throwntype), thrown) | 0;
-}
-function ___cxa_throw(ptr, type, destructor) {
- EXCEPTIONS.infos[ptr] = {
-  ptr: ptr,
-  adjusted: ptr,
-  type: type,
-  destructor: destructor,
-  refcount: 0
- };
- EXCEPTIONS.last = ptr;
- if (!("uncaught_exception" in __ZSt18uncaught_exceptionv)) {
-  __ZSt18uncaught_exceptionv.uncaught_exception = 1;
- } else {
-  __ZSt18uncaught_exceptionv.uncaught_exception++;
- }
- throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
-}
-Module["_memset"] = _memset;
-function _pthread_cleanup_push(routine, arg) {
- __ATEXIT__.push((function() {
-  Runtime.dynCall("vi", routine, [ arg ]);
- }));
- _pthread_cleanup_push.level = __ATEXIT__.length;
-}
-Module["_bitshift64Lshr"] = _bitshift64Lshr;
-Module["_bitshift64Shl"] = _bitshift64Shl;
-function _pthread_cleanup_pop() {
- assert(_pthread_cleanup_push.level == __ATEXIT__.length, "cannot pop if something else added meanwhile!");
- __ATEXIT__.pop();
- _pthread_cleanup_push.level = __ATEXIT__.length;
-}
-function _abort() {
- Module["abort"]();
-}
-function _emscripten_set_main_loop_timing(mode, value) {
- Browser.mainLoop.timingMode = mode;
- Browser.mainLoop.timingValue = value;
- if (!Browser.mainLoop.func) {
-  return 1;
- }
- if (mode == 0) {
-  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
-   var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
-   setTimeout(Browser.mainLoop.runner, timeUntilNextTick);
-  };
-  Browser.mainLoop.method = "timeout";
- } else if (mode == 1) {
-  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_rAF() {
-   Browser.requestAnimationFrame(Browser.mainLoop.runner);
-  };
-  Browser.mainLoop.method = "rAF";
- } else if (mode == 2) {
-  if (!window["setImmediate"]) {
-   var setImmediates = [];
-   var emscriptenMainLoopMessageId = "__emcc";
-   function Browser_setImmediate_messageHandler(event) {
-    if (event.source === window && event.data === emscriptenMainLoopMessageId) {
-     event.stopPropagation();
-     setImmediates.shift()();
-    }
-   }
-   window.addEventListener("message", Browser_setImmediate_messageHandler, true);
-   window["setImmediate"] = function Browser_emulated_setImmediate(func) {
-    setImmediates.push(func);
-    window.postMessage(emscriptenMainLoopMessageId, "*");
-   };
-  }
-  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setImmediate() {
-   window["setImmediate"](Browser.mainLoop.runner);
-  };
-  Browser.mainLoop.method = "immediate";
- }
- return 0;
-}
-function _emscripten_get_now() {
- abort();
-}
-function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTiming) {
- Module["noExitRuntime"] = true;
- assert(!Browser.mainLoop.func, "emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.");
- Browser.mainLoop.func = func;
- Browser.mainLoop.arg = arg;
- var argArray = [ arg ];
- var browserIterationFunc = (function() {
-  if (typeof arg !== "undefined") {
-   Runtime.dynCall("vi", func, argArray);
-  } else {
-   Runtime.dynCall("v", func);
-  }
- });
- var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
- Browser.mainLoop.runner = function Browser_mainLoop_runner() {
-  if (ABORT) return;
-  if (Browser.mainLoop.queue.length > 0) {
-   var start = Date.now();
-   var blocker = Browser.mainLoop.queue.shift();
-   blocker.func(blocker.arg);
-   if (Browser.mainLoop.remainingBlockers) {
-    var remaining = Browser.mainLoop.remainingBlockers;
-    var next = remaining % 1 == 0 ? remaining - 1 : Math.floor(remaining);
-    if (blocker.counted) {
-     Browser.mainLoop.remainingBlockers = next;
-    } else {
-     next = next + .5;
-     Browser.mainLoop.remainingBlockers = (8 * remaining + next) / 9;
-    }
-   }
-   console.log('main loop blocker "' + blocker.name + '" took ' + (Date.now() - start) + " ms");
-   Browser.mainLoop.updateStatus();
-   if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
-   setTimeout(Browser.mainLoop.runner, 0);
-   return;
-  }
-  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
-  Browser.mainLoop.currentFrameNumber = Browser.mainLoop.currentFrameNumber + 1 | 0;
-  if (Browser.mainLoop.timingMode == 1 && Browser.mainLoop.timingValue > 1 && Browser.mainLoop.currentFrameNumber % Browser.mainLoop.timingValue != 0) {
-   Browser.mainLoop.scheduler();
-   return;
-  } else if (Browser.mainLoop.timingMode == 0) {
-   Browser.mainLoop.tickStartTime = _emscripten_get_now();
-  }
-  if (Browser.mainLoop.method === "timeout" && Module.ctx) {
-   Module.printErr("Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!");
-   Browser.mainLoop.method = "";
-  }
-  Browser.mainLoop.runIter(browserIterationFunc);
-  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
-  if (typeof SDL === "object" && SDL.audio && SDL.audio.queueNewAudioData) SDL.audio.queueNewAudioData();
-  Browser.mainLoop.scheduler();
- };
- if (!noSetTiming) {
-  if (fps && fps > 0) _emscripten_set_main_loop_timing(0, 1e3 / fps); else _emscripten_set_main_loop_timing(1, 1);
-  Browser.mainLoop.scheduler();
- }
- if (simulateInfiniteLoop) {
-  throw "SimulateInfiniteLoop";
- }
-}
 var Browser = {
  mainLoop: {
   scheduler: null,
@@ -1795,6 +1576,8 @@ var Browser = {
   canvasContainer.appendChild(canvas);
   canvasContainer.requestFullScreen = canvasContainer["requestFullScreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullScreen"] ? (function() {
    canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
+  }) : null) || (canvasContainer["webkitRequestFullscreen"] ? (function() {
+   canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"]);
   }) : null);
   if (vrDevice) {
    canvasContainer.requestFullScreen({
@@ -2073,6 +1856,221 @@ var Browser = {
   return handle;
  })
 };
+function _emscripten_set_main_loop_timing(mode, value) {
+ Browser.mainLoop.timingMode = mode;
+ Browser.mainLoop.timingValue = value;
+ if (!Browser.mainLoop.func) {
+  return 1;
+ }
+ if (mode == 0) {
+  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
+   var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
+   setTimeout(Browser.mainLoop.runner, timeUntilNextTick);
+  };
+  Browser.mainLoop.method = "timeout";
+ } else if (mode == 1) {
+  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_rAF() {
+   Browser.requestAnimationFrame(Browser.mainLoop.runner);
+  };
+  Browser.mainLoop.method = "rAF";
+ } else if (mode == 2) {
+  if (!window["setImmediate"]) {
+   var setImmediates = [];
+   var emscriptenMainLoopMessageId = "__emcc";
+   function Browser_setImmediate_messageHandler(event) {
+    if (event.source === window && event.data === emscriptenMainLoopMessageId) {
+     event.stopPropagation();
+     setImmediates.shift()();
+    }
+   }
+   window.addEventListener("message", Browser_setImmediate_messageHandler, true);
+   window["setImmediate"] = function Browser_emulated_setImmediate(func) {
+    setImmediates.push(func);
+    window.postMessage(emscriptenMainLoopMessageId, "*");
+   };
+  }
+  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setImmediate() {
+   window["setImmediate"](Browser.mainLoop.runner);
+  };
+  Browser.mainLoop.method = "immediate";
+ }
+ return 0;
+}
+function _emscripten_get_now() {
+ abort();
+}
+function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTiming) {
+ Module["noExitRuntime"] = true;
+ assert(!Browser.mainLoop.func, "emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.");
+ Browser.mainLoop.func = func;
+ Browser.mainLoop.arg = arg;
+ var browserIterationFunc;
+ if (typeof arg !== "undefined") {
+  var argArray = [ arg ];
+  browserIterationFunc = (function() {
+   Runtime.dynCall("vi", func, argArray);
+  });
+ } else {
+  browserIterationFunc = (function() {
+   Runtime.dynCall("v", func);
+  });
+ }
+ var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
+ Browser.mainLoop.runner = function Browser_mainLoop_runner() {
+  if (ABORT) return;
+  if (Browser.mainLoop.queue.length > 0) {
+   var start = Date.now();
+   var blocker = Browser.mainLoop.queue.shift();
+   blocker.func(blocker.arg);
+   if (Browser.mainLoop.remainingBlockers) {
+    var remaining = Browser.mainLoop.remainingBlockers;
+    var next = remaining % 1 == 0 ? remaining - 1 : Math.floor(remaining);
+    if (blocker.counted) {
+     Browser.mainLoop.remainingBlockers = next;
+    } else {
+     next = next + .5;
+     Browser.mainLoop.remainingBlockers = (8 * remaining + next) / 9;
+    }
+   }
+   console.log('main loop blocker "' + blocker.name + '" took ' + (Date.now() - start) + " ms");
+   Browser.mainLoop.updateStatus();
+   if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+   setTimeout(Browser.mainLoop.runner, 0);
+   return;
+  }
+  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+  Browser.mainLoop.currentFrameNumber = Browser.mainLoop.currentFrameNumber + 1 | 0;
+  if (Browser.mainLoop.timingMode == 1 && Browser.mainLoop.timingValue > 1 && Browser.mainLoop.currentFrameNumber % Browser.mainLoop.timingValue != 0) {
+   Browser.mainLoop.scheduler();
+   return;
+  } else if (Browser.mainLoop.timingMode == 0) {
+   Browser.mainLoop.tickStartTime = _emscripten_get_now();
+  }
+  if (Browser.mainLoop.method === "timeout" && Module.ctx) {
+   Module.printErr("Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!");
+   Browser.mainLoop.method = "";
+  }
+  Browser.mainLoop.runIter(browserIterationFunc);
+  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+  if (typeof SDL === "object" && SDL.audio && SDL.audio.queueNewAudioData) SDL.audio.queueNewAudioData();
+  Browser.mainLoop.scheduler();
+ };
+ if (!noSetTiming) {
+  if (fps && fps > 0) _emscripten_set_main_loop_timing(0, 1e3 / fps); else _emscripten_set_main_loop_timing(1, 1);
+  Browser.mainLoop.scheduler();
+ }
+ if (simulateInfiniteLoop) {
+  throw "SimulateInfiniteLoop";
+ }
+}
+Module["_i64Subtract"] = _i64Subtract;
+Module["_i64Add"] = _i64Add;
+function __ZSt18uncaught_exceptionv() {
+ return !!__ZSt18uncaught_exceptionv.uncaught_exception;
+}
+var EXCEPTIONS = {
+ last: 0,
+ caught: [],
+ infos: {},
+ deAdjust: (function(adjusted) {
+  if (!adjusted || EXCEPTIONS.infos[adjusted]) return adjusted;
+  for (var ptr in EXCEPTIONS.infos) {
+   var info = EXCEPTIONS.infos[ptr];
+   if (info.adjusted === adjusted) {
+    return ptr;
+   }
+  }
+  return adjusted;
+ }),
+ addRef: (function(ptr) {
+  if (!ptr) return;
+  var info = EXCEPTIONS.infos[ptr];
+  info.refcount++;
+ }),
+ decRef: (function(ptr) {
+  if (!ptr) return;
+  var info = EXCEPTIONS.infos[ptr];
+  assert(info.refcount > 0);
+  info.refcount--;
+  if (info.refcount === 0) {
+   if (info.destructor) {
+    Runtime.dynCall("vi", info.destructor, [ ptr ]);
+   }
+   delete EXCEPTIONS.infos[ptr];
+   ___cxa_free_exception(ptr);
+  }
+ }),
+ clearRef: (function(ptr) {
+  if (!ptr) return;
+  var info = EXCEPTIONS.infos[ptr];
+  info.refcount = 0;
+ })
+};
+function ___resumeException(ptr) {
+ if (!EXCEPTIONS.last) {
+  EXCEPTIONS.last = ptr;
+ }
+ EXCEPTIONS.clearRef(EXCEPTIONS.deAdjust(ptr));
+ throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
+}
+function ___cxa_find_matching_catch() {
+ var thrown = EXCEPTIONS.last;
+ if (!thrown) {
+  return (asm["setTempRet0"](0), 0) | 0;
+ }
+ var info = EXCEPTIONS.infos[thrown];
+ var throwntype = info.type;
+ if (!throwntype) {
+  return (asm["setTempRet0"](0), thrown) | 0;
+ }
+ var typeArray = Array.prototype.slice.call(arguments);
+ var pointer = Module["___cxa_is_pointer_type"](throwntype);
+ if (!___cxa_find_matching_catch.buffer) ___cxa_find_matching_catch.buffer = _malloc(4);
+ HEAP32[___cxa_find_matching_catch.buffer >> 2] = thrown;
+ thrown = ___cxa_find_matching_catch.buffer;
+ for (var i = 0; i < typeArray.length; i++) {
+  if (typeArray[i] && Module["___cxa_can_catch"](typeArray[i], throwntype, thrown)) {
+   thrown = HEAP32[thrown >> 2];
+   info.adjusted = thrown;
+   return (asm["setTempRet0"](typeArray[i]), thrown) | 0;
+  }
+ }
+ thrown = HEAP32[thrown >> 2];
+ return (asm["setTempRet0"](throwntype), thrown) | 0;
+}
+function ___cxa_throw(ptr, type, destructor) {
+ EXCEPTIONS.infos[ptr] = {
+  ptr: ptr,
+  adjusted: ptr,
+  type: type,
+  destructor: destructor,
+  refcount: 0
+ };
+ EXCEPTIONS.last = ptr;
+ if (!("uncaught_exception" in __ZSt18uncaught_exceptionv)) {
+  __ZSt18uncaught_exceptionv.uncaught_exception = 1;
+ } else {
+  __ZSt18uncaught_exceptionv.uncaught_exception++;
+ }
+ throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
+}
+Module["_memset"] = _memset;
+function _pthread_cleanup_push(routine, arg) {
+ __ATEXIT__.push((function() {
+  Runtime.dynCall("vi", routine, [ arg ]);
+ }));
+ _pthread_cleanup_push.level = __ATEXIT__.length;
+}
+Module["_bitshift64Lshr"] = _bitshift64Lshr;
+Module["_bitshift64Shl"] = _bitshift64Shl;
+function _pthread_cleanup_pop() {
+ assert(_pthread_cleanup_push.level == __ATEXIT__.length, "cannot pop if something else added meanwhile!");
+ __ATEXIT__.pop();
+ _pthread_cleanup_push.level = __ATEXIT__.length;
+}
+function _abort() {
+ Module["abort"]();
+}
 function _emscripten_async_wget_data(url, arg, onload, onerror) {
  Browser.asyncLoad(Pointer_stringify(url), (function(byteArray) {
   var buffer = _malloc(byteArray.length);
@@ -2231,8 +2229,6 @@ function ___syscall54(which, varargs) {
   return -e.errno;
  }
 }
-var ___dso_handle = STATICTOP;
-STATICTOP += 16;
 Module["requestFullScreen"] = function Module_requestFullScreen(lockPointer, resizeCanvas, vrDevice) {
  Browser.requestFullScreen(lockPointer, resizeCanvas, vrDevice);
 };
@@ -2404,25 +2400,22 @@ Module.asmLibraryArg = {
  "___resumeException": ___resumeException,
  "__ZSt18uncaught_exceptionv": __ZSt18uncaught_exceptionv,
  "_nanosleep": _nanosleep,
- "_llvm_trap": _llvm_trap,
+ "___syscall140": ___syscall140,
  "___syscall54": ___syscall54,
  "_emscripten_set_main_loop": _emscripten_set_main_loop,
  "_emscripten_get_now": _emscripten_get_now,
- "___cxa_atexit": ___cxa_atexit,
  "___cxa_throw": ___cxa_throw,
  "_abort": _abort,
  "_pthread_cleanup_push": _pthread_cleanup_push,
  "_emscripten_cancel_main_loop": _emscripten_cancel_main_loop,
  "_emscripten_async_wget_data": _emscripten_async_wget_data,
- "_atexit": _atexit,
- "___syscall140": ___syscall140,
+ "_llvm_trap": _llvm_trap,
  "___syscall146": ___syscall146,
  "STACKTOP": STACKTOP,
  "STACK_MAX": STACK_MAX,
  "tempDoublePtr": tempDoublePtr,
  "ABORT": ABORT,
- "cttz_i8": cttz_i8,
- "___dso_handle": ___dso_handle
+ "cttz_i8": cttz_i8
 };
 // EMSCRIPTEN_START_ASM
 
@@ -2431,14 +2424,12 @@ var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
 var _free = Module["_free"] = asm["_free"];
 var _main = Module["_main"] = asm["_main"];
-var __GLOBAL__sub_I_Log_cc = Module["__GLOBAL__sub_I_Log_cc"] = asm["__GLOBAL__sub_I_Log_cc"];
 var _i64Add = Module["_i64Add"] = asm["_i64Add"];
 var _memmove = Module["_memmove"] = asm["_memmove"];
 var _pthread_self = Module["_pthread_self"] = asm["_pthread_self"];
 var _memset = Module["_memset"] = asm["_memset"];
 var runPostSets = Module["runPostSets"] = asm["runPostSets"];
 var _malloc = Module["_malloc"] = asm["_malloc"];
-var __GLOBAL__sub_I_IOQueueSample_cc = Module["__GLOBAL__sub_I_IOQueueSample_cc"] = asm["__GLOBAL__sub_I_IOQueueSample_cc"];
 var _memcpy = Module["_memcpy"] = asm["_memcpy"];
 var __GLOBAL__sub_I_ThreadedQueue_cc = Module["__GLOBAL__sub_I_ThreadedQueue_cc"] = asm["__GLOBAL__sub_I_ThreadedQueue_cc"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
@@ -2631,6 +2622,7 @@ var shouldRunNow = true;
 if (Module["noInitialRun"]) {
  shouldRunNow = false;
 }
+Module["noExitRuntime"] = true;
 run();
 
 
