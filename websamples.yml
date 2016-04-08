@@ -113,6 +113,11 @@
   type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/SoloudTedSid/SoloudTedSid.jpg
   src: SoloudTedSid/SoloudTedSid.cc
+- name: SoloudMOD
+  desc: Soloud MOD sample
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/SoloudMOD/SoloudMOD.jpg
+  src: SoloudMOD/SoloudMOD.cc
 - name: TestInput
   desc: Test Input module functionality
   type: emscripten,pnacl,android
