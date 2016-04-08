@@ -25,7 +25,7 @@ public:
 
 private:
     SoLoud::Soloud soloud;
-    static const int NumMods = 3;
+    static const int NumMods = 5;
     struct Mod {
         Mod() {};
         Mod(const char* name_, const char* path_) : path(path_), name(name_) { };
@@ -53,7 +53,7 @@ SoloudMODApp::OnRunning() {
     float* buf = this->soloud.getWave();
     float* fft = this->soloud.calcFFT();
     ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
-    ImGui::Begin("MOD Player", nullptr, ImVec2(660, 300));
+    ImGui::Begin("MOD Player (MODs from SoLoud and modarchive.org)", nullptr, ImVec2(660, 330));
     for (int i = 0; i < NumMods; i++) {
         ImGui::PushID(i);
         auto& mod = this->mods[i];
@@ -76,7 +76,7 @@ SoloudMODApp::OnRunning() {
                     ImGui::SetTooltip("%s", mod.name.AsCStr());
                 }
                 ImGui::SameLine();
-                if (ImGui::SliderFloat("Volume", &mod.volume, 0.0f, 1.0f)) {
+                if (ImGui::SliderFloat("Volume", &mod.volume, 0.0f, 1.5f)) {
                     this->soloud.setVolume(mod.handle, mod.volume);
                 }
             }
@@ -119,7 +119,9 @@ SoloudMODApp::OnInit() {
     // NOTE: filenames have .txt extension so that github pages will compress them
     this->mods[0] = Mod("Combat Signal by ???", "snd:comsi.s3m.txt");
     this->mods[1] = Mod("Mr Bruce gets stoned by ???", "snd:bruce.s3m.txt");
-    this->mods[2] = Mod("118 in 64 by Reed Richards", "snd:118in64.xm.txt");
+    this->mods[2] = Mod("Jungle Juice by disaster from !bass records!", "snd:jungle_juice.mod.txt");
+    this->mods[3] = Mod("Disco Feva Baby! by Necros/PM/EGG", "snd:disco_feva_baby.s3m.txt");
+    this->mods[4] = Mod("digital innovation2 by nuke of anarchy", "snd:dgtinnv1.mod.txt");
 
     this->soloud.init();
     this->soloud.setVisualizationEnable(true);
