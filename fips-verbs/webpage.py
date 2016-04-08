@@ -146,10 +146,9 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
     tex_dstdir = webpage_dir + '/data'
     texexport.configure(proj_dir, tex_srcdir, tex_dstdir)
     texexport.exportSampleTextures()
-    for dataFile in glob.glob(proj_dir + '/data/*.txt') :
-        shutil.copy(dataFile, webpage_dir)
-    for dataFile in glob.glob(proj_dir + '/data/*.dump') :
-        shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
+    for ext in ['txt', 'dump'] :
+        for dataFile in glob.glob(proj_dir + '/data/*.{}'.format(ext)) :
+            shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
     tbui_from = '{}/data/tbui'.format(proj_dir)
     tbui_to   = '{}/data/tbui'.format(webpage_dir)
     shutil.copytree(tbui_from, tbui_to)
@@ -163,16 +162,16 @@ def build_deploy_webpage(fips_dir, proj_dir) :
         shutil.rmtree(webpage_dir)
     os.makedirs(webpage_dir)
 
-    # compile emscripten, pnacl and android samples
+    # compile samples
+    if BuildPNaCl and nacl.check_exists(fips_dir) :
+        project.gen(fips_dir, proj_dir, 'pnacl-ninja-release')
+        project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'emsc-ninja-release')
         project.build(fips_dir, proj_dir, 'emsc-ninja-release')
     if BuildWasm and emscripten.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'wasm-ninja-release')
         project.build(fips_dir, proj_dir, 'wasm-ninja-release')
-    if BuildPNaCl and nacl.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'pnacl-ninja-release')
-        project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
     
     # export sample assets
     if ExportAssets :
