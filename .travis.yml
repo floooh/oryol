@@ -1,21 +1,21 @@
 git:
-    - depth 3
+  depth: 3
 language: cpp
 compiler: gcc
 os: 
   - osx
   - linux
 addons:
-    apt:
-        sources:
-            - ubuntu-toolchain-r-test
-        packages:
-            - cmake
-            - gcc-4.8
-            - g++-4.8
-            - libglu1-mesa-dev
-            - xorg-dev
-            - lubasound2-dev
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - cmake
+      - gcc-4.8
+      - g++-4.8
+      - libglu1-mesa-dev
+      - xorg-dev
+      - libasound2-dev
 
 install:
   - echo $TRAVIS_OS_NAME
