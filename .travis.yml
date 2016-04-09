@@ -9,6 +9,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - kalakris-cmake
     packages:
       - cmake
       - gcc-4.8
