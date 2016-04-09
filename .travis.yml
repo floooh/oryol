@@ -24,6 +24,7 @@ install:
 
 script:
   - echo $TRAVIS_OS_NAME
+  - cmake --version
 
   # LINUX
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then python fips set config linux-make-unittest; fi
