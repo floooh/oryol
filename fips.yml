@@ -30,7 +30,6 @@ exports:
     header-dirs :
         - code
         - code/Modules
-        - code/Ext
     modules :
         # engine modules
         Core :          code/Modules/Core
