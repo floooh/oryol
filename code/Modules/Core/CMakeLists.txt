@@ -49,6 +49,7 @@ fips_begin_module(Core)
         WideString.cc WideString.h
         stringAtomBuffer.cc stringAtomBuffer.h
         stringAtomTable.cc stringAtomTable.h
+        ConvertUTF.c ConvertUTF.h
     )
     fips_dir(Threading)
     fips_files(
@@ -69,8 +70,8 @@ fips_begin_module(Core)
     endif()
     if (FIPS_ANDROID)
         fips_dir(android)
+        fips_files(android_native_app_glue.c android_native_app_glue.h)
         fips_files(androidBridge.cc androidBridge.h)
-        fips_deps(android_native)
     endif()
     if (FIPS_IOS)
         fips_dir(ios)
@@ -96,7 +97,6 @@ fips_begin_module(Core)
             pnaclModule.cc pnaclModule.h
         )
     endif()
-    fips_deps(ConvertUTF)
     fips_dir(.)
     fips_files(Trace.h Trace.cc)
     if (FIPS_PROFILING AND (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS))

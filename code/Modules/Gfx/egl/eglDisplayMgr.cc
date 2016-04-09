@@ -5,7 +5,7 @@
 #include "eglDisplayMgr.h"
 #if ORYOL_ANDROID
 #include "android/native_window.h"
-#include "android_native/android_native_app_glue.h"
+#include "Core/android/android_native_app_glue.h"
 #endif
 #if ORYOL_RASPBERRYPI
 #include "bcm_host.h"

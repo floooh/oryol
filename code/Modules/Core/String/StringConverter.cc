@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/Assertion.h"
 #include "StringConverter.h"
-#include "Ext/ConvertUTF/ConvertUTF.h"
+#include "ConvertUTF.h"
 #include <cstdlib>
 #include <cstring>
 #include <cwchar>

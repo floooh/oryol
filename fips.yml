@@ -49,8 +49,3 @@ exports:
         TBUI :          code/Modules/TBUI
         Sound :         code/Modules/Sound
         
-        # ext libs
-        ConvertUTF:         code/Ext/ConvertUTF
-        android-native:     code/Ext/android_native
-        flextgl:            code/Ext/flextgl
-

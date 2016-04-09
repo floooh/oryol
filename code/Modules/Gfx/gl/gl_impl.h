@@ -9,7 +9,7 @@
 #include "GLES2/gl2.h"
 #include "GLES2/gl2ext.h"
 #elif ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
-#include "flextgl/flextGL.h"
+#include "Gfx/flextgl/flextGL.h"
 #elif ORYOL_IOS
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>

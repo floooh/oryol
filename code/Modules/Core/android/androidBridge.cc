@@ -5,7 +5,7 @@
 #include "androidBridge.h"
 #include "Core/App.h"
 #include "Core/Log.h"
-#include "Ext/android_native/android_native_app_glue.h"
+#include "android_native_app_glue.h"
 
 // this is in the app's main file (see App.h -> OryolApp)
 extern android_app* OryolAndroidAppState;
