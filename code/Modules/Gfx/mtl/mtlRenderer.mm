@@ -153,13 +153,6 @@ mtlRenderer::commitFrame() {
     this->curUniformBufferPtr = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
-
-    // block until previous frame has finished (the semaphore
-    // has a counter of MaxRotateFrame, which is at least 2)
-    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-
-    // safely destroy released GPU resources
-    this->releaseQueue.garbageCollect(this->frameIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -231,6 +224,11 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // create command buffer if this is the first call in the current frame
     if (this->curCommandBuffer == nil) {
+        // block until the oldest frame in flight has finished
+        dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+        // safely destroy released GPU resources
+        this->releaseQueue.garbageCollect(this->frameIndex);
+        // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
 
