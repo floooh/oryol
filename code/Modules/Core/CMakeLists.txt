@@ -23,6 +23,7 @@ fips_begin_module(Core)
         RefCounted.h
         RunLoop.cc RunLoop.h
         Types.h
+        StackTrace.cc StackTrace.h
         precompiled.h
     )
     fips_dir(Containers)
@@ -114,6 +115,7 @@ fips_begin_unittest(Core)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
+        StackTraceTest.cc
         BufferTest.cc
         ArgsTest.cc
         ArrayTest.cc
