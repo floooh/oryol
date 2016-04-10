@@ -33,8 +33,10 @@ TEST(HTTPFileSystemTest) {
     CHECK(!req->Data.Empty());
     CHECK(req->Data.Size() > 0);
     CHECK(req->Type.TypeAndSubType() == "text/html");
-    String content((const char*)req->Data.Data(), 0, req->Data.Size());
-    Log::Info("%s\n", content.AsCStr());
+    if (req->Data.Size() > 0) {
+        String content((const char*)req->Data.Data(), 0, req->Data.Size());
+        Log::Info("%s\n", content.AsCStr());
+    }
     req = 0;
     
     IO::Discard();

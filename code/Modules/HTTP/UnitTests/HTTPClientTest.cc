@@ -30,7 +30,9 @@ TEST(HTTPClientTest) {
     CHECK(reqOk->Response->Status == IOStatus::OK);
     const Map<String, String>& fields = reqOk->Response->ResponseHeaders;
     CHECK(fields.Contains("Content-Type"));
-    CHECK(fields["Content-Type"] == "text/html");
+    if (fields.Contains("Content-Type")) {
+        CHECK(fields["Content-Type"] == "text/html");
+    }
     CHECK(!reqOk->Response->Body.Empty());
     CHECK(reqOk->Response->Body.Size() > 500);
     CHECK(reqOk->Response->Type.TypeAndSubType() == "text/html");
