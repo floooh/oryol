@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //  StackTrace.cc
 //------------------------------------------------------------------------------
-#if ORYOL_WINDOWS || ORYOL_EMSCRIPTEN || ORYOL_ANDROID
+#if ORYOL_WINDOWS||ORYOL_EMSCRIPTEN||ORYOL_ANDROID||ORYOL_PNACL
 #define HAVE_BACKTRACE (0)
 #else
 #define HAVE_BACKTRACE (1)
