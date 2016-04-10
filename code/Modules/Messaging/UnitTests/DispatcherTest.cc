@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Messaging/Dispatcher.h"
-#include "Messaging/Broadcaster.h"
 #include "Messaging/UnitTests/TestProtocol.h"
 #include "Messaging/UnitTests/TestProtocol2.h"
 
@@ -36,8 +35,6 @@ public:
 
 TEST(DispatcherTest) {
     
-    // build a broad caster with 2 dispatchers
-    Ptr<Broadcaster> sink = Broadcaster::Create();
     Ptr<Dispatcher<TestProtocol>> disp0 = Dispatcher<TestProtocol>::Create();
     Ptr<Dispatcher<TestProtocol2>> disp1 = Dispatcher<TestProtocol2>::Create();
     
@@ -49,26 +46,23 @@ TEST(DispatcherTest) {
     HandlerClass handlerObj;
     disp0->Subscribe<TestProtocol::TestMsg2>(std::bind(&HandlerClass::Handle, &handlerObj, _1));
     
-    // add dispatchers
-    sink->Subscribe(disp0);
-    sink->Subscribe(disp1);
-    
     // send a few messages
     Ptr<TestProtocol::TestMsg1> msg0 = TestProtocol::TestMsg1::Create();
     msg0->Int8Val = 8;
     msg0->Int16Val = 16;
     msg0->Int32Val = 32;
     msg0->Int64Val = 64;
-    sink->Put(msg0);
+    disp0->Put(msg0);
+    disp1->Put(msg0);
     CHECK(val == 1);
     
     Ptr<TestProtocol::TestMsg2> msg1 = TestProtocol::TestMsg2::Create();
     msg1->UInt16Val = 16;
     msg1->StringVal = "BLA";
-    sink->Put(msg1);
+    disp0->Put(msg1);
+    disp1->Put(msg1);
     CHECK(handlerObj.val == 1);
 
-    sink = 0;
     disp0 = 0;
     disp1 = 0;
 }

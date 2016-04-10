@@ -4,8 +4,6 @@
 fips_begin_module(Messaging)
     fips_vs_warning_level(3)
     fips_files(
-        AsyncQueue.cc AsyncQueue.h
-        Broadcaster.cc Broadcaster.h
         Dispatcher.h
         Message.cc Message.h
         Port.cc Port.h
@@ -20,7 +18,6 @@ fips_begin_unittest(Messaging)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
-        AsyncQueueTest.cc
         DispatcherTest.cc
         ThreadedQueueTest.cc
     )
