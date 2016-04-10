@@ -183,44 +183,58 @@ StringConverter::UTF8ToWide(const String& src) {
 
 //------------------------------------------------------------------------------
 template<> int8
-StringConverter::FromString(const String& str) {
-    return (int8) std::atoi(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (int8) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
 template<> uint8
-StringConverter::FromString(const String& str) {
-    return (uint8) std::atoi(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (uint8) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
 template<> int16
-StringConverter::FromString(const String& str) {
-    return (int16) std::atoi(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (int16) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
 template<> uint16
-StringConverter::FromString(const String& str) {
-    return (uint16) std::atoi(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (uint16) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
 template<> int32
-StringConverter::FromString(const String& str) {
-    return (int32) std::atoi(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (int32) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
 template<> uint32
-StringConverter::FromString(const String& str) {
-    return (int32) std::atoi(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (int32) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
 template<> float32
-StringConverter::FromString(const String& str) {
-    return (float32) std::atof(str.AsCStr());
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return (float32) std::atof(str);
+}
+
+//------------------------------------------------------------------------------
+template<> float64
+StringConverter::FromString(const char* str) {
+    o_assert_dbg(str);
+    return std::atof(str);
 }
 
 } // namespace Oryol

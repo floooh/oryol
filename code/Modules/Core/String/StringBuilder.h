@@ -138,11 +138,6 @@ public:
     /// remove the last char
     char PopBack();
 
-    /// percent-encode content
-    void PercentEncode();
-    /// percent-decode content
-    void PercentDecode();
-    
 private:
     /// make sure that at least numBytes are available at end of string buffer 
     void ensureRoom(int32 numBytes);

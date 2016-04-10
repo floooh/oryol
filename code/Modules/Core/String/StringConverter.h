@@ -12,16 +12,20 @@
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
 #include "Core/String/String.h"
+#include "Core/String/StringAtom.h"
 #include "Core/String/WideString.h"
 
 namespace Oryol {
     
 class StringConverter {
 public:
-    /// convert a simple type to string
-    template<class TYPE> static String ToString(const TYPE& val);
+    /// convert a string to simple type
+    template<class TYPE> static TYPE FromString(const char* str);
     /// convert a string to simple type
     template<class TYPE> static TYPE FromString(const String& str);
+    /// convert a string to simple type
+    template<class TYPE> static TYPE FromString(const StringAtom& str);
+    // (NOTE: 'ToString' methods should go into StringBuilder as Append<TYPE>()
     
     /// convert raw UTF8 string range to raw wide string
     static int32 UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst, int32 dstMaxBytes);
@@ -44,5 +48,17 @@ private:
     static const int32 MaxInternalBufferWChars = 128;
     static const int32 MaxUTF8Size = 6;
 };
+
+//------------------------------------------------------------------------------
+template<class TYPE> inline TYPE
+StringConverter::FromString(const String& str) {
+    return FromString<TYPE>(str.AsCStr());
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> inline TYPE
+StringConverter::FromString(const StringAtom& str) {
+    return FromString<TYPE>(str.AsCStr());
+}
 
 } // namespace Oryol
