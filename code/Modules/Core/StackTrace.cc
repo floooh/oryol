@@ -11,7 +11,7 @@
 #if HAVE_BACKTRACE
 #include <execinfo.h>
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstring>
 #include <cstdio>
 
@@ -27,7 +27,7 @@ namespace Oryol {
 #if HAVE_BACKTRACE
 static char*
 appendString(char* str, char* dst, const char* dstEndPtr) {
-    if (dst < (dstEndPtr-2)) {
+    if (dst < (dstEndPtr-1)) {
         char c;
         while ((c = *str++) && (dst < (dstEndPtr-1))) {
             *dst++ = c;
@@ -36,7 +36,11 @@ appendString(char* str, char* dst, const char* dstEndPtr) {
             --dst;
         }
     }
-    *dst++ = '\n';
+    // append newline if still room for it
+    if (dst < (dstEndPtr-1)) {
+        *dst++ = '\n';
+    }
+    // always terminate with 0
     *dst = 0;
     return dst;
 }
@@ -46,11 +50,11 @@ appendString(char* str, char* dst, const char* dstEndPtr) {
 #if HAVE_BACKTRACE
 void
 StackTrace::Dump(char* buf, int bufSize) {
+    buf[0] = 0;
     static const int maxFrames = 64;
     void* frames[maxFrames];
     unsigned int numFrames = backtrace(frames, maxFrames);
     if (0 == numFrames) {
-        buf[0] = 0;
         return;
     }
     char** symbols = backtrace_symbols(frames, numFrames);
@@ -59,15 +63,15 @@ StackTrace::Dump(char* buf, int bufSize) {
     for (unsigned int i = 0; i < numFrames; i++) {
         dstPtr = appendString(symbols[i], dstPtr, dstEndPtr);
     }
-    free(symbols);
+    std::free(symbols);
 }
 
 //------------------------------------------------------------------------------
 #else
 void
 StackTrace::Dump(char* buf, int bufSize) {
-    // FIXME!
-    buf[0] = 0;
+    std::strncpy(buf, "STACK TRACE NOT IMPLEMENTED\n", bufSize);
+    buf[bufSize-1] = 0;
 }
 #endif
 

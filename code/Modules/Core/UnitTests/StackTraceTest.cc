@@ -5,6 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/StackTrace.h"
 #include "Core/Log.h"
+#include "Core/Assertion.h"
 
 using namespace Oryol;
 

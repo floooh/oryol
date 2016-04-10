@@ -6,13 +6,9 @@
 */
 #include "Core/Types.h"
 #include "Core/Log.h"
+#include <stdlib.h> // for abort()
 
-#if ORYOL_WINDOWS
-#define ORYOL_TRAP __debugbreak
-#else
-/// macro to stop execution and enter debugger
-#define ORYOL_TRAP __builtin_trap
-#endif
+#define ORYOL_TRAP() abort()
 
 #if !(__GNUC__ || __GNUC__)
 // on Visual Studio, replace __PRETTY_FUNCTION__ with __FUNCSIG__

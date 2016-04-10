@@ -6,6 +6,7 @@
 #include "Core/Log.h"
 #include "Core/Assertion.h"
 #include "Core/Logger.h"
+#include "Core/StackTrace.h"
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
 #if ORYOL_WINDOWS
@@ -170,23 +171,25 @@ void
 Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
     lock.LockRead();
     if (loggers.Empty()) {
+        char callstack[4096];
+        StackTrace::Dump(callstack, sizeof(callstack));
         #if ORYOL_ANDROID
-            __android_log_print(ANDROID_LOG_FATAL, "oryol", "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n", 
-                cond, msg ? msg : "none", file, line, func);
+            __android_log_print(ANDROID_LOG_FATAL, "oryol", "\n\n*** ORYOL ASSERT: %s\n  msg: %s\n  file: %s\n  line: %d\n  func: %s\n  callstack:\n%s\n",
+                cond, msg ? msg : "none", file, line, func, callstack);
         #else
-            std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
-                        cond, msg ? msg : "none", file, line, func);
+            std::printf("\n\n*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s\n  callstack:\n%s\n",
+                        cond, msg ? msg : "none", file, line, func, callstack);
             #if ORYOL_WINDOWS
                 char buf[LogBufSize];
-                _snprintf_s(buf, sizeof(buf), _TRUNCATE, "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
-                            cond, msg ? msg : "none", file, line, func);
+                _snprintf_s(buf, sizeof(buf), _TRUNCATE, "*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s\n  callstack:\n%s\n",
+                            cond, msg ? msg : "none", file, line, func, callstack);
                 buf[LogBufSize - 1] = 0;
                 OutputDebugString(buf);
             #elif ORYOL_PNACL
                 if (pnaclInstance::HasInstance()) {
                     char buf[LogBufSize];
-                    std::snprintf(buf, sizeof(buf), "{\"msg\":\"log\",\"val\":\"oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\"}",
-                                  cond, msg ? msg : "none", file, line, func);
+                    std::snprintf(buf, sizeof(buf), "{\"msg\":\"log\",\"val\":\"\n\n*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s  callstack:\n%s\n\"}",
+                                  cond, msg ? msg : "none", file, line, func, callstack);
                     buf[LogBufSize - 1] = 0;                
                     pnaclInstance::Instance()->putMsg(buf);
                 }
