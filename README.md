@@ -19,9 +19,12 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_
 
-- **08-Apr-2016**: the oryol repo now uses 'git lfs' for some files under
+- **08-Apr-2016**: I have removed the 'git lfs' requirement again, since
+it doesn't work with github-pages, and all the big files are in the
+github-pages branch, so in the end it didn't make sense 
+~~the oryol repo now uses 'git lfs' for some files under
 data, and the gh-pages branch for the samples webpage, if you haven't
-please install git lfs support (https://git-lfs.github.com/)
+please install git lfs support (https://git-lfs.github.com/)~~
 
 - **07-Apr-2016**: I have added a new sample which demonstrates how
 to integrate the [SoLoud audio lib](http://sol.gfxile.net/soloud/), here's
