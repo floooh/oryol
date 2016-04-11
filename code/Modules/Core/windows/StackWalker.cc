@@ -86,6 +86,7 @@
 #pragma comment(lib, "version.lib")  // for "VerQueryValue"
 #pragma warning(disable:4826)
 #pragma warning(disable:4996) // ORYOL CHANGE: 'GetVersionExA' was declared deprecated
+#pragma warning(disable:4091) // ORYOL CHANGE: suppress 'typedef ': ignored on left of '' when ... in dbghelp.h of Windows Kit 8.1
 
 #include "StackWalker.h"
 
