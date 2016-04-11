@@ -3,13 +3,18 @@
 //------------------------------------------------------------------------------
 #if ORYOL_WINDOWS||ORYOL_EMSCRIPTEN||ORYOL_ANDROID||ORYOL_PNACL
 #define HAVE_BACKTRACE (0)
+#define HAVE_STACKWALKER (1)
 #else
 #define HAVE_BACKTRACE (1)
+#define HAVE_STACKWALKER (0)
 #endif
 #include "Pre.h"
 #include "StackTrace.h"
 #if HAVE_BACKTRACE
 #include <execinfo.h>
+#endif
+#if HAVE_STACKWALKER
+#include "Core/windows/StackWalker.h"
 #endif
 #include <cstdlib>
 #include <cstring>
@@ -24,9 +29,8 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-#if HAVE_BACKTRACE
 static char*
-appendString(char* str, char* dst, const char* dstEndPtr) {
+appendString(char* str, char* dst, const char* dstEndPtr, bool insertNewLine) {
     if (dst < (dstEndPtr-1)) {
         char c;
         while ((c = *str++) && (dst < (dstEndPtr-1))) {
@@ -37,14 +41,15 @@ appendString(char* str, char* dst, const char* dstEndPtr) {
         }
     }
     // append newline if still room for it
-    if (dst < (dstEndPtr-1)) {
-        *dst++ = '\n';
+    if (insertNewLine) {
+        if (dst < (dstEndPtr-1)) {
+            *dst++ = '\n';
+        }
     }
     // always terminate with 0
     *dst = 0;
     return dst;
 }
-#endif
 
 //------------------------------------------------------------------------------
 #if HAVE_BACKTRACE
@@ -64,6 +69,30 @@ StackTrace::Dump(char* buf, int bufSize) {
         dstPtr = appendString(symbols[i], dstPtr, dstEndPtr);
     }
     std::free(symbols);
+}
+
+//------------------------------------------------------------------------------
+#elif HAVE_STACKWALKER
+class OryolStackWalker : public StackWalker {
+public:
+    // this stuff must be initialized before calling StackWalker::ShowCallstack()
+    char* dstPtr = nullptr;
+    const char* dstEndPtr = nullptr;
+
+    // constructor to hand options up to parent class
+    OryolStackWalker(int options) : StackWalker(options) { };
+    // this is called by parent class to output text (originally it calls OutputDebugString)
+    virtual void OnOutput(LPCSTR szText) {
+        this->dstPtr = appendString((char*)szText, this->dstPtr, this->dstEndPtr, false);
+    };
+};
+
+void
+StackTrace::Dump(char* buf, int bufSize) {
+    OryolStackWalker stackWalker(StackWalker::RetrieveSymbol);
+    stackWalker.dstPtr = buf;
+    stackWalker.dstEndPtr = buf + bufSize;
+    stackWalker.ShowCallstack();
 }
 
 //------------------------------------------------------------------------------

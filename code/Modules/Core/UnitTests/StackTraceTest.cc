@@ -13,5 +13,6 @@ TEST(StackTrace) {
     char buf[4096];
     StackTrace::Dump(buf, sizeof(buf));
     Log::Info("%s", buf);
+    CHECK(buf[0] != 0);     // ok that's a lame check, but stack trace format differs between platforms
 }
 
