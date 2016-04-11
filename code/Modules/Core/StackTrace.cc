@@ -66,7 +66,7 @@ StackTrace::Dump(char* buf, int bufSize) {
     char* dstPtr = buf;
     const char* dstEndPtr = buf + bufSize;
     for (unsigned int i = 0; i < numFrames; i++) {
-        dstPtr = appendString(symbols[i], dstPtr, dstEndPtr);
+        dstPtr = appendString(symbols[i], dstPtr, dstEndPtr, true);
     }
     std::free(symbols);
 }
