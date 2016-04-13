@@ -8,10 +8,16 @@ import glob
 from string import Template
 
 from mod import log, util, project, emscripten
-from tools import texexport
 
 BuildWasm = True
 ExportAssets = True
+Samples = [
+    'InfiniteSpheres',
+    'Paclone',
+    'ImGuiDemo',
+    'TurboBadgerDemo',
+    'SoloudMOD',
+]
 
 #-------------------------------------------------------------------------------
 def copy_build_files(fips_dir, proj_dir, webpage_dir) :
@@ -27,14 +33,15 @@ def copy_build_files(fips_dir, proj_dir, webpage_dir) :
 
 #-------------------------------------------------------------------------------
 def export_assets(fips_dir, proj_dir, webpage_dir) :
-    tex_srcdir = proj_dir + '/data'
-    tex_dstdir = webpage_dir + '/data'
-    texexport.configure(proj_dir, tex_srcdir, tex_dstdir)
-    texexport.exportSampleTextures(['dds'])
-    for dataFile in glob.glob(proj_dir + '/data/*.txt') :
-        shutil.copy(dataFile, webpage_dir)
-    tbui_from = '{}/data/tbui'.format(proj_dir)
-    tbui_to   = '{}/data/tbui'.format(webpage_dir)
+    data_src_dir = '{}/data'.format(proj_dir)
+    data_dst_dir = '{}/data'.format(webpage_dir)
+    if not os.path.exists(data_dst_dir) :
+        os.makedirs(data_dst_dir)
+    for ext in ['txt', 'dump'] :
+        for dataFile in glob.glob('{}/*.{}'.format(data_src_dir, ext)) :
+            shutil.copy(dataFile, '{}/'.format(data_dst_dir))
+    tbui_from = '{}/tbui'.format(data_src_dir)
+    tbui_to   = '{}/tbui'.format(data_dst_dir)
     shutil.copytree(tbui_from, tbui_to)
 
 #-------------------------------------------------------------------------------
@@ -49,7 +56,8 @@ def build_deploy_webpage(fips_dir, proj_dir) :
     config = 'wasmasmjs-make-release'
     project.clean(fips_dir, proj_dir, config) 
     project.gen(fips_dir, proj_dir, config)
-    project.build(fips_dir, proj_dir, config)
+    for target in Samples :
+        project.build(fips_dir, proj_dir, config, target)
     
     copy_build_files(fips_dir, proj_dir, webpage_dir)
     if ExportAssets :
