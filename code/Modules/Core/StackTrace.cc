@@ -1,9 +1,12 @@
 //------------------------------------------------------------------------------
 //  StackTrace.cc
 //------------------------------------------------------------------------------
-#if ORYOL_WINDOWS||ORYOL_EMSCRIPTEN||ORYOL_ANDROID||ORYOL_PNACL
+#if ORYOL_WINDOWS
 #define HAVE_BACKTRACE (0)
 #define HAVE_STACKWALKER (1)
+#elif ORYOL_EMSCRIPTEN||ORYOL_ANDROID||ORYOL_PNACL
+#define HAVE_BACKTRACE (0)
+#define HAVE_STACKWALKER (0)
 #else
 #define HAVE_BACKTRACE (1)
 #define HAVE_STACKWALKER (0)
@@ -29,6 +32,7 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
+#if HAVE_BACKTRACE || HAVE_STACKWALKER
 static char*
 appendString(char* str, char* dst, const char* dstEndPtr, bool insertNewLine) {
     if (dst < (dstEndPtr-1)) {
@@ -50,6 +54,7 @@ appendString(char* str, char* dst, const char* dstEndPtr, bool insertNewLine) {
     *dst = 0;
     return dst;
 }
+#endif
 
 //------------------------------------------------------------------------------
 #if HAVE_BACKTRACE
