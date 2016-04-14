@@ -25,7 +25,7 @@ public:
 
 private:
     SoLoud::Soloud soloud;
-    static const int NumMods = 5;
+    static const int NumMods = 7;
     struct Mod {
         Mod() {};
         Mod(const char* name_, const char* path_) : path(path_), name(name_) { };
@@ -53,7 +53,7 @@ SoloudMODApp::OnRunning() {
     float* buf = this->soloud.getWave();
     float* fft = this->soloud.calcFFT();
     ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
-    ImGui::Begin("MOD Player (MODs from SoLoud and modarchive.org)", nullptr, ImVec2(660, 330));
+    ImGui::Begin("MOD Player (MODs from SoLoud and modarchive.org)", nullptr, ImVec2(660, 400));
     for (int i = 0; i < NumMods; i++) {
         ImGui::PushID(i);
         auto& mod = this->mods[i];
@@ -112,7 +112,7 @@ SoloudMODApp::OnInit() {
     #endif
     IO::Setup(ioSetup);
 
-    Gfx::Setup(GfxSetup::Window(800, 460, "SoLoud MOD Demo"));
+    Gfx::Setup(GfxSetup::Window(800, 500, "SoLoud MOD Demo"));
     Input::Setup();
     IMUI::Setup();
 
@@ -122,7 +122,8 @@ SoloudMODApp::OnInit() {
     this->mods[2] = Mod("Jungle Juice by disaster from !bass records!", "snd:jungle_juice.mod.txt");
     this->mods[3] = Mod("Disco Feva Baby! by Necros/PM/EGG", "snd:disco_feva_baby.s3m.txt");
     this->mods[4] = Mod("digital innovation2 by nuke of anarchy", "snd:dgtinnv1.mod.txt");
-
+    this->mods[5] = Mod("sunshine by fender", "snd:sunshine.xm.txt");
+    this->mods[6] = Mod("Industrial Porn by ...::DROZERiX::...", "snd:porn_industryy.xm.txt");
     this->soloud.init();
     this->soloud.setVisualizationEnable(true);
 
