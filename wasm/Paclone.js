@@ -3407,6 +3407,22 @@ function _glGenTextures(n, textures) {
 function _glDepthFunc(x0) {
  GLctx.depthFunc(x0);
 }
+Module["_i64Add"] = _i64Add;
+Module["_i64Subtract"] = _i64Subtract;
+var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_STATIC);
+function _llvm_cttz_i32(x) {
+ x = x | 0;
+ var ret = 0;
+ ret = HEAP8[cttz_i8 + (x & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret | 0;
+ ret = HEAP8[cttz_i8 + (x >> 8 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 8 | 0;
+ ret = HEAP8[cttz_i8 + (x >> 16 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 16 | 0;
+ return (HEAP8[cttz_i8 + (x >>> 24) >> 0] | 0) + 24 | 0;
+}
+Module["___udivmoddi4"] = ___udivmoddi4;
+Module["___uremdi3"] = ___uremdi3;
 function _glUniform1f(location, v0) {
  location = GL.uniforms[location];
  GLctx.uniform1f(location, v0);
@@ -3712,6 +3728,7 @@ function ___syscall6(which, varargs) {
   return -e.errno;
  }
 }
+Module["___udivdi3"] = ___udivdi3;
 function _glBufferSubData(target, offset, size, data) {
  GLctx.bufferSubData(target, offset, HEAPU8.subarray(data, data + size));
 }
@@ -3781,8 +3798,6 @@ function ___syscall146(which, varargs) {
 function _glBlendColor(x0, x1, x2, x3) {
  GLctx.blendColor(x0, x1, x2, x3);
 }
-Module["_i64Subtract"] = _i64Subtract;
-Module["_i64Add"] = _i64Add;
 function __ZSt18uncaught_exceptionv() {
  return !!__ZSt18uncaught_exceptionv.uncaught_exception;
 }
@@ -4483,14 +4498,8 @@ function ___syscall54(which, varargs) {
   return -e.errno;
  }
 }
-function _alDeleteSources(count, sources) {
- if (!AL.currentContext) {
-  return;
- }
- for (var i = 0; i < count; ++i) {
-  var sourceIdx = HEAP32[sources + i * 4 >> 2];
-  delete AL.currentContext.src[sourceIdx];
- }
+function _abort() {
+ Module["abort"]();
 }
 function _glFramebufferTexture2D(target, attachment, textarget, texture, level) {
  GLctx.framebufferTexture2D(target, attachment, textarget, GL.textures[texture], level);
@@ -4592,8 +4601,14 @@ function _glTexImage2D(target, level, internalFormat, width, height, border, for
 function _glStencilMask(x0) {
  GLctx.stencilMask(x0);
 }
-function _abort() {
- Module["abort"]();
+function _alDeleteSources(count, sources) {
+ if (!AL.currentContext) {
+  return;
+ }
+ for (var i = 0; i < count; ++i) {
+  var sourceIdx = HEAP32[sources + i * 4 >> 2];
+  delete AL.currentContext.src[sourceIdx];
+ }
 }
 function _glDeleteBuffers(n, buffers) {
  for (var i = 0; i < n; i++) {
@@ -4867,6 +4882,8 @@ function _glUniformMatrix4fv(location, count, transpose, value) {
  }
  GLctx.uniformMatrix4fv(location, transpose, view);
 }
+Module["___muldsi3"] = ___muldsi3;
+Module["___muldi3"] = ___muldi3;
 function _glTexParameteri(x0, x1, x2) {
  GLctx.texParameteri(x0, x1, x2);
 }
@@ -4947,7 +4964,6 @@ STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 staticSealed = true;
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 DYNAMIC_BASE = DYNAMICTOP = Runtime.alignMemory(STACK_MAX);
-var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_DYNAMIC);
 function invoke_iiii(index, a1, a2, a3) {
  try {
   return Module["dynCall_iiii"](index, a1, a2, a3);
@@ -5089,6 +5105,7 @@ Module.asmLibraryArg = {
  "_glBufferSubData": _glBufferSubData,
  "_alcMakeContextCurrent": _alcMakeContextCurrent,
  "_glViewport": _glViewport,
+ "_llvm_cttz_i32": _llvm_cttz_i32,
  "_alSourcef": _alSourcef,
  "_glDeleteTextures": _glDeleteTextures,
  "_glDepthFunc": _glDepthFunc,
@@ -5197,6 +5214,8 @@ Module.asmLibraryArg = {
 
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
+var ___muldsi3 = Module["___muldsi3"] = asm["___muldsi3"];
+var runPostSets = Module["runPostSets"] = asm["runPostSets"];
 var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
 var _free = Module["_free"] = asm["_free"];
 var _main = Module["_main"] = asm["_main"];
@@ -5204,12 +5223,15 @@ var _enter_fullscreen = Module["_enter_fullscreen"] = asm["_enter_fullscreen"];
 var _memmove = Module["_memmove"] = asm["_memmove"];
 var _pthread_self = Module["_pthread_self"] = asm["_pthread_self"];
 var _memset = Module["_memset"] = asm["_memset"];
-var runPostSets = Module["runPostSets"] = asm["runPostSets"];
+var ___udivdi3 = Module["___udivdi3"] = asm["___udivdi3"];
 var _malloc = Module["_malloc"] = asm["_malloc"];
 var _i64Add = Module["_i64Add"] = asm["_i64Add"];
 var _memcpy = Module["_memcpy"] = asm["_memcpy"];
 var _enter_soft_fullscreen = Module["_enter_soft_fullscreen"] = asm["_enter_soft_fullscreen"];
+var ___muldi3 = Module["___muldi3"] = asm["___muldi3"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
+var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
+var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
 var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];

@@ -3405,6 +3405,8 @@ function _glClearStencil(x0) {
 function _glStencilOp(x0, x1, x2) {
  GLctx.stencilOp(x0, x1, x2);
 }
+Module["___muldsi3"] = ___muldsi3;
+Module["___muldi3"] = ___muldi3;
 function _glVertexAttribPointer(index, size, type, normalized, stride, ptr) {
  GLctx.vertexAttribPointer(index, size, type, normalized, stride, ptr);
 }
@@ -3465,116 +3467,20 @@ function _glStencilFunc(x0, x1, x2) {
 function _glDepthFunc(x0) {
  GLctx.depthFunc(x0);
 }
-function emscriptenWebGLGet(name_, p, type) {
- if (!p) {
-  GL.recordError(1281);
-  return;
- }
- var ret = undefined;
- switch (name_) {
- case 36346:
-  ret = 1;
-  break;
- case 36344:
-  if (type !== "Integer" && type !== "Integer64") {
-   GL.recordError(1280);
-  }
-  return;
- case 36345:
-  ret = 0;
-  break;
- case 34466:
-  var formats = GLctx.getParameter(34467);
-  ret = formats.length;
-  break;
- case 35738:
-  ret = 5121;
-  break;
- case 35739:
-  ret = 6408;
-  break;
- }
- if (ret === undefined) {
-  var result = GLctx.getParameter(name_);
-  switch (typeof result) {
-  case "number":
-   ret = result;
-   break;
-  case "boolean":
-   ret = result ? 1 : 0;
-   break;
-  case "string":
-   GL.recordError(1280);
-   return;
-  case "object":
-   if (result === null) {
-    switch (name_) {
-    case 34964:
-    case 35725:
-    case 34965:
-    case 36006:
-    case 36007:
-    case 32873:
-    case 34068:
-     {
-      ret = 0;
-      break;
-     }
-    default:
-     {
-      GL.recordError(1280);
-      return;
-     }
-    }
-   } else if (result instanceof Float32Array || result instanceof Uint32Array || result instanceof Int32Array || result instanceof Array) {
-    for (var i = 0; i < result.length; ++i) {
-     switch (type) {
-     case "Integer":
-      HEAP32[p + i * 4 >> 2] = result[i];
-      break;
-     case "Float":
-      HEAPF32[p + i * 4 >> 2] = result[i];
-      break;
-     case "Boolean":
-      HEAP8[p + i >> 0] = result[i] ? 1 : 0;
-      break;
-     default:
-      throw "internal glGet error, bad type: " + type;
-     }
-    }
-    return;
-   } else if (result instanceof WebGLBuffer || result instanceof WebGLProgram || result instanceof WebGLFramebuffer || result instanceof WebGLRenderbuffer || result instanceof WebGLTexture) {
-    ret = result.name | 0;
-   } else {
-    GL.recordError(1280);
-    return;
-   }
-   break;
-  default:
-   GL.recordError(1280);
-   return;
-  }
- }
- switch (type) {
- case "Integer64":
-  tempI64 = [ ret >>> 0, (tempDouble = ret, +Math_abs(tempDouble) >= +1 ? tempDouble > +0 ? (Math_min(+Math_floor(tempDouble / +4294967296), +4294967295) | 0) >>> 0 : ~~+Math_ceil((tempDouble - +(~~tempDouble >>> 0)) / +4294967296) >>> 0 : 0) ], HEAP32[p >> 2] = tempI64[0], HEAP32[p + 4 >> 2] = tempI64[1];
-  break;
- case "Integer":
-  HEAP32[p >> 2] = ret;
-  break;
- case "Float":
-  HEAPF32[p >> 2] = ret;
-  break;
- case "Boolean":
-  HEAP8[p >> 0] = ret ? 1 : 0;
-  break;
- default:
-  throw "internal glGet error, bad type: " + type;
- }
+var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_STATIC);
+function _llvm_cttz_i32(x) {
+ x = x | 0;
+ var ret = 0;
+ ret = HEAP8[cttz_i8 + (x & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret | 0;
+ ret = HEAP8[cttz_i8 + (x >> 8 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 8 | 0;
+ ret = HEAP8[cttz_i8 + (x >> 16 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 16 | 0;
+ return (HEAP8[cttz_i8 + (x >>> 24) >> 0] | 0) + 24 | 0;
 }
-function _glGetIntegerv(name_, p) {
- emscriptenWebGLGet(name_, p, "Integer");
-}
+Module["___udivmoddi4"] = ___udivmoddi4;
+Module["___uremdi3"] = ___uremdi3;
 var SYSCALLS = {
  varargs: 0,
  get: (function(varargs) {
@@ -3813,17 +3719,115 @@ Module["_bitshift64Shl"] = _bitshift64Shl;
 function _abort() {
  Module["abort"]();
 }
-function _glDeleteBuffers(n, buffers) {
- for (var i = 0; i < n; i++) {
-  var id = HEAP32[buffers + i * 4 >> 2];
-  var buffer = GL.buffers[id];
-  if (!buffer) continue;
-  GLctx.deleteBuffer(buffer);
-  buffer.name = 0;
-  GL.buffers[id] = null;
-  if (id == GL.currArrayBuffer) GL.currArrayBuffer = 0;
-  if (id == GL.currElementArrayBuffer) GL.currElementArrayBuffer = 0;
+function emscriptenWebGLGet(name_, p, type) {
+ if (!p) {
+  GL.recordError(1281);
+  return;
  }
+ var ret = undefined;
+ switch (name_) {
+ case 36346:
+  ret = 1;
+  break;
+ case 36344:
+  if (type !== "Integer" && type !== "Integer64") {
+   GL.recordError(1280);
+  }
+  return;
+ case 36345:
+  ret = 0;
+  break;
+ case 34466:
+  var formats = GLctx.getParameter(34467);
+  ret = formats.length;
+  break;
+ case 35738:
+  ret = 5121;
+  break;
+ case 35739:
+  ret = 6408;
+  break;
+ }
+ if (ret === undefined) {
+  var result = GLctx.getParameter(name_);
+  switch (typeof result) {
+  case "number":
+   ret = result;
+   break;
+  case "boolean":
+   ret = result ? 1 : 0;
+   break;
+  case "string":
+   GL.recordError(1280);
+   return;
+  case "object":
+   if (result === null) {
+    switch (name_) {
+    case 34964:
+    case 35725:
+    case 34965:
+    case 36006:
+    case 36007:
+    case 32873:
+    case 34068:
+     {
+      ret = 0;
+      break;
+     }
+    default:
+     {
+      GL.recordError(1280);
+      return;
+     }
+    }
+   } else if (result instanceof Float32Array || result instanceof Uint32Array || result instanceof Int32Array || result instanceof Array) {
+    for (var i = 0; i < result.length; ++i) {
+     switch (type) {
+     case "Integer":
+      HEAP32[p + i * 4 >> 2] = result[i];
+      break;
+     case "Float":
+      HEAPF32[p + i * 4 >> 2] = result[i];
+      break;
+     case "Boolean":
+      HEAP8[p + i >> 0] = result[i] ? 1 : 0;
+      break;
+     default:
+      throw "internal glGet error, bad type: " + type;
+     }
+    }
+    return;
+   } else if (result instanceof WebGLBuffer || result instanceof WebGLProgram || result instanceof WebGLFramebuffer || result instanceof WebGLRenderbuffer || result instanceof WebGLTexture) {
+    ret = result.name | 0;
+   } else {
+    GL.recordError(1280);
+    return;
+   }
+   break;
+  default:
+   GL.recordError(1280);
+   return;
+  }
+ }
+ switch (type) {
+ case "Integer64":
+  tempI64 = [ ret >>> 0, (tempDouble = ret, +Math_abs(tempDouble) >= +1 ? tempDouble > +0 ? (Math_min(+Math_floor(tempDouble / +4294967296), +4294967295) | 0) >>> 0 : ~~+Math_ceil((tempDouble - +(~~tempDouble >>> 0)) / +4294967296) >>> 0 : 0) ], HEAP32[p >> 2] = tempI64[0], HEAP32[p + 4 >> 2] = tempI64[1];
+  break;
+ case "Integer":
+  HEAP32[p >> 2] = ret;
+  break;
+ case "Float":
+  HEAPF32[p >> 2] = ret;
+  break;
+ case "Boolean":
+  HEAP8[p >> 0] = ret ? 1 : 0;
+  break;
+ default:
+  throw "internal glGet error, bad type: " + type;
+ }
+}
+function _glGetIntegerv(name_, p) {
+ emscriptenWebGLGet(name_, p, "Integer");
 }
 function _glGetUniformLocation(program, name) {
  name = Pointer_stringify(name);
@@ -4145,6 +4149,7 @@ function ___syscall6(which, varargs) {
   return -e.errno;
  }
 }
+Module["___udivdi3"] = ___udivdi3;
 function _glBufferSubData(target, offset, size, data) {
  GLctx.bufferSubData(target, offset, HEAPU8.subarray(data, data + size));
 }
@@ -4230,6 +4235,18 @@ function ___syscall146(which, varargs) {
   return -e.errno;
  }
 }
+function _glDeleteBuffers(n, buffers) {
+ for (var i = 0; i < n; i++) {
+  var id = HEAP32[buffers + i * 4 >> 2];
+  var buffer = GL.buffers[id];
+  if (!buffer) continue;
+  GLctx.deleteBuffer(buffer);
+  buffer.name = 0;
+  GL.buffers[id] = null;
+  if (id == GL.currArrayBuffer) GL.currArrayBuffer = 0;
+  if (id == GL.currElementArrayBuffer) GL.currElementArrayBuffer = 0;
+ }
+}
 var GLctx;
 GL.init();
 if (ENVIRONMENT_IS_NODE) {
@@ -4284,7 +4301,6 @@ STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 staticSealed = true;
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 DYNAMIC_BASE = DYNAMICTOP = Runtime.alignMemory(STACK_MAX);
-var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_DYNAMIC);
 function invoke_iiii(index, a1, a2, a3) {
  try {
   return Module["dynCall_iiii"](index, a1, a2, a3);
@@ -4410,6 +4426,7 @@ Module.asmLibraryArg = {
  "_glDepthMask": _glDepthMask,
  "_glBufferSubData": _glBufferSubData,
  "_glViewport": _glViewport,
+ "_llvm_cttz_i32": _llvm_cttz_i32,
  "_glDeleteTextures": _glDeleteTextures,
  "_glDepthFunc": _glDepthFunc,
  "_glStencilOpSeparate": _glStencilOpSeparate,
@@ -4499,6 +4516,7 @@ Module.asmLibraryArg = {
 
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
+var ___muldsi3 = Module["___muldsi3"] = asm["___muldsi3"];
 var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
 var _free = Module["_free"] = asm["_free"];
 var _main = Module["_main"] = asm["_main"];
@@ -4511,7 +4529,11 @@ var _malloc = Module["_malloc"] = asm["_malloc"];
 var _i64Add = Module["_i64Add"] = asm["_i64Add"];
 var _memcpy = Module["_memcpy"] = asm["_memcpy"];
 var _enter_soft_fullscreen = Module["_enter_soft_fullscreen"] = asm["_enter_soft_fullscreen"];
+var ___muldi3 = Module["___muldi3"] = asm["___muldi3"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
+var ___udivdi3 = Module["___udivdi3"] = asm["___udivdi3"];
+var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
+var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
 var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];

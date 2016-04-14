@@ -2,16 +2,7 @@
 "A": { "address": 152, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"B": { "address": 160, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"C": { "address": 168, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"D": { "address": 176, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"E": { "address": 184, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"F": { "address": 192, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"G": { "address": 200, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"H": { "address": 208, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"I": { "address": 216, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"J": { "address": 224, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"K": { "address": 232, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"L": { "address": 240, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"Xc": { "address": 248, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
+,"Pc": { "address": 176, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"i": { "address": 8, "type": 1, "import": 1, "module": "env", "base": "STACKTOP" }
 ,"j": { "address": 16, "type": 1, "import": 1, "module": "env", "base": "STACK_MAX" }
 ,"k": { "address": 24, "type": 1, "import": 1, "module": "env", "base": "tempDoublePtr" }

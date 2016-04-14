@@ -2524,19 +2524,22 @@ function _emscripten_request_fullscreen_strategy(target, deferUntilInEventHandle
 function _abort() {
  Module["abort"]();
 }
-function _glDeleteBuffers(n, buffers) {
- for (var i = 0; i < n; i++) {
-  var id = HEAP32[buffers + i * 4 >> 2];
-  var buffer = GL.buffers[id];
-  if (!buffer) continue;
-  GLctx.deleteBuffer(buffer);
-  buffer.name = 0;
-  GL.buffers[id] = null;
-  if (id == GL.currArrayBuffer) GL.currArrayBuffer = 0;
-  if (id == GL.currElementArrayBuffer) GL.currElementArrayBuffer = 0;
- }
-}
+Module["_i64Add"] = _i64Add;
 Module["_i64Subtract"] = _i64Subtract;
+var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_STATIC);
+function _llvm_cttz_i32(x) {
+ x = x | 0;
+ var ret = 0;
+ ret = HEAP8[cttz_i8 + (x & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret | 0;
+ ret = HEAP8[cttz_i8 + (x >> 8 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 8 | 0;
+ ret = HEAP8[cttz_i8 + (x >> 16 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 16 | 0;
+ return (HEAP8[cttz_i8 + (x >>> 24) >> 0] | 0) + 24 | 0;
+}
+Module["___udivmoddi4"] = ___udivmoddi4;
+Module["___uremdi3"] = ___uremdi3;
 function _glBindFramebuffer(target, framebuffer) {
  GLctx.bindFramebuffer(target, framebuffer ? GL.framebuffers[framebuffer] : null);
 }
@@ -2576,7 +2579,6 @@ function _glGetString(name_) {
 function _glEnable(x0) {
  GLctx.enable(x0);
 }
-Module["_i64Add"] = _i64Add;
 function _glDeleteFramebuffers(n, framebuffers) {
  for (var i = 0; i < n; ++i) {
   var id = HEAP32[framebuffers + i * 4 >> 2];
@@ -3564,6 +3566,7 @@ function ___syscall6(which, varargs) {
   return -e.errno;
  }
 }
+Module["___udivdi3"] = ___udivdi3;
 function _sbrk(bytes) {
  var self = _sbrk;
  if (!self.called) {
@@ -3768,6 +3771,18 @@ function _emscripten_webgl_make_context_current(contextHandle) {
  var success = GL.makeContextCurrent(contextHandle);
  return success ? 0 : -5;
 }
+function _glDeleteBuffers(n, buffers) {
+ for (var i = 0; i < n; i++) {
+  var id = HEAP32[buffers + i * 4 >> 2];
+  var buffer = GL.buffers[id];
+  if (!buffer) continue;
+  GLctx.deleteBuffer(buffer);
+  buffer.name = 0;
+  GL.buffers[id] = null;
+  if (id == GL.currArrayBuffer) GL.currArrayBuffer = 0;
+  if (id == GL.currElementArrayBuffer) GL.currElementArrayBuffer = 0;
+ }
+}
 var GLctx;
 GL.init();
 Module["requestFullScreen"] = function Module_requestFullScreen(lockPointer, resizeCanvas, vrDevice) {
@@ -3822,7 +3837,6 @@ STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 staticSealed = true;
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 DYNAMIC_BASE = DYNAMICTOP = Runtime.alignMemory(STACK_MAX);
-var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_DYNAMIC);
 function invoke_iiii(index, a1, a2, a3) {
  try {
   return Module["dynCall_iiii"](index, a1, a2, a3);
@@ -3915,11 +3929,10 @@ Module.asmLibraryArg = {
  "__softFullscreenResizeWebGLRenderTarget": __softFullscreenResizeWebGLRenderTarget,
  "_glCullFace": _glCullFace,
  "_glDeleteFramebuffers": _glDeleteFramebuffers,
- "__hideEverythingExceptGivenElement": __hideEverythingExceptGivenElement,
+ "___syscall6": ___syscall6,
  "__restoreHiddenElements": __restoreHiddenElements,
  "_emscripten_webgl_create_context": _emscripten_webgl_create_context,
  "___gxx_personality_v0": ___gxx_personality_v0,
- "___syscall6": ___syscall6,
  "_glDeleteRenderbuffers": _glDeleteRenderbuffers,
  "_glDeleteProgram": _glDeleteProgram,
  "_usleep": _usleep,
@@ -3928,8 +3941,9 @@ Module.asmLibraryArg = {
  "_glBindBuffer": _glBindBuffer,
  "_glDepthMask": _glDepthMask,
  "_glClearDepthf": _glClearDepthf,
- "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
+ "_emscripten_set_main_loop": _emscripten_set_main_loop,
  "_glViewport": _glViewport,
+ "_llvm_cttz_i32": _llvm_cttz_i32,
  "_emscripten_set_main_loop_timing": _emscripten_set_main_loop_timing,
  "_glClearColor": _glClearColor,
  "_sbrk": _sbrk,
@@ -3937,16 +3951,17 @@ Module.asmLibraryArg = {
  "_glDepthFunc": _glDepthFunc,
  "_glClearStencil": _glClearStencil,
  "___cxa_allocate_exception": ___cxa_allocate_exception,
- "_emscripten_memcpy_big": _emscripten_memcpy_big,
+ "_emscripten_set_canvas_size": _emscripten_set_canvas_size,
  "___resumeException": ___resumeException,
  "___cxa_find_matching_catch": ___cxa_find_matching_catch,
  "_glStencilFunc": _glStencilFunc,
  "_glClear": _glClear,
  "_glStencilOp": _glStencilOp,
  "_nanosleep": _nanosleep,
- "_emscripten_set_canvas_size": _emscripten_set_canvas_size,
+ "_emscripten_memcpy_big": _emscripten_memcpy_big,
  "_glStencilMask": _glStencilMask,
  "_emscripten_webgl_destroy_context": _emscripten_webgl_destroy_context,
+ "__hideEverythingExceptGivenElement": __hideEverythingExceptGivenElement,
  "_emscripten_enter_soft_fullscreen": _emscripten_enter_soft_fullscreen,
  "_llvm_trap": _llvm_trap,
  "_glGetIntegerv": _glGetIntegerv,
@@ -3955,7 +3970,7 @@ Module.asmLibraryArg = {
  "emscriptenWebGLGet": emscriptenWebGLGet,
  "_pthread_cleanup_pop": _pthread_cleanup_pop,
  "__setLetterbox": __setLetterbox,
- "_emscripten_set_main_loop": _emscripten_set_main_loop,
+ "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
  "_emscripten_get_canvas_size": _emscripten_get_canvas_size,
  "_emscripten_get_now": _emscripten_get_now,
  "_emscripten_request_fullscreen_strategy": _emscripten_request_fullscreen_strategy,
@@ -3990,14 +4005,17 @@ var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
 var _free = Module["_free"] = asm["_free"];
 var _main = Module["_main"] = asm["_main"];
 var _enter_fullscreen = Module["_enter_fullscreen"] = asm["_enter_fullscreen"];
+var runPostSets = Module["runPostSets"] = asm["runPostSets"];
 var _pthread_self = Module["_pthread_self"] = asm["_pthread_self"];
 var _memset = Module["_memset"] = asm["_memset"];
-var runPostSets = Module["runPostSets"] = asm["runPostSets"];
+var ___udivdi3 = Module["___udivdi3"] = asm["___udivdi3"];
 var _malloc = Module["_malloc"] = asm["_malloc"];
 var _i64Add = Module["_i64Add"] = asm["_i64Add"];
 var _memcpy = Module["_memcpy"] = asm["_memcpy"];
 var _enter_soft_fullscreen = Module["_enter_soft_fullscreen"] = asm["_enter_soft_fullscreen"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
+var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
+var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
 var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];

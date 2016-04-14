@@ -1489,7 +1489,6 @@ function _glStencilMaskSeparate(x0, x1) {
  GLctx.stencilMaskSeparate(x0, x1);
 }
 Module["_pthread_mutex_lock"] = _pthread_mutex_lock;
-function _pthread_mutex_destroy() {}
 function _glLinkProgram(program) {
  GLctx.linkProgram(GL.programs[program]);
  GL.programInfos[program] = null;
@@ -4893,6 +4892,22 @@ function _SDL_PauseAudio(pauseOn) {
 function _glDepthFunc(x0) {
  GLctx.depthFunc(x0);
 }
+Module["_i64Add"] = _i64Add;
+Module["_i64Subtract"] = _i64Subtract;
+var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_STATIC);
+function _llvm_cttz_i32(x) {
+ x = x | 0;
+ var ret = 0;
+ ret = HEAP8[cttz_i8 + (x & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret | 0;
+ ret = HEAP8[cttz_i8 + (x >> 8 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 8 | 0;
+ ret = HEAP8[cttz_i8 + (x >> 16 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 16 | 0;
+ return (HEAP8[cttz_i8 + (x >>> 24) >> 0] | 0) + 24 | 0;
+}
+Module["___udivmoddi4"] = ___udivmoddi4;
+Module["___uremdi3"] = ___uremdi3;
 function _pthread_mutexattr_init() {}
 function _glUniform1f(location, v0) {
  location = GL.uniforms[location];
@@ -5149,6 +5164,7 @@ function ___syscall6(which, varargs) {
   return -e.errno;
  }
 }
+Module["___udivdi3"] = ___udivdi3;
 function _glBufferSubData(target, offset, size, data) {
  GLctx.bufferSubData(target, offset, HEAPU8.subarray(data, data + size));
 }
@@ -5225,8 +5241,6 @@ function ___syscall145(which, varargs) {
 function _glBlendColor(x0, x1, x2, x3) {
  GLctx.blendColor(x0, x1, x2, x3);
 }
-Module["_i64Subtract"] = _i64Subtract;
-Module["_i64Add"] = _i64Add;
 function __ZSt18uncaught_exceptionv() {
  return !!__ZSt18uncaught_exceptionv.uncaught_exception;
 }
@@ -5619,28 +5633,6 @@ function _emscripten_set_keydown_callback(target, userData, useCapture, callback
  JSEvents.registerKeyEventCallback(target, userData, useCapture, callbackfunc, 2, "keydown");
  return 0;
 }
-function _sbrk(bytes) {
- var self = _sbrk;
- if (!self.called) {
-  DYNAMICTOP = alignMemoryPage(DYNAMICTOP);
-  self.called = true;
-  assert(Runtime.dynamicAlloc);
-  self.alloc = Runtime.dynamicAlloc;
-  Runtime.dynamicAlloc = (function() {
-   abort("cannot dynamically allocate, sbrk now has control");
-  });
- }
- var ret = DYNAMICTOP;
- if (bytes != 0) {
-  var success = self.alloc(bytes);
-  if (!success) return -1 >>> 0;
- }
- return ret;
-}
-Module["_bitshift64Shl"] = _bitshift64Shl;
-function _glStencilFunc(x0, x1, x2) {
- GLctx.stencilFunc(x0, x1, x2);
-}
 function emscriptenWebGLGet(name_, p, type) {
  if (!p) {
   GL.recordError(1281);
@@ -5751,6 +5743,29 @@ function emscriptenWebGLGet(name_, p, type) {
 function _glGetIntegerv(name_, p) {
  emscriptenWebGLGet(name_, p, "Integer");
 }
+function _sbrk(bytes) {
+ var self = _sbrk;
+ if (!self.called) {
+  DYNAMICTOP = alignMemoryPage(DYNAMICTOP);
+  self.called = true;
+  assert(Runtime.dynamicAlloc);
+  self.alloc = Runtime.dynamicAlloc;
+  Runtime.dynamicAlloc = (function() {
+   abort("cannot dynamically allocate, sbrk now has control");
+  });
+ }
+ var ret = DYNAMICTOP;
+ if (bytes != 0) {
+  var success = self.alloc(bytes);
+  if (!success) return -1 >>> 0;
+ }
+ return ret;
+}
+Module["_bitshift64Shl"] = _bitshift64Shl;
+function _glStencilFunc(x0, x1, x2) {
+ GLctx.stencilFunc(x0, x1, x2);
+}
+function _pthread_mutex_destroy() {}
 function ___syscall54(which, varargs) {
  SYSCALLS.varargs = varargs;
  try {
@@ -6193,6 +6208,8 @@ function _glUniformMatrix4fv(location, count, transpose, value) {
  }
  GLctx.uniformMatrix4fv(location, transpose, view);
 }
+Module["___muldsi3"] = ___muldsi3;
+Module["___muldi3"] = ___muldi3;
 function _glTexParameteri(x0, x1, x2) {
  GLctx.texParameteri(x0, x1, x2);
 }
@@ -6329,7 +6346,6 @@ STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 staticSealed = true;
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 DYNAMIC_BASE = DYNAMICTOP = Runtime.alignMemory(STACK_MAX);
-var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_DYNAMIC);
 function invoke_iiii(index, a1, a2, a3) {
  try {
   return Module["dynCall_iiii"](index, a1, a2, a3);
@@ -6551,7 +6567,7 @@ Module.asmLibraryArg = {
  "_Mix_HaltMusic": _Mix_HaltMusic,
  "_llvm_trap": _llvm_trap,
  "___syscall145": ___syscall145,
- "_emscripten_set_devicemotion_callback": _emscripten_set_devicemotion_callback,
+ "___syscall146": ___syscall146,
  "_pthread_cleanup_pop": _pthread_cleanup_pop,
  "_emscripten_set_keyup_callback": _emscripten_set_keyup_callback,
  "__restoreHiddenElements": __restoreHiddenElements,
@@ -6562,6 +6578,7 @@ Module.asmLibraryArg = {
  "_glBufferSubData": _glBufferSubData,
  "_SDL_LockSurface": _SDL_LockSurface,
  "_glViewport": _glViewport,
+ "_llvm_cttz_i32": _llvm_cttz_i32,
  "___setErrNo": ___setErrNo,
  "_glDeleteTextures": _glDeleteTextures,
  "_SDL_OpenAudio": _SDL_OpenAudio,
@@ -6585,7 +6602,7 @@ Module.asmLibraryArg = {
  "___syscall6": ___syscall6,
  "___syscall5": ___syscall5,
  "_glBindFramebuffer": _glBindFramebuffer,
- "___syscall146": ___syscall146,
+ "_emscripten_set_devicemotion_callback": _emscripten_set_devicemotion_callback,
  "_SDL_UpperBlitScaled": _SDL_UpperBlitScaled,
  "_glUniform2f": _glUniform2f,
  "_putenv": _putenv,
@@ -6682,24 +6699,29 @@ Module.asmLibraryArg = {
 
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
-var runPostSets = Module["runPostSets"] = asm["runPostSets"];
-var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
-var _free = Module["_free"] = asm["_free"];
 var _main = Module["_main"] = asm["_main"];
-var _enter_fullscreen = Module["_enter_fullscreen"] = asm["_enter_fullscreen"];
-var _memmove = Module["_memmove"] = asm["_memmove"];
-var _pthread_self = Module["_pthread_self"] = asm["_pthread_self"];
-var _memset = Module["_memset"] = asm["_memset"];
-var _pthread_mutex_unlock = Module["_pthread_mutex_unlock"] = asm["_pthread_mutex_unlock"];
-var _malloc = Module["_malloc"] = asm["_malloc"];
-var _i64Add = Module["_i64Add"] = asm["_i64Add"];
-var _pthread_mutex_lock = Module["_pthread_mutex_lock"] = asm["_pthread_mutex_lock"];
-var _memcpy = Module["_memcpy"] = asm["_memcpy"];
+var ___udivdi3 = Module["___udivdi3"] = asm["___udivdi3"];
 var _enter_soft_fullscreen = Module["_enter_soft_fullscreen"] = asm["_enter_soft_fullscreen"];
-var __GLOBAL__sub_I_ThreadedQueue_cc = Module["__GLOBAL__sub_I_ThreadedQueue_cc"] = asm["__GLOBAL__sub_I_ThreadedQueue_cc"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
-var __GLOBAL__sub_I_imgui_cpp = Module["__GLOBAL__sub_I_imgui_cpp"] = asm["__GLOBAL__sub_I_imgui_cpp"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
+var _memset = Module["_memset"] = asm["_memset"];
+var _i64Add = Module["_i64Add"] = asm["_i64Add"];
+var _memcpy = Module["_memcpy"] = asm["_memcpy"];
+var ___muldi3 = Module["___muldi3"] = asm["___muldi3"];
+var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
+var _i64Subtract = Module["_i64Subtract"] = asm["_i64Subtract"];
+var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
+var _enter_fullscreen = Module["_enter_fullscreen"] = asm["_enter_fullscreen"];
+var _pthread_self = Module["_pthread_self"] = asm["_pthread_self"];
+var _pthread_mutex_unlock = Module["_pthread_mutex_unlock"] = asm["_pthread_mutex_unlock"];
+var __GLOBAL__sub_I_imgui_cpp = Module["__GLOBAL__sub_I_imgui_cpp"] = asm["__GLOBAL__sub_I_imgui_cpp"];
+var ___muldsi3 = Module["___muldsi3"] = asm["___muldsi3"];
+var _free = Module["_free"] = asm["_free"];
+var runPostSets = Module["runPostSets"] = asm["runPostSets"];
+var _memmove = Module["_memmove"] = asm["_memmove"];
+var _malloc = Module["_malloc"] = asm["_malloc"];
+var _pthread_mutex_lock = Module["_pthread_mutex_lock"] = asm["_pthread_mutex_lock"];
+var __GLOBAL__sub_I_ThreadedQueue_cc = Module["__GLOBAL__sub_I_ThreadedQueue_cc"] = asm["__GLOBAL__sub_I_ThreadedQueue_cc"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
 var dynCall_viiiiii = Module["dynCall_viiiiii"] = asm["dynCall_viiiiii"];
 var dynCall_dii = Module["dynCall_dii"] = asm["dynCall_dii"];

@@ -1575,8 +1575,8 @@ function ___cxa_throw(ptr, type, destructor) {
 function _glDepthMask(x0) {
  GLctx.depthMask(x0);
 }
-function _glUseProgram(program) {
- GLctx.useProgram(program ? GL.programs[program] : null);
+function _glStencilMaskSeparate(x0, x1) {
+ GLctx.stencilMaskSeparate(x0, x1);
 }
 function _glDisableVertexAttribArray(index) {
  GLctx.disableVertexAttribArray(index);
@@ -2535,6 +2535,18 @@ function _glShaderSource(shader, count, string, length) {
 function _glBindTexture(target, texture) {
  GLctx.bindTexture(target, texture ? GL.textures[texture] : null);
 }
+function _glDeleteBuffers(n, buffers) {
+ for (var i = 0; i < n; i++) {
+  var id = HEAP32[buffers + i * 4 >> 2];
+  var buffer = GL.buffers[id];
+  if (!buffer) continue;
+  GLctx.deleteBuffer(buffer);
+  buffer.name = 0;
+  GL.buffers[id] = null;
+  if (id == GL.currArrayBuffer) GL.currArrayBuffer = 0;
+  if (id == GL.currElementArrayBuffer) GL.currElementArrayBuffer = 0;
+ }
+}
 function _glDeleteFramebuffers(n, framebuffers) {
  for (var i = 0; i < n; ++i) {
   var id = HEAP32[framebuffers + i * 4 >> 2];
@@ -2649,9 +2661,7 @@ function ___syscall54(which, varargs) {
   return -e.errno;
  }
 }
-function _glDepthFunc(x0) {
- GLctx.depthFunc(x0);
-}
+function ___gxx_personality_v0() {}
 function _glDeleteTextures(n, textures) {
  for (var i = 0; i < n; i++) {
   var id = HEAP32[textures + i * 4 >> 2];
@@ -2674,9 +2684,6 @@ function _pthread_cleanup_push(routine, arg) {
  }));
  _pthread_cleanup_push.level = __ATEXIT__.length;
 }
-function _glStencilMaskSeparate(x0, x1) {
- GLctx.stencilMaskSeparate(x0, x1);
-}
 function _emscripten_webgl_create_context(target, attributes) {
  var contextAttributes = {};
  contextAttributes.alpha = !!HEAP32[attributes >> 2];
@@ -2697,10 +2704,8 @@ function _emscripten_webgl_create_context(target, attributes) {
  var contextHandle = GL.createContext(target, contextAttributes);
  return contextHandle;
 }
-function _pthread_cleanup_pop() {
- assert(_pthread_cleanup_push.level == __ATEXIT__.length, "cannot pop if something else added meanwhile!");
- __ATEXIT__.pop();
- _pthread_cleanup_push.level = __ATEXIT__.length;
+function _glClearDepthf(x0) {
+ GLctx.clearDepth(x0);
 }
 function _glVertexAttribPointer(index, size, type, normalized, stride, ptr) {
  GLctx.vertexAttribPointer(index, size, type, normalized, stride, ptr);
@@ -2731,119 +2736,23 @@ function _sbrk(bytes) {
 function _glStencilFunc(x0, x1, x2) {
  GLctx.stencilFunc(x0, x1, x2);
 }
-function _glColorMask(x0, x1, x2, x3) {
- GLctx.colorMask(x0, x1, x2, x3);
+function _glDepthFunc(x0) {
+ GLctx.depthFunc(x0);
 }
-function emscriptenWebGLGet(name_, p, type) {
- if (!p) {
-  GL.recordError(1281);
-  return;
- }
- var ret = undefined;
- switch (name_) {
- case 36346:
-  ret = 1;
-  break;
- case 36344:
-  if (type !== "Integer" && type !== "Integer64") {
-   GL.recordError(1280);
-  }
-  return;
- case 36345:
-  ret = 0;
-  break;
- case 34466:
-  var formats = GLctx.getParameter(34467);
-  ret = formats.length;
-  break;
- case 35738:
-  ret = 5121;
-  break;
- case 35739:
-  ret = 6408;
-  break;
- }
- if (ret === undefined) {
-  var result = GLctx.getParameter(name_);
-  switch (typeof result) {
-  case "number":
-   ret = result;
-   break;
-  case "boolean":
-   ret = result ? 1 : 0;
-   break;
-  case "string":
-   GL.recordError(1280);
-   return;
-  case "object":
-   if (result === null) {
-    switch (name_) {
-    case 34964:
-    case 35725:
-    case 34965:
-    case 36006:
-    case 36007:
-    case 32873:
-    case 34068:
-     {
-      ret = 0;
-      break;
-     }
-    default:
-     {
-      GL.recordError(1280);
-      return;
-     }
-    }
-   } else if (result instanceof Float32Array || result instanceof Uint32Array || result instanceof Int32Array || result instanceof Array) {
-    for (var i = 0; i < result.length; ++i) {
-     switch (type) {
-     case "Integer":
-      HEAP32[p + i * 4 >> 2] = result[i];
-      break;
-     case "Float":
-      HEAPF32[p + i * 4 >> 2] = result[i];
-      break;
-     case "Boolean":
-      HEAP8[p + i >> 0] = result[i] ? 1 : 0;
-      break;
-     default:
-      throw "internal glGet error, bad type: " + type;
-     }
-    }
-    return;
-   } else if (result instanceof WebGLBuffer || result instanceof WebGLProgram || result instanceof WebGLFramebuffer || result instanceof WebGLRenderbuffer || result instanceof WebGLTexture) {
-    ret = result.name | 0;
-   } else {
-    GL.recordError(1280);
-    return;
-   }
-   break;
-  default:
-   GL.recordError(1280);
-   return;
-  }
- }
- switch (type) {
- case "Integer64":
-  tempI64 = [ ret >>> 0, (tempDouble = ret, +Math_abs(tempDouble) >= +1 ? tempDouble > +0 ? (Math_min(+Math_floor(tempDouble / +4294967296), +4294967295) | 0) >>> 0 : ~~+Math_ceil((tempDouble - +(~~tempDouble >>> 0)) / +4294967296) >>> 0 : 0) ], HEAP32[p >> 2] = tempI64[0], HEAP32[p + 4 >> 2] = tempI64[1];
-  break;
- case "Integer":
-  HEAP32[p >> 2] = ret;
-  break;
- case "Float":
-  HEAPF32[p >> 2] = ret;
-  break;
- case "Boolean":
-  HEAP8[p >> 0] = ret ? 1 : 0;
-  break;
- default:
-  throw "internal glGet error, bad type: " + type;
- }
+var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_STATIC);
+function _llvm_cttz_i32(x) {
+ x = x | 0;
+ var ret = 0;
+ ret = HEAP8[cttz_i8 + (x & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret | 0;
+ ret = HEAP8[cttz_i8 + (x >> 8 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 8 | 0;
+ ret = HEAP8[cttz_i8 + (x >> 16 & 255) >> 0] | 0;
+ if ((ret | 0) < 8) return ret + 16 | 0;
+ return (HEAP8[cttz_i8 + (x >>> 24) >> 0] | 0) + 24 | 0;
 }
-function _glGetIntegerv(name_, p) {
- emscriptenWebGLGet(name_, p, "Integer");
-}
+Module["___udivmoddi4"] = ___udivmoddi4;
+Module["___uremdi3"] = ___uremdi3;
 function _emscripten_set_main_loop_timing(mode, value) {
  Browser.mainLoop.timingMode = mode;
  Browser.mainLoop.timingValue = value;
@@ -3540,13 +3449,15 @@ function _glCreateShader(shaderType) {
  GL.shaders[id] = GLctx.createShader(shaderType);
  return id;
 }
-function _emscripten_webgl_make_context_current(contextHandle) {
- var success = GL.makeContextCurrent(contextHandle);
- return success ? 0 : -5;
+function _glFrontFace(x0) {
+ GLctx.frontFace(x0);
 }
 function _glUniform1i(location, v0) {
  location = GL.uniforms[location];
  GLctx.uniform1i(location, v0);
+}
+function _glUseProgram(program) {
+ GLctx.useProgram(program ? GL.programs[program] : null);
 }
 function _glDeleteRenderbuffers(n, renderbuffers) {
  for (var i = 0; i < n; i++) {
@@ -3611,10 +3522,122 @@ function _glGetProgramiv(program, pname, p) {
   HEAP32[p >> 2] = GLctx.getProgramParameter(GL.programs[program], pname);
  }
 }
-function ___gxx_personality_v0() {}
+function _glColorMask(x0, x1, x2, x3) {
+ GLctx.colorMask(x0, x1, x2, x3);
+}
 Module["_bitshift64Shl"] = _bitshift64Shl;
 function _abort() {
  Module["abort"]();
+}
+function emscriptenWebGLGet(name_, p, type) {
+ if (!p) {
+  GL.recordError(1281);
+  return;
+ }
+ var ret = undefined;
+ switch (name_) {
+ case 36346:
+  ret = 1;
+  break;
+ case 36344:
+  if (type !== "Integer" && type !== "Integer64") {
+   GL.recordError(1280);
+  }
+  return;
+ case 36345:
+  ret = 0;
+  break;
+ case 34466:
+  var formats = GLctx.getParameter(34467);
+  ret = formats.length;
+  break;
+ case 35738:
+  ret = 5121;
+  break;
+ case 35739:
+  ret = 6408;
+  break;
+ }
+ if (ret === undefined) {
+  var result = GLctx.getParameter(name_);
+  switch (typeof result) {
+  case "number":
+   ret = result;
+   break;
+  case "boolean":
+   ret = result ? 1 : 0;
+   break;
+  case "string":
+   GL.recordError(1280);
+   return;
+  case "object":
+   if (result === null) {
+    switch (name_) {
+    case 34964:
+    case 35725:
+    case 34965:
+    case 36006:
+    case 36007:
+    case 32873:
+    case 34068:
+     {
+      ret = 0;
+      break;
+     }
+    default:
+     {
+      GL.recordError(1280);
+      return;
+     }
+    }
+   } else if (result instanceof Float32Array || result instanceof Uint32Array || result instanceof Int32Array || result instanceof Array) {
+    for (var i = 0; i < result.length; ++i) {
+     switch (type) {
+     case "Integer":
+      HEAP32[p + i * 4 >> 2] = result[i];
+      break;
+     case "Float":
+      HEAPF32[p + i * 4 >> 2] = result[i];
+      break;
+     case "Boolean":
+      HEAP8[p + i >> 0] = result[i] ? 1 : 0;
+      break;
+     default:
+      throw "internal glGet error, bad type: " + type;
+     }
+    }
+    return;
+   } else if (result instanceof WebGLBuffer || result instanceof WebGLProgram || result instanceof WebGLFramebuffer || result instanceof WebGLRenderbuffer || result instanceof WebGLTexture) {
+    ret = result.name | 0;
+   } else {
+    GL.recordError(1280);
+    return;
+   }
+   break;
+  default:
+   GL.recordError(1280);
+   return;
+  }
+ }
+ switch (type) {
+ case "Integer64":
+  tempI64 = [ ret >>> 0, (tempDouble = ret, +Math_abs(tempDouble) >= +1 ? tempDouble > +0 ? (Math_min(+Math_floor(tempDouble / +4294967296), +4294967295) | 0) >>> 0 : ~~+Math_ceil((tempDouble - +(~~tempDouble >>> 0)) / +4294967296) >>> 0 : 0) ], HEAP32[p >> 2] = tempI64[0], HEAP32[p + 4 >> 2] = tempI64[1];
+  break;
+ case "Integer":
+  HEAP32[p >> 2] = ret;
+  break;
+ case "Float":
+  HEAPF32[p >> 2] = ret;
+  break;
+ case "Boolean":
+  HEAP8[p >> 0] = ret ? 1 : 0;
+  break;
+ default:
+  throw "internal glGet error, bad type: " + type;
+ }
+}
+function _glGetIntegerv(name_, p) {
+ emscriptenWebGLGet(name_, p, "Integer");
 }
 function _glGetUniformLocation(program, name) {
  name = Pointer_stringify(name);
@@ -3875,23 +3898,15 @@ function ___syscall6(which, varargs) {
   return -e.errno;
  }
 }
-function _glFrontFace(x0) {
- GLctx.frontFace(x0);
+Module["___udivdi3"] = ___udivdi3;
+function _emscripten_webgl_make_context_current(contextHandle) {
+ var success = GL.makeContextCurrent(contextHandle);
+ return success ? 0 : -5;
 }
-function _glClearDepthf(x0) {
- GLctx.clearDepth(x0);
-}
-function _glDeleteBuffers(n, buffers) {
- for (var i = 0; i < n; i++) {
-  var id = HEAP32[buffers + i * 4 >> 2];
-  var buffer = GL.buffers[id];
-  if (!buffer) continue;
-  GLctx.deleteBuffer(buffer);
-  buffer.name = 0;
-  GL.buffers[id] = null;
-  if (id == GL.currArrayBuffer) GL.currArrayBuffer = 0;
-  if (id == GL.currElementArrayBuffer) GL.currElementArrayBuffer = 0;
- }
+function _pthread_cleanup_pop() {
+ assert(_pthread_cleanup_push.level == __ATEXIT__.length, "cannot pop if something else added meanwhile!");
+ __ATEXIT__.pop();
+ _pthread_cleanup_push.level = __ATEXIT__.length;
 }
 function _emscripten_set_canvas_size(width, height) {
  Browser.setCanvasSize(width, height);
@@ -4014,7 +4029,6 @@ STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 staticSealed = true;
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 DYNAMIC_BASE = DYNAMICTOP = Runtime.alignMemory(STACK_MAX);
-var cttz_i8 = allocate([ 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 ], "i8", ALLOC_DYNAMIC);
 function invoke_iiii(index, a1, a2, a3) {
  try {
   return Module["dynCall_iiii"](index, a1, a2, a3);
@@ -4110,14 +4124,14 @@ Module.asmLibraryArg = {
  "__ZSt18uncaught_exceptionv": __ZSt18uncaught_exceptionv,
  "_glBindBuffer": _glBindBuffer,
  "_glCreateProgram": _glCreateProgram,
- "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
+ "_emscripten_request_fullscreen_strategy": _emscripten_request_fullscreen_strategy,
  "_emscripten_webgl_create_context": _emscripten_webgl_create_context,
  "_sbrk": _sbrk,
  "_glDisableVertexAttribArray": _glDisableVertexAttribArray,
  "_emscripten_memcpy_big": _emscripten_memcpy_big,
  "_glStencilOp": _glStencilOp,
  "_emscripten_get_canvas_size": _emscripten_get_canvas_size,
- "_emscripten_request_fullscreen_strategy": _emscripten_request_fullscreen_strategy,
+ "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
  "_glGenBuffers": _glGenBuffers,
  "_glShaderSource": _glShaderSource,
  "_pthread_cleanup_push": _pthread_cleanup_push,
@@ -4130,6 +4144,7 @@ Module.asmLibraryArg = {
  "_glDrawElements": _glDrawElements,
  "_glDepthMask": _glDepthMask,
  "_glViewport": _glViewport,
+ "_llvm_cttz_i32": _llvm_cttz_i32,
  "_glDeleteTextures": _glDeleteTextures,
  "_glDepthFunc": _glDepthFunc,
  "_glStencilOpSeparate": _glStencilOpSeparate,
@@ -4215,6 +4230,9 @@ var _i64Add = Module["_i64Add"] = asm["_i64Add"];
 var _memcpy = Module["_memcpy"] = asm["_memcpy"];
 var _enter_soft_fullscreen = Module["_enter_soft_fullscreen"] = asm["_enter_soft_fullscreen"];
 var _bitshift64Lshr = Module["_bitshift64Lshr"] = asm["_bitshift64Lshr"];
+var ___udivdi3 = Module["___udivdi3"] = asm["___udivdi3"];
+var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
+var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
 var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];
