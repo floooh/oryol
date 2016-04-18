@@ -75,6 +75,7 @@ RWLock::UnlockRead() {
 #endif
 }
 
+//------------------------------------------------------------------------------
 class ScopedReadLock {
 private:
 	RWLock& _lock;
@@ -87,6 +88,7 @@ public:
 	}
 };
 
+//------------------------------------------------------------------------------
 class ScopedWriteLock {
 private:
 	RWLock& _lock;
