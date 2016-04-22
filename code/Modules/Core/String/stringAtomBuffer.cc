@@ -44,7 +44,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32_t hash, const char* st
     }
     
     // compute length of new entry (header + string len + 0 terminator byte)
-    const size_t strLen = std::strlen(str);
+    const int strLen = int(std::strlen(str));
     size_t requiredSize = strLen + sizeof(Header) + 1;
     o_assert(requiredSize < this->chunkSize);
     
@@ -57,7 +57,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32_t hash, const char* st
     Header* head = (Header*) this->curPointer;
     head->table = table;
     head->hash = hash;
-    head->length  = strLen;
+    head->length = strLen;
     head->str  = (char*) this->curPointer + sizeof(Header);
     #if ORYOL_WINDOWS
     errno_t res = strcpy_s((char*)head->str, strLen + 1, str);
