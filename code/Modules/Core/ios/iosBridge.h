@@ -104,7 +104,7 @@ public:
     ORYOL_OBJC_ID glkViewController;
     #endif
     // this is just a 'global variable' set by mtlDisplayMgr and read by iosInputMgr
-    float64 mouseScale;
+    double mouseScale;
 };
     
 } // namespace _priv

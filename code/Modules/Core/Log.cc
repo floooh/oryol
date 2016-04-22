@@ -20,7 +20,7 @@
 #endif
 
 #if ORYOL_WINDOWS || ORYOL_PNACL
-const Oryol::int LogBufSize = 4 * 1024;
+const int LogBufSize = 4 * 1024;
 #endif
 
 namespace Oryol {
