@@ -72,16 +72,16 @@ public:
             if (protId == 'TSTP') return true;
             else return Message::IsMemberOf(protId);
         };
-        int8 Int8Val;
-        int16 Int16Val;
-        int32 Int32Val;
-        int64 Int64Val;
-        uint8 UInt8Val;
-        uint16 UInt16Val;
-        uint32 UInt32Val;
-        uint64 UInt64Val;
-        float32 Float32Val;
-        float64 Float64Val;
+        int8_t Int8Val;
+        int16_t Int16Val;
+        int32_t Int32Val;
+        int64_t Int64Val;
+        uint8_t UInt8Val;
+        uint16_t UInt16Val;
+        uint32_t UInt32Val;
+        uint64_t UInt64Val;
+        float Float32Val;
+        double Float64Val;
     };
     class TestMsg2 : public TestMsg1 {
         OryolClassDecl(TestMsg2);
@@ -121,7 +121,7 @@ public:
             if (protId == 'TSTP') return true;
             else return Message::IsMemberOf(protId);
         };
-        Array<int32> Int32ArrayVal;
+        Array<int32_t> Int32ArrayVal;
         Array<String> StringArrayVal;
     };
 };

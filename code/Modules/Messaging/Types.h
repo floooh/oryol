@@ -9,9 +9,9 @@
 
 namespace Oryol {
     
-typedef uint32 ProtocolIdType;
+typedef uint32_t ProtocolIdType;
 static const ProtocolIdType InvalidProtocolId = 0xFFFFFFFF;
-typedef int32 MessageIdType;
+typedef int32_t MessageIdType;
 static const MessageIdType InvalidMessageId = -1;
         
 } // namespace Oryol

@@ -19,7 +19,7 @@ class ioRequestRouter : public Port {
     OryolClassDecl(ioRequestRouter);
 public:
     /// constructor
-    ioRequestRouter(int32 numLanes, const ioPointers& pointers);
+    ioRequestRouter(int numLanes, const ioPointers& pointers);
     /// destructor
     ~ioRequestRouter();
     
@@ -29,8 +29,8 @@ public:
     virtual void DoWork() override;
 
 private:
-    int32 curLane;
-    int32 numLanes;
+    int curLane;
+    int numLanes;
     Array<Ptr<ioLane>> ioLanes;
 };
     

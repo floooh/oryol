@@ -129,7 +129,7 @@ private:
     };
     
     StringAtom content;
-    int16 indices[numIndices];
+    int16_t indices[numIndices];
     bool valid;
 };
    

@@ -52,13 +52,13 @@ ThreadedQueue::~ThreadedQueue() {
  when messages arrive)
 */
 void
-ThreadedQueue::SetTickDuration(uint32 milliSec) {
+ThreadedQueue::SetTickDuration(uint32_t milliSec) {
     o_assert(!this->threadStarted);
     this->tickDuration = milliSec;
 }
 
 //------------------------------------------------------------------------------
-uint32
+uint32_t
 ThreadedQueue::GetTickDuration() const {
     return this->tickDuration;
 }

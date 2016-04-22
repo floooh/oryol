@@ -14,8 +14,8 @@ messages:
         - { name: Url, type: URL }
         - { name: CacheReadEnabled, type: bool, default: 'true' }
         - { name: CacheWriteEnabled, type: bool, default: 'true' }
-        - { name: StartOffset, type: int32, default: 0 }
-        - { name: EndOffset, type: int32, default: EndOfFile }
+        - { name: StartOffset, type: int, default: 0 }
+        - { name: EndOffset, type: int, default: EndOfFile }
         - { name: Data, type: Buffer }
         - { name: Type, type: ContentType }
         - { name: Status, type: 'IOStatus::Code', default: 'IOStatus::InvalidIOStatus', dir: out }

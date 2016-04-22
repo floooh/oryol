@@ -9,7 +9,7 @@
 
 using namespace Oryol;
 
-std::atomic<int32> numRequestsHandled{0};
+std::atomic<int> numRequestsHandled{0};
 
 class TestFileSystem : public FileSystem {
     OryolClassDecl(TestFileSystem);
@@ -21,7 +21,7 @@ public:
         numRequestsHandled++;
         
         // write payload data
-        static const uint8 payload[] = {'A', 'B', 'C', 'D'};
+        static const uint8_t payload[] = {'A', 'B', 'C', 'D'};
         msg->Data.Add(payload, sizeof(payload));
         msg->Status = IOStatus::OK;
         msg->SetHandled();
@@ -56,7 +56,7 @@ TEST(IOFacadeTest) {
     CHECK(!msg->Data.Empty());
     CHECK(msg->Data.Size() == 4);
     CHECK(msg->Status == IOStatus::OK);
-    const uint8* payload = msg->Data.Data();
+    const uint8_t* payload = msg->Data.Data();
     CHECK(payload[0] == 'A');
     CHECK(payload[1] == 'B');
     CHECK(payload[2] == 'C');

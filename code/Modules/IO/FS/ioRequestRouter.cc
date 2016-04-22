@@ -8,13 +8,13 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-ioRequestRouter::ioRequestRouter(int32 numLanes_, const ioPointers& ptrs) :
+ioRequestRouter::ioRequestRouter(int numLanes_, const ioPointers& ptrs) :
 curLane(0),
 numLanes(numLanes_) {
 
     // create ioLanes
     this->ioLanes.Reserve(this->numLanes);
-    for (int32 i = 0; i < this->numLanes; i++) {
+    for (int i = 0; i < this->numLanes; i++) {
         Ptr<ioLane> newLane = ioLane::Create(ptrs);
         newLane->StartThread();
         this->ioLanes.Add(newLane);

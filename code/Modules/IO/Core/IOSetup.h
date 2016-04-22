@@ -20,7 +20,7 @@ public:
     /// initial file systems
     Map<StringAtom, std::function<Ptr<FileSystem>()>> FileSystems;
     /// number of IOLanes
-    int32 NumIOLanes = 4;
+    int NumIOLanes = 4;
 };
     
 } // namespace Oryol

@@ -208,8 +208,8 @@ ContentType::Params() const {
         Map<String,String> query;
         StringBuilder builder;
         builder.Set(this->content.AsCStr(), this->indices[paramStart], this->indices[paramEnd]);
-        int32 kvpStartIndex = 0;
-        int32 kvpEndIndex = 0;
+        int kvpStartIndex = 0;
+        int kvpEndIndex = 0;
         do {
             // params are of the form "key=value; key=value; ..."
             
@@ -218,7 +218,7 @@ ContentType::Params() const {
             // get end of key/value pair
             kvpEndIndex = builder.FindFirstOf(kvpStartIndex, EndOfString, ";");
             // find end of key
-            int32 keyEndIndex = builder.FindFirstOf(kvpStartIndex, kvpEndIndex, "=");
+            int keyEndIndex = builder.FindFirstOf(kvpStartIndex, kvpEndIndex, "=");
             if (EndOfString != keyEndIndex) {
                 String key(builder.GetSubString(kvpStartIndex, keyEndIndex));
                 String value(builder.GetSubString(keyEndIndex + 1, kvpEndIndex));

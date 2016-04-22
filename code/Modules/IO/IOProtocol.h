@@ -84,8 +84,8 @@ public:
         URL Url;
         bool CacheReadEnabled;
         bool CacheWriteEnabled;
-        int32 StartOffset;
-        int32 EndOffset;
+        int StartOffset;
+        int EndOffset;
         Buffer Data;
         ContentType Type;
         IOStatus::Code Status;

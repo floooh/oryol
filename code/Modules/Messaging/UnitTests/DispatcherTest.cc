@@ -10,7 +10,7 @@
 using namespace Oryol;
 
 // a global message handler function
-static int32 val = 0;
+static int val = 0;
 static void GlobalHandler(const Ptr<TestProtocol::TestMsg1>& msg) {
     CHECK(msg->MessageId() == TestProtocol::MessageId::TestMsg1Id);
     CHECK(msg->Int8Val == 8);
@@ -30,7 +30,7 @@ public:
         this->val++;
     };
     
-    int32 val = 0;
+    int val = 0;
 };
 
 TEST(DispatcherTest) {

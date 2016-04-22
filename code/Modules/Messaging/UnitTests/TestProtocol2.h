@@ -54,7 +54,7 @@ public:
             if (protId == 'TSP2') return true;
             else return TestProtocol::TestMsg1::IsMemberOf(protId);
         };
-        int8 ExVal2;
+        int8_t ExVal2;
     };
 };
 }

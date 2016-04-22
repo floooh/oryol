@@ -44,9 +44,9 @@ public:
     ~ThreadedQueue();
     
     /// set optional tick-duration in millsecs, thread will wake up even if no messages pending
-    void SetTickDuration(uint32 milliSecs);
+    void SetTickDuration(uint32_t milliSecs);
     /// get optional tick-rate in millisecs
-    uint32 GetTickDuration() const;
+    uint32_t GetTickDuration() const;
     /// start the handler thread, this cannot happen in the constructor
     virtual void StartThread();
     /// stop the handler thread, this cannot happen in the destructor
@@ -78,7 +78,7 @@ protected:
     /// move messages from transfer queue to read queue
     void moveTransferToReadQueue();
     
-    uint32 tickDuration;
+    uint32_t tickDuration;
     Queue<Ptr<Message>> writeQueue;     // written by sender thread
     Queue<Ptr<Message>> transferQueue;  // written by sender, read by worker thread (locked)
     Queue<Ptr<Message>> readQueue;      // read by worker thread

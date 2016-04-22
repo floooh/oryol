@@ -124,6 +124,9 @@ def getAttrDefaultValue(attr) :
     if attrType in ('int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64') :
         if not defValue :
             defValue = '0'
+    elif attrType in ('int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t', 'uint16_t', 'uint32_t', 'uint64_t') :
+        if not defValue :
+            defValue = '0'
     elif attrType in ('char', 'unsigned char', 'int', 'unsigned int', 'short', 'unsigned short', 'long', 'unsigned long') :
         if not defValue :
             defValue = '0'
@@ -144,6 +147,8 @@ def getRefType(attrType) :
     Get the reference type string for an attribute type
     ''' 
     if attrType in ('int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32', 'uint64') :
+        return attrType
+    elif attrType in ('int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t', 'uint16_t', 'uint32_t', 'uint64_t') :
         return attrType
     elif attrType in ('bool', 'char', 'unsigned char', 'int', 'unsigned int', 'short', 'unsigned short', 'long', 'unsigned long') :
         return attrType
