@@ -20,7 +20,7 @@
 #endif
 
 #if ORYOL_WINDOWS || ORYOL_PNACL
-const Oryol::int32 LogBufSize = 4 * 1024;
+const Oryol::int LogBufSize = 4 * 1024;
 #endif
 
 namespace Oryol {
@@ -43,14 +43,14 @@ Log::AddLogger(const Ptr<Logger>& l) {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 Log::GetNumLoggers() {
     return loggers.Size();
 }
 
 //------------------------------------------------------------------------------
 Ptr<Logger>
-Log::GetLogger(int32 index) {
+Log::GetLogger(int index) {
     return loggers[index];
 }
 
@@ -168,7 +168,7 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
 
 //------------------------------------------------------------------------------
 void
-Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
+Log::AssertMsg(const char* cond, const char* msg, const char* file, int line, const char* func) {
     lock.LockRead();
     if (loggers.Empty()) {
         char callstack[4096];

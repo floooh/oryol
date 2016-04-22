@@ -27,16 +27,16 @@ public:
     TestClass() : val(0) {
 //        Log::Info("constructor called!\n");
     };
-    TestClass(int32 v) : val(v) {
+    TestClass(int v) : val(v) {
 //        Log::Info("constructor with '%d' called!\n", this->val);
     }
     virtual ~TestClass() {
 //        Log::Info("destructor called!\n");
     };
-    void Set(int32 i) { this->val = i; };
-    int32 Get() const { return this->val; };
+    void Set(int i) { this->val = i; };
+    int Get() const { return this->val; };
 private:
-    int32 val;
+    int val;
 };
 OryolClassPoolAllocImpl(TestClass);
 
@@ -73,17 +73,17 @@ TEST(CreateShared) {
 
 TEST(CreatePtrBenchmark) {
 
-    for (int32 i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
         chrono::time_point<chrono::system_clock> start, end;
         start = chrono::system_clock::now();
         
-        const int32 maxLiveObjects = 65535;
-        const int32 numObjects = 1000000;
-        const int32 numOuterLoop = numObjects / maxLiveObjects;
-        for (int32 j = 0; j < numOuterLoop; j++) {
+        const int maxLiveObjects = 65535;
+        const int numObjects = 1000000;
+        const int numOuterLoop = numObjects / maxLiveObjects;
+        for (int j = 0; j < numOuterLoop; j++) {
             Array<Ptr<TestClass>> objs;
             objs.Reserve(maxLiveObjects);
-            for (int32 k = 0; k < maxLiveObjects; k++) {
+            for (int k = 0; k < maxLiveObjects; k++) {
                 objs.Add(TestClass::Create());
             }
         }
@@ -96,7 +96,7 @@ TEST(CreatePtrBenchmark) {
         chrono::time_point<chrono::system_clock> start, end;
         start = chrono::system_clock::now();
         
-        const int32 numObjects = 1000000;
+        const int numObjects = 1000000;
         std::vector<shared_ptr<TestClass>> objs;
         objs.reserve(numObjects);
         for (int j = 0; j < numObjects; j++) {
@@ -142,10 +142,10 @@ TEST(CreateMultiThreaded) {
     // create a few threads
     const int numThreads = 8;
     std::array<std::thread, numThreads> threads;
-    for (int32 i = 0; i < numThreads; i++) {
+    for (int i = 0; i < numThreads; i++) {
         threads[i] = std::thread(threadFunc);
     }
-    for (int32 i = 0; i < numThreads; i++) {
+    for (int i = 0; i < numThreads; i++) {
         threads[i].join();
     }
     

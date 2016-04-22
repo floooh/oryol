@@ -15,7 +15,7 @@
 
 namespace Oryol {
 
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> class HashSet {
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> class HashSet {
 public:
     /// default constructor
     HashSet();
@@ -29,13 +29,13 @@ public:
     void operator=(HashSet&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    void SetAllocStrategy(int minGrow, int maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// get min grow value
-    int32 GetMinGrow() const;
+    int GetMinGrow() const;
     /// get max grow value
-    int32 GetMaxGrow() const;
+    int GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     
@@ -54,19 +54,19 @@ private:
     /// get the bucket for a value
     Set<VALUETYPE>& findBucket(const VALUETYPE& val);
 
-    int32 size;
+    int size;
     Set<VALUETYPE> buckets[NUMBUCKETS];
 };
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS>
+template<class VALUETYPE, class HASHER, int NUMBUCKETS>
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::HashSet() :
 size(0) {
     // empty
 };
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS>
+template<class VALUETYPE, class HASHER, int NUMBUCKETS>
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::HashSet(const HashSet& rhs) :
 size(rhs.size) {
     for (int i = 0; i < NUMBUCKETS; i++) {
@@ -75,7 +75,7 @@ size(rhs.size) {
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS>
+template<class VALUETYPE, class HASHER, int NUMBUCKETS>
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::HashSet(HashSet&& rhs) :
 size(rhs.size) {
     for (int i = 0; i < NUMBUCKETS; i++) {
@@ -85,7 +85,7 @@ size(rhs.size) {
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> void
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::operator=(const HashSet& rhs) {
     if (&rhs != this) {
         this->size = rhs.size;
@@ -96,7 +96,7 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::operator=(const HashSet& rhs) {
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> void
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::operator=(HashSet&& rhs) {
     if (&rhs != this) {
         this->size = rhs.size;
@@ -108,53 +108,53 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::operator=(HashSet&& rhs) {
 }
     
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
-HashSet<VALUETYPE, HASHER, NUMBUCKETS>::SetAllocStrategy(int32 minGrow, int32 maxGrow) {
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> void
+HashSet<VALUETYPE, HASHER, NUMBUCKETS>::SetAllocStrategy(int minGrow, int maxGrow) {
     for (int i = 0; i < NUMBUCKETS; i++) {
         this->buckets[i].SetAllocStrategy(minGrow, maxGrow);
     }
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> int32
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> int
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::GetMinGrow() const {
     return this->buckets[0].GetMinGrow();
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> int32
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> int
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::GetMaxGrow() const {
     return this->buckets[0].GetMaxGrow();
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> int32
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> int
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Size() const {
     return this->size;
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> bool
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> bool
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Empty() const {
     return (0 == this->size);
 }
     
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> bool
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> bool
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Contains(const VALUETYPE& val) const {
     const auto& bucket = this->findBucket(val);
     return bucket.Contains(val);
 }
     
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> const VALUETYPE*
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> const VALUETYPE*
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Find(const VALUETYPE& val) const {
     const auto& bucket = this->findBucket(val);
     return bucket.Find(val);
 }
     
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> void
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Add(const VALUETYPE& val) {
     this->size++;
     auto& bucket = this->findBucket(val);
@@ -162,7 +162,7 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Add(const VALUETYPE& val) {
 }
     
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> void
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> void
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Erase(const VALUETYPE& val) {
     o_assert_dbg(this->size > 0);
     this->size--;
@@ -171,15 +171,15 @@ HashSet<VALUETYPE, HASHER, NUMBUCKETS>::Erase(const VALUETYPE& val) {
 };
     
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> const Set<VALUETYPE>&
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> const Set<VALUETYPE>&
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::findBucket(const VALUETYPE& val) const {
-    return this->buckets[uint32(HASHER()(val)) % NUMBUCKETS];
+    return this->buckets[uint32_t(HASHER()(val)) % NUMBUCKETS];
 }
 
 //------------------------------------------------------------------------------
-template<class VALUETYPE, class HASHER, int32 NUMBUCKETS> Set<VALUETYPE>&
+template<class VALUETYPE, class HASHER, int NUMBUCKETS> Set<VALUETYPE>&
 HashSet<VALUETYPE, HASHER, NUMBUCKETS>::findBucket(const VALUETYPE& val) {
-    return this->buckets[uint32(HASHER()(val)) % NUMBUCKETS];
+    return this->buckets[uint32_t(HASHER()(val)) % NUMBUCKETS];
 }
 
 } // namespace Oryol

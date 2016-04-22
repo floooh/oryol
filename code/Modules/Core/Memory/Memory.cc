@@ -13,7 +13,7 @@ namespace Oryol {
     
 //------------------------------------------------------------------------------
 void*
-Memory::Alloc(int32 numBytes) {
+Memory::Alloc(int numBytes) {
     void* ptr = std::malloc(numBytes);
 #if ORYOL_ALLOCATOR_DEBUG || ORYOL_UNITTESTS
     Memory::Fill(ptr, numBytes, ORYOL_MEMORY_DEBUG_BYTE);
@@ -23,13 +23,13 @@ Memory::Alloc(int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-Memory::Fill(void* ptr, int32 numBytes, uint8 value) {
+Memory::Fill(void* ptr, int numBytes, uint8_t value) {
     std::memset(ptr, value, numBytes);
 }
 
 //------------------------------------------------------------------------------
 void*
-Memory::ReAlloc(void* ptr, int32 s) {
+Memory::ReAlloc(void* ptr, int s) {
     /// @todo: HMM need to fix fill with debug pattern...
     return std::realloc(ptr, s);
 }
@@ -42,19 +42,19 @@ Memory::Free(void* p) {
 
 //------------------------------------------------------------------------------
 void
-Memory::Copy(const void* from, void* to, int32 numBytes) {
+Memory::Copy(const void* from, void* to, int numBytes) {
     std::memcpy(to, from, numBytes);
 }
 
 //------------------------------------------------------------------------------
 void
-Memory::Move(const void* from, void* to, int32 numBytes) {
+Memory::Move(const void* from, void* to, int numBytes) {
     std::memmove(to, from, numBytes);
 }
 
 //------------------------------------------------------------------------------
 void
-Memory::Clear(void* ptr, int32 numBytes) {
+Memory::Clear(void* ptr, int numBytes) {
     std::memset(ptr, 0, numBytes);
 }
 

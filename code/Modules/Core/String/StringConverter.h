@@ -28,25 +28,25 @@ public:
     // (NOTE: 'ToString' methods should go into StringBuilder as Append<TYPE>()
     
     /// convert raw UTF8 string range to raw wide string
-    static int32 UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst, int32 dstMaxBytes);
+    static int UTF8ToWide(const unsigned char* src, int srcNumBytes, wchar_t* dst, int dstMaxBytes);
     /// convert raw wide string range to raw UTF8 string
-    static int32 WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst, int32 dstMaxBytes);
+    static int WideToUTF8(const wchar_t* src, int srcNumChars, unsigned char* dst, int dstMaxBytes);
     /// convert raw wide string range to UTF-8 string object
-    static String WideToUTF8(const wchar_t* wide, int32 numWideChars);
+    static String WideToUTF8(const wchar_t* wide, int numWideChars);
     /// convert raw null-terminated wide-string to string object
     static String WideToUTF8(const wchar_t* wide);
     /// convert WideString object to UTF8 string object
     static String WideToUTF8(const WideString& wide);
     /// convert raw UTF8 string range to wide string object
-    static WideString UTF8ToWide(const unsigned char* src, int32 srcNumBytes);
+    static WideString UTF8ToWide(const unsigned char* src, int srcNumBytes);
     /// convert null-terminated UTF8 raw string to wide string object
     static WideString UTF8ToWide(const unsigned char* src);
     /// convert UTF8 string object to wide string object
     static WideString UTF8ToWide(const String& src);
 
 private:
-    static const int32 MaxInternalBufferWChars = 128;
-    static const int32 MaxUTF8Size = 6;
+    static const int MaxInternalBufferWChars = 128;
+    static const int MaxUTF8Size = 6;
 };
 
 //------------------------------------------------------------------------------

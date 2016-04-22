@@ -28,7 +28,7 @@ Args::Args(const WideString& wideStr) {
 
 //------------------------------------------------------------------------------
 Args::Args(int argc, const char** argv) {
-    for (int32 i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         this->args.Add(argv[i]);
     }
 }
@@ -42,7 +42,7 @@ Args::HasArg(const String& arg) const {
 //------------------------------------------------------------------------------
 String
 Args::GetString(const String& arg, const String& defaultValue) const {
-    int32 index = this->args.FindIndexLinear(arg);
+    int index = this->args.FindIndexLinear(arg);
     if ((InvalidIndex != index) && ((index + 1) < this->args.Size())) {
         return this->args[index + 1];
     }
@@ -52,11 +52,11 @@ Args::GetString(const String& arg, const String& defaultValue) const {
 }
 
 //------------------------------------------------------------------------------
-int32
-Args::GetInt(const String& arg, int32 defaultValue) const {
-    int32 index = this->args.FindIndexLinear(arg);
+int
+Args::GetInt(const String& arg, int defaultValue) const {
+    int index = this->args.FindIndexLinear(arg);
     if ((InvalidIndex != index) && ((index + 1) < this->args.Size())) {
-        return StringConverter::FromString<int32>(this->args[index + 1]);
+        return StringConverter::FromString<int>(this->args[index + 1]);
     }
     else {
         return defaultValue;
@@ -64,11 +64,11 @@ Args::GetInt(const String& arg, int32 defaultValue) const {
 }
 
 //------------------------------------------------------------------------------
-float32
-Args::GetFloat(const String& arg, float32 defaultValue) const {
-    int32 index = this->args.FindIndexLinear(arg);
+float
+Args::GetFloat(const String& arg, float defaultValue) const {
+    int index = this->args.FindIndexLinear(arg);
     if ((InvalidIndex != index) && ((index + 1) < this->args.Size())) {
-        return StringConverter::FromString<float32>(this->args[index + 1]);
+        return StringConverter::FromString<float>(this->args[index + 1]);
     }
     else {
         return defaultValue;

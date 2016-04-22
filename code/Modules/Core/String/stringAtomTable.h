@@ -17,11 +17,11 @@ public:
     /// access to thread-local stringAtomTable (created on demand)
     static stringAtomTable* threadLocalPtr();
     /// compute hash value for string
-    static int32 HashForString(const char* str);
+    static int32_t HashForString(const char* str);
     /// find a matching buffer header in the table
-    const stringAtomBuffer::Header* Find(int32 hash, const char* str) const;
+    const stringAtomBuffer::Header* Find(int32_t hash, const char* str) const;
     /// add a string to the atom table
-    const stringAtomBuffer::Header* Add(int32 hash, const char* str);
+    const stringAtomBuffer::Header* Add(int32_t hash, const char* str);
     
 private:
     static ORYOL_THREADLOCAL_PTR(stringAtomTable) ptr;
@@ -42,7 +42,7 @@ private:
     
     /// hash function for bucket entry
     struct Hasher {
-        int32 operator()(const Entry& e) const {
+        int32_t operator()(const Entry& e) const {
             return e.header->hash;
         };
     };

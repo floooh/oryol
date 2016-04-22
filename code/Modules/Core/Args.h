@@ -48,9 +48,9 @@ public:
     /// get string after 'arg', or default value if 'arg' doesn't exist
     String GetString(const String& arg, const String& defaultValue="") const;
     /// get int after 'arg', or default value if 'arg' doesn't exist
-    int32 GetInt(const String& arg, int32 defaultValue=0) const;
+    int GetInt(const String& arg, int defaultValue=0) const;
     /// get float after 'arg', or default value if 'arg' doesn't exist
-    float32 GetFloat(const String& arg, float32 defaultValue=0.0f) const;
+    float GetFloat(const String& arg, float defaultValue=0.0f) const;
     /// gives you access to all of the arguments that were provided to the application
     const Array<String>& GetArgs() const;
 private:

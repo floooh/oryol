@@ -46,20 +46,20 @@ public:
     void operator=(elementBuffer&& rhs);
     
     /// get number of free slots at front
-    int32 frontSpare() const;
+    int frontSpare() const;
     /// get number of free slots at back
-    int32 backSpare() const;
+    int backSpare() const;
     /// get overall spare (frontSpare + backSpare)
-    int32 spare() const;
+    int spare() const;
     /// get number of valid elements
-    int32 size() const;
+    int size() const;
     /// get overall capacity
-    int32 capacity() const;
+    int capacity() const;
     
     /// access element by index
-    TYPE& operator[](int32 index);
+    TYPE& operator[](int index);
     /// read-access element by index
-    const TYPE& operator[](int32 index) const;
+    const TYPE& operator[](int index) const;
     /// get front element (r/w)
     TYPE& front();
     /// get front element (r/o)
@@ -70,7 +70,7 @@ public:
     const TYPE& back() const;
     
     /// allocate, grow or shrink the elementBuffer
-    void alloc(int32 capacity, int32 frontSpare);
+    void alloc(int capacity, int frontSpare);
     /// destroy all
     void destroy();
     /// destroy element at pointer
@@ -79,11 +79,11 @@ public:
     void clear();
     
     /// test if to pointer is within [from, from+num]
-    static bool overlaps(const TYPE* from, const TYPE* to, int32 num);
+    static bool overlaps(const TYPE* from, const TYPE* to, int num);
     /// copy-construct element range
-    static void copyConstruct(const TYPE* from, TYPE* to, int32 num);
+    static void copyConstruct(const TYPE* from, TYPE* to, int num);
     /// copy-assign element range UNTESTED
-    static void copyAssign(const TYPE* from, TYPE* to, int32 num);
+    static void copyAssign(const TYPE* from, TYPE* to, int num);
     
     /// push element at back (backSpare must be > 0!)
     void pushBack(const TYPE& elm);
@@ -104,29 +104,29 @@ public:
     TYPE popFront();
     
     /// prepare insertion by making room and returning pointer to insert to
-    TYPE* prepareInsert(int32 index, bool& outSlotConstructed);
+    TYPE* prepareInsert(int index, bool& outSlotConstructed);
     /// copy-insert element at position, keep other elements in their previous order
-    void insert(int32 index, const TYPE& elm);
+    void insert(int index, const TYPE& elm);
     /// move-insert element at position, keep other elements in their previous order
-    void insert(int32 index, TYPE&& elm);
+    void insert(int index, TYPE&& elm);
 
     /// erase element at index, keeps array ordering
-    void erase(int32 index);
+    void erase(int index);
     /// erase element at index, swap in element from back or front, messes up ordering
-    void eraseSwap(int32 index);
+    void eraseSwap(int index);
     /// erase element at index, always swap-in element from the back
-    void eraseSwapBack(int32 index);
+    void eraseSwapBack(int index);
     /// erase element at index, always swap-in element from the front
-    void eraseSwapFront(int32 index);
+    void eraseSwapFront(int index);
     
     /// move elements towards front for insertion, return pointer to free insertion slot
-    TYPE* moveInsertFront(int32 index);
+    TYPE* moveInsertFront(int index);
     /// move elements towards end for insertion, return pointer to free insertion slot
-    TYPE* moveInsertBack(int32 index);
+    TYPE* moveInsertBack(int index);
     /// erase element by moving elements from front
-    void moveEraseFront(int32 index);
+    void moveEraseFront(int index);
     /// erase element by moving elements from back
-    void moveEraseBack(int32 index);
+    void moveEraseBack(int index);
 
     /// C++ begin
     TYPE* _begin();
@@ -138,9 +138,9 @@ public:
     const TYPE* _end() const;
 
     TYPE* buf;          // buffer start;
-    int32 cap;          // buffer capacity (num elements)
-    int32 start;        // index of first valid element in buffer
-    int32 end;          // index of one-past-last valid element in buffer
+    int cap;            // buffer capacity (num elements)
+    int start;          // index of first valid element in buffer
+    int end;            // index of one-past-last valid element in buffer
 };
 
 //------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::operator=(const elementBuffer<TYPE>& rhs) {
     if (&rhs != this) {
         this->destroy();
-        const int32 newSize = rhs.size();
+        const int newSize = rhs.size();
         if (newSize > 0)
         {
             this->alloc(rhs.size(), 0);
@@ -221,38 +221,38 @@ elementBuffer<TYPE>::operator=(elementBuffer<TYPE>&& rhs) {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 elementBuffer<TYPE>::frontSpare() const {
     return this->start;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 elementBuffer<TYPE>::backSpare() const {
     return this->cap - this->end;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 elementBuffer<TYPE>::spare() const {
     return this->cap - this->size();
 }
     
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 elementBuffer<TYPE>::size() const {
     return this->end-this->start;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 elementBuffer<TYPE>::capacity() const {
     return this->cap;
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
-elementBuffer<TYPE>::operator[](int32 index) {
+elementBuffer<TYPE>::operator[](int index) {
     o_assert_dbg((index >= 0) && (index < this->size()));
     o_assert_dbg(this->buf);
     return this->buf[this->start + index];
@@ -260,7 +260,7 @@ elementBuffer<TYPE>::operator[](int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
-elementBuffer<TYPE>::operator[](int32 index) const {
+elementBuffer<TYPE>::operator[](int index) const {
     o_assert_dbg((index >= 0) && (index < this->size()));
     o_assert_dbg(this->buf);
     return this->buf[this->start + index];
@@ -296,16 +296,16 @@ elementBuffer<TYPE>::back() const {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::alloc(int32 newCapacity, int32 newStart) {
+elementBuffer<TYPE>::alloc(int newCapacity, int newStart) {
     o_assert_dbg(newCapacity > 0);
     if (this->cap == newCapacity) {
         return;
     }
-    const int32 curSize = this->size();
+    const int curSize = this->size();
     o_assert_dbg((newStart + curSize) <= newCapacity);
 
     // allocate new buffer
-    const int32 newBufSize = newCapacity * sizeof(TYPE);
+    const int newBufSize = newCapacity * sizeof(TYPE);
     TYPE* newBuffer = (TYPE*) Memory::Alloc(newBufSize);
     TYPE* newElmStart = newBuffer + newStart;
     
@@ -339,7 +339,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::destroy() {
     // destroy elements and free buffer
     if (this->buf) {
-        for (int32 i = this->start; i < this->end; i++) {
+        for (int i = this->start; i < this->end; i++) {
             this->buf[i].~TYPE();
         }
         Memory::Free(this->buf);
@@ -360,7 +360,7 @@ elementBuffer<TYPE>::destroyElement(TYPE* elm) {
 template<class TYPE> void
 elementBuffer<TYPE>::clear() {
     if (this->buf) {
-        for (int32 i = this->start; i < this->end; i++) {
+        for (int i = this->start; i < this->end; i++) {
             this->buf[i].~TYPE();
         }
     }
@@ -369,13 +369,13 @@ elementBuffer<TYPE>::clear() {
 
 //------------------------------------------------------------------------------
 template<class TYPE> bool
-elementBuffer<TYPE>::overlaps(const TYPE* from, const TYPE* to, int32 num) {
+elementBuffer<TYPE>::overlaps(const TYPE* from, const TYPE* to, int num) {
     return (to >= from) && (to < (from + num));
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::copyConstruct(const TYPE* from, TYPE* to, int32 num) {
+elementBuffer<TYPE>::copyConstruct(const TYPE* from, TYPE* to, int num) {
     o_assert_dbg(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         new(to++) TYPE(*from++);
@@ -384,7 +384,7 @@ elementBuffer<TYPE>::copyConstruct(const TYPE* from, TYPE* to, int32 num) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::copyAssign(const TYPE* from, TYPE* to, int32 num) {
+elementBuffer<TYPE>::copyAssign(const TYPE* from, TYPE* to, int num) {
     o_assert_dbg(!overlaps(from, to, num));
     for (int i = 0; i < num; i++) {
         *to++ = *from++;
@@ -447,7 +447,7 @@ elementBuffer<TYPE>::emplaceFront(ARGS&&... args) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
-elementBuffer<TYPE>::moveInsertFront(int32 index) {
+elementBuffer<TYPE>::moveInsertFront(int index) {
     // free a slot for insertion by moving the elements
     // at and before it towards the front
     // the freed slot will NOT be deconstructed!
@@ -455,7 +455,7 @@ elementBuffer<TYPE>::moveInsertFront(int32 index) {
     o_assert_dbg((index >= 0) && (index <= this->size()));
     
     new(&this->buf[this->start-1]) TYPE(std::move(this->buf[start]));
-    for (int32 i = this->start; i < (this->start + index - 1); i++) {
+    for (int i = this->start; i < (this->start + index - 1); i++) {
         this->buf[i] = std::move(this->buf[i+1]);
     }
     this->start--;
@@ -464,7 +464,7 @@ elementBuffer<TYPE>::moveInsertFront(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
-elementBuffer<TYPE>::moveInsertBack(int32 index) {
+elementBuffer<TYPE>::moveInsertBack(int index) {
     // free a slot for insertion by moving the elements
     // after it towards the back
     // the freed slot will NOT be deconstructed!
@@ -472,7 +472,7 @@ elementBuffer<TYPE>::moveInsertBack(int32 index) {
     o_assert_dbg((index >= 0) && (index < this->size()));
     
     new(&this->buf[this->end]) TYPE(std::move(this->buf[this->end-1]));
-    for (int32 i = this->end - 1; i > (this->start + index); i--) {
+    for (int i = this->end - 1; i > (this->start + index); i--) {
         this->buf[i] = std::move(this->buf[i-1]);
     }
     this->end++;
@@ -481,10 +481,10 @@ elementBuffer<TYPE>::moveInsertBack(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::moveEraseFront(int32 index) {
+elementBuffer<TYPE>::moveEraseFront(int index) {
     // erase a slot by moving elements from the front
     o_assert_dbg(this->buf && (index >= 0) && (index < this->size()));
-    for (int32 i = this->start + index; i > this->start; i--) {
+    for (int i = this->start + index; i > this->start; i--) {
         this->buf[i] = std::move(this->buf[i - 1]);
     }
     // must deconstruct the previous front element
@@ -493,10 +493,10 @@ elementBuffer<TYPE>::moveEraseFront(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::moveEraseBack(int32 index) {
+elementBuffer<TYPE>::moveEraseBack(int index) {
     // erase a slot by moving elements from the back
     o_assert_dbg(this->buf && (index >= 0) && (index < this->size()));
-    for (int32 i = this->start + index; i < (this->end - 1); i++) {
+    for (int i = this->start + index; i < (this->end - 1); i++) {
         this->buf[i] = std::move(this->buf[i + 1]);
     }
     // must deconstruct the previous back element
@@ -505,12 +505,12 @@ elementBuffer<TYPE>::moveEraseBack(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
-elementBuffer<TYPE>::prepareInsert(int32 index, bool& outSlotConstructed) {
+elementBuffer<TYPE>::prepareInsert(int index, bool& outSlotConstructed) {
 
     // this method will return a pointer to an empty, destructed slot!
 
     outSlotConstructed = true;
-    const int32 size = this->size();
+    const int size = this->size();
     if (index == size) {
         // special case insert at end of array
         if (this->end < this->cap) {
@@ -579,7 +579,7 @@ elementBuffer<TYPE>::prepareInsert(int32 index, bool& outSlotConstructed) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::insert(int32 index, const TYPE& elm) {
+elementBuffer<TYPE>::insert(int index, const TYPE& elm) {
     bool slotConstructed = true;
     TYPE* ptr = this->prepareInsert(index, slotConstructed);
     if (slotConstructed) {
@@ -592,7 +592,7 @@ elementBuffer<TYPE>::insert(int32 index, const TYPE& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::insert(int32 index, TYPE&& elm) {
+elementBuffer<TYPE>::insert(int index, TYPE&& elm) {
     bool slotConstructed = true;
     TYPE* ptr = this->prepareInsert(index, slotConstructed);
     if (slotConstructed) {
@@ -605,8 +605,8 @@ elementBuffer<TYPE>::insert(int32 index, TYPE&& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::erase(int32 index) {
-    const int32 size = this->size();
+elementBuffer<TYPE>::erase(int index) {
+    const int size = this->size();
     o_assert_dbg(this->buf && (index >= 0) && (index < size));
     
     if (0 == index) {
@@ -632,8 +632,8 @@ elementBuffer<TYPE>::erase(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::eraseSwap(int32 index) {
-    const int32 size = this->size();
+elementBuffer<TYPE>::eraseSwap(int index) {
+    const int size = this->size();
     o_assert_dbg(this->buf && (index >= 0) && (index < size));
     
     if (0 == index) {
@@ -661,8 +661,8 @@ elementBuffer<TYPE>::eraseSwap(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::eraseSwapBack(int32 index) {
-    const int32 size = this->size();
+elementBuffer<TYPE>::eraseSwapBack(int index) {
+    const int size = this->size();
     o_assert_dbg(this->buf && (index >= 0) && (index < size));
     if (index == (size - 1)) {
         // special case: last element
@@ -677,7 +677,7 @@ elementBuffer<TYPE>::eraseSwapBack(int32 index) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-elementBuffer<TYPE>::eraseSwapFront(int32 index) {
+elementBuffer<TYPE>::eraseSwapFront(int index) {
     o_assert_dbg(this->buf && (index >= 0) && (index < this->size()));
     if (0 == index) {
         // special case: first element

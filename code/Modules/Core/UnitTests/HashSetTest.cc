@@ -9,7 +9,7 @@
 using namespace Oryol;
 
 struct IntHasher {
-    uint32 operator()(int val) {
+    uint32_t operator()(int val) {
         return val;
     };
 };

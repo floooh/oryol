@@ -18,7 +18,7 @@ public:
     CreatorTestClass(int i) : i0(i) {};
     CreatorTestClass(int i, String str) : i0(i), str0(str) {};
     CreatorTestClass(int i, String str, Array<int> arr) : i0(i), str0(str), array0(arr) {};
-    virtual int32 Bla() const {
+    virtual int Bla() const {
         return 0;
     };
     
@@ -32,12 +32,12 @@ class CreatorDerivedClass : public CreatorTestClass {
     OryolClassCreator(CreatorDerivedClass);
 public:
     CreatorDerivedClass() : v0(0) {};
-    CreatorDerivedClass(int64 v0_) : v0(v0_) {};
-    virtual int32 Bla() const override {
+    CreatorDerivedClass(int64_t v0_) : v0(v0_) {};
+    virtual int Bla() const override {
         return 1;
     };
     
-    int64 v0;
+    int64_t v0;
 };
 
 void TestFunc(std::function<Ptr<CreatorTestClass>()> bla) {

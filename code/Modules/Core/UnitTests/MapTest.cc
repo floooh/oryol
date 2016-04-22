@@ -11,7 +11,7 @@ using namespace Oryol;
 TEST(MapTest) {
 
     // test simple insertion of unique elements
-    Map<int32, int32> map;
+    Map<int, int> map;
     CHECK(map.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(map.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     CHECK(map.Size() == 0);
@@ -37,7 +37,7 @@ TEST(MapTest) {
     }
     
     // copy construct
-    Map<int32, int32> map1(map);
+    Map<int, int> map1(map);
     CHECK(map1.Size() == 9);
     CHECK(map1.Capacity() == 9); // copy trims
     CHECK(!map1.Empty());
@@ -48,7 +48,7 @@ TEST(MapTest) {
     }
     
     // copy-assign
-    Map<int32, int32> map2;
+    Map<int, int> map2;
     map2 = map;
     CHECK(map2.Size() == 9);
     CHECK(map2.Capacity() == 9);    // copy trims
@@ -145,6 +145,6 @@ TEST(MapTest) {
     CHECK(map4.AddUnique(32, 32));
     CHECK(!map4.AddUnique(32, 33));
     CHECK(map4[32] == 32);
-    int32 index = map4.FindIndex(32);
+    int index = map4.FindIndex(32);
     CHECK(InvalidIndex == map4.FindDuplicate(index));
 }

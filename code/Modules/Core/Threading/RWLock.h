@@ -27,7 +27,7 @@ public:
 private:
 #if ORYOL_HAS_ATOMIC
     std::atomic<bool> writeLock{false};
-    std::atomic<int32> readCount{0};
+    std::atomic<int> readCount{0};
 #endif
 };
 

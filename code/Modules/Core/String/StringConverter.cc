@@ -22,10 +22,10 @@ DumpWarning(ConversionResult convRes) {
 }
 
 //------------------------------------------------------------------------------
-int32
-StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t* dst, int32 dstMaxBytes) {
+int
+StringConverter::UTF8ToWide(const unsigned char* src, int srcNumBytes, wchar_t* dst, int dstMaxBytes) {
     o_assert((0 != src) && (0 != dst));
-    int32 result = 0;
+    int result = 0;
     const UTF8* srcPtr = src;
 
     // need to keep 1 wchar_t for the terminating 0
@@ -38,7 +38,7 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t
         o_assert(dstPtr < (UTF32*) (dst + (dstMaxBytes / sizeof(wchar_t))));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = int32(dstPtr - (UTF32*)dst) + 1;
+            result = int(dstPtr - (UTF32*)dst) + 1;
         }
     } 
     else {
@@ -48,7 +48,7 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t
         o_assert(dstPtr < (UTF16*) (dst + (dstMaxBytes / sizeof(wchar_t))));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = int32(dstPtr - (UTF16*)dst) + 1;
+            result = int(dstPtr - (UTF16*)dst) + 1;
         }
     }
     if (conversionOK != convRes) {
@@ -59,10 +59,10 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes, wchar_t
 }
 
 //------------------------------------------------------------------------------
-int32
-StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char* dst, int32 dstMaxBytes) {
+int
+StringConverter::WideToUTF8(const wchar_t* src, int srcNumChars, unsigned char* dst, int dstMaxBytes) {
     o_assert((0 != src) && (0 != dst));
-    int32 result = 0;
+    int result = 0;
     UTF8* dstPtr = dst;
 
     // need to keep 1 char free for 0-termination
@@ -77,7 +77,7 @@ StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char
         o_assert(dstPtr < (dst + dstMaxBytes));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = int32(dstPtr - dst) + 1;
+            result = int(dstPtr - dst) + 1;
         }
     }
     else {
@@ -88,7 +88,7 @@ StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char
         o_assert(dstPtr < (dst + dstMaxBytes));
         *dstPtr = 0;
         if (conversionOK == convRes) {
-            result = int32(dstPtr - dst) + 1;
+            result = int(dstPtr - dst) + 1;
         }
     }
     if (conversionOK != convRes) {
@@ -100,18 +100,18 @@ StringConverter::WideToUTF8(const wchar_t* src, int32 srcNumChars, unsigned char
 
 //------------------------------------------------------------------------------
 String
-StringConverter::WideToUTF8(const wchar_t* wide, int32 numWideChars) {
+StringConverter::WideToUTF8(const wchar_t* wide, int numWideChars) {
     String converted;
     o_assert(0 != wide);
     if (numWideChars > 0) {
         if (numWideChars < MaxInternalBufferWChars) {
             unsigned char dstBuf[(MaxInternalBufferWChars + 1) * MaxUTF8Size];
-            if (0 < StringConverter::WideToUTF8(wide, numWideChars, dstBuf, (int32)sizeof(dstBuf))) {
+            if (0 < StringConverter::WideToUTF8(wide, numWideChars, dstBuf, (int)sizeof(dstBuf))) {
                 converted = (char*) dstBuf;
             }
         }
         else {
-            int32 dstBufSize = (numWideChars * MaxUTF8Size) + 1;
+            int dstBufSize = (numWideChars * MaxUTF8Size) + 1;
             unsigned char* dstBuf = (unsigned char*) Memory::Alloc(dstBufSize);
             if (0 < StringConverter::WideToUTF8(wide, numWideChars, dstBuf, dstBufSize)) {
                 converted = (char*) dstBuf;
@@ -139,7 +139,7 @@ StringConverter::WideToUTF8(const WideString& wide) {
 
 //------------------------------------------------------------------------------
 WideString
-StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
+StringConverter::UTF8ToWide(const unsigned char* src, int srcNumBytes) {
     o_assert(0 != src);
     WideString result;
     if (srcNumBytes > 0) {
@@ -155,7 +155,7 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
         }
         else {
             // use buffer 
-            int32 bufferSize = (srcNumBytes + 1) * sizeof(wchar_t);
+            int bufferSize = (srcNumBytes + 1) * sizeof(wchar_t);
             wchar_t* dstBuf = (wchar_t*) Memory::Alloc(bufferSize);
             bool success = (0 < StringConverter::UTF8ToWide(src, srcNumBytes, dstBuf, bufferSize));
             if (success) {
@@ -171,7 +171,7 @@ StringConverter::UTF8ToWide(const unsigned char* src, int32 srcNumBytes) {
 WideString
 StringConverter::UTF8ToWide(const unsigned char* src) {
     o_assert(0 != src);
-    int32 srcNumBytes = (int32) std::strlen((const char*) src);
+    int srcNumBytes = (int) std::strlen((const char*) src);
     return UTF8ToWide(src, srcNumBytes);
 }
 
@@ -182,56 +182,56 @@ StringConverter::UTF8ToWide(const String& src) {
 }
 
 //------------------------------------------------------------------------------
-template<> int8
+template<> int8_t
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (int8) std::atoi(str);
+    return (int8_t) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
-template<> uint8
+template<> uint8_t
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (uint8) std::atoi(str);
+    return (uint8_t) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
-template<> int16
+template<> int16_t
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (int16) std::atoi(str);
+    return (int16_t) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
-template<> uint16
+template<> uint16_t
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (uint16) std::atoi(str);
+    return (uint16_t) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
-template<> int32
+template<> int
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (int32) std::atoi(str);
+    return (int) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
-template<> uint32
+template<> uint32_t
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (int32) std::atoi(str);
+    return (uint32_t) std::atoi(str);
 }
 
 //------------------------------------------------------------------------------
-template<> float32
+template<> float
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
-    return (float32) std::atof(str);
+    return (float) std::atof(str);
 }
 
 //------------------------------------------------------------------------------
-template<> float64
+template<> double
 StringConverter::FromString(const char* str) {
     o_assert_dbg(str);
     return std::atof(str);

@@ -41,7 +41,7 @@ public:
         this->canary = ORYOL_MEMORY_DEBUG_INT;
         this->value  = ORYOL_MEMORY_DEBUG_INT;
     };
-    void operator=(int32 val) {
+    void operator=(int val) {
         o_assert(0xABBAABBA == this->canary);
         this->value = val;
     };
@@ -88,8 +88,8 @@ public:
         return this->value >= rhs.value;
     };
     
-    uint32 canary;
-    int32 value;
+    uint32_t canary;
+    int value;
 };
 
 //------------------------------------------------------------------------------

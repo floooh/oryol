@@ -28,24 +28,24 @@ public:
     void operator=(Queue&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow, int32 maxGrow);
+    void SetAllocStrategy(int minGrow, int maxGrow);
     /// get min-grow value
-    int32 GetMinGrow() const;
+    int GetMinGrow() const;
     /// get max-grow value
-    int32 GetMaxGrow() const;
+    int GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     /// get capacity of queue
-    int32 Capacity() const;
+    int Capacity() const;
     /// get number of free slots at dequeue-side
-    int32 SpareDequeue() const;
+    int SpareDequeue() const;
     /// get number of free slots at enqueue-side
-    int32 SpareEnqueue() const;
+    int SpareEnqueue() const;
     
     /// increase capacity to hold at least numElements more elements
-    void Reserve(int32 numElements);
+    void Reserve(int numElements);
     /// clear the queue
     void Clear();
     
@@ -78,7 +78,7 @@ private:
     /// move from other queue
     void move(Queue&& rhs);
     /// reallocate with new capacity
-    void adjustCapacity(int32 newCapacity);
+    void adjustCapacity(int newCapacity);
     /// grow to make room
     void grow();
     /// move elements to the front
@@ -87,8 +87,8 @@ private:
     void checkEnqueue();
     
     _priv::elementBuffer<TYPE> buffer;
-    int32 minGrow;
-    int32 maxGrow;
+    int minGrow;
+    int maxGrow;
 };
 
 //------------------------------------------------------------------------------
@@ -118,14 +118,14 @@ Queue<TYPE>::move(Queue&& rhs) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Queue<TYPE>::adjustCapacity(int32 newCapacity) {
+Queue<TYPE>::adjustCapacity(int newCapacity) {
     this->buffer.alloc(newCapacity, 0);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Queue<TYPE>::grow() {
-    const int32 curCapacity = this->buffer.capacity();
+    const int curCapacity = this->buffer.capacity();
     int growBy = curCapacity >> 1;
     if (growBy < minGrow) {
         growBy = minGrow;
@@ -134,19 +134,19 @@ Queue<TYPE>::grow() {
         growBy = maxGrow;
     }
     o_assert_dbg(growBy > 0);
-    int32 newCapacity = curCapacity + growBy;
+    int newCapacity = curCapacity + growBy;
     this->adjustCapacity(newCapacity);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Queue<TYPE>::moveToFront() {
-    const int32 num = this->buffer.size();
+    const int num = this->buffer.size();
     if (num > 0) {
         o_assert_dbg(this->buffer.buf);
         const TYPE* from = this->buffer._begin();
         TYPE* to = this->buffer.buf;
-        for (int32 i = 0; i < num; i++) {
+        for (int i = 0; i < num; i++) {
             new(to) TYPE(std::move(*from));
             from->~TYPE();
             to++;
@@ -205,31 +205,31 @@ Queue<TYPE>::operator=(Queue&& rhs) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Queue<TYPE>::SetAllocStrategy(int32 minGrow_, int32 maxGrow_) {
+Queue<TYPE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
     this->minGrow = minGrow_;
     this->maxGrow = maxGrow_;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Queue<TYPE>::GetMinGrow() const {
     return this->minGrow;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Queue<TYPE>::GetMaxGrow() const {
     return this->maxGrow;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Queue<TYPE>::Size() const {
     return this->buffer.size();
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Queue<TYPE>::Capacity() const {
     return this->buffer.capacity();
 }
@@ -241,21 +241,21 @@ Queue<TYPE>::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Queue<TYPE>::SpareDequeue() const {
     return this->buffer.frontSpare();
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Queue<TYPE>::SpareEnqueue() const {
     return this->buffer.backSpare();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Queue<TYPE>::Reserve(int32 numElements) {
-    int32 newCapacity = this->buffer.size() + numElements;
+Queue<TYPE>::Reserve(int numElements) {
+    int newCapacity = this->buffer.size() + numElements;
     if (newCapacity > this->buffer.capacity()) {
         this->adjustCapacity(newCapacity);
     }

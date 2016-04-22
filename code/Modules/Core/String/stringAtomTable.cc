@@ -33,7 +33,7 @@ stringAtomTable::threadLocalPtr() {
 
 //------------------------------------------------------------------------------
 const stringAtomBuffer::Header*
-stringAtomTable::Find(int32 hash, const char* str) const {
+stringAtomTable::Find(int32_t hash, const char* str) const {
     
     // need to create a temp object for searching in the set
     stringAtomBuffer::Header dummyHead(this, hash, 0, str);
@@ -50,7 +50,7 @@ stringAtomTable::Find(int32 hash, const char* str) const {
 
 //------------------------------------------------------------------------------
 const stringAtomBuffer::Header*
-stringAtomTable::Add(int32 hash, const char* str) {
+stringAtomTable::Add(int32_t hash, const char* str) {
     
     #if ORYOL_DEBUG
     o_assert(nullptr == this->Find(hash, str));
@@ -73,12 +73,12 @@ stringAtomTable::Add(int32 hash, const char* str) {
 }
 
 //------------------------------------------------------------------------------
-int32
+int32_t
 stringAtomTable::HashForString(const char* str) {
 
     // see here: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
     const char* p = str;
-    int32 h = 0;
+    int32_t h = 0;
     char c;
     while (0 != (c = *p++))
     {

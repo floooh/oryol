@@ -26,7 +26,7 @@ public:
     /// generic vprint-style method
     virtual void VPrint(Log::Level l, const char* msg, va_list args);
     /// print an assert message
-    virtual void AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
+    virtual void AssertMsg(const char* cond, const char* msg, const char* file, int line, const char* func);
 };
     
 } // namespace Oryol

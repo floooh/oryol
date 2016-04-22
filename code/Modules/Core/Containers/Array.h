@@ -56,24 +56,24 @@ public:
     void operator=(Array&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow_, int32 maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    void SetAllocStrategy(int minGrow_, int maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// get min grow value
-    int32 GetMinGrow() const;
+    int GetMinGrow() const;
     /// get max grow value
-    int32 GetMaxGrow() const;
+    int GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     /// get capacity of array
-    int32 Capacity() const;
+    int Capacity() const;
     /// get number of free slots at back of array
-    int32 Spare() const;
+    int Spare() const;
     
     /// read/write access single element
-    TYPE& operator[](int32 index);
+    TYPE& operator[](int index);
     /// read-only access single element
-    const TYPE& operator[](int32 index) const;
+    const TYPE& operator[](int index) const;
     /// read/write access to first element
     TYPE& Front();
     /// read-only access to first element
@@ -84,7 +84,7 @@ public:
     const TYPE& Back() const;
 
     /// increase capacity to hold at least numElements more elements
-    void Reserve(int32 numElements);
+    void Reserve(int numElements);
     /// trim capacity to size (this involves a re-alloc)
     void Trim();
     /// clear the array (deletes elements, keeps capacity)
@@ -97,25 +97,25 @@ public:
     /// construct-add new element at back of array
     template<class... ARGS> void Add(ARGS&&... args);
     /// copy-insert element at index, keep array order
-    void Insert(int32 index, const TYPE& elm);
+    void Insert(int index, const TYPE& elm);
     /// move-insert element at index, keep array order
-    void Insert(int32 index, TYPE&& elm);
+    void Insert(int index, TYPE&& elm);
 
     /// pop the last element
     TYPE PopBack();
     /// pop the first element
     TYPE PopFront();
     /// erase element at index, keep element ordering
-    void Erase(int32 index);
+    void Erase(int index);
     /// erase element at index, swap-in front or back element (destroys element ordering)
-    void EraseSwap(int32 index);
+    void EraseSwap(int index);
     /// erase element at index, always swap-in from back (destroys element ordering)
-    void EraseSwapBack(int32 index);
+    void EraseSwapBack(int index);
     /// erase element at index, always swap-in from front (destroys element ordering)
-    void EraseSwapFront(int32 index);
+    void EraseSwapFront(int index);
     
     /// find element index with slow linear search, return InvalidIndex if not found
-    int32 FindIndexLinear(const TYPE& elm, int32 startIndex=0, int32 endIndex=InvalidIndex) const;
+    int FindIndexLinear(const TYPE& elm, int startIndex=0, int endIndex=InvalidIndex) const;
     
     /// C++ conform begin
     TYPE* begin();
@@ -134,13 +134,13 @@ private:
     /// move from other array
     void move(Array&& rhs);
     /// reallocate with new capacity
-    void adjustCapacity(int32 newCapacity);
+    void adjustCapacity(int newCapacity);
     /// grow to make room
     void grow();
     
     _priv::elementBuffer<TYPE> buffer;
-    int32 minGrow;
-    int32 maxGrow;
+    int minGrow;
+    int maxGrow;
 };
 
 //------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ template<class TYPE>
 Array<TYPE>::Array(std::initializer_list<TYPE> l) :
 minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-    this->Reserve(int32(l.size()));
+    this->Reserve(int(l.size()));
     for (const auto& elm : l) {
         this->Add(elm);
     }
@@ -202,25 +202,25 @@ Array<TYPE>::operator=(Array<TYPE>&& rhs) {
     
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::SetAllocStrategy(int32 minGrow_, int32 maxGrow_) {
+Array<TYPE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
     this->minGrow = minGrow_;
     this->maxGrow = maxGrow_;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Array<TYPE>::GetMinGrow() const {
         return this->minGrow;
     }
     
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Array<TYPE>::GetMaxGrow() const {
     return this->maxGrow;
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Array<TYPE>::Size() const {
     return this->buffer.size();
 }
@@ -232,26 +232,26 @@ Array<TYPE>::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Array<TYPE>::Capacity() const {
     return this->buffer.capacity();
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> int32
+template<class TYPE> int
 Array<TYPE>::Spare() const {
     return this->buffer.backSpare();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE&
-Array<TYPE>::operator[](int32 index) {
+Array<TYPE>::operator[](int index) {
     return this->buffer[index];
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE&
-Array<TYPE>::operator[](int32 index) const {
+Array<TYPE>::operator[](int index) const {
     return this->buffer[index];
 }
 
@@ -281,8 +281,8 @@ Array<TYPE>::Back() const {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Reserve(int32 numElements) {
-    int32 newCapacity = this->buffer.size() + numElements;
+Array<TYPE>::Reserve(int numElements) {
+    int newCapacity = this->buffer.size() + numElements;
     if (newCapacity > this->buffer.capacity()) {
         this->adjustCapacity(newCapacity);
     }
@@ -291,7 +291,7 @@ Array<TYPE>::Reserve(int32 numElements) {
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::Trim() {
-    const int32 curSize = this->buffer.size();
+    const int curSize = this->buffer.size();
     if (curSize < this->buffer.capacity()) {
         this->adjustCapacity(curSize);
     }
@@ -323,7 +323,7 @@ Array<TYPE>::Add(TYPE&& elm) {
     
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Insert(int32 index, const TYPE& elm) {
+Array<TYPE>::Insert(int index, const TYPE& elm) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
@@ -332,7 +332,7 @@ Array<TYPE>::Insert(int32 index, const TYPE& elm) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Insert(int32 index, TYPE&& elm) {
+Array<TYPE>::Insert(int index, TYPE&& elm) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
@@ -362,32 +362,32 @@ Array<TYPE>::PopFront() {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::Erase(int32 index) {
+Array<TYPE>::Erase(int index) {
     this->buffer.erase(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseSwap(int32 index) {
+Array<TYPE>::EraseSwap(int index) {
     this->buffer.eraseSwap(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseSwapBack(int32 index) {
+Array<TYPE>::EraseSwapBack(int index) {
     this->buffer.eraseSwapBack(index);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::EraseSwapFront(int32 index) {
+Array<TYPE>::EraseSwapFront(int index) {
     this->buffer.eraseSwapFront(index);
 }
     
 //------------------------------------------------------------------------------
-template<class TYPE> int32
-Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) const {
-    const int32 size = this->buffer.size();
+template<class TYPE> int
+Array<TYPE>::FindIndexLinear(const TYPE& elm, int startIndex, int endIndex) const {
+    const int size = this->buffer.size();
     if (size > 0) {
         o_assert_dbg(startIndex < size);
         o_assert_dbg(this->buffer.buf);
@@ -398,7 +398,7 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int32 startIndex, int32 endIndex) 
             o_assert_dbg(endIndex <= size);
         }
         o_assert_dbg(startIndex <= endIndex);
-        for (int32 i = startIndex; i < endIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             TYPE* ptr = &(this->buffer.buf[this->buffer.start + i]);
             if (elm == *ptr) {
                 return i;
@@ -460,14 +460,14 @@ Array<TYPE>::move(Array&& rhs) {
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
-Array<TYPE>::adjustCapacity(int32 newCapacity) {
+Array<TYPE>::adjustCapacity(int newCapacity) {
     this->buffer.alloc(newCapacity, 0);
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> void
 Array<TYPE>::grow() {
-    const int32 curCapacity = this->buffer.capacity();
+    const int curCapacity = this->buffer.capacity();
     int growBy = curCapacity >> 1;
     if (growBy < minGrow) {
         growBy = minGrow;
@@ -476,7 +476,7 @@ Array<TYPE>::grow() {
         growBy = maxGrow;
     }
     o_assert_dbg(growBy > 0);
-    int32 newCapacity = curCapacity + growBy;
+    int newCapacity = curCapacity + growBy;
     this->adjustCapacity(newCapacity);
 }
 

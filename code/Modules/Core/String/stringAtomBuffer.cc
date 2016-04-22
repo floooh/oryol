@@ -15,7 +15,7 @@ namespace Oryol {
 //------------------------------------------------------------------------------
 stringAtomBuffer::~stringAtomBuffer() {
     // release all our allocated chunks
-    for (const int8* p : this->chunks) {
+    for (const int8_t* p : this->chunks) {
         Memory::Free((void*)p);
     }
     this->chunks.Clear();
@@ -27,14 +27,14 @@ void
 stringAtomBuffer::allocChunk() {
     // need to turn off leak detection for the string atom system, since
     // string atom buffer are never released
-    int8* newChunk = (int8*) Memory::Alloc(this->chunkSize);
+    int8_t* newChunk = (int8_t*) Memory::Alloc(this->chunkSize);
     this->chunks.Add(newChunk);
     this->curPointer = newChunk;
 }
 
 //------------------------------------------------------------------------------
 const stringAtomBuffer::Header*
-stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str) {
+stringAtomBuffer::AddString(stringAtomTable* table, int32_t hash, const char* str) {
     o_assert(nullptr != table);
     o_assert(nullptr != str);
     
@@ -44,7 +44,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     }
     
     // compute length of new entry (header + string len + 0 terminator byte)
-    const int32 strLen = int32(std::strlen(str));
+    const size_t strLen = std::strlen(str);
     size_t requiredSize = strLen + sizeof(Header) + 1;
     o_assert(requiredSize < this->chunkSize);
     
@@ -67,7 +67,7 @@ stringAtomBuffer::AddString(stringAtomTable* table, int32 hash, const char* str)
     #endif
 
     // set curPointer to the next aligned position
-    this->curPointer = (int8*) Memory::Align(this->curPointer + requiredSize, sizeof(Header));
+    this->curPointer = (int8_t*) Memory::Align(this->curPointer + requiredSize, sizeof(Header));
     
     return head;
 }

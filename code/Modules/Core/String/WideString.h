@@ -29,7 +29,7 @@ public:
     /// construct from wchar_t string (allocates!)
     WideString(const wchar_t* str);
     /// construct from raw wchar_t sequence
-    WideString(const wchar_t* ptr, int32 numChars);
+    WideString(const wchar_t* ptr, int numChars);
     
     /// copy constructor (does not allocate)
     WideString(const WideString& rhs);
@@ -60,14 +60,14 @@ public:
     bool operator>=(const WideString& rhs) const;
     
     /// assign from raw byte sequence, if numChars is 0 -> until first 0
-    void Assign(const wchar_t* ptr, int32 numChars);
+    void Assign(const wchar_t* ptr, int numChars);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const wchar_t* AsCStr() const;
     
     /// get string length in number of wchar_t
-    int32 Length() const;
+    int Length() const;
     /// get byte length (Length() * sizeof(wchar_t)
-    int32 ByteLength() const;
+    int ByteLength() const;
     /// return true if contains a non-empty string
     bool IsValid() const;
     /// return true if empty
@@ -75,21 +75,21 @@ public:
     /// clear content
     void Clear();
     /// get the refcount of this string
-    int32 RefCount() const;
+    int RefCount() const;
     
 private:
     /// shared string data header, this is followed by the actual string
     struct StringData {
         #if ORYOL_HAS_ATOMIC
-        std::atomic<int32> refCount{0};
+        std::atomic<int> refCount{0};
         #else
-        int32 refCount{0};
+        int32_t refCount{0};
         #endif
-        int32 length;
+        int length;
     };
         
     /// create new string data block, len is number of characters (excluding 0 terminator
-    void create(const wchar_t* ptr, int32 len);
+    void create(const wchar_t* ptr, int len);
     /// destroy shared string data block
     void destroy();
     /// increment refcount

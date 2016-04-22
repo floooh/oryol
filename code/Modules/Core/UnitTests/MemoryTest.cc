@@ -13,12 +13,12 @@ using namespace Oryol;
 TEST(Memory) {
 
     // allocate memory
-    int32 byteSize = 64;
-    uint8* p0 = (uint8*) Memory::Alloc(byteSize);
+    int byteSize = 64;
+    uint8_t* p0 = (uint8_t*) Memory::Alloc(byteSize);
     o_assert(p0);
     
     // clear memory
-    int32 i;
+    int i;
     Memory::Clear(p0, byteSize);
     bool check = true;
     for (i = 0; i < byteSize; i++) {
@@ -30,7 +30,7 @@ TEST(Memory) {
     
     // realloc to bigger size
     byteSize = 128;
-    p0 = (uint8*) Memory::ReAlloc(p0, byteSize);
+    p0 = (uint8_t*) Memory::ReAlloc(p0, byteSize);
     
     // fill with data
     for (i = 0; i < byteSize; i++) {
@@ -38,7 +38,7 @@ TEST(Memory) {
     }
     
     // test memory copy
-    uint8* p1 = (uint8*) Memory::Alloc(byteSize);
+    uint8_t* p1 = (uint8_t*) Memory::Alloc(byteSize);
     CHECK(nullptr != p1);
     Memory::Copy(p0, p1, byteSize);
     check = true;
@@ -67,12 +67,12 @@ TEST(Memory) {
     // test pointer alignment
     void* ptr = (void*)0x1234567;
     ptr = Memory::Align(ptr, 4);
-    CHECK((intptr(ptr) & 3) == 0);
-    CHECK((intptr(ptr) == 0x1234568));
+    CHECK((intptr_t(ptr) & 3) == 0);
+    CHECK((intptr_t(ptr) == 0x1234568));
     
     ptr = (void*) 0x1234567;
     ptr = Memory::Align(ptr, ORYOL_MAX_PLATFORM_ALIGN);
-    CHECK((intptr(ptr) & (ORYOL_MAX_PLATFORM_ALIGN - 1)) == 0);
+    CHECK((intptr_t(ptr) & (ORYOL_MAX_PLATFORM_ALIGN - 1)) == 0);
 }
 
 

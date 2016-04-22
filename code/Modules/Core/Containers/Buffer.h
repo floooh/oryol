@@ -29,38 +29,38 @@ public:
     void operator=(Buffer&& rhs);
 
     /// get number of bytes in buffer
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     /// get capacity in bytes of buffer
-    int32 Capacity() const;
+    int Capacity() const;
     /// get number of free bytes at back
-    int32 Spare() const;
+    int Spare() const;
 
     /// make room for N more bytes
-    void Reserve(int32 numBytes);
+    void Reserve(int numBytes);
     /// add bytes to buffer
-    void Add(const uint8* data, int32 numBytes);
+    void Add(const uint8_t* data, int numBytes);
     /// add uninitialized bytes to buffer, return pointer to start
-    uint8* Add(int32 numBytes);
+    uint8_t* Add(int numBytes);
     /// clear the buffer (deletes content, keeps capacity)
     void Clear();
     /// get read-only pointer to content (throws assert if would return nullptr)
-    const uint8* Data() const;
+    const uint8_t* Data() const;
     /// get read/write pointer to content (throws assert if would return nullptr)
-    uint8* Data();
+    uint8_t* Data();
 
 private:
     /// (re-)allocate buffer
-    void alloc(int32 newCapacity);
+    void alloc(int newCapacity);
     /// destroy buffer
     void destroy();
     /// append-copy content into currently allocated buffer, bump size
-    void copy(const uint8* ptr, int numBytes);
+    void copy(const uint8_t* ptr, int numBytes);
 
-    int32 size;
-    int32 capacity;
-    uint8* data;
+    int size;
+    int capacity;
+    uint8_t* data;
 };
 
 //------------------------------------------------------------------------------
@@ -91,11 +91,11 @@ Buffer::~Buffer() {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::alloc(int32 newCapacity) {
+Buffer::alloc(int newCapacity) {
     o_assert_dbg(newCapacity > this->capacity);
     o_assert_dbg(newCapacity > this->size);
 
-    uint8* newBuf = (uint8*) Memory::Alloc(newCapacity);
+    uint8_t* newBuf = (uint8_t*) Memory::Alloc(newCapacity);
     if (this->size > 0) {
         o_assert_dbg(this->data);
         Memory::Copy(this->data, newBuf, this->size);
@@ -120,7 +120,7 @@ Buffer::destroy() {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::copy(const uint8* ptr, int32 numBytes) {
+Buffer::copy(const uint8_t* ptr, int numBytes) {
     // NOTE: it is valid to call copy with numBytes==0
     o_assert_dbg(this->data);
     o_assert_dbg((this->size + numBytes) <= this->capacity);
@@ -141,7 +141,7 @@ Buffer::operator=(Buffer&& rhs) {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 Buffer::Size() const {
     return this->size;
 }
@@ -153,39 +153,39 @@ Buffer::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 Buffer::Capacity() const {
     return this->capacity;
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 Buffer::Spare() const {
     return this->capacity - this->size;
 }
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::Reserve(int32 numBytes) {
+Buffer::Reserve(int numBytes) {
     // need to grow?
     if ((this->size + numBytes) > this->capacity) {
-        const int32 newCapacity = this->size + numBytes;
+        const int newCapacity = this->size + numBytes;
         this->alloc(newCapacity);
     }
 }
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::Add(const uint8* data, int32 numBytes) {
+Buffer::Add(const uint8_t* data, int numBytes) {
     this->Reserve(numBytes);
     this->copy(data, numBytes);
 }
 
 //------------------------------------------------------------------------------
-inline uint8*
-Buffer::Add(int32 numBytes) {
+inline uint8_t*
+Buffer::Add(int numBytes) {
     this->Reserve(numBytes);
-    uint8* ptr = this->data + this->size;
+    uint8_t* ptr = this->data + this->size;
     this->size += numBytes;
     return ptr;
 }
@@ -197,14 +197,14 @@ Buffer::Clear() {
 }
 
 //------------------------------------------------------------------------------
-inline const uint8*
+inline const uint8_t*
 Buffer::Data() const {
     o_assert(this->data);
     return this->data;
 }
 
 //------------------------------------------------------------------------------
-inline uint8*
+inline uint8_t*
 Buffer::Data() {
     o_assert(this->data);
     return this->data;

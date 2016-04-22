@@ -29,7 +29,7 @@ Logger::VPrint(Log::Level /*l*/, const char* /*msg*/, va_list /*args*/) {
 /**
  */
 void
-Logger::AssertMsg(const char* /*cond*/, const char* /*msg*/, const char* /*file*/, int32 /*line*/, const char* /*func*/) {
+Logger::AssertMsg(const char* /*cond*/, const char* /*msg*/, const char* /*file*/, int /*line*/, const char* /*func*/) {
     // we can't do an o_error() here since it would recurse
 }
 
