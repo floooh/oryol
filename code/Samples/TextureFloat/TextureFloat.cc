@@ -5,7 +5,7 @@
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "Core/Log.h"
 #include <cmath>
 

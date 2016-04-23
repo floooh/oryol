@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "soundMgrBase.h"
 #include "Core/Assertion.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 
 namespace Oryol {
 namespace _priv {

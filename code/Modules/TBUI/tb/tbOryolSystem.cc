@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "tb_system.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 
 static tb::TBStr clipboard;
 

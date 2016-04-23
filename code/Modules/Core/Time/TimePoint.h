@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::TimePoint
-    @ingroup Time
+    @ingroup Core
     @brief a point in time
     
     A TimePoint holds a specific point in time returned by the high-resolution
@@ -14,7 +14,7 @@
     @see Duration
 */
 #include "Core/Types.h"
-#include "Time/Duration.h"
+#include "Core/Time/Duration.h"
 
 namespace Oryol {
     

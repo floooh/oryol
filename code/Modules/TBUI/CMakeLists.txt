@@ -19,5 +19,5 @@ fips_begin_module(TBUI)
         tbResourceContainer.cc tbResourceContainer.h
     )
     oryol_shader(TBUIShaders.shd)
-    fips_deps(Gfx Input Time turbobadger)
+    fips_deps(Gfx Input turbobadger)
 fips_end_module()

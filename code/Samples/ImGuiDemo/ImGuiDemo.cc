@@ -3,10 +3,10 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #include "Input/Input.h"
 #include "IMUI/IMUI.h"
-#include "Time/Clock.h"
 
 using namespace Oryol;
 

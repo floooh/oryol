@@ -12,6 +12,7 @@
 */
 #include "Core/Types.h"
 #include "IMUI/imguiWrapper.h"
+#include "Core/Time/Duration.h"
 
 namespace Oryol {
 

@@ -28,19 +28,16 @@ imports:
 
 exports:
     header-dirs :
-        - code
         - code/Modules
     modules :
         # engine modules
         Core :          code/Modules/Core
         IO :            code/Modules/IO
         LocalFS :       code/Modules/LocalFS
-        Messaging :     code/Modules/Messaging
         HTTP :          code/Modules/HTTP
         Gfx :           code/Modules/Gfx
         Resource :      code/Modules/Resource
         Assets :        code/Modules/Assets
-        Time :          code/Modules/Time
         Dbg :           code/Modules/Dbg
         Input :         code/Modules/Input
         Synth :         code/Modules/Synth

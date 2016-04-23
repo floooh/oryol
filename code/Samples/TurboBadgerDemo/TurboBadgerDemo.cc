@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/Time/Clock.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
@@ -10,7 +11,6 @@
 #include "Input/Input.h"
 #include "TBUI/TBUI.h"
 #include "TBDemoWindows.h"
-#include "Time/Clock.h"
 
 using namespace Oryol;
 using namespace tb;

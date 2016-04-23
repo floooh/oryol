@@ -6,7 +6,7 @@
     @brief internal touch event
 */
 #include "Core/Types.h"
-#include "Time/TimePoint.h"
+#include "Core/Time/TimePoint.h"
 #include "glm/vec2.hpp"
 
 namespace Oryol {

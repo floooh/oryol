@@ -59,6 +59,6 @@ fips_begin_module(Input)
         fips_dir(win)
         fips_files(winInputMgr.cc winInputMgr.h)
     endif()
-    fips_deps(Core Gfx Time)
+    fips_deps(Core Gfx)
 fips_end_module()
 

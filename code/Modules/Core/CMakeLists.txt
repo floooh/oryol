@@ -58,6 +58,10 @@ fips_begin_module(Core)
         ThreadLocalData.cc ThreadLocalData.h
         ThreadLocalPtr.h
     )
+    fips_dir(Time)
+    fips_files(
+        Clock.cc Clock.h Duration.h TimePoint.h
+    )
     if (FIPS_POSIX)
         fips_dir(posix)
         fips_files(precompiled.h)
@@ -137,6 +141,9 @@ fips_begin_unittest(Core)
         StringTest.cc
         WideStringTest.cc
         elementBufferTest.cc
+        ClockTest.cc
+        DurationTest.cc
+        TimePointTest.cc
     )
     fips_deps(Core)
 fips_end_unittest()

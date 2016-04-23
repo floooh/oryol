@@ -1,19 +1,16 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @defgroup Time Time
-    @brief time measurement and computations
-
     @class Oryol::Clock
-    @ingroup Time
+    @ingroup Core
     @brief high-resolution time source
     
     The most important method of Clock is Now() which returns the 
     current point in time. The time values returned by Clock have
     no relation to the "wall-clock-time".
 */
-#include "Time/TimePoint.h"
-#include "Time/Duration.h"
+#include "Core/Time/TimePoint.h"
+#include "Core/Time/Duration.h"
 
 namespace Oryol {
     

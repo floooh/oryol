@@ -8,7 +8,6 @@
 #include "Input/Core/Mouse.h"
 #include "Input/Core/Key.h"
 #include "Gfx/Gfx.h"
-#include "Time/Duration.h"
 #include "imgui.h"
 
 namespace Oryol {

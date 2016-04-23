@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Time/TimePoint.h"
-#include "Time/Duration.h"
+#include "Core/Time/TimePoint.h"
+#include "Core/Time/Duration.h"
 
 using namespace Oryol;
 

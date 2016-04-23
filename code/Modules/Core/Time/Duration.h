@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::Duration
-    @ingroup Time
+    @ingroup Core
     @brief a duration (distance between two TimePoints)
     
     Durations are created by subtracting one TimePoint from another. Durations
