@@ -28,7 +28,7 @@ schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<F
     this->rwLock.UnlockWrite();
     // create temp FileSystem object on main-thread to call the Init method
     Ptr<FileSystem> fs = this->CreateFileSystem(scheme);
-    fs->Init(scheme);
+    fs->init(scheme);
 }
 
 //------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
     this->rwLock.LockRead();
     o_assert(this->registry.Contains(scheme));
     Ptr<FileSystem> fileSystem(this->registry[scheme]());
-    fileSystem->InitLane();
+    fileSystem->initLane();
     this->rwLock.UnlockRead();
     return fileSystem;
 }

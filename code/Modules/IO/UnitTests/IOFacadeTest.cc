@@ -16,18 +16,18 @@ class TestFileSystem : public FileSystem {
     OryolClassCreator(TestFileSystem);
 public:
     /// called when the IOProtocol::Read message is received
-    virtual void onRead(const Ptr<IOProtocol::Read>& msg) override {
-        Log::Info("TestFileSystem::onRead() called!\n");
-        numRequestsHandled++;
+    virtual void onMsg(const Ptr<IORequest>& msg) override {
+        if (msg->IsA<IORead>()) {
+            Log::Info("TestFileSystem::onMsg(IORequest) called!\n");
+            numRequestsHandled++;
         
-        // write payload data
-        static const uint8_t payload[] = {'A', 'B', 'C', 'D'};
-        msg->Data.Add(payload, sizeof(payload));
-        msg->Status = IOStatus::OK;
-        msg->SetHandled();
+            Ptr<IORead> ioRead = msg->DynamicCast<IORead>();
+            static const uint8_t payload[] = {'A', 'B', 'C', 'D'};
+            ioRead->Data.Add(payload, sizeof(payload));
+            ioRead->Status = IOStatus::OK;
+        }
     };
 };
-OryolClassImpl(TestFileSystem);
 
 TEST(IOFacadeTest) {
     Core::Setup();
@@ -44,10 +44,10 @@ TEST(IOFacadeTest) {
     CHECK(url.IsValid());
     
     // asynchronously 'load' a file
-    Ptr<IOProtocol::Read> msg = IO::LoadFile(url);
+    Ptr<IORead> msg = IO::LoadFile(url);
     
     // trigger the runloop until our message is handled
-    while (!msg->Handled()) {
+    while (!msg->Handled) {
         Core::PreRunLoop()->Run();
     }
     CHECK(numRequestsHandled == 1);

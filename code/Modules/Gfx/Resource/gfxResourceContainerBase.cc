@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "IO/IO.h"
 #include "gfxResourceContainerBase.h"
 #include "Gfx/Core/displayMgr.h"
 

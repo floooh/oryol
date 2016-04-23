@@ -9,9 +9,11 @@
 */
 #include "Core/Types.h"
 #include "Core/String/StringAtom.h"
-#include "IO/IOProtocol.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Buffer.h"
+#include "IO/Core/URL.h"
+#include "IO/Core/IOStatus.h"
+#include "IO/FS/ioRequests.h"
 #include <functional>
 
 namespace Oryol {
@@ -51,13 +53,13 @@ public:
 
 private:
     struct item {
-        Ptr<IOProtocol::Read> ioRequest;
+        Ptr<IORead> ioRequest;
         successFunc onSuccess;
         failFunc onFail;
     };
     Array<item> items;
     struct groupItem {
-        Array<Ptr<IOProtocol::Read>> ioRequests;
+        Array<Ptr<IORead>> ioRequests;
         groupSuccessFunc onSuccess;
         failFunc onFail;
     };

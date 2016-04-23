@@ -22,7 +22,7 @@ fips_begin_module(LocalFS)
     endif()
     fips_dir(Core)
     fips_files(fsWrapper.h)
-    fips_deps(IO Messaging Core)
+    fips_deps(IO Core)
 fips_end_module()
 
 fips_begin_unittest(LocalFS)

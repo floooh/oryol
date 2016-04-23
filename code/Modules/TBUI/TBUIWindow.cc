@@ -10,8 +10,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(TBUIWindow);
-
 //------------------------------------------------------------------------------
 TBUIWindow::TBUIWindow() {
     TBUI::getRootWidget()->AddChild(this);

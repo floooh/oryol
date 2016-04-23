@@ -10,7 +10,6 @@
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/KeyValuePair.h"
-#include "IO/IOProtocol.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
 #include "Gfx/Setup/GfxSetup.h"

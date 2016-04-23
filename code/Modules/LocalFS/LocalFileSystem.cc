@@ -13,8 +13,8 @@ using namespace _priv;
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::Init(const StringAtom& scheme_) {
-    FileSystem::Init(scheme_);
+LocalFileSystem::init(const StringAtom& scheme_) {
+    FileSystem::init(scheme_);
     StringBuilder strBuilder;
 
     // setup the root assign
@@ -28,7 +28,18 @@ LocalFileSystem::Init(const StringAtom& scheme_) {
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
+LocalFileSystem::onMsg(const Ptr<IORequest>& req) {
+    if (req->IsA<IORead>()) {
+        this->onRead(req->DynamicCast<IORead>());
+    }
+    else if (req->IsA<IOWrite>()) {
+        this->onWrite(req->DynamicCast<IOWrite>());
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+LocalFileSystem::onRead(const Ptr<IORead>& msg) {
     if (msg->Url.HasPath()) {
         fsWrapper::handle h = fsWrapper::openRead(msg->Url.Path().AsCStr());
         if (fsWrapper::invalidHandle != h) {
@@ -66,12 +77,11 @@ LocalFileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
         msg->Status = IOStatus::BadRequest;
         msg->ErrorDesc = "No path in URL";
     }
-    msg->SetHandled();
 }
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
+LocalFileSystem::onWrite(const Ptr<IOWrite>& msg) {
     if (msg->Url.HasPath()) {
         fsWrapper::handle h = fsWrapper::openWrite(msg->Url.Path().AsCStr());
         if (fsWrapper::invalidHandle != h) {
@@ -90,7 +100,6 @@ LocalFileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
         msg->Status = IOStatus::BadRequest;
         msg->ErrorDesc = "No path in URL";
     }
-    msg->SetHandled();
 }
 
 } // namespace Oryol

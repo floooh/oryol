@@ -13,11 +13,9 @@ namespace Oryol {
 void
 loadQueue::add(const URL& url, successFunc onSuccess, failFunc onFail) {
     o_assert_dbg(onSuccess);
-
-    Ptr<IOProtocol::Read> ioReq = IOProtocol::Read::Create();
+    Ptr<IORead> ioReq = IORead::Create();
     ioReq->Url = url;
     IO::Put(ioReq);
-    
     this->items.Add(item{ ioReq, onSuccess, onFail });
 }
 
@@ -29,7 +27,7 @@ loadQueue::addGroup(const Array<URL>& urls, groupSuccessFunc onSuccess, failFunc
     groupItem item;
     item.ioRequests.Reserve(urls.Size());
     for (const URL& url : urls) {
-        Ptr<IOProtocol::Read> ioReq = IOProtocol::Read::Create();
+        Ptr<IORead> ioReq = IORead::Create();
         ioReq->Url = url;
         IO::Put(ioReq);
         item.ioRequests.Add(ioReq);
@@ -53,7 +51,7 @@ loadQueue::update() {
     for (int i = this->items.Size() - 1; i >= 0; --i) {
         const item& curItem = this->items[i];
         const auto& ioReq = curItem.ioRequest;
-        if (ioReq->Handled()) {
+        if (ioReq->Handled) {
             // io request has been handled
             if (IOStatus::OK == ioReq->Status) {
                 // io request was successful
@@ -81,7 +79,7 @@ loadQueue::update() {
         bool allHandled = true;
         bool anyFailed = false;
         for (const auto& ioReq : curItem.ioRequests) {
-            if (ioReq->Handled()) {
+            if (ioReq->Handled) {
                 if (IOStatus::OK != ioReq->Status) {
                     anyFailed = true;
                     if (curItem.onFail) {

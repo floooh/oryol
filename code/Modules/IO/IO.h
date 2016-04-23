@@ -8,12 +8,10 @@
     @ingroup IO
     @brief IO module facade
 */
-#include "Core/RefCounted.h"
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "IO/Core/IOSetup.h"
-#include "IO/IOProtocol.h"
-#include "IO/FS/ioRequestRouter.h"
+#include "IO/FS/ioRouter.h"
 #include "IO/Core/assignRegistry.h"
 #include "IO/Core/schemeRegistry.h"
 #include "IO/Core/loadQueue.h"
@@ -63,11 +61,11 @@ public:
     static int NumPendingLoads();
 
     /// low-level: start async loading of file from URL, return message for polling result
-    static Ptr<IOProtocol::Read> LoadFile(const URL& url);
+    static Ptr<IORead> LoadFile(const URL& url);
     /// low-level: start async writing of file via URL, return message for polling result
-    static Ptr<IOProtocol::Write> WriteFile(const URL& url, const Buffer& data);
+    static Ptr<IOWrite> WriteFile(const URL& url, const Buffer& data);
     /// low-level: push a generic asynchronous IO request
-    static void Put(const Ptr<IOProtocol::Request>& ioReq);
+    static void Put(const Ptr<IORequest>& ioReq);
     
 private:
     /// pump the ioRequestRouter
@@ -76,8 +74,8 @@ private:
     struct _state {
         _priv::assignRegistry assignReg;
         _priv::schemeRegistry schemeReg;
+        _priv::ioRouter router;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
-        Ptr<_priv::ioRequestRouter> requestRouter;
         class loadQueue loadQueue;
     };
     static _state* state;

@@ -1,6 +1,0 @@
-fips_begin_app(HTTPClientSample windowed)
-    fips_vs_warning_level(3)
-    fips_files(HTTPClientSample.cc)
-    fips_deps(HTTP)
-    oryol_add_web_sample(HTTPClientSample "Low-level HTTP loading sample" "emscripten,pnack,android" none "HTTPClientSample/HTTPClientSample.cc")
-fips_end_app()

@@ -10,8 +10,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(TextureLoader);
-
 //------------------------------------------------------------------------------
 TextureLoader::TextureLoader(const TextureSetup& setup_) :
 TextureLoaderBase(setup_) {
@@ -33,7 +31,7 @@ TextureLoader::~TextureLoader() {
 void
 TextureLoader::Cancel() {
     if (this->ioRequest) {
-        this->ioRequest->SetCancelled();
+        this->ioRequest->Cancelled = true;
         this->ioRequest = nullptr;
     }
 }
@@ -54,7 +52,7 @@ TextureLoader::Continue() {
     
     ResourceState::Code result = ResourceState::Pending;
     
-    if (this->ioRequest->Handled()) {
+    if (this->ioRequest->Handled) {
         if (IOStatus::OK == this->ioRequest->Status) {
             // yeah, IO is done, let gliml parse the texture data
             // and create the texture resource

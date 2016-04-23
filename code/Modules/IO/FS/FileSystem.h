@@ -10,7 +10,7 @@
 */
 #include "Core/String/StringAtom.h"
 #include "Core/RefCounted.h"
-#include "IO/IOProtocol.h"
+#include "IO/FS/ioRequests.h"
 
 namespace Oryol {
     
@@ -23,13 +23,11 @@ public:
     virtual ~FileSystem();
 
     /// called once on main-thread
-    virtual void Init(const StringAtom& scheme);
+    virtual void init(const StringAtom& scheme);
     /// called per IO-lane
-    virtual void InitLane();
-    /// called when a IOProtocol::Read message is received
-    virtual void onRead(const Ptr<IOProtocol::Read>& msg);
-    /// called when a IOProtocol::Write message is received
-    virtual void onWrite(const Ptr<IOProtocol::Write>& msg);
+    virtual void initLane();
+    /// called when IO message should be handled
+    virtual void onMsg(const Ptr<IORequest>& ioReq);
 
     StringAtom scheme;
 };

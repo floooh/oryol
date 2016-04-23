@@ -12,8 +12,8 @@
 using namespace Oryol;
 
 static void
-wait(const Ptr<IOProtocol::Request>& msg) {
-    while (!msg->Handled()) {
+wait(const Ptr<IORequest>& msg) {
+    while (!msg->Handled) {
         Core::PreRunLoop()->Run();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         Core::PostRunLoop()->Run();
@@ -40,7 +40,7 @@ TEST(LocalFileSystemTest) {
 
     // write a file
     const String hello("Hello World!");
-    auto write = IOProtocol::Write::Create();
+    auto write = IOWrite::Create();
     write->Url = "root:test.txt";
     write->Data.Add((const uint8*)hello.AsCStr(), hello.Length());
     IO::Put(write);
@@ -48,7 +48,7 @@ TEST(LocalFileSystemTest) {
     CHECK(write->Status == IOStatus::OK);
 
     // read the file back
-    auto read = IOProtocol::Read::Create();
+    auto read = IORead::Create();
     read->Url = "root:test.txt";
     IO::Put(read);
     wait(read);
@@ -59,7 +59,7 @@ TEST(LocalFileSystemTest) {
     CHECK(readStr == "Hello World!");
 
     // read from offset to end of file
-    read = IOProtocol::Read::Create();
+    read = IORead::Create();
     read->Url = "root:test.txt";
     read->StartOffset = 6;
     IO::Put(read);
@@ -71,7 +71,7 @@ TEST(LocalFileSystemTest) {
     CHECK(readStr == "World!");
 
     // read partial data
-    read = IOProtocol::Read::Create();
+    read = IORead::Create();
     read->Url = "root:test.txt";
     read->StartOffset = 6;
     read->EndOffset = 11;
@@ -96,12 +96,12 @@ TEST(SameExtensionTest) {
     // write 2 files with the same extension
     const String helloJSON("Hello JSON! Bla bla bla bla");
     const String helloDDS("Hello DDS! Dupdidum");
-    auto writeJSON = IOProtocol::Write::Create();
+    auto writeJSON = IOWrite::Create();
     writeJSON->Url = "root:hello.json";
     writeJSON->Data.Add((const uint8*)helloJSON.AsCStr(), helloJSON.Length());
     IO::Put(writeJSON);
     wait(writeJSON);
-    auto writeDDS = IOProtocol::Write::Create();
+    auto writeDDS = IOWrite::Create();
     writeDDS->Url = "root:hello.dds";
     writeDDS->Data.Add((const uint8*)helloDDS.AsCStr(), helloDDS.Length());
     IO::Put(writeDDS);

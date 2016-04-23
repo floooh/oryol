@@ -6,8 +6,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(MeshLoaderBase);
-
 //------------------------------------------------------------------------------
 MeshLoaderBase::MeshLoaderBase(const MeshSetup& setup_) :
 setup(setup_) {

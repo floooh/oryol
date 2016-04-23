@@ -6,7 +6,7 @@
     @brief standard texture loader for most block-compressed texture file formats
 */
 #include "Gfx/Resource/TextureLoaderBase.h"
-#include "IO/IOProtocol.h"
+#include "IO/FS/ioRequests.h"
 
 namespace gliml {
 class context;
@@ -35,7 +35,7 @@ private:
     TextureSetup buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data);
     
     Id resId;
-    Ptr<IOProtocol::Read> ioRequest;
+    Ptr<IORead> ioRequest;
 };
 
 } // namespace Oryol

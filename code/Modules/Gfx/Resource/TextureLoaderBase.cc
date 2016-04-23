@@ -6,8 +6,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(TextureLoaderBase);
-
 //------------------------------------------------------------------------------
 TextureLoaderBase::TextureLoaderBase(const TextureSetup& setup_) :
 setup(setup_) {

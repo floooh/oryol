@@ -21,10 +21,10 @@ TEST(HTTPFileSystemTest) {
     IO::Setup(ioSetup);
     
     // asynchronously load the index.html file
-    Ptr<IOProtocol::Read> req = IO::LoadFile("http://www.flohofwoe.net/index.html");
+    Ptr<IORead> req = IO::LoadFile("http://www.flohofwoe.net/index.html");
     
     // trigger the runloop until the request has been handled
-    while (!req->Handled()) {
+    while (!req->Handled) {
         Core::PreRunLoop()->Run();
     }
     
@@ -32,7 +32,6 @@ TEST(HTTPFileSystemTest) {
     CHECK(req->Status == IOStatus::OK);
     CHECK(!req->Data.Empty());
     CHECK(req->Data.Size() > 0);
-    CHECK(req->Type.TypeAndSubType() == "text/html");
     if (req->Data.Size() > 0) {
         String content((const char*)req->Data.Data(), 0, req->Data.Size());
         Log::Info("%s\n", content.AsCStr());

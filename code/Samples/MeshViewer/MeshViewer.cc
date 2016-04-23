@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/String/StringBuilder.h"
 #include "Gfx/Gfx.h"
 #include "IO/IO.h"
 #include "IMUI/IMUI.h"

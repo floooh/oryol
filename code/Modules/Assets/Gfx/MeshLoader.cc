@@ -9,8 +9,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(MeshLoader);
-
 //------------------------------------------------------------------------------
 MeshLoader::MeshLoader(const MeshSetup& setup_) :
 MeshLoaderBase(setup_) {
@@ -32,7 +30,7 @@ MeshLoader::~MeshLoader() {
 void
 MeshLoader::Cancel() {
     if (this->ioRequest) {
-        this->ioRequest->SetCancelled();
+        this->ioRequest->Cancelled = true;
         this->ioRequest = nullptr;
     }
 }
@@ -53,7 +51,7 @@ MeshLoader::Continue() {
     
     ResourceState::Code result = ResourceState::Pending;
     
-    if (this->ioRequest->Handled()) {
+    if (this->ioRequest->Handled) {
         if (IOStatus::OK == this->ioRequest->Status) {
             // async loading has finished, use OmshParser to
             // create a MeshSetup object from the loaded data

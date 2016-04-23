@@ -7,8 +7,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(Logger);
-
 //------------------------------------------------------------------------------
 Logger::Logger() {
     // empty

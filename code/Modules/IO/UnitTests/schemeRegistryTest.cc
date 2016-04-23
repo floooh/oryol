@@ -18,7 +18,6 @@ public:
         return 0;
     };
 };
-OryolClassImpl(TestFS_A);
 
 class TestFS_B : public TestFS_A {
     OryolClassDecl(TestFS_B);
@@ -28,7 +27,6 @@ public:
         return 1;
     };
 };
-OryolClassImpl(TestFS_B);
 
 class TestFS_C : public TestFS_A {
     OryolClassDecl(TestFS_C);
@@ -38,7 +36,6 @@ public:
         return 2;
     };
 };
-OryolClassImpl(TestFS_C);
 
 TEST(schemeRegistryTest) {
     

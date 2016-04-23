@@ -3,7 +3,6 @@
 #-------------------------------------------------------------------------------
 fips_add_subdirectory(Core)
 fips_add_subdirectory(IO)
-fips_add_subdirectory(Messaging)
 fips_add_subdirectory(HTTP)
 fips_add_subdirectory(LocalFS)
 fips_add_subdirectory(Gfx)

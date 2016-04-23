@@ -49,9 +49,6 @@ template<typename... ARGS> static Oryol::Ptr<TYPE> Create(ARGS&&... args) {\
     return Oryol::Ptr<TYPE>(Oryol::Memory::New<TYPE>(std::forward<ARGS>(args)...));\
 };
 
-/// implementation-side macro for Oryol class without pool allocator (located in .cc source file)
-#define OryolClassImpl(TYPE)
-
 /// add simple RTTI system to a class, inspired by turbobadger's RTTI system
 namespace Oryol {
     typedef void* TypeId;
