@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "emscInputMgr.h"
 #include "Core/Core.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "glm/glm.hpp"
 
 namespace Oryol {
