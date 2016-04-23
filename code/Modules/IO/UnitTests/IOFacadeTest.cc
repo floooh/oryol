@@ -26,6 +26,7 @@ public:
             ioRead->Data.Add(payload, sizeof(payload));
             ioRead->Status = IOStatus::OK;
         }
+        msg->Handled = true;
     };
 };
 

@@ -16,7 +16,7 @@ namespace _priv {
 class pnaclURLLoader : public baseURLLoader {
 public:
     /// process one request
-    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    bool doRequest(const Ptr<IORead>& req);
 
     /// pepper-thread callback which sends the request
     static void cbSendRequest(void* data, int32_t result);
@@ -27,7 +27,7 @@ public:
 
 private:
     /// start the next, called from doWork
-    void startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    void startRequest(const Ptr<IORead>& req);
 };
 
 } // namespace _priv

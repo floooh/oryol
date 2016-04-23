@@ -27,6 +27,7 @@ bool
 osxURLLoader::doRequest(const Ptr<IORead>& req) {
     if (baseURLLoader::doRequest(req)) {
         this->doRequestInternal(req);
+        req->Handled = true;
         return true;
     }
     else {

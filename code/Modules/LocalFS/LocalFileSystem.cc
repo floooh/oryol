@@ -35,6 +35,7 @@ LocalFileSystem::onMsg(const Ptr<IORequest>& req) {
     else if (req->IsA<IOWrite>()) {
         this->onWrite(req->DynamicCast<IOWrite>());
     }
+    req->Handled = true;
 }
 
 //------------------------------------------------------------------------------

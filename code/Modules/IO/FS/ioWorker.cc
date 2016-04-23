@@ -16,8 +16,6 @@ ioWorker::start(const ioPointers& ptrs) {
     #if ORYOL_HAS_THREADS
         this->sendThreadId = std::this_thread::get_id();
         this->thread = std::thread(threadFunc, this);
-    #else
-        this->onThreadEnter();
     #endif
     this->threadStartRequested = true;
 }
@@ -30,8 +28,6 @@ ioWorker::stop() {
     #if ORYOL_HAS_THREADS
         this->wakeup.notify_one();
         this->thread.join();
-    #else
-        this->onThreadLeave();
     #endif
     this->threadStopped = true;
 }
@@ -181,7 +177,9 @@ ioWorker::checkCancelled(const Ptr<IORequest>& msg) {
 void
 ioWorker::onMsg(const Ptr<ioMsg>& msg) {
     if (msg->IsA<IORequest>()) {
-        // find filesystem and forward request
+        // find filesystem and forward request, NOTE:
+        // the filesystem is responsible to set the
+        // request to 'handled'!
         Ptr<IORequest> ioReq = msg->DynamicCast<IORequest>();
         if (!this->checkCancelled(ioReq)) {
             Ptr<FileSystem> fs = this->fileSystemForURL(ioReq->Url);
@@ -207,8 +205,8 @@ ioWorker::onMsg(const Ptr<ioMsg>& msg) {
             Ptr<FileSystem> newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
             this->fileSystems[urlScheme] = newFileSystem;
         }
+        msg->Handled = true;
     }
-    msg->Handled = true;
 }
 
 } // namespace _priv
