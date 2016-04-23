@@ -8,7 +8,6 @@ fips_begin_module(IO)
     )
     fips_dir(Core)
     fips_files(
-        ContentType.cc ContentType.h
         IOConfig.h
         IOSetup.h
         IOStatus.cc IOStatus.h
@@ -33,7 +32,6 @@ fips_begin_unittest(IO)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
-        ContentTypeTest.cc
         IOFacadeTest.cc
         IOStatusTest.cc
         URLBuilderTest.cc
