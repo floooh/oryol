@@ -12,7 +12,6 @@
 #include "Core/Containers/Buffer.h"
 #include "IO/Core/URL.h"
 #include "IO/Core/IOStatus.h"
-#include "IO/Core/ContentType.h"
 
 namespace Oryol {
 namespace _priv {

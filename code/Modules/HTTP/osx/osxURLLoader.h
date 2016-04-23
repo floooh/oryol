@@ -15,12 +15,12 @@ class osxURLLoader : public baseURLLoader {
 public:
     /// constructor
     osxURLLoader();
-    /// process enqueued requests
-    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
-    
+    /// process one HTTPRequest
+    bool doRequest(const Ptr<IORead>& ioRequest);
+
 private:
     /// handle a single request, synchronously
-    void doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doRequestInternal(const Ptr<IORead>& ioRequest);
 };
     
 } // namespace _priv
