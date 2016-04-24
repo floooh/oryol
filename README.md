@@ -19,6 +19,20 @@ Experimental C++11 multi-platform 3D engine.
 
 ## _Public Service Announcements_
 
+- **24-Apr-2016**: Big spring cleanup:
+    - the Messaging module has been removed
+    - the Synth module has been removed (the recommended audio solution
+      for the future is the SoLoud lib)
+    - the Time module has been removed and it's classes have been 
+      moved into the Core module (under Core/Time)
+    - the (empty) OryolClassImpl() macro has been removed
+    - I have started to remove the custom integer types like Oryol::uint32,
+      since this is cumbersome in external projects, Oryol will use the
+      types from stdint.h instead (uint32_t, uint16_t etc)
+
+  All in all this change removed about 4.5k lines of code without loss
+  of functionality :)
+
 - **08-Apr-2016**: I have removed the 'git lfs' requirement again, since
 it doesn't work with github-pages, and all the big files are in the
 github-pages branch, so in the end it didn't make sense 
