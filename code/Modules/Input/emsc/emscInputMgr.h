@@ -59,7 +59,7 @@ private:
     /// device orientation callback
     static EM_BOOL emscDeviceOrientation(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData);
 
-    static const int32 MaxNumKeys = 256;
+    static const int MaxNumKeys = 256;
     RunLoop::Id runLoopId;
     bool pointerLockActive;
     Key::Code keyTable[MaxNumKeys];

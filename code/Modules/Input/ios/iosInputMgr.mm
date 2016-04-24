@@ -5,7 +5,7 @@
 #include "Core/Core.h"
 #include "iosInputMgr.h"
 #include "Core/ios/iosBridge.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #import <UIKit/UIKit.h>
 #import <CoreMotion/CoreMotion.h>
@@ -31,7 +31,7 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
         if ((newEvent.numTouches + 1) < touchEvent::MaxNumPoints) {
             CGPoint pos = [curTouch locationInView:curTouch.view];
             touchEvent::point& curPoint = newEvent.points[newEvent.numTouches++];
-            curPoint.identifier = (Oryol::uintptr) curTouch;
+            curPoint.identifier = (uintptr_t) curTouch;
             #if ORYOL_METAL
             const double mouseScale = iosBridge::ptr()->mouseScale;
             pos.x *= mouseScale; pos.y *= mouseScale;
@@ -166,7 +166,7 @@ iosInputMgr::sampleMotionData() {
         
         // acceleration
         if (this->inputSetup.AccelerometerEnabled) {
-            static const float32 earthGravity = 9.80665;
+            static const float earthGravity = 9.80665f;
             glm::vec3 accel(cmGravity.x + cmUserAccel.x, cmGravity.y + cmUserAccel.y, cmGravity.z + cmUserAccel.z);
             this->Sensors.Acceleration = accel * earthGravity;
         }

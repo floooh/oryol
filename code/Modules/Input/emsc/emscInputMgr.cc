@@ -198,11 +198,11 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
     o_assert_dbg(self);
     // check if pointerlock is active, if yes directly obtain movement
     if (self->pointerLockActive) {
-        const glm::vec2 mov((float32)e->movementX, (float32)e->movementY);
+        const glm::vec2 mov((float)e->movementX, (float)e->movementY);
         self->Mouse.onMov(mov);
     }
     else {
-        const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
+        const glm::vec2 pos((float)e->canvasX, (float)e->canvasY);
         self->Mouse.onPosMov(pos);
     }
     return true;    
@@ -213,7 +213,7 @@ EM_BOOL
 emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    const glm::vec2 scroll((float32)e->deltaX * 0.5f, -(float32)e->deltaY * 0.5f);
+    const glm::vec2 scroll((float)e->deltaX * 0.5f, -(float)e->deltaY * 0.5f);
     self->Mouse.onScroll(scroll);
     return true;
 }
@@ -243,7 +243,7 @@ emscInputMgr::emscTouch(int eventType, const EmscriptenTouchEvent* e, void* user
     }
     event.time = Oryol::Clock::Now();
     event.numTouches = e->numTouches;
-    for (int32 i = 0; i < event.numTouches; i++) {
+    for (int i = 0; i < event.numTouches; i++) {
         touchEvent::point& curPoint = event.points[i];
         curPoint.identifier = e->touches[i].identifier;
         curPoint.pos.x = e->touches[i].canvasX;
@@ -293,7 +293,7 @@ emscInputMgr::mapKey(unsigned long html5KeyCode) const {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setupKeyTable() {
-    for (int32 i = 0; i < MaxNumKeys; i++) {
+    for (int i = 0; i < MaxNumKeys; i++) {
         this->keyTable[i] = Key::InvalidKey;
     }
 

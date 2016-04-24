@@ -51,7 +51,7 @@ private:
     /// called on char event from handleEvent
     bool onChar(const pp::KeyboardInputEvent& ie);
 
-    static const int32 MaxNumKeys = 256;
+    static const int MaxNumKeys = 256;
     RunLoop::Id runLoopId;    
     Key::Code keyTable[MaxNumKeys];    
 };

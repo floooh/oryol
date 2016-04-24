@@ -47,7 +47,7 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     Ptr<IORead> req = userData;
     req->release();
     req->Status = IOStatus::OK;
-    req->Data.Add((const uint8*)buffer, size);
+    req->Data.Add((const uint8_t*)buffer, size);
     req->Handled = true;
 }
 

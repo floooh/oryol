@@ -176,7 +176,7 @@ pnaclInputMgr::onChar(const pp::KeyboardInputEvent& ie) {
     if (len > 0) {
         static wchar_t wide[32] = { 0 };
         const unsigned char* src = (const unsigned char*) str.c_str();
-        const int32 wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
+        const int wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
         if (wlen > 0) {
             this->Keyboard.onChar(wide[0]);
         }
@@ -200,7 +200,7 @@ void
 pnaclInputMgr::setupKeyTable() {
     
     // looks like the keycodes are identical with JS 
-    for (int32 i = 0; i < MaxNumKeys; i++) {
+    for (int i = 0; i < MaxNumKeys; i++) {
         this->keyTable[i] = Key::InvalidKey;
     }
 

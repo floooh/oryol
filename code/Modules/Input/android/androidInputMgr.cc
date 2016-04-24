@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "androidInputMgr.h"
 #include "Core/Core.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #include "Core/android/android_native_app_glue.h"
 #include "glm/gtc/quaternion.hpp"
@@ -97,7 +97,7 @@ androidInputMgr::onInputEvent(struct android_app* app, AInputEvent* aEvent) {
         }
         event.time = Oryol::Clock::Now();
         event.numTouches = AMotionEvent_getPointerCount(aEvent);
-        for (int32 i = 0; i < event.numTouches; i++) {
+        for (int i = 0; i < event.numTouches; i++) {
             touchEvent::point& curPoint = event.points[i];
             curPoint.identifier = AMotionEvent_getPointerId(aEvent, i);
             curPoint.pos.x = AMotionEvent_getX(aEvent, i);

@@ -73,7 +73,7 @@ osxURLLoader::doRequestInternal(const Ptr<IORead>& req) {
             req->Status = (IOStatus::Code) [urlResponse statusCode];
             
             // extract response body...
-            const uint8* responseBytes = (const uint8*) [responseData bytes];
+            const uint8_t* responseBytes = (const uint8_t*) [responseData bytes];
             const int responseLength = (const int) [responseData length];
             if (responseLength > 0) {
                 req->Data.Add(responseBytes, responseLength);

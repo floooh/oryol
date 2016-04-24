@@ -51,8 +51,8 @@ public:
     Ptr<IORead> ioRequest;
     pp::URLRequestInfo ppUrlRequestInfo;
     pp::URLLoader ppUrlLoader;
-    static const int32 ReadBufferSize = 4096;
-    uint8 readBuffer[ReadBufferSize];
+    static const int ReadBufferSize = 4096;
+    uint8_t readBuffer[ReadBufferSize];
 };
 
 //------------------------------------------------------------------------------

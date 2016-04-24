@@ -55,10 +55,10 @@ pnaclDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs)
     pnaclInstance::Instance()->initGL(attribList);
 
     // check if we need to resize the canvas
-    const int32 reqWidth = gfxSetup.Width;
-    const int32 reqHeight = gfxSetup.Height;
-    const int32 canvasWidth = pnaclInstance::Instance()->GetCanvasWidth();
-    const int32 canvasHeight = pnaclInstance::Instance()->GetCanvasHeight();
+    const int reqWidth = gfxSetup.Width;
+    const int reqHeight = gfxSetup.Height;
+    const int canvasWidth = pnaclInstance::Instance()->GetCanvasWidth();
+    const int canvasHeight = pnaclInstance::Instance()->GetCanvasHeight();
     if ((reqWidth != canvasWidth) || (reqHeight != canvasHeight)) {
         this->requestCanvasResize(reqWidth, reqHeight);
     }
@@ -111,7 +111,7 @@ pnaclDisplayMgr::glBindDefaultFramebuffer() {
 
 //------------------------------------------------------------------------------
 void
-pnaclDisplayMgr::requestCanvasResize(int32 newWidth, int32 newHeight) {
+pnaclDisplayMgr::requestCanvasResize(int newWidth, int newHeight) {
     StringBuilder strBuilder;
     strBuilder.Format(128, "{\"msg\":\"resize\", \"w\":%d, \"h\":%d}", newWidth, newHeight);
     pnaclInstance::Instance()->putMsg(strBuilder.AsCStr());
@@ -121,8 +121,8 @@ pnaclDisplayMgr::requestCanvasResize(int32 newWidth, int32 newHeight) {
 bool
 pnaclDisplayMgr::handleViewEvent(const pp::View& view) {
 
-    const int32 newWidth = pnaclInstance::Instance()->GetCanvasWidth();
-    const int32 newHeight = pnaclInstance::Instance()->GetCanvasHeight();
+    const int newWidth = pnaclInstance::Instance()->GetCanvasWidth();
+    const int newHeight = pnaclInstance::Instance()->GetCanvasHeight();
     if ((newWidth != this->glFramebufferWidth) || (newHeight != this->glFramebufferHeight)) {
 
         this->glFramebufferWidth = newWidth;

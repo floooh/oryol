@@ -23,13 +23,13 @@ public:
     /// open file for writing
     static handle openWrite(const char* path);
     /// write to file, return number of bytes actually written
-    static int32 write(handle f, const void* ptr, int32 numBytes);
+    static int write(handle f, const void* ptr, int numBytes);
     /// read from file, return number of bytes actually read
-    static int32 read(handle f, void* ptr, int32 numBytes);
+    static int read(handle f, void* ptr, int numBytes);
     /// seek from start of file
-    static bool seek(handle f, int32 offset);
+    static bool seek(handle f, int offset);
     /// get file size
-    static int32 size(handle f);
+    static int size(handle f);
     /// close file
     static void close(handle f);
     
