@@ -28,6 +28,7 @@ imports:
 
 exports:
     header-dirs :
+        - code
         - code/Modules
     modules :
         # engine modules
