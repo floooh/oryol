@@ -30,7 +30,7 @@ public:
     /// get mouse state
     static const class Mouse& Mouse();
     /// get gamepad state
-    static const class Gamepad& Gamepad(int32 index);
+    static const class Gamepad& Gamepad(int index);
     /// get touchpad state (for touch/multitouch gestures)
     static const class Touchpad& Touchpad();
     /// get sensory state

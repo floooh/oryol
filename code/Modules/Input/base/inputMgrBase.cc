@@ -53,7 +53,7 @@ inputMgrBase::reset() {
     if (this->Touchpad.Attached) {
         this->Touchpad.reset();
     }
-    for (int32 i = 0; i < MaxNumGamepads; i++) {
+    for (int i = 0; i < MaxNumGamepads; i++) {
         if (this->Gamepad[i].Attached) {
             this->Gamepad[i].reset();
         }

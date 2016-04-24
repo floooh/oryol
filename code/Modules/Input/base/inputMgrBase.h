@@ -38,7 +38,7 @@ public:
     const InputSetup& getInputSetup() const;
 
     /// max number of gamepads
-    static const int32 MaxNumGamepads = 4;
+    static const int MaxNumGamepads = 4;
     /// keyboard state
     class Keyboard Keyboard;
     /// mouse state

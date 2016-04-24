@@ -90,7 +90,7 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::reset() {
-    for (int32 i = 0; i < MaxNumGamepads; i++) {
+    for (int i = 0; i < MaxNumGamepads; i++) {
         this->Gamepad[i].Attached = glfwJoystickPresent(i) != 0;
     }
     inputMgrBase::reset();
@@ -158,7 +158,7 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
 void
 glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)glfwX, (float32)glfwY);
+        const glm::vec2 pos((float)glfwX, (float)glfwY);
         self->Mouse.onPosMov(pos);
     }
 }
@@ -167,7 +167,7 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
 void
 glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
-        const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
+        const glm::vec2 scroll((float)glfwX, (float)glfwY);
         self->Mouse.onScroll(scroll);
     }
 }
@@ -193,7 +193,7 @@ glfwInputMgr::mapKey(int glfwKey) const {
 void
 glfwInputMgr::setupKeyTable() {
 
-    for (int32 i = 0; i <= GLFW_KEY_LAST; i++) {
+    for (int i = 0; i <= GLFW_KEY_LAST; i++) {
         keyTable[i] = Key::InvalidKey;
     }
     

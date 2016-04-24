@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 55
+Version = 56
 
 import os
 import sys
@@ -157,9 +157,9 @@ validUniformArrayTypes = [
 ]
 
 uniformCType = {
-    'bool':         'int32',
-    'int':          'int32',
-    'float':        'float32',
+    'bool':         'int',
+    'int':          'int',
+    'float':        'float',
     'vec2':         'glm::vec2',
     'vec3':         'glm::vec3',
     'vec4':         'glm::vec4',
@@ -1608,9 +1608,9 @@ def writeProgramHeader(f, shdLib, program) :
             stageName = 'FS'
         f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(ub.bindName))
-        f.write('            static const int32 _bindSlotIndex = {};\n'.format(ub.bindSlot))
+        f.write('            static const int _bindSlotIndex = {};\n'.format(ub.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const int64 _layoutHash = {};\n'.format(ub.getHash()))
+        f.write('            static const int64_t _layoutHash = {};\n'.format(ub.getHash()))
         for type in ub.uniformsByType :
             for uniform in ub.uniformsByType[type] :
                 if uniform.num == 1 :
@@ -1620,7 +1620,7 @@ def writeProgramHeader(f, shdLib, program) :
                 # for vec3's we need to add a padding field, FIXME: would be good
                 # to try filling the padding fields with float params!
                 if type == 'vec3' :
-                    f.write('            float32 _pad_{};\n'.format(uniform.bindName))
+                    f.write('            float _pad_{};\n'.format(uniform.bindName))
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
     f.write('        static ShaderSetup Setup();\n')
@@ -1632,7 +1632,7 @@ def writeTextureBlocksHeader(f, shdLib) :
     for tb in shdLib.textureBlocks.values() :
         f.write('    struct {} {{\n'.format(tb.bindName))
         for tex in tb.textures :
-            f.write('        static const int32 {} = {};\n'.format(tex.bindName, tex.bindSlot))
+            f.write('        static const int {} = {};\n'.format(tex.bindName, tex.bindSlot))
         f.write('    };\n')
 
 #-------------------------------------------------------------------------------

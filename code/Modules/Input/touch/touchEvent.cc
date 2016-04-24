@@ -10,7 +10,7 @@ namespace _priv {
     
 //------------------------------------------------------------------------------
 const touchEvent::point*
-touchEvent::findPoint(uintptr touchId) const {
+touchEvent::findPoint(uintptr_t touchId) const {
     for (int i = 0; i < numTouches; i++) {
         if (this->points[i].identifier == touchId) {
             return &(this->points[i]);
@@ -35,7 +35,7 @@ touchEvent::sameTouches(const touchEvent& other) const {
 
 //------------------------------------------------------------------------------
 const glm::vec2&
-touchEvent::touchPos(uintptr touchId) const {
+touchEvent::touchPos(uintptr_t touchId) const {
     const point* p = this->findPoint(touchId);
     o_assert_dbg(p);
     return p->pos;

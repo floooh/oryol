@@ -17,7 +17,7 @@ namespace Oryol {
 class Touchpad {
 public:
     /// max number of touch positions
-    static const int32 MaxNumTouches = 2;
+    static const int MaxNumTouches = 2;
 
     /// touch event for event-driven input handling (vs polling)
     struct Event {

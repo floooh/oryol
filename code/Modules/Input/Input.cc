@@ -63,7 +63,7 @@ Input::Mouse() {
 
 //------------------------------------------------------------------------------
 const class Gamepad&
-Input::Gamepad(int32 index) {
+Input::Gamepad(int index) {
     o_assert_dbg(IsValid());
     return state->inputManager.Gamepad[index];
 }

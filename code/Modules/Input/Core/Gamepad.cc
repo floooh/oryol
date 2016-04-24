@@ -33,7 +33,7 @@ Gamepad::onButtonUp(Element btn) {
 
 //------------------------------------------------------------------------------
 void
-Gamepad::onTriggerValue(Element trigger, float32 value) {
+Gamepad::onTriggerValue(Element trigger, float value) {
     o_assert_range_dbg(trigger, NumElements);
     this->values[trigger].x = value;
 }

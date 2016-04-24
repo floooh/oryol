@@ -25,21 +25,21 @@ public:
     /// time stamp when the event occurred
     TimePoint time;
     /// number of touch points in the event
-    int32 numTouches = 0;
+    int numTouches = 0;
     /// max number of touches
-    static const int32 MaxNumPoints = 8;
+    static const int MaxNumPoints = 8;
     /// touch points
     struct point {
-        uintptr identifier = 0;     // unique 'finger identifier'
+        uintptr_t identifier = 0;     // unique 'finger identifier'
         glm::vec2 pos;
         bool isChanged = false;
     } points[MaxNumPoints];
     /// find point with matching identifier, return nullptr if not exists
-    const point* findPoint(uintptr touchId) const;
+    const point* findPoint(uintptr_t touchId) const;
     /// check if all point identifiers in touch event match this touch event
     bool sameTouches(const touchEvent& other) const;
     /// get position of point matching touchId
-    const glm::vec2& touchPos(uintptr touchId) const;
+    const glm::vec2& touchPos(uintptr_t touchId) const;
 };
     
 } // namespace _priv

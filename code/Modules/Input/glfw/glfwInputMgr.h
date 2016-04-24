@@ -50,7 +50,7 @@ private:
     static void scrollCallback(GLFWwindow* win, double xOffset, double yOffset);
     
     static glfwInputMgr* self;
-    int32 runLoopId;
+    int runLoopId;
 };
 
 } // namespace _priv

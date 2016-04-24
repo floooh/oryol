@@ -124,7 +124,7 @@ private:
         btnPressed = (1<<2)
     };
     
-    uint8 buttonState[Button::NumButtons];
+    uint8_t buttonState[Button::NumButtons];
     EventHandlerId uniqueIdCounter;
     Map<EventHandlerId, EventHandler> eventHandlers;
     PointerLockHandler pointerLockHandler;

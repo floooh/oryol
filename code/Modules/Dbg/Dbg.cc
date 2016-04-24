@@ -67,7 +67,7 @@ Dbg::PrintF(const char* text, ...) {
 
 //------------------------------------------------------------------------------
 void
-Dbg::CursorPos(uint8 x, uint8 y) {
+Dbg::CursorPos(uint8_t x, uint8_t y) {
     o_assert_dbg(IsValid());
     state->debugTextRenderer.cursorPos(x, y);
 }

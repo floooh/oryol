@@ -51,7 +51,7 @@ public:
     /// test if button was released this frame
     bool ButtonUp(Element btn) const;
     /// get trigger position (0.0 .. 1.0)
-    float32 TriggerValue(Element trigger) const;
+    float TriggerValue(Element trigger) const;
     /// get stick position (-1.0 .. +1.0)
     const glm::vec2& StickPos(Element stick) const;
     
@@ -60,16 +60,16 @@ public:
     /// FIXME??? called when button is released
     void onButtonUp(Element btn);
     /// update trigger value
-    void onTriggerValue(Element trigger, float32 val);
+    void onTriggerValue(Element trigger, float val);
     /// update stick position
     void onStickPos(Element stick, const glm::vec2& pos);
     /// reset the gamepad state
     void reset();
     
 private:
-    uint32 down;
-    uint32 up;
-    uint32 pressed;
+    uint32_t down;
+    uint32_t up;
+    uint32_t pressed;
     glm::vec2 values[NumElements];
 };
 

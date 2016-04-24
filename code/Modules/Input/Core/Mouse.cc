@@ -13,7 +13,7 @@ Position(0.0f, 0.0f),
 Movement(0.0f, 0.0f),
 Scroll(0.0f, 0.0f),
 uniqueIdCounter(0) {
-    for (int32 i = 0; i < Button::NumButtons; i++) {
+    for (int i = 0; i < Button::NumButtons; i++) {
         this->buttonState[i] = 0;
     }
 }
@@ -132,7 +132,7 @@ Mouse::onScroll(const glm::vec2& scroll) {
 //------------------------------------------------------------------------------
 void
 Mouse::reset() {
-    for (int32 i = 0; i < NumButtons; i++) {
+    for (int i = 0; i < NumButtons; i++) {
         this->buttonState[i] &= ~(btnDown | btnUp);
     }
     this->Movement = glm::vec2(0.0f, 0.0f);

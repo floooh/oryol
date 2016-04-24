@@ -33,7 +33,7 @@ public:
     /// add debug text (7-bit ASCII only)
     static void PrintF(const char* text, ...) __attribute__((format(printf, 1, 2)));
     /// add cursor positioning tag
-    static void CursorPos(uint8 x, uint8 y);
+    static void CursorPos(uint8_t x, uint8_t y);
     /// add color tag
     static void TextColor(const glm::vec4& color);
     /// draw the debug text buffer (call one per frame)

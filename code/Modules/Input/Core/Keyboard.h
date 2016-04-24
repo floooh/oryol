@@ -103,8 +103,8 @@ private:
     std::bitset<Key::NumKeys> up;
     std::bitset<Key::NumKeys> pressed;
     std::bitset<Key::NumKeys> repeat;
-    static const int32 MaxNumChars = 128;
-    int32 charIndex;
+    static const int MaxNumChars = 128;
+    int charIndex;
     wchar_t chars[MaxNumChars + 1];
     bool textCapturing;
     EventHandlerId uniqueIdCounter;
