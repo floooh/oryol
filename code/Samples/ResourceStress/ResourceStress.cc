@@ -33,8 +33,8 @@ private:
     };
     glm::mat4 computeMVP(const Object& obj);
     
-    static const int32 MaxNumObjects = 1024;
-    uint32 frameCount = 0;
+    static const int MaxNumObjects = 1024;
+    uint32_t frameCount = 0;
     Id shader;
     Array<Object> objects;
     glm::mat4 view;
@@ -97,8 +97,8 @@ ResourceStressApp::OnInit() {
     this->shader = Gfx::CreateResource(Shader::Setup());
 
     // setup matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -159,7 +159,7 @@ ResourceStressApp::createObjects() {
 //------------------------------------------------------------------------------
 void
 ResourceStressApp::updateObjects() {
-    for (int32 i = this->objects.Size() - 1; i >= 0; i--) {
+    for (int i = this->objects.Size() - 1; i >= 0; i--) {
         Object& obj = this->objects[i];
         
         // check if object should be destroyed (it will be

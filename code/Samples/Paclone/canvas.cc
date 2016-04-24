@@ -91,7 +91,7 @@ canvas::IsValid() const {
 void
 canvas::Render() {
     o_assert(this->isValid);
-    int32 numBytes = 0;
+    int numBytes = 0;
     const void* data = this->updateVertices(numBytes);
     Gfx::UpdateVertices(this->drawState.Mesh[0], data, numBytes);
     Gfx::ApplyDrawState(this->drawState);
@@ -110,7 +110,7 @@ canvas::writeVertex(int index, float x, float y, float u, float v) {
 
 //------------------------------------------------------------------------------
 const void*
-canvas::updateVertices(int32& outNumBytes) {
+canvas::updateVertices(int& outNumBytes) {
 
     // write the tile map
     const float dx = 1.0f / this->numTilesX;

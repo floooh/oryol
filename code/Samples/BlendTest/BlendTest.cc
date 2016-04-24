@@ -35,8 +35,8 @@ BlendTestApp::OnRunning() {
     DrawState triDrawState;
     triDrawState.Mesh[0] = this->triMesh;
     float d = 1.0f / BlendFactor::NumBlendFactors;
-    for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
+    for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
+        for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
             this->params.Translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
             this->params.Translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
             triDrawState.Pipeline = this->pipelines[y][x];
@@ -89,8 +89,8 @@ BlendTestApp::OnInit() {
     ps.BlendState.BlendEnabled = true;
     ps.BlendColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
     ps.BlendState.ColorWriteMask = PixelChannel::RGB;
-    for (uint32 y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (uint32 x = 0; x < BlendFactor::NumBlendFactors; x++) {
+    for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
+        for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
             ps.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
             ps.BlendState.DstFactorRGB = (BlendFactor::Code) y;
             this->pipelines[y][x] = Gfx::CreateResource(ps);

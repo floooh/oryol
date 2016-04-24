@@ -74,15 +74,15 @@ SoundTestApp::OnInit() {
     IMUI::Setup();
     this->clearState.Color = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
 
-    this->effects[Waka].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.25f, 44100, [this](float dt, int16* samples, int numSamples) {
+    this->effects[Waka].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.25f, 44100, [this](float dt, int16_t* samples, int numSamples) {
 
         using namespace SoundGen;
         float* floatSamples = this->effects[Waka].Alloc(numSamples);
 
-        const float32 maxFreq = 500.0f;
-        const float32 minFreq = 50.0f;
+        const float maxFreq = 500.0f;
+        const float minFreq = 50.0f;
         NamcoVoice voice(dt, NamcoVoice::Pacman2);
-        float32 t = 0.0f;
+        float t = 0.0f;
         Range range;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.1f)) {
@@ -91,13 +91,13 @@ SoundTestApp::OnInit() {
             else if (range.In(t, 0.15f, 0.25f)) {
                 voice.Frequency = Mod::Lerp(t, range.Begin, range.End, minFreq, maxFreq);
             }
-            float32 s = voice.Step() * 0.5f;
+            float s = voice.Step() * 0.5f;
             samples[i] = Sample::Int16(s);
             floatSamples[i] = Sample::Float32(s);
         }
     }));
 
-    this->effects[Song1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 4.28f, 44100, [this](float dt, int16* samples, int numSamples) {
+    this->effects[Song1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 4.28f, 44100, [this](float dt, int16_t* samples, int numSamples) {
 
         using namespace SoundGen;
         float* floatSamples = this->effects[Song1].Alloc(numSamples);
@@ -105,7 +105,7 @@ SoundTestApp::OnInit() {
         NamcoVoice voice0(dt, NamcoVoice::Pacman2);
         NamcoVoice voice1(dt, NamcoVoice::Pacman0);
         Range range;
-        float32 t = 0.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
 
             // voice0 is the 'bass'
@@ -304,13 +304,13 @@ SoundTestApp::OnInit() {
         }
     }));
 
-    this->effects[Power1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.734f, 44100, [this](float dt, int16* samples, int numSamples) {
+    this->effects[Power1].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.734f, 44100, [this](float dt, int16_t* samples, int numSamples) {
         using namespace SoundGen;
 
         float* floatSamples = this->effects[Power1].Alloc(numSamples);
         NamcoVoice voice(dt, NamcoVoice::Pacman4);
         Range range;
-        float32 t = 0.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.066f)) {
                 voice.Volume = 1.0f;
@@ -347,13 +347,13 @@ SoundTestApp::OnInit() {
         }
     }));
 
-    this->effects[EatGhost].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512f, 44100, [this](float dt, int16* samples, int numSamples) {
+    this->effects[EatGhost].id = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512f, 44100, [this](float dt, int16_t* samples, int numSamples) {
         using namespace SoundGen;
 
         float* floatSamples = this->effects[EatGhost].Alloc(numSamples);
         NamcoVoice voice(dt, NamcoVoice::Pacman4);
         Range range;
-        float32 t = 0.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.512f)) {
                 voice.Volume = 1.0f;

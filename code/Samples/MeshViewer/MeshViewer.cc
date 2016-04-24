@@ -32,7 +32,7 @@ private:
     void loadMesh(const char* path);
     void applyVariables(int materialIndex);
 
-    int32 frameCount = 0;
+    int frameCount = 0;
     ResourceLabel curMeshLabel;
     MeshSetup curMeshSetup;
     Id mesh;
@@ -43,11 +43,11 @@ private:
     glm::mat4 modelViewProj;
     ClearState clearState = ClearState::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-    int32 curMeshIndex = 0;
-    static const int32 numMeshes = 3;
+    int curMeshIndex = 0;
+    static const int numMeshes = 3;
     static const char* meshNames[numMeshes];
     static const char* meshPaths[numMeshes];
-    static const int32 numShaders = 3;
+    static const int numShaders = 3;
     static const char* shaderNames[numShaders];
     enum {
         Normals = 0,
@@ -58,7 +58,7 @@ private:
     ResourceLabel curMaterialLabel;
     int numMaterials = 0;
     struct Material {
-        int32 shaderIndex = Phong;
+        int shaderIndex = Phong;
         Id pipeline;
         glm::vec4 diffuse = glm::vec4(0.0f, 0.24f, 0.64f, 1.0f);
         glm::vec4 specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -172,8 +172,8 @@ MeshViewerApp::OnInit() {
     this->loadMesh(this->meshPaths[this->curMeshIndex]);
 
     // setup projection and view matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(60.0f), fbWidth, fbHeight, 0.01f, 100.0f);
 
     // non-standard camera settings when switching objects
@@ -238,8 +238,8 @@ MeshViewerApp::handleInput() {
                 this->camera.startDistance = this->camera.dist;
             }
             if (tpad.Pinching) {
-                float32 startDist = glm::length(glm::vec2(tpad.StartPosition[1] - tpad.StartPosition[0]));
-                float32 curDist   = glm::length(glm::vec2(tpad.Position[1] - tpad.Position[0]));
+                float startDist = glm::length(glm::vec2(tpad.StartPosition[1] - tpad.StartPosition[0]));
+                float curDist   = glm::length(glm::vec2(tpad.Position[1] - tpad.Position[0]));
                 this->camera.dist = glm::clamp(this->camera.startDistance - (curDist - startDist) * 0.01f, minCamDist, maxCamDist);
             }
         }

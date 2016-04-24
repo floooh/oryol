@@ -42,11 +42,11 @@ private:
     canvas spriteCanvas;
     game gameState;
     sound sounds;
-    int32 tick = 0;
-    int32 viewPortX = 0;
-    int32 viewPortY = 0;
-    int32 viewPortW = 0;
-    int32 viewPortH = 0;
+    int tick = 0;
+    int viewPortX = 0;
+    int viewPortY = 0;
+    int viewPortW = 0;
+    int viewPortH = 0;
     Direction input = NoDirection;
 };
 OryolMain(PacloneApp);

@@ -123,7 +123,7 @@ public:
     static const Int2 dirVec[NumDirections];
     static const Int2 homeTilePos[NumActorTypes];
     static const struct scatterChase {
-        Oryol::int32 frame;
+        int frame;
         GhostState state;
     } scatterChaseTable[NumScatterChasePhases];
     static const Int2 energizerPos[NumEnergizers];

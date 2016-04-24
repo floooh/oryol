@@ -50,7 +50,7 @@ private:
     /// write a vertex
     int writeVertex(int index, float x, float y, float u, float v);
     /// update vertices, returns pointer to and size of vertex data
-    const void* updateVertices(Oryol::int32& outNumBytes);
+    const void* updateVertices(int& outNumBytes);
     
     bool isValid;
     int numTilesX;

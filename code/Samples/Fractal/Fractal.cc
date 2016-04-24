@@ -50,7 +50,7 @@ private:
     Id offscreenRenderTarget[2];
     DrawState dispDrawState;
     DisplayShader::FSParams dispFSParams;
-    int32 frameIndex = 0;
+    int frameIndex = 0;
     bool clearFlag = true;
     bool dragStarted = false;
     ImVec2 dragStartPos;
@@ -79,8 +79,8 @@ FractalApp::OnRunning() {
     }
 
     this->frameIndex++;
-    const int32 index0 = this->frameIndex % 2;
-    const int32 index1 = (this->frameIndex + 1) % 2;
+    const int index0 = this->frameIndex % 2;
+    const int index1 = (this->frameIndex + 1) % 2;
     const Id& curTarget = this->offscreenRenderTarget[index0];
     const Id& curTexture = this->offscreenRenderTarget[index1];
 

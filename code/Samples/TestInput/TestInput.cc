@@ -40,17 +40,17 @@ private:
     const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
     const glm::vec4 pressedColor{0.0f, 1.0f, 0.0f, 1.0f};
     const glm::vec4 defaultColor{1.0f, 1.0f, 1.0f, 0.5f};
-    float32 minLatitude;
-    float32 maxLatitude;
-    float32 minDist;
-    float32 maxDist;
+    float minLatitude;
+    float maxLatitude;
+    float minDist;
+    float maxDist;
 
     DrawState drawState;
     ClearState clearState;
     glm::vec2 startPolar;
     glm::vec2 polar;
-    float32 distance = 6.0f;
-    float32 startDistance = 6.0f;
+    float distance = 6.0f;
+    float startDistance = 6.0f;
     glm::vec2 startMousePos;
     glm::vec3 pointOfInterest;
     glm::mat4 proj;
@@ -99,8 +99,8 @@ TestInputApp::OnInit() {
     ps.RasterizerState.CullFaceEnabled = true;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
     this->distance = 6.0f;
@@ -197,7 +197,7 @@ TestInputApp::printKeyboardState(const Keyboard& kbd) const {
         }
         else {
             Dbg::Print(" keys: ");
-            for (int32 key = 0; key < Key::NumKeys; key++) {
+            for (int key = 0; key < Key::NumKeys; key++) {
                 this->testKey(kbd, (Key::Code)key, Key::ToString((Key::Code)key));
             }
         }
@@ -314,8 +314,8 @@ TestInputApp::handleKeyboardInput(const Keyboard& kbd) {
             this->reset();
         }
 
-        static const float32 rotatePerFrame = 0.025f;
-        static const float32 movePerFrame = 0.025f;
+        static const float rotatePerFrame = 0.025f;
+        static const float movePerFrame = 0.025f;
         
         if (kbd.KeyPressed(Key::LeftShift)) {
             // rotate cube
@@ -382,8 +382,8 @@ TestInputApp::handleTouchInput(const Touchpad& touchpad) {
             this->startDistance = this->distance;
         }
         if (touchpad.Pinching) {
-            float32 startDist = glm::length(glm::vec2(touchpad.StartPosition[1] - touchpad.StartPosition[0]));
-            float32 curDist   = glm::length(glm::vec2(touchpad.Position[1] - touchpad.Position[0]));
+            float startDist = glm::length(glm::vec2(touchpad.StartPosition[1] - touchpad.StartPosition[0]));
+            float curDist   = glm::length(glm::vec2(touchpad.Position[1] - touchpad.Position[0]));
             this->distance = glm::clamp(this->startDistance - (curDist - startDist) * 0.01f, this->minDist, this->maxDist);
         }
     }

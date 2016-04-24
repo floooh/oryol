@@ -19,7 +19,7 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    glm::mat4 computeModel(float32 rotX, float32 rotY, const glm::vec3& pos);
+    glm::mat4 computeModel(float rotX, float rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
     DrawState offscreenDrawState;
@@ -30,9 +30,9 @@ private:
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
-    float32 angleX = 0.0f;
-    float32 angleY = 0.0f;
-    int32 frameIndex = 0;
+    float angleX = 0.0f;
+    float angleY = 0.0f;
+    int frameIndex = 0;
 };
 OryolMain(InfiniteSpheresApp);
 
@@ -44,8 +44,8 @@ InfiniteSpheresApp::OnRunning() {
     this->angleY += 0.01f;
     this->angleX += 0.02f;
     this->frameIndex++;
-    const int32 index0 = this->frameIndex % 2;
-    const int32 index1 = (this->frameIndex + 1) % 2;
+    const int index0 = this->frameIndex % 2;
+    const int index1 = (this->frameIndex + 1) % 2;
     const Id& rt0 = this->renderTargets[index0];
     const Id& rt1 = this->renderTargets[index1];
     
@@ -90,7 +90,7 @@ InfiniteSpheresApp::OnInit() {
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
-    for (int32 i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         this->renderTargets[i] = Gfx::CreateResource(rtSetup);
     }
 
@@ -122,8 +122,8 @@ InfiniteSpheresApp::OnInit() {
     this->offscreenDrawState.Pipeline = Gfx::CreateResource(ps);
 
     // setup static transform matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
     this->view = glm::mat4();
@@ -140,7 +140,7 @@ InfiniteSpheresApp::OnCleanup() {
 
 //------------------------------------------------------------------------------
 glm::mat4
-InfiniteSpheresApp::computeModel(float32 rotX, float32 rotY, const glm::vec3& pos) {
+InfiniteSpheresApp::computeModel(float rotX, float rotY, const glm::vec3& pos) {
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));

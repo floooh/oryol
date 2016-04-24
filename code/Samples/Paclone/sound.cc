@@ -16,11 +16,11 @@ void
 sound::CreateSoundEffects() {
 
     // the waka wake sound effect
-    this->wa = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.125f, 44100, [](float dt, int16* samples, int numSamples) {
-        const float32 maxFreq = 500.0f;
-        const float32 minFreq = 50.0f;
+    this->wa = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.125f, 44100, [](float dt, int16_t* samples, int numSamples) {
+        const float maxFreq = 500.0f;
+        const float minFreq = 50.0f;
         NamcoVoice voice(dt, NamcoVoice::Pacman2);
-        float32 t = 0.0f;
+        float t = 0.0f;
         Range range;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.125f)) {
@@ -29,11 +29,11 @@ sound::CreateSoundEffects() {
             samples[i] = Sample::Int16(voice.Step() * 0.3f);
         }
     }));
-    this->ka = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.125f, 44100, [](float dt, int16* samples, int numSamples) {
-        const float32 maxFreq = 500.0f;
-        const float32 minFreq = 50.0f;
+    this->ka = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.125f, 44100, [](float dt, int16_t* samples, int numSamples) {
+        const float maxFreq = 500.0f;
+        const float minFreq = 50.0f;
         NamcoVoice voice(dt, NamcoVoice::Pacman2);
-        float32 t = 0.0f;
+        float t = 0.0f;
         Range range;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.125f)) {
@@ -44,11 +44,11 @@ sound::CreateSoundEffects() {
     }));
 
     // the intro song
-    this->introSong = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 4.28f, 44100, [](float dt, int16* samples, int numSamples) {
+    this->introSong = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 4.28f, 44100, [](float dt, int16_t* samples, int numSamples) {
         NamcoVoice voice0(dt, NamcoVoice::Pacman2);
         NamcoVoice voice1(dt, NamcoVoice::Pacman0);
         Range range;
-        float32 t = 0.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
 
             // voice0 is the 'bass'
@@ -248,10 +248,10 @@ sound::CreateSoundEffects() {
     }));
 
     // ghost frightened effect
-    this->ghostFrightened = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.1333f, 44100, [](float dt, int16* samples, int numSamples) {
+    this->ghostFrightened = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.1333f, 44100, [](float dt, int16_t* samples, int numSamples) {
         NamcoVoice voice(dt, NamcoVoice::Pacman4);
         Range range;
-        float32 t = 0.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.1333f)) {
                 voice.Volume = 1.0f;
@@ -265,12 +265,12 @@ sound::CreateSoundEffects() {
     }));
 
     /// ghost normal background loop
-    this->ghostNormal = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2, 0.4f, 44100, [] (float dt, int16* samples, int numSamples) {
+    this->ghostNormal = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2, 0.4f, 44100, [] (float dt, int16_t* samples, int numSamples) {
         NamcoVoice voice(dt, NamcoVoice::Pacman6);
         Range range;
-        const float32 minFreq = 440.0f;
-        const float32 maxFreq = 900.0f;
-        float32 t = 0.0f;
+        const float minFreq = 440.0f;
+        const float maxFreq = 900.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.2f)) {
                 voice.Volume = 1.0f;
@@ -291,11 +291,11 @@ sound::CreateSoundEffects() {
     }));
 
     /// ghost alarm loop
-    this->ghostAlarm = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2, 0.25f, 44100, [] (float dt, int16* samples, int numSamples) {
+    this->ghostAlarm = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(2, 0.25f, 44100, [] (float dt, int16_t* samples, int numSamples) {
         NamcoVoice voice(dt, NamcoVoice::Pacman0);
         Range range;
-        const float32 maxFreq = 2500.0f;
-        const float32 minFreq = 600.0f;
+        const float maxFreq = 2500.0f;
+        const float minFreq = 600.0f;
         float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.25f)) {
@@ -313,10 +313,10 @@ sound::CreateSoundEffects() {
     }));
 
     // eat ghost effect
-    this->eatGhost = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512f, 44100, [this](float dt, int16* samples, int numSamples) {
+    this->eatGhost = Sound::CreateResource(SoundEffectSetup::FromSampleFunc(1, 0.512f, 44100, [this](float dt, int16_t* samples, int numSamples) {
         NamcoVoice voice(dt, NamcoVoice::Pacman4);
         Range range;
-        float32 t = 0.0f;
+        float t = 0.0f;
         for (int i = 0; i < numSamples; i++, t += dt) {
             if (range.In(t, 0.0f, 0.512f)) {
                 voice.Volume = 1.0f;

@@ -98,8 +98,8 @@ fractal::update() {
     }
 
     // update frame index, and get the indices for write and read state
-    const int32 writeIndex = this->frameIndex & 1;
-    const int32 readIndex  = (this->frameIndex + 1) & 1;
+    const int writeIndex = this->frameIndex & 1;
+    const int readIndex  = (this->frameIndex + 1) & 1;
     const Id& readTex = this->fractalTexture[readIndex];
     const Id& writeTex = this->fractalTexture[writeIndex];
 

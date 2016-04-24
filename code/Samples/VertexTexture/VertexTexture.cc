@@ -104,8 +104,8 @@ VertexTextureApp::OnInit() {
     this->planeDrawState.Pipeline = Gfx::CreateResource(psPlane);
     this->planeDrawState.VSTexture[PlaneTextures::Texture] = this->plasmaRenderTarget;
     
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->plasmaFSParams.Time = 0.0f;

@@ -46,7 +46,7 @@ private:
 
     static const int ParticleBufferSize = 1000000;
     bool updateEnabled = true;
-    int32 frameCount = 0;
+    int frameCount = 0;
     TimePoint lastFrameTimePoint;
     struct {
         glm::vec4 pos;
@@ -61,7 +61,7 @@ private:
 
     // NumSamples must be 2^N, all samples are 0.0 to 1.0 (0..32ms)
     static const int NumSamples = 1024;
-    uint32 curSample = 0;
+    uint32_t curSample = 0;
     struct sample {
         float updTime = 0.0f;
         float applyRtTime = 0.0f;
@@ -97,7 +97,7 @@ DrawCallExplorerApp::OnRunning() {
     int curBatch = 0;
     DrawState drawState;
     drawState.Mesh[0] = this->mesh;
-    for (int32 i = 0; i < this->curNumParticles; i++) {
+    for (int i = 0; i < this->curNumParticles; i++) {
         if (++batchCount >= this->numParticlesPerBatch) {
             batchCount = 0;
             drawState.Pipeline = this->pipelines[curBatch++];
@@ -138,7 +138,7 @@ DrawCallExplorerApp::OnRunning() {
 //------------------------------------------------------------------------------
 void
 DrawCallExplorerApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
+    float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->perFrameParams.ModelViewProjection = this->proj * this->view * this->model;
@@ -147,7 +147,7 @@ DrawCallExplorerApp::updateCamera() {
 //------------------------------------------------------------------------------
 void
 DrawCallExplorerApp::emitParticles() {
-    for (int32 i = 0;
+    for (int i = 0;
         (this->curNumParticles < this->maxNumParticles) &&
         (i < this->numEmitParticles);
         i++) {
@@ -163,8 +163,8 @@ DrawCallExplorerApp::emitParticles() {
 //------------------------------------------------------------------------------
 void
 DrawCallExplorerApp::updateParticles() {
-    const float32 frameTime = 1.0f / 60.0f;
-    for (int32 i = 0; i < this->curNumParticles; i++) {
+    const float frameTime = 1.0f / 60.0f;
+    for (int i = 0; i < this->curNumParticles; i++) {
         auto& curParticle = this->particles[i];
         curParticle.vec.y -= 1.0f * frameTime;
         curParticle.pos += curParticle.vec * frameTime;
@@ -222,8 +222,8 @@ DrawCallExplorerApp::OnInit() {
     this->pipelines[2] = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();
