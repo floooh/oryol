@@ -20,13 +20,13 @@ public:
         /// default constructor
         Component();
         /// construct from name, type and bindSlot
-        Component(const StringAtom& name, TextureType::Code type, int32 bindSlot);
+        Component(const StringAtom& name, TextureType::Code type, int bindSlot);
         /// return true if the component is valid
         bool IsValid() const;
 
         StringAtom Name;            ///< the (shader-bind) name of the texture entry 
         TextureType::Code Type;     ///< the texture type (2d, cube, ...)
-        int32 BindSlot;             ///< the texture bind slot
+        int BindSlot;             ///< the texture bind slot
     };
 
     /// constructor
@@ -40,16 +40,16 @@ public:
     /// add a component to the layout
     TextureBlockLayout& Add(const Component& comp);
     /// add a component to the layout
-    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int32 bindSlot);
+    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int bindSlot);
     /// get number of components in the layout
-    int32 NumComponents() const;
+    int NumComponents() const;
     /// find component index with matching bind slot, InvalidIndex if not match
-    int32 ComponentIndexForBindSlot(int32 bindSlot) const;
+    int ComponentIndexForBindSlot(int bindSlot) const;
     /// get component at index
-    const Component& ComponentAt(int32 index) const;
+    const Component& ComponentAt(int index) const;
 
 private:
-    int32 numComps;
+    int numComps;
     StaticArray<Component, GfxConfig::MaxNumTextureBlockLayoutComponents> comps;
 };
 
@@ -63,7 +63,7 @@ BindSlot(InvalidIndex) {
 
 //------------------------------------------------------------------------------
 inline
-TextureBlockLayout::Component::Component(const StringAtom& name, TextureType::Code type, int32 bindSlot) :
+TextureBlockLayout::Component::Component(const StringAtom& name, TextureType::Code type, int bindSlot) :
 Name(name),
 Type(type),
 BindSlot(bindSlot) {
@@ -83,14 +83,14 @@ TextureBlockLayout::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 TextureBlockLayout::NumComponents() const {
     return this->numComps;
 }
 
 //------------------------------------------------------------------------------
 inline const TextureBlockLayout::Component&
-TextureBlockLayout::ComponentAt(int32 index) const {
+TextureBlockLayout::ComponentAt(int index) const {
     return this->comps[index];
 }
 

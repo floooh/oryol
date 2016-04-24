@@ -22,8 +22,8 @@ TEST(FSWrapperTest) {
     const fsWrapper::handle hw = fsWrapper::openWrite(strBuilder.AsCStr());
     CHECK(hw != fsWrapper::invalidHandle);
     const char* str = "Hello World\n";
-    const int32 len = int32(strlen(str));
-    int32 bytesWritten = fsWrapper::write(hw, str, len);
+    const int len = int(strlen(str));
+    int bytesWritten = fsWrapper::write(hw, str, len);
     CHECK(bytesWritten == len);
     fsWrapper::close(hw);
 
@@ -31,7 +31,7 @@ TEST(FSWrapperTest) {
     Memory::Clear(buf, sizeof(buf));
     const fsWrapper::handle hr = fsWrapper::openRead(strBuilder.AsCStr());
     CHECK(hr != fsWrapper::invalidHandle);
-    int32 bytesRead = fsWrapper::read(hr, buf, sizeof(buf));
+    int bytesRead = fsWrapper::read(hr, buf, sizeof(buf));
     CHECK(bytesRead == len);
     String readStr(buf, 0, len);
     CHECK(readStr == "Hello World\n");
@@ -53,7 +53,7 @@ TEST(FSWrapperTest) {
     fsWrapper::close(hr);
 
     const fsWrapper::handle hs = fsWrapper::openRead(strBuilder.AsCStr());
-    int32 size = fsWrapper::size(hs);
+    int size = fsWrapper::size(hs);
     CHECK(size == 12);
     CHECK(fsWrapper::seek(hs, 6));
     size = fsWrapper::size(hs);

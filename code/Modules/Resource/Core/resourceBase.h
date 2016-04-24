@@ -28,7 +28,7 @@ public:
     /// current resource state
     ResourceState::Code State = ResourceState::Initial;
     /// frame count of last state change
-    int32 StateStartFrame = 0;
+    int StateStartFrame = 0;
     /// the setup object
     SETUP Setup;
     

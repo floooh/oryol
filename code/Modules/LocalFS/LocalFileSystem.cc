@@ -44,12 +44,12 @@ LocalFileSystem::onRead(const Ptr<IORead>& msg) {
     if (msg->Url.HasPath()) {
         fsWrapper::handle h = fsWrapper::openRead(msg->Url.Path().AsCStr());
         if (fsWrapper::invalidHandle != h) {
-            const int32 startOffset = msg->StartOffset;
-            const int32 endOffset = msg->EndOffset;
+            const int startOffset = msg->StartOffset;
+            const int endOffset = msg->EndOffset;
             if (startOffset > 0) {
                 fsWrapper::seek(h, startOffset);
             }
-            int32 size;
+            int size;
             if (endOffset == EndOfFile) {
                 size = fsWrapper::size(h) - startOffset;
             }
@@ -57,8 +57,8 @@ LocalFileSystem::onRead(const Ptr<IORead>& msg) {
                 size = endOffset - startOffset;
             }
             if (size > 0) {
-                uint8* ptr = msg->Data.Add(size);
-                int32 bytesRead = fsWrapper::read(h, ptr, size);
+                uint8_t* ptr = msg->Data.Add(size);
+                int bytesRead = fsWrapper::read(h, ptr, size);
                 if (bytesRead != size) {
                     msg->Status = IOStatus::DownloadError;
                     msg->ErrorDesc = "Fewer bytes read then expected";

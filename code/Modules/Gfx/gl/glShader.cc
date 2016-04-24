@@ -32,13 +32,13 @@ glShader::Clear() {
 
 //------------------------------------------------------------------------------
 void
-glShader::bindUniform(ShaderStage::Code bindStage, int32 bindSlot, int32 uniformIndex, GLint glUniformLocation) {
+glShader::bindUniform(ShaderStage::Code bindStage, int bindSlot, int uniformIndex, GLint glUniformLocation) {
     this->uniformMappings[uniformArrayIndex(bindStage, bindSlot, uniformIndex)] = glUniformLocation;
 }
 
 //------------------------------------------------------------------------------
 void
-glShader::bindSampler(ShaderStage::Code bindStage, int32 textureIndex, int32 samplerIndex) {
+glShader::bindSampler(ShaderStage::Code bindStage, int textureIndex, int samplerIndex) {
     this->samplerMappings[samplerArrayIndex(bindStage, textureIndex)] = samplerIndex;
 }
 

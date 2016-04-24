@@ -11,7 +11,7 @@
 namespace Oryol {
 namespace _priv {
 
-int32 glInfo::intValues[NumInfos] = { 0 };
+int glInfo::intValues[NumInfos] = { 0 };
 bool glInfo::isValid = false;
 
 //------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ glInfo::IsValid() {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 glInfo::Int(Code c) {
     o_assert_range_dbg(c, NumInfos);
     return intValues[c];

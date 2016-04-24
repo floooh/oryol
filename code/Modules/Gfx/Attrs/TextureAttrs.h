@@ -25,19 +25,19 @@ struct TextureAttrs {
     /// texture usage hint
     Usage::Code TextureUsage{Usage::InvalidUsage};
     /// width of top-level mipmap in pixels
-    int32 Width{0};
+    int Width = 0;
     /// height of top-level mipmap in pixels
-    int32 Height{0};
+    int Height = 0;
     /// depth of top-level mipmap in pixels (only used for 3D textures)
-    int32 Depth{0};
+    int Depth = 0;
     /// number of mipmaps (1 for 'no child mipmaps')
-    int32 NumMipMaps{1};
+    int NumMipMaps = 1;
     /// true if this is a render target texture
-    bool IsRenderTarget{false};
+    bool IsRenderTarget = false;
     /// true if this render target texture has an attached depth buffer
-    bool HasDepthBuffer{false};
+    bool HasDepthBuffer = false;
     /// true if this render target texture shared a depth buffer with another render target texture
-    bool HasSharedDepthBuffer{false};
+    bool HasSharedDepthBuffer = false;
 };
     
 } // namespace Oryol

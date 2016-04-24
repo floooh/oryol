@@ -48,7 +48,7 @@ curlURLLoader::setupCurlSession() {
     o_assert(0 == this->curlSession);
 
     // setup the error buffer
-    const int32 curlErrorBufferSize = CURL_ERROR_SIZE * 4;
+    const int curlErrorBufferSize = CURL_ERROR_SIZE * 4;
     this->curlError = (char*) Memory::Alloc(curlErrorBufferSize);
     Memory::Clear(this->curlError, curlErrorBufferSize);
 
@@ -86,10 +86,10 @@ curlURLLoader::discardCurlSession() {
 size_t
 curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void* userData) {
     // userData is expected to point to a Buffer object
-    int32 bytesToWrite = (int32) (size * nmemb);
+    int bytesToWrite = (int) (size * nmemb);
     if (bytesToWrite > 0) {
         Buffer* buf = (Buffer*) userData;
-        buf->Add((const uint8*)ptr, bytesToWrite);
+        buf->Add((const uint8_t*)ptr, bytesToWrite);
         return bytesToWrite;
     }
     else {
@@ -122,7 +122,7 @@ curlURLLoader::doRequestInternal(const Ptr<IORead>& req) {
     o_assert(url.Scheme() == "http");
     curl_easy_setopt(this->curlSession, CURLOPT_URL, url.AsCStr());
     if (url.HasPort()) {
-        uint16 port = StringConverter::FromString<uint16>(url.Port());
+        uint16_t port = StringConverter::FromString<uint16_t>(url.Port());
         curl_easy_setopt(this->curlSession, CURLOPT_PORT, port);
     }
     curl_easy_setopt(this->curlSession, CURLOPT_HTTPGET, 1);

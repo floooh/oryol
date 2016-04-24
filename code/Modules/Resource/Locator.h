@@ -24,9 +24,9 @@ namespace Oryol {
 class Locator {
 public:
     /// the signature for non-shared locators
-    static const uint32 NonSharedSignature = 0xFFFFFFFF;
+    static const uint32_t NonSharedSignature = 0xFFFFFFFF;
     /// the default-sharing signature
-    static const uint32 DefaultSignature = 0xFFFFFFFE;
+    static const uint32_t DefaultSignature = 0xFFFFFFFE;
 
     /// default constructor
     Locator();
@@ -35,9 +35,9 @@ public:
     /// shared locator from raw location string
     Locator(const char* location);
     /// shared locator from location and signature
-    Locator(const StringAtom& location, uint32 signature);
+    Locator(const StringAtom& location, uint32_t signature);
     /// shared locator from raw location string
-    Locator(const char* location, uint32 signature);
+    Locator(const char* location, uint32_t signature);
     
     /// create a unique Locator without location
     static Locator NonShared();
@@ -63,11 +63,11 @@ public:
     /// get the location
     const StringAtom& Location() const;
     /// get the signature
-    uint32 Signature() const;
+    uint32_t Signature() const;
     
 private:
     StringAtom location;
-    uint32 signature;
+    uint32_t signature;
 };
 
 //------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ Locator::Location() const {
 }
 
 //------------------------------------------------------------------------------
-inline uint32
+inline uint32_t
 Locator::Signature() const {
     return this->signature;
 }

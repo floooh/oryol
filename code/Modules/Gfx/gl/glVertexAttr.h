@@ -43,14 +43,14 @@ public:
         return !operator==(rhs);
     };
 
-    uint8 index;
-    uint8 enabled;
-    uint8 vbIndex;
-    uint8 divisor;
-    uint8 stride;
-    uint8 size;
-    uint8 normalized;
-    uint32 offset;
+    uint8_t index;
+    uint8_t enabled;
+    uint8_t vbIndex;
+    uint8_t divisor;
+    uint8_t stride;
+    uint8_t size;
+    uint8_t normalized;
+    uint32_t offset;
     GLenum type;
 };
 

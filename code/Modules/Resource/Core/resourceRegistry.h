@@ -22,7 +22,7 @@ public:
     ~resourceRegistry();
     
     /// setup the registry with an estimated number of entries
-    void Setup(int32 reserveSize);
+    void Setup(int reserveSize);
     /// discard the registry
     void Discard();
     /// return true if the registry has been setup
@@ -43,9 +43,9 @@ public:
     ResourceLabel GetLabel(Id id) const;
     
     /// (debug) get number of resources in the registry
-    int32 GetNumResources() const;
+    int GetNumResources() const;
     /// (debug) get resource id by index
-    Id GetIdByIndex(int32 index) const;
+    Id GetIdByIndex(int index) const;
     
 private:
     #if ORYOL_DEBUG
@@ -71,8 +71,8 @@ private:
     
     bool isValid;
     Array<Entry> entries;
-    Map<Locator, int32> locatorIndexMap;
-    Map<Id, int32> idIndexMap;
+    Map<Locator, int> locatorIndexMap;
+    Map<Id, int> idIndexMap;
 };
 } // namespace _priv
 } // namespace Oryol

@@ -16,7 +16,7 @@ ClearState::ClearNone() {
 
 //------------------------------------------------------------------------------
 ClearState
-ClearState::ClearAll(const glm::vec4& color, float32 depth, uint8 stencil) {
+ClearState::ClearAll(const glm::vec4& color, float depth, uint8_t stencil) {
     ClearState state;
     state.Color = color;
     state.Depth = depth;
@@ -36,7 +36,7 @@ ClearState::ClearColor(const glm::vec4& color) {
 
 //------------------------------------------------------------------------------
 ClearState
-ClearState::ClearDepthStencil(float32 depth, uint8 stencil) {
+ClearState::ClearDepthStencil(float depth, uint8_t stencil) {
     ClearState state;
     state.Depth = depth;
     state.Stencil = stencil;

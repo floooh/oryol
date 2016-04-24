@@ -51,7 +51,7 @@ TEST(ShapeBuilderTest) {
     auto buildResult = shapeBuilder.Build();
 
     const void* data = buildResult.Data.Data();
-    const int32 size = buildResult.Data.Size();
+    const int size = buildResult.Data.Size();
 
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;

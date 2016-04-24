@@ -28,14 +28,14 @@ TextureBlockLayout::Add(const Component& comp) {
 
 //------------------------------------------------------------------------------
 TextureBlockLayout&
-TextureBlockLayout::Add(const StringAtom& name, TextureType::Code type, int32 bindSlot) {
+TextureBlockLayout::Add(const StringAtom& name, TextureType::Code type, int bindSlot) {
     this->comps[this->numComps++] = Component(name, type, bindSlot);
     return *this;
 }
 
 //------------------------------------------------------------------------------
-int32
-TextureBlockLayout::ComponentIndexForBindSlot(int32 bindSlot) const {
+int
+TextureBlockLayout::ComponentIndexForBindSlot(int bindSlot) const {
     for (int i = 0; i < this->numComps; i++) {
         if (this->comps[i].BindSlot == bindSlot) {
             return i;

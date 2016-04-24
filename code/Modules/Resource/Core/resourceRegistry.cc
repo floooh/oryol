@@ -21,7 +21,7 @@ resourceRegistry::~resourceRegistry() {
 
 //------------------------------------------------------------------------------
 void
-resourceRegistry::Setup(int32 reserveSize) {
+resourceRegistry::Setup(int reserveSize) {
     o_assert_dbg(!this->isValid);
     
     this->isValid = true;
@@ -66,9 +66,9 @@ resourceRegistry::Add(const Locator& loc, Id id, ResourceLabel label) {
 const resourceRegistry::Entry*
 resourceRegistry::findEntryByLocator(const Locator& loc) const {
     if (loc.IsShared()) {
-        const int32 mapIndex = this->locatorIndexMap.FindIndex(loc);
+        const int mapIndex = this->locatorIndexMap.FindIndex(loc);
         if (InvalidIndex != mapIndex) {
-            const int32 entryIndex = this->locatorIndexMap.ValueAtIndex(mapIndex);
+            const int entryIndex = this->locatorIndexMap.ValueAtIndex(mapIndex);
             return &(this->entries[entryIndex]);
         }
     }
@@ -78,9 +78,9 @@ resourceRegistry::findEntryByLocator(const Locator& loc) const {
 //------------------------------------------------------------------------------
 const resourceRegistry::Entry*
 resourceRegistry::findEntryById(Id id) const {
-    const int32 mapIndex = this->idIndexMap.FindIndex(id);
+    const int mapIndex = this->idIndexMap.FindIndex(id);
     if (InvalidIndex != mapIndex) {
-        const int32 entryIndex = this->idIndexMap.ValueAtIndex(mapIndex);
+        const int entryIndex = this->idIndexMap.ValueAtIndex(mapIndex);
         return &(this->entries[entryIndex]);
     }
     return nullptr;
@@ -117,7 +117,7 @@ resourceRegistry::Remove(ResourceLabel label) {
     // for each entry where id.label matches label (from behind
     // because matching entries will be removed)
     // FIXME: this can be slow if many resource are live!
-    int32 entryIndex = this->entries.Size() - 1;
+    int entryIndex = this->entries.Size() - 1;
     for (; entryIndex >= 0; entryIndex--) {
         if ((ResourceLabel::All == label) || (this->entries[entryIndex].label == label)) {
             Id id = this->entries[entryIndex].id;
@@ -132,7 +132,7 @@ resourceRegistry::Remove(ResourceLabel label) {
             }
             
             // fixup the index maps (see elementBuffer)
-            const int32 swappedIndex = this->entries.Size();
+            const int swappedIndex = this->entries.Size();
             if (entryIndex != swappedIndex) {
                 for (auto& elm : this->idIndexMap) {
                     if (swappedIndex == elm.value) {
@@ -180,7 +180,7 @@ resourceRegistry::GetLabel(Id id) const {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 resourceRegistry::GetNumResources() const {
     o_assert_dbg(this->isValid);
     return this->entries.Size();
@@ -188,7 +188,7 @@ resourceRegistry::GetNumResources() const {
 
 //------------------------------------------------------------------------------
 Id
-resourceRegistry::GetIdByIndex(int32 index) const {
+resourceRegistry::GetIdByIndex(int index) const {
     o_assert_dbg(this->isValid);
     return this->entries[index].id;
 }
@@ -199,7 +199,7 @@ bool
 resourceRegistry::checkIntegrity() const {
     for (const auto& kvp : this->locatorIndexMap) {
         const Locator& loc = kvp.key;
-        const int32 entryIndex = kvp.value;
+        const int entryIndex = kvp.value;
         const Locator& entryLoc = this->entries[entryIndex].locator;
         if (entryLoc != loc) {
             o_error("ResourceRegistry: locator mismatch at index '%d' (%s != %s)\n",
@@ -209,7 +209,7 @@ resourceRegistry::checkIntegrity() const {
     }
     for (const auto& kvp : this->idIndexMap) {
         const Id& id = kvp.key;
-        const int32 entryIndex = kvp.value;
+        const int entryIndex = kvp.value;
         const Id& entryId = this->entries[entryIndex].id;
         if (entryId != id) {
             o_error("ResourceRegistry:: id mismatch at index '%d' (%d,%d,%d != %d,%d,%d)\n",

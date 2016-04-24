@@ -23,28 +23,28 @@ namespace Oryol {
 class GfxSetup {
 public:
     /// shortcut for windowed mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Window(int32 width, int32 height, String windowTitle);
+    static GfxSetup Window(int width, int height, String windowTitle);
     /// shortcut for fullscreen mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Fullscreen(int32 width, int32 height, String windowTitle);
+    static GfxSetup Fullscreen(int width, int height, String windowTitle);
     /// shortcut for windowed mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup WindowMSAA4(int32 width, int32 height, String windowTitle);
+    static GfxSetup WindowMSAA4(int width, int height, String windowTitle);
     /// shortcut for fullscreen mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup FullscreenMSAA4(int32 width, int32 height, String windowTitle);
+    static GfxSetup FullscreenMSAA4(int width, int height, String windowTitle);
     
     /// canvas width
-    int32 Width = 640;
+    int Width = 640;
     /// canvas height
-    int32 Height = 400;
+    int Height = 400;
     /// color pixel format
     PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
     /// depth pixel format
     PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
     /// MSAA samples (2, 4, 8... no MSAA: 1)
-    int32 SampleCount = 1;
+    int SampleCount = 1;
     /// windowed vs Fullscreen
     bool Windowed = true;
     /// swap interval (0 => no vsync, default is 1)
-    int32 SwapInterval = 1;
+    int SwapInterval = 1;
     /// window title
     String Title = "Oryol";
     /// optional clear-hint how the default render target is clear, used in D3D12 for MSAA backbuffer
@@ -53,24 +53,24 @@ public:
     bool HighDPI = false;
     
     /// tweak resource pool size for a rendering resource type
-    void SetPoolSize(GfxResourceType::Code type, int32 poolSize);
+    void SetPoolSize(GfxResourceType::Code type, int poolSize);
     /// get resource pool size for a rendering resource type
-    int32 PoolSize(GfxResourceType::Code type) const;
+    int PoolSize(GfxResourceType::Code type) const;
     /// tweak resource throttling value for a resource type, 0 means unthrottled
-    void SetThrottling(GfxResourceType::Code type, int32 maxCreatePerFrame);
+    void SetThrottling(GfxResourceType::Code type, int maxCreatePerFrame);
     /// get resource throttling value
-    int32 Throttling(GfxResourceType::Code type) const;
+    int Throttling(GfxResourceType::Code type) const;
     
     /// initial resource label stack capacity
-    int32 ResourceLabelStackCapacity = 256;
+    int ResourceLabelStackCapacity = 256;
     /// initial resource registry capacity
-    int32 ResourceRegistryCapacity = 256;
+    int ResourceRegistryCapacity = 256;
     /// size of the global uniform buffer (only relevant on some platforms)
-    int32 GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
+    int GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
     /// max number of drawcalls per frame (only relevant on some platforms)
-    int32 MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
+    int MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
     /// max number of ApplyDrawState per frame (only relevant on some platforms)
-    int32 MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
+    int MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
 
     /// get DisplayAttrs object initialized to setup values
     DisplayAttrs GetDisplayAttrs() const;
@@ -79,8 +79,8 @@ public:
     GfxSetup();
 
 private:
-    int32 poolSizes[GfxResourceType::NumResourceTypes];
-    int32 throttling[GfxResourceType::NumResourceTypes];
+    int poolSizes[GfxResourceType::NumResourceTypes];
+    int throttling[GfxResourceType::NumResourceTypes];
 };
     
 } // namespace Oryol

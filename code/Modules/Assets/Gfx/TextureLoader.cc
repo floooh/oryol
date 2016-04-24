@@ -56,8 +56,8 @@ TextureLoader::Continue() {
         if (IOStatus::OK == this->ioRequest->Status) {
             // yeah, IO is done, let gliml parse the texture data
             // and create the texture resource
-            const uint8* data = this->ioRequest->Data.Data();
-            const int32 numBytes = this->ioRequest->Data.Size();
+            const uint8_t* data = this->ioRequest->Data.Data();
+            const int numBytes = this->ioRequest->Data.Size();
             
             gliml::context ctx;
             ctx.enable_dxt(true);
@@ -94,11 +94,11 @@ TextureLoader::Continue() {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data) {
-    const int32 w = ctx->image_width(0, 0);
-    const int32 h = ctx->image_height(0, 0);
-    const int32 numFaces = ctx->num_faces();
-    const int32 numMips = ctx->num_mipmaps(0);
+TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8_t* data) {
+    const int w = ctx->image_width(0, 0);
+    const int h = ctx->image_height(0, 0);
+    const int numFaces = ctx->num_faces();
+    const int numMips = ctx->num_mipmaps(0);
     PixelFormat::Code pixelFormat = PixelFormat::InvalidPixelFormat;
     switch(ctx->image_internal_format()) {
         case GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -176,10 +176,10 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
     
     // setup mipmap offsets
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx->num_mipmaps(0));
-    for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-        for (int32 mipIndex = 0; mipIndex < numMips; mipIndex++) {
-            const uint8* cur = (const uint8*) ctx->image_data(faceIndex, mipIndex);
-            newSetup.ImageData.Offsets[faceIndex][mipIndex] = int32(cur - data);
+    for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+        for (int mipIndex = 0; mipIndex < numMips; mipIndex++) {
+            const uint8_t* cur = (const uint8_t*) ctx->image_data(faceIndex, mipIndex);
+            newSetup.ImageData.Offsets[faceIndex][mipIndex] = int(cur - data);
             newSetup.ImageData.Sizes[faceIndex][mipIndex] = ctx->image_size(faceIndex, mipIndex);
         }
     }

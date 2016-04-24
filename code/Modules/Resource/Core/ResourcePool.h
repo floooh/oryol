@@ -18,7 +18,7 @@ namespace Oryol {
 template<class RESOURCE, class SETUP> class ResourcePool {
 public:
     /// max number of resources in a pool
-    static const uint32 MaxNumPoolResources = (1<<16);
+    static const int MaxNumPoolResources = (1<<16);
 
     /// constructor
     ResourcePool();
@@ -26,7 +26,7 @@ public:
     ~ResourcePool();
     
     /// setup the resource pool
-    void Setup(Id::TypeT resourceType, int32 poolSize);
+    void Setup(Id::TypeT resourceType, int poolSize);
     /// discard the resource pool
     void Discard();
     /// return true if the pool has been setup
@@ -57,23 +57,23 @@ public:
     ResourcePoolInfo QueryPoolInfo() const;
     
     /// get number of slots in pool
-    int32 GetNumSlots() const;
+    int GetNumSlots() const;
     /// get number of used slots
-    int32 GetNumUsedSlots() const;
+    int GetNumUsedSlots() const;
     /// get number of free slots
-    int32 GetNumFreeSlots() const;
+    int GetNumFreeSlots() const;
     
 protected:
     /// free a resource id
     void freeId(const Id& id);
     
     bool isValid;
-    int32 frameCounter;
-    int32 uniqueCounter;
+    int frameCounter;
+    int uniqueCounter;
     Id::TypeT resourceType;
     
     Array<RESOURCE> slots;
-    Queue<uint16> freeSlots;
+    Queue<uint16_t> freeSlots;
 };
     
 //------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ ResourcePool<RESOURCE,SETUP>::~ResourcePool() {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Setup(Id::TypeT resType, int32 poolSize) {
+ResourcePool<RESOURCE,SETUP>::Setup(Id::TypeT resType, int poolSize) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(Id::InvalidType != resType);
     o_assert_dbg(poolSize > 0);
@@ -105,12 +105,12 @@ ResourcePool<RESOURCE,SETUP>::Setup(Id::TypeT resType, int32 poolSize) {
     this->freeSlots.Reserve(poolSize);
     
     // setup empty slots
-    for (int32 i = 0; i < poolSize; i++) {
+    for (int i = 0; i < poolSize; i++) {
         this->slots.Add();
     }
     
     // setup free slots queue
-    for (uint16 i = 0; i < poolSize; i++) {
+    for (uint16_t i = 0; i < poolSize; i++) {
         this->freeSlots.Enqueue(i);
     }
     
@@ -299,19 +299,19 @@ ResourcePool<RESOURCE, SETUP>::QueryPoolInfo() const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> int32
+template<class RESOURCE, class SETUP> int
 ResourcePool<RESOURCE,SETUP>::GetNumSlots() const {
     return this->slots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> int32
+template<class RESOURCE, class SETUP> int
 ResourcePool<RESOURCE,SETUP>::GetNumUsedSlots() const {
     return this->slots.Size() - this->freeSlots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> int32
+template<class RESOURCE, class SETUP> int
 ResourcePool<RESOURCE,SETUP>::GetNumFreeSlots() const {
     return this->freeSlots.Size();
 }

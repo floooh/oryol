@@ -32,7 +32,7 @@ public:
 
 private:
     /// convert gliml context attrs into a TextureSetup object
-    TextureSetup buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data);
+    TextureSetup buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8_t* data);
     
     Id resId;
     Ptr<IORead> ioRequest;

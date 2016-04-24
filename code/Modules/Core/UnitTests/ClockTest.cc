@@ -11,8 +11,8 @@ using namespace Oryol;
 
 TEST(ClockTest) {
     TimePoint t0 = Clock::Now();
-    float64 a = 0.0, b = 0.0;
-    for (int32 i = 0; i < 1000000; i++) {
+    double a = 0.0, b = 0.0;
+    for (int i = 0; i < 1000000; i++) {
         a += std::sin(b) + std::cos(b);
         b += 0.1;
     }

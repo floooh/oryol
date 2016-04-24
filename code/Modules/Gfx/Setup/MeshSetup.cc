@@ -57,10 +57,10 @@ MeshSetup::FromData(const MeshSetup& blueprint) {
 
 //------------------------------------------------------------------------------
 MeshSetup
-MeshSetup::Empty(int32 numVertices,
+MeshSetup::Empty(int numVertices,
                  Usage::Code vertexUsage,
                  IndexType::Code indexType,
-                 int32 numIndices,
+                 int numIndices,
                  Usage::Code indexUsage) {
     
     o_assert_dbg(numVertices > 0);
@@ -121,14 +121,14 @@ MeshSetup::AddPrimitiveGroup(const class PrimitiveGroup& primGroup) {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 MeshSetup::NumPrimitiveGroups() const {
     return this->numPrimGroups;
 }
 
 //------------------------------------------------------------------------------
 const class PrimitiveGroup&
-MeshSetup::PrimitiveGroup(int32 index) const {
+MeshSetup::PrimitiveGroup(int index) const {
     o_assert_range(index, GfxConfig::MaxNumPrimGroups);
     return this->primGroups[index];
 }

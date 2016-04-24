@@ -70,7 +70,7 @@ glTextureFactory::SetupResource(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
+glTextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
     
@@ -136,12 +136,12 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
 
     // get size of new render target
-    int32 width, height;
+    int width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
         const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
-        height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
+        width = int(dispAttrs.FramebufferWidth * setup.RelWidth);
+        height = int(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
@@ -306,14 +306,14 @@ glTextureFactory::setupTextureAttrs(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
+glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) {
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
     o_assert_dbg(0 == tex.glTextures[0]);
 
     const TextureSetup& setup = tex.Setup;
-    const int32 width = setup.Width;
-    const int32 height = setup.Height;
+    const int width = setup.Width;
+    const int height = setup.Height;
     o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     
     // test if the texture format is actually supported
@@ -330,12 +330,12 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
     this->setupTextureParams(setup, glTex);
 
     // copy image data intp texture
-    const uint8* srcPtr = (const uint8*) data;
-    const int32 numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
-    const int32 numMipMaps = setup.NumMipMaps;
+    const uint8_t* srcPtr = (const uint8_t*) data;
+    const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+    const int numMipMaps = setup.NumMipMaps;
     const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
     GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
-    for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+    for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         
         GLenum glImgTarget;
         if (TextureType::TextureCube == setup.Type) {
@@ -352,13 +352,13 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size
             glImgTarget = glTextureTarget;
         }
     
-        for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
+        for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
             o_assert_dbg(setup.ImageData.Sizes[faceIndex][mipIndex] > 0);
-            int32 mipWidth = width >> mipIndex;
+            int mipWidth = width >> mipIndex;
             if (mipWidth == 0) {
                 mipWidth = 1;
             }
-            int32 mipHeight = height >> mipIndex;
+            int mipHeight = height >> mipIndex;
             if (mipHeight == 0) {
                 mipHeight = 1;
             }
@@ -410,8 +410,8 @@ glTextureFactory::createEmptyTexture(texture& tex) {
     o_assert_dbg(setup.TextureUsage != Usage::Immutable);
     o_assert_dbg(setup.Type == TextureType::Texture2D);
     o_assert_dbg(!PixelFormat::IsCompressedFormat(setup.ColorFormat));
-    const int32 width = setup.Width;
-    const int32 height = setup.Height;
+    const int width = setup.Width;
+    const int height = setup.Height;
     const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
     const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
     const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
@@ -431,13 +431,13 @@ glTextureFactory::createEmptyTexture(texture& tex) {
         this->setupTextureParams(setup, tex.glTextures[slotIndex]);
 
         // initialize texture storage
-        const int32 numMipMaps = setup.NumMipMaps;
-        for (int32 mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
-            int32 mipWidth = width >> mipIndex;
+        const int numMipMaps = setup.NumMipMaps;
+        for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
+            int mipWidth = width >> mipIndex;
             if (mipWidth == 0) {
                 mipWidth = 1;
             }
-            int32 mipHeight = height >> mipIndex;
+            int mipHeight = height >> mipIndex;
             if (mipHeight == 0) {
                 mipHeight = 1;
             }

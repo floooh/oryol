@@ -22,7 +22,7 @@ public:
             CompareFunc::Code CmpFunc : 4;
         };
         #pragma pack(pop)
-        uint16 Hash;
+        uint16_t Hash;
     };
 
     /// constructor

@@ -234,7 +234,7 @@ Gfx::LookupResource(const Locator& locator) {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 Gfx::QueryFreeResourceSlots(GfxResourceType::Code resourceType) {
     o_assert_dbg(IsValid());
     return state->resourceContainer.QueryFreeSlots(resourceType);
@@ -270,7 +270,7 @@ Gfx::resource() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+Gfx::ApplyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumApplyViewPort++;
     state->renderer.applyViewPort(x, y, width, height, originTopLeft);
@@ -278,7 +278,7 @@ Gfx::ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLe
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+Gfx::ApplyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumApplyScissorRect++;
     state->renderer.applyScissorRect(x, y, width, height, originTopLeft);
@@ -304,7 +304,7 @@ Gfx::ResetStateCache() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::UpdateVertices(const Id& id, const void* data, int32 numBytes) {
+Gfx::UpdateVertices(const Id& id, const void* data, int numBytes) {
     o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumUpdateVertices++;
@@ -314,7 +314,7 @@ Gfx::UpdateVertices(const Id& id, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::UpdateIndices(const Id& id, const void* data, int32 numBytes) {
+Gfx::UpdateIndices(const Id& id, const void* data, int numBytes) {
     o_trace_scoped(Gfx_UpdateIndices);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumUpdateIndices++;
@@ -334,7 +334,7 @@ Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsets
 
 //------------------------------------------------------------------------------
 void
-Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
+Gfx::ReadPixels(void* buf, int bufNumBytes) {
     o_trace_scoped(Gfx_ReadPixels);
     o_assert_dbg(IsValid());
     state->renderer.readPixels(buf, bufNumBytes);
@@ -342,7 +342,7 @@ Gfx::ReadPixels(void* buf, int32 bufNumBytes) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::Draw(int32 primGroupIndex) {
+Gfx::Draw(int primGroupIndex) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDraw++;
@@ -360,7 +360,7 @@ Gfx::Draw(const PrimitiveGroup& primGroup) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
+Gfx::DrawInstanced(int primGroupIndex, int numInstances) {
     o_trace_scoped(Gfx_DrawInstanced);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDrawInstanced++;
@@ -369,7 +369,7 @@ Gfx::DrawInstanced(int32 primGroupIndex, int32 numInstances) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_trace_scoped(Gfx_DrawInstanced);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDrawInstanced++;
@@ -438,7 +438,7 @@ Gfx::validateTextures(ShaderStage::Code stage, pipeline* pip, texture** textures
     // check if provided texture types are compatible with the expections shader
     const shader* shd = pip->shd;
     o_assert_dbg(shd);
-    int32 texBlockIndex = shd->Setup.TextureBlockIndexByStage(stage);
+    int texBlockIndex = shd->Setup.TextureBlockIndexByStage(stage);
     o_assert_dbg(InvalidIndex != texBlockIndex);
     const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
     for (int i = 0; i < numTextures; i++) {

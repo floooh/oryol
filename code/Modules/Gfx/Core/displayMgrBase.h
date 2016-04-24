@@ -62,8 +62,8 @@ protected:
     Map<eventHandlerId, eventHandler> handlers;
     gfxPointers pointers;
     bool displayValid;
-    int32 curFramebufferWidth;  // used to detect display size changes
-    int32 curFramebufferHeight; // used to detect display size changes
+    int curFramebufferWidth;  // used to detect display size changes
+    int curFramebufferHeight; // used to detect display size changes
 };
     
 } // namespace _priv

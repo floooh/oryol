@@ -100,11 +100,11 @@ viewPortHeight(0),
 vertexBuffer(0),
 indexBuffer(0),
 program(0) {
-    for (int32 i = 0; i < MaxTextureSamplers; i++) {
+    for (int i = 0; i < MaxTextureSamplers; i++) {
         this->samplers2D[i] = 0;
         this->samplersCube[i] = 0;
     }
-    for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+    for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
         this->glAttrVBs[i] = 0;
     }
 }
@@ -222,7 +222,7 @@ glRenderer::commitFrame() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
 
     // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
@@ -249,7 +249,7 @@ glRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool orig
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
 
     // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
@@ -492,7 +492,7 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
     const GLenum glPrimType = this->curPipeline->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
-        const int32 indexByteSize = IndexType::ByteSize(indexType);
+        const int indexByteSize = IndexType::ByteSize(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
         const GLenum glIndexType = glTypes::asGLIndexType(indexType);
         ::glDrawElements(glPrimType, primGroup.NumElements, glIndexType, indices);
@@ -506,7 +506,7 @@ glRenderer::draw(const PrimitiveGroup& primGroup) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(int32 primGroupIndex) {
+glRenderer::draw(int primGroupIndex) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
     if (nullptr == this->curPipeline) {
@@ -526,7 +526,7 @@ glRenderer::draw(int32 primGroupIndex) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
     if (nullptr == this->curPipeline) {
@@ -539,7 +539,7 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     const GLenum glPrimType = this->curPipeline->glPrimType;
     if (IndexType::None != indexType) {
         // indexed geometry
-        const int32 indexByteSize = IndexType::ByteSize(indexType);
+        const int indexByteSize = IndexType::ByteSize(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
         const GLenum glIndexType = glTypes::asGLIndexType(indexType);
         glExt::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
@@ -553,7 +553,7 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
+glRenderer::drawInstanced(int primGroupIndex, int numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
     if (nullptr == this->curPipeline) {
@@ -595,7 +595,7 @@ obtainUpdateBuffer(mesh::buffer& buf, int frameIndex) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
+glRenderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
@@ -612,7 +612,7 @@ glRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+glRenderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
@@ -660,14 +660,14 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
 
     GLuint glTex = obtainUpdateTexture(tex, this->frameIndex);
     this->bindTexture(0, tex->glTarget, glTex);
-    uint8* srcPtr = (uint8*)data;
+    uint8_t* srcPtr = (uint8_t*)data;
     GLenum glTexImageFormat = glTypes::asGLTexImageFormat(attrs.ColorFormat);
     GLenum glTexImageType = glTypes::asGLTexImageType(attrs.ColorFormat);
-    for (int32 mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
+    for (int mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
         o_assert_dbg(offsetsAndSizes.Sizes[0][mipIndex] > 0);
-        int32 mipWidth = attrs.Width >> mipIndex;
+        int mipWidth = attrs.Width >> mipIndex;
         if (mipWidth == 0) mipWidth = 1;
-        int32 mipHeight = attrs.Height >> mipIndex;
+        int mipHeight = attrs.Height >> mipIndex;
         if (mipHeight == 0) mipHeight = 1;
         ::glTexSubImage2D(tex->glTarget,    // target
                           mipIndex,         // level
@@ -684,7 +684,7 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
 
 //------------------------------------------------------------------------------
 void
-glRenderer::readPixels(void* buf, int32 bufNumBytes) {
+glRenderer::readPixels(void* buf, int bufNumBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->pointers.displayMgr);
     o_assert_dbg((nullptr != buf) && (bufNumBytes > 0));
@@ -778,7 +778,7 @@ void
 glRenderer::invalidateTextureState() {
     o_assert_dbg(this->valid);
 
-    for (int32 i = 0; i < MaxTextureSamplers; i++) {
+    for (int i = 0; i < MaxTextureSamplers; i++) {
         this->samplers2D[i] = 0;
         this->samplersCube[i] = 0;
     }
@@ -786,7 +786,7 @@ glRenderer::invalidateTextureState() {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::bindTexture(int32 samplerIndex, GLenum target, GLuint tex) {
+glRenderer::bindTexture(int samplerIndex, GLenum target, GLuint tex) {
     o_assert_dbg(this->valid);
     o_assert_range_dbg(samplerIndex, MaxTextureSamplers);
     o_assert_dbg((target == GL_TEXTURE_2D) || (target == GL_TEXTURE_CUBE_MAP));
@@ -827,8 +827,8 @@ glRenderer::applyStencilState(const DepthStencilState& newState, const DepthSten
     const StencilState& curStencilState = (glFace == GL_FRONT) ? curState.StencilFront : curState.StencilBack;
 
     const CompareFunc::Code cmpFunc = newStencilState.CmpFunc;
-    const uint32 readMask = newState.StencilReadMask;
-    const int32 stencilRef = newState.StencilRef;
+    const uint32_t readMask = newState.StencilReadMask;
+    const int stencilRef = newState.StencilRef;
     if ((cmpFunc != curStencilState.CmpFunc) || (readMask != curState.StencilReadMask) || (stencilRef != curState.StencilRef)) {
         o_assert_range_dbg(int(cmpFunc), CompareFunc::NumCompareFuncs);
         ::glStencilFuncSeparate(glFace, mapCompareFunc[cmpFunc], stencilRef, readMask);
@@ -844,7 +844,7 @@ glRenderer::applyStencilState(const DepthStencilState& newState, const DepthSten
         ::glStencilOpSeparate(glFace, mapStencilOp[sFailOp], mapStencilOp[dFailOp], mapStencilOp[passOp]);
     }
     
-    const uint32 writeMask = newState.StencilWriteMask;
+    const uint32_t writeMask = newState.StencilWriteMask;
     if (writeMask != curState.StencilWriteMask) {
         ::glStencilMaskSeparate(glFace, writeMask);
     }
@@ -1035,7 +1035,7 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
         }
     }
     #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    const uint16 sampleCount = newState.SampleCount;
+    const uint16_t sampleCount = newState.SampleCount;
     if (sampleCount != curState.SampleCount) {
         if (sampleCount > 1) {
             ::glEnable(GL_MULTISAMPLE);
@@ -1051,7 +1051,7 @@ glRenderer::applyRasterizerState(const RasterizerState& newState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
     o_assert_dbg(0 != layoutHash);
     if (!this->curPipeline) {
@@ -1062,7 +1062,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     // get the uniform layout object for this uniform block
     const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
-    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     o_assert_dbg(InvalidIndex != ubIndex);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
@@ -1078,14 +1078,14 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
     const int numUniforms = layout.NumComponents();
     for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
         const auto& comp = layout.ComponentAt(uniformIndex);
-        const uint8* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
+        const uint8_t* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
         GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
         if (-1 != glLoc) {
             switch (comp.Type) {
                 case UniformType::Float:
                     {
                         o_assert_dbg(1 == comp.Num);
-                        const float32 val = *(const float32*)valuePtr;
+                        const float val = *(const float*)valuePtr;
                         ::glUniform1f(glLoc, val);
                     }
                     break;
@@ -1144,7 +1144,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
                 case UniformType::Bool:
                     {
                         // NOTE: bools are actually stored as int32 in the uniform block struct
-                        const int32 val = *(const int32*)valuePtr;
+                        const int val = *(const int*)valuePtr;
                         ::glUniform1i(glLoc, val);
                     }
                     break;
@@ -1159,7 +1159,7 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int32 numTextures) {
+glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int numTextures) {
     o_assert_dbg(this->valid);
     o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                  ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
@@ -1182,7 +1182,7 @@ glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **t
     o_assert_dbg(shd);
     for (int i = 0; i < numTextures; i++) {
         const texture* tex = textures[i];
-        const int32 samplerIndex = shd->getSamplerIndex(bindStage, i);
+        const int samplerIndex = shd->getSamplerIndex(bindStage, i);
         this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
     }
 }

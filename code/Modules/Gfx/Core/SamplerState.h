@@ -27,7 +27,7 @@ public:
             TextureFilterMode::Code MinFilter : 3;
         };
         #pragma pack(pop)
-        uint16 Hash;
+        uint16_t Hash;
     };
 
     /// constructor

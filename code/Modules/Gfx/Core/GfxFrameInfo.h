@@ -9,16 +9,16 @@
 namespace Oryol {
 
 struct GfxFrameInfo {
-    int32 NumApplyRenderTarget = 0;
-    int32 NumApplyViewPort = 0;
-    int32 NumApplyScissorRect = 0;
-    int32 NumApplyDrawState = 0;
-    int32 NumApplyUniformBlock = 0;
-    int32 NumUpdateVertices = 0;
-    int32 NumUpdateIndices = 0;
-    int32 NumUpdateTextures = 0;
-    int32 NumDraw = 0;
-    int32 NumDrawInstanced = 0;
+    int NumApplyRenderTarget = 0;
+    int NumApplyViewPort = 0;
+    int NumApplyScissorRect = 0;
+    int NumApplyDrawState = 0;
+    int NumApplyUniformBlock = 0;
+    int NumUpdateVertices = 0;
+    int NumUpdateIndices = 0;
+    int NumUpdateTextures = 0;
+    int NumDraw = 0;
+    int NumDrawInstanced = 0;
 };
 
 } // namespace Oryol

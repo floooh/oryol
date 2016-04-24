@@ -19,7 +19,7 @@ glExt::Setup() {
     o_assert(!isValid);
     isValid = true;
 
-    for (int32 i = 0; i < NumExtensions; i++) {
+    for (int i = 0; i < NumExtensions; i++) {
         extensions[i] = false;
     }
     

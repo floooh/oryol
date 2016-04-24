@@ -42,7 +42,7 @@ TEST(LocalFileSystemTest) {
     const String hello("Hello World!");
     auto write = IOWrite::Create();
     write->Url = "root:test.txt";
-    write->Data.Add((const uint8*)hello.AsCStr(), hello.Length());
+    write->Data.Add((const uint8_t*)hello.AsCStr(), hello.Length());
     IO::Put(write);
     wait(write);
     CHECK(write->Status == IOStatus::OK);
@@ -98,12 +98,12 @@ TEST(SameExtensionTest) {
     const String helloDDS("Hello DDS! Dupdidum");
     auto writeJSON = IOWrite::Create();
     writeJSON->Url = "root:hello.json";
-    writeJSON->Data.Add((const uint8*)helloJSON.AsCStr(), helloJSON.Length());
+    writeJSON->Data.Add((const uint8_t*)helloJSON.AsCStr(), helloJSON.Length());
     IO::Put(writeJSON);
     wait(writeJSON);
     auto writeDDS = IOWrite::Create();
     writeDDS->Url = "root:hello.dds";
-    writeDDS->Data.Add((const uint8*)helloDDS.AsCStr(), helloDDS.Length());
+    writeDDS->Data.Add((const uint8_t*)helloDDS.AsCStr(), helloDDS.Length());
     IO::Put(writeDDS);
     wait(writeDDS);
 

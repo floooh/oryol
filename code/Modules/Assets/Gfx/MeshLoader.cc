@@ -56,7 +56,7 @@ MeshLoader::Continue() {
             // async loading has finished, use OmshParser to
             // create a MeshSetup object from the loaded data
             const void* data = this->ioRequest->Data.Data();
-            const int32 numBytes = this->ioRequest->Data.Size();
+            const int numBytes = this->ioRequest->Data.Size();
 
             MeshSetup meshSetup = MeshSetup::FromData(this->setup);
             if (OmshParser::Parse(data, numBytes, meshSetup)) {

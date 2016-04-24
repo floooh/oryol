@@ -36,7 +36,7 @@ ShaderSetup::SetProgramFromSources(ShaderLang::Code slang, const VertexLayout& v
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8* vsByteCode, uint32 vsNumBytes, const uint8* fsByteCode, uint32 fsNumBytes) {
+ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes) {
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
     this->program.vsByteCode[slang].ptr = vsByteCode;
@@ -58,7 +58,7 @@ ShaderSetup::SetProgramFromLibrary(ShaderLang::Code slang, const Oryol::VertexLa
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddUniformBlock(const StringAtom& name, const class UniformBlockLayout& layout, ShaderStage::Code bindStage, int32 bindSlot) {
+ShaderSetup::AddUniformBlock(const StringAtom& name, const class UniformBlockLayout& layout, ShaderStage::Code bindStage, int bindSlot) {
     o_assert_dbg(name.IsValid());
     o_assert_dbg(!layout.Empty());
     o_assert_dbg(0 != layout.TypeHash);
@@ -84,7 +84,7 @@ ShaderSetup::AddTextureBlock(const StringAtom& name, const class TextureBlockLay
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, uint32 numBytes) {
+ShaderSetup::SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes) {
     o_assert_dbg(ShaderLang::Metal == slang);
     o_assert_dbg(nullptr != byteCode);
     o_assert_dbg(numBytes > 0);
@@ -94,7 +94,7 @@ ShaderSetup::SetLibraryByteCode(ShaderLang::Code slang, const uint8* byteCode, u
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::LibraryByteCode(ShaderLang::Code slang, const void *&outPtr, uint32 &outSize) const {
+ShaderSetup::LibraryByteCode(ShaderLang::Code slang, const void *&outPtr, uint32_t &outSize) const {
     o_assert_dbg(ShaderLang::Metal == slang);
     outPtr = this->libraryByteCode;
     outSize = this->libraryByteCodeSize;
@@ -120,14 +120,14 @@ ShaderSetup::FragmentShaderSource(ShaderLang::Code slang) const {
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
+ShaderSetup::VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
     outPtr = this->program.vsByteCode[slang].ptr;
     outSize = this->program.vsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32& outSize) const {
+ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
     outPtr = this->program.fsByteCode[slang].ptr;
     outSize = this->program.fsByteCode[slang].size;
 }
@@ -147,14 +147,14 @@ ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 ShaderSetup::NumUniformBlocks() const {
     return this->numUniformBlocks;
 }
 
 //------------------------------------------------------------------------------
-int32
-ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 bindSlot) const {
+int
+ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
     for (int i = 0; i < this->numUniformBlocks; i++) {
         const auto& entry = this->uniformBlocks[i];
         if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
@@ -166,36 +166,36 @@ ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int32 
 
 //------------------------------------------------------------------------------
 const StringAtom&
-ShaderSetup::UniformBlockName(int32 index) const {
+ShaderSetup::UniformBlockName(int index) const {
     return this->uniformBlocks[index].name;
 }
 
 //------------------------------------------------------------------------------
 const UniformBlockLayout&
-ShaderSetup::UniformBlockLayout(int32 index) const {
+ShaderSetup::UniformBlockLayout(int index) const {
     return this->uniformBlocks[index].layout;
 }
 
 //------------------------------------------------------------------------------
-int32
-ShaderSetup::UniformBlockBindSlot(int32 index) const {
+int
+ShaderSetup::UniformBlockBindSlot(int index) const {
     return this->uniformBlocks[index].bindSlot;
 }
 
 //------------------------------------------------------------------------------
 ShaderStage::Code
-ShaderSetup::UniformBlockBindStage(int32 index) const {
+ShaderSetup::UniformBlockBindStage(int index) const {
     return this->uniformBlocks[index].bindStage;
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 ShaderSetup::NumTextureBlocks() const {
     return this->numTextureBlocks;
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
     for (int i = 0; i < this->numTextureBlocks; i++) {
         const auto& entry = this->textureBlocks[i];
@@ -208,19 +208,19 @@ ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
 
 //------------------------------------------------------------------------------
 const StringAtom&
-ShaderSetup::TextureBlockName(int32 index) const {
+ShaderSetup::TextureBlockName(int index) const {
     return this->textureBlocks[index].name;
 }
 
 //------------------------------------------------------------------------------
 const TextureBlockLayout&
-ShaderSetup::TextureBlockLayout(int32 index) const {
+ShaderSetup::TextureBlockLayout(int index) const {
     return this->textureBlocks[index].layout;
 }
 
 //------------------------------------------------------------------------------
 ShaderStage::Code
-ShaderSetup::TextureBlockBindStage(int32 index) const {
+ShaderSetup::TextureBlockBindStage(int index) const {
     return this->textureBlocks[index].bindStage;
 }
 

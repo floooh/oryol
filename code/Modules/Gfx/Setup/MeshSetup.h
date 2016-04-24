@@ -23,7 +23,7 @@ public:
     /// setup from data in memory with blueprint
     static MeshSetup FromData(const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup Empty(int32 numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int32 numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
+    static MeshSetup Empty(int numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
     static MeshSetup FullScreenQuad(bool flipV=false);
     
@@ -47,9 +47,9 @@ public:
     VertexLayout Layout;
 
     /// number of vertices (only CreateEmpty)
-    int32 NumVertices;
+    int NumVertices;
     /// number of indices (only CreateEmpty)
-    int32 NumIndices;
+    int NumIndices;
     /// index type (only CreateEmpty)
     IndexType::Code IndicesType;
     /// flip v coordinates for fullscreen quad (so that origin is top-left)
@@ -58,9 +58,9 @@ public:
     /// add a primitive group (required for CreateEmpty)
     void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups
-    int32 NumPrimitiveGroups() const;
+    int NumPrimitiveGroups() const;
     /// get primitive group at index
-    const class PrimitiveGroup& PrimitiveGroup(int32 index) const;
+    const class PrimitiveGroup& PrimitiveGroup(int index) const;
     
     /// resource locator
     class Locator Locator;
@@ -68,12 +68,12 @@ public:
     Id Placeholder;
     
     /// vertex data byte offset in data (default: 0, set to InvalidIndex if no vertex data provided)
-    int32 DataVertexOffset;
+    int DataVertexOffset;
     /// index data byte offset in data (default: InvalidIndex, no index data provided)
-    int32 DataIndexOffset;
+    int DataIndexOffset;
     
 private:
-    int32 numPrimGroups;
+    int numPrimGroups;
     class PrimitiveGroup primGroups[GfxConfig::MaxNumPrimGroups];
     bool setupFromFile : 1;
     bool setupFromData : 1;

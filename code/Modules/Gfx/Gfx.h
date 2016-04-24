@@ -66,7 +66,7 @@ public:
     /// create a resource object with data in buffer object
     template<class SETUP> static Id CreateResource(const SETUP& setup, const Buffer& data);
     /// create a resource object with pointer to non-owned data
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int32 size);
+    template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int size);
     /// asynchronously load resource object
     static Id LoadResource(const Ptr<ResourceLoader>& loader);
     /// lookup a resource Id by Locator
@@ -77,7 +77,7 @@ public:
     /// test if an optional feature is supported
     static bool QueryFeature(GfxFeature::Code feat);
     /// query number of free slots for resource type
-    static int32 QueryFreeResourceSlots(GfxResourceType::Code resourceType);
+    static int QueryFreeResourceSlots(GfxResourceType::Code resourceType);
     /// query resource info (fast)
     static ResourceInfo QueryResourceInfo(const Id& id);
     /// query resource pool info (slow)
@@ -88,31 +88,31 @@ public:
     /// apply an offscreen render target
     static void ApplyRenderTarget(const Id& id, const ClearState& clearState=ClearState());
     /// apply view port
-    static void ApplyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
+    static void ApplyViewPort(int x, int y, int width, int height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
-    static void ApplyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft=false);
+    static void ApplyScissorRect(int x, int y, int width, int height, bool originTopLeft=false);
     /// apply draw state and meshes to use for rendering without texture blocks
     static void ApplyDrawState(const DrawState& drawState);
     /// apply a uniform block
     template<class T> static void ApplyUniformBlock(const T& ub);
 
     /// update dynamic vertex data (only complete replace possible at the moment)
-    static void UpdateVertices(const Id& id, const void* data, int32 numBytes);
+    static void UpdateVertices(const Id& id, const void* data, int numBytes);
     /// update dynamic index data (only complete replace possible at the moment)
-    static void UpdateIndices(const Id& id, const void* data, int32 numBytes);
+    static void UpdateIndices(const Id& id, const void* data, int numBytes);
     /// update dynamic texture image data (only complete replace possible at the moment)
     static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
     /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
-    static void ReadPixels(void* ptr, int32 numBytes);
+    static void ReadPixels(void* ptr, int numBytes);
     
     /// submit a draw call with primitive group index in current mesh
-    static void Draw(int32 primGroupIndex);
+    static void Draw(int primGroupIndex);
     /// submit a draw call with direct primitive group
     static void Draw(const PrimitiveGroup& primGroup);
     /// submit a draw call for instanced rendering
-    static void DrawInstanced(int32 primGroupIndex, int32 numInstances);
+    static void DrawInstanced(int primGroupIndex, int numInstances);
     /// submit a draw call for instanced rendering with direct primitive group
-    static void DrawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
+    static void DrawInstanced(const PrimitiveGroup& primGroup, int numInstances);
 
     /// commit (and display) the current frame
     static void CommitFrame();
@@ -148,7 +148,7 @@ template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumApplyUniformBlock++;
-    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8*) &ub, sizeof(ub));
+    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8_t*) &ub, sizeof(ub));
 }
 
 //------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ Gfx::CreateResource(const SetupAndData<SETUP>& setupAndData) {
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup, const void* data, int32 size) {
+Gfx::CreateResource(const SETUP& setup, const void* data, int size) {
     o_assert_dbg(IsValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);

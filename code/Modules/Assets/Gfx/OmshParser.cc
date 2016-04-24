@@ -8,7 +8,7 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 PrimitiveType::Code
-OmshParser::translatePrimType(uint32 omshPrimType) {
+OmshParser::translatePrimType(uint32_t omshPrimType) {
     switch (omshPrimType) {
         case 0:     return PrimitiveType::Points;
         case 1:     return PrimitiveType::Lines;
@@ -21,7 +21,7 @@ OmshParser::translatePrimType(uint32 omshPrimType) {
 
 //------------------------------------------------------------------------------
 bool
-OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
+OmshParser::Parse(const void* ptr, uint32_t size, MeshSetup& outSetup) {
     o_assert_dbg(ptr);
     o_assert_dbg(size > 4);
     o_assert_dbg(outSetup.NumPrimitiveGroups() == 0);
@@ -32,26 +32,26 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
         return false;
     }
 
-    const uint32* u32StartPtr = (const uint32*) ptr;
-    const uint32* u32Ptr = u32StartPtr;
-    const uint32 u32Size = size >> 2;
-    const uint32* u32EndPtr = u32StartPtr + u32Size;
+    const uint32_t* u32StartPtr = (const uint32_t*) ptr;
+    const uint32_t* u32Ptr = u32StartPtr;
+    const uint32_t u32Size = size >> 2;
+    const uint32_t* u32EndPtr = u32StartPtr + u32Size;
 
     // check if enough data for header
-    uint32 u32CheckSize = 7;
+    uint32_t u32CheckSize = 7;
     if (u32CheckSize > u32Size) {
         return false;
     }
 
     // start parsing static header
-    const uint32 magic = *u32Ptr++;
+    const uint32_t magic = *u32Ptr++;
     if (magic != 'OMSH') {
         return false;
     }
     outSetup.NumVertices = *u32Ptr++;
-    const uint32 vertexSize = *u32Ptr++;
+    const uint32_t vertexSize = *u32Ptr++;
     outSetup.NumIndices = *u32Ptr++;
-    const uint32 indexSize = *u32Ptr++;
+    const uint32_t indexSize = *u32Ptr++;
     if (2 == indexSize) {
         outSetup.IndicesType = IndexType::Index16;
     }
@@ -61,11 +61,11 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     else {
         return false;
     }
-    const uint32 numVertexAttrs = *u32Ptr++;
+    const uint32_t numVertexAttrs = *u32Ptr++;
     if (numVertexAttrs > VertexAttr::NumVertexAttrs) {
         return false;
     }
-    const uint32 numPrimGroups = *u32Ptr++;
+    const uint32_t numPrimGroups = *u32Ptr++;
     if (numPrimGroups > GfxConfig::MaxNumPrimGroups) {
         return false;
     }
@@ -75,7 +75,7 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     if (u32CheckSize > u32Size) {
         return false;
     }
-    for (uint32 i = 0; i < numVertexAttrs; i++) {
+    for (uint32_t i = 0; i < numVertexAttrs; i++) {
         VertexLayout::Component comp;
         comp.Attr = (VertexAttr::Code) *u32Ptr++;
         comp.Format = (VertexFormat::Code) *u32Ptr++;
@@ -87,7 +87,7 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     if (u32CheckSize > u32Size) {
         return false;
     }
-    for(uint32 i = 0; i < numPrimGroups; i++) {
+    for(uint32_t i = 0; i < numPrimGroups; i++) {
         PrimitiveGroup primGroup;
         // skip primitive type
         u32Ptr++;
@@ -97,27 +97,27 @@ OmshParser::Parse(const void* ptr, uint32 size, MeshSetup& outSetup) {
     }
 
     // check if enough data for vertices
-    const uint32 u32VertexDataSize = (outSetup.NumVertices * vertexSize) >> 2;
+    const uint32_t u32VertexDataSize = (outSetup.NumVertices * vertexSize) >> 2;
     u32CheckSize += u32VertexDataSize;
     if (u32CheckSize > u32Size) {
         return false;
     }
-    outSetup.DataVertexOffset = int32(u32Ptr - u32StartPtr) << 2;
+    outSetup.DataVertexOffset = int(u32Ptr - u32StartPtr) << 2;
     u32Ptr += u32VertexDataSize;
 
     // check if enough data for indices (index block is padded
     // so that size is multiple of 4)
-    uint32 indexDataSize = outSetup.NumIndices * indexSize;
+    uint32_t indexDataSize = outSetup.NumIndices * indexSize;
     if ((indexDataSize & 3) != 0) {
         indexDataSize += 2;
         o_assert_dbg((indexDataSize & 3) == 0);
     }
-    const uint32 u32IndexDataSize = indexDataSize >> 2;
+    const uint32_t u32IndexDataSize = indexDataSize >> 2;
     u32CheckSize += u32IndexDataSize;
     if (u32CheckSize > u32Size) {
         return false;
     }
-    outSetup.DataIndexOffset = int32(u32Ptr - u32StartPtr) << 2;
+    outSetup.DataIndexOffset = int(u32Ptr - u32StartPtr) << 2;
     u32Ptr += u32IndexDataSize;
 
     // cleanly reached the end?

@@ -21,14 +21,14 @@ signature(DefaultSignature) {
 }
 
 //------------------------------------------------------------------------------
-Locator::Locator(const StringAtom& loc, uint32 sig) :
+Locator::Locator(const StringAtom& loc, uint32_t sig) :
 location(loc),
 signature(sig) {
     // empty
 }
 
 //------------------------------------------------------------------------------
-Locator::Locator(const char* loc, uint32 sig) :
+Locator::Locator(const char* loc, uint32_t sig) :
 location(loc),
 signature(sig) {
     // empty

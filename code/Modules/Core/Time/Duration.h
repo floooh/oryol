@@ -21,14 +21,14 @@ public:
     /// copy-construct
     Duration(const Duration& rhs);
     /// construct from raw value
-    Duration(int64 raw);
+    Duration(int64_t raw);
     
     /// assignment
     void operator=(const Duration& rhs);
     /// add a Duration
     void operator+=(const Duration& rhs);
     /// scale a Duration (result will be clamped)
-    void operator*=(float64 s);
+    void operator*=(double s);
     /// subtract a Duration
     void operator-=(const Duration& rhs);
     /// equality
@@ -45,33 +45,33 @@ public:
     bool operator>=(const Duration& rhs) const;
 
     /// get duration in seconds
-    float64 AsSeconds() const;
+    double AsSeconds() const;
     /// get duration in milliseconds
-    float64 AsMilliSeconds() const;
+    double AsMilliSeconds() const;
     /// get duration in microseconds
-    float64 AsMicroSeconds() const;
+    double AsMicroSeconds() const;
     /// as microseconds integer ticks
-    int64 AsTicks() const;
+    int64_t AsTicks() const;
     
     /// get duration from seconds
-    static Duration FromSeconds(float64 s);
+    static Duration FromSeconds(double s);
     /// get duration from seconds
-    static Duration FromSeconds(float32 s);
+    static Duration FromSeconds(float s);
     /// get duration from milliseconds
-    static Duration FromMilliSeconds(float64 ms);
+    static Duration FromMilliSeconds(double ms);
     /// get duration from milliseconds
-    static Duration FromMilliSeconds(float32 ms);
+    static Duration FromMilliSeconds(float ms);
     /// get duration from microseconds
-    static Duration FromMicroSeconds(float64 us);
+    static Duration FromMicroSeconds(double us);
     /// get duration from microseconds
-    static Duration FromMicroSeconds(float32 us);
+    static Duration FromMicroSeconds(float us);
 
     /// get the raw value
-    int64 getRaw() const;
+    int64_t getRaw() const;
 
 private:
     friend class TimePoint;
-    int64 val;
+    int64_t val;
 };
 
 //------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ val(rhs.val) {
 
 //------------------------------------------------------------------------------
 inline
-Duration::Duration(int64 raw) :
+Duration::Duration(int64_t raw) :
 val(raw) {
     // empty
 }
@@ -133,8 +133,8 @@ Duration::operator-=(const Duration& rhs) {
 
 //------------------------------------------------------------------------------
 inline void
-Duration::operator*=(float64 s) {
-    this->val = (int64) ((float64)this->val * s);
+Duration::operator*=(double s) {
+    this->val = (int64_t) (double(this->val) * s);
 }
 
 //------------------------------------------------------------------------------
@@ -174,68 +174,68 @@ Duration::operator>=(const Duration& rhs) const {
 }
 
 //------------------------------------------------------------------------------
-inline int64
+inline int64_t
 Duration::getRaw() const {
     // NOTE: this is not guaranteed to be in nano-seconds!
     return this->val;
 }
 
 //------------------------------------------------------------------------------
-inline float64
+inline double
 Duration::AsSeconds() const {
-    return ((float64)this->val) / 1000000.0;
+    return double(this->val) / 1000000.0;
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromSeconds(float64 s) {
-    return Duration(int64(s * 1000000.0));
+Duration::FromSeconds(double s) {
+    return Duration(int64_t(s * 1000000.0));
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromSeconds(float32 s) {
-    return Duration(int64(s * 1000000.0f));
+Duration::FromSeconds(float s) {
+    return Duration(int64_t(s * 1000000.0f));
 }
 
 //------------------------------------------------------------------------------
-inline float64
+inline double
 Duration::AsMilliSeconds() const {
-    return ((float64)this->val) / 1000.0;
+    return double(this->val) / 1000.0;
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMilliSeconds(float64 ms) {
-    return Duration(int64(ms * 1000.0));
+Duration::FromMilliSeconds(double ms) {
+    return Duration(int64_t(ms * 1000.0));
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMilliSeconds(float32 ms) {
-    return Duration(int64(ms * 1000.0f));
+Duration::FromMilliSeconds(float ms) {
+    return Duration(int64_t(ms * 1000.0f));
 }
 
 //------------------------------------------------------------------------------
-inline float64
+inline double
 Duration::AsMicroSeconds() const {
-    return (float64)this->val;
+    return double(this->val);
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMicroSeconds(float64 us) {
-    return Duration(int64(us));
+Duration::FromMicroSeconds(double us) {
+    return Duration(int64_t(us));
 }
 
 //------------------------------------------------------------------------------
 inline Duration
-Duration::FromMicroSeconds(float32 us) {
-    return Duration(int64(us));
+Duration::FromMicroSeconds(float us) {
+    return Duration(int64_t(us));
 }
 
 //------------------------------------------------------------------------------
-inline int64
+inline int64_t
 Duration::AsTicks() const {
     return this->val;
 }

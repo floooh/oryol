@@ -33,7 +33,7 @@ TEST(DDSLoadTest) {
     if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const int32 size = req->Data.Size();
+        const int size = req->Data.Size();
         const void* data = req->Data.Data();
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
@@ -51,11 +51,11 @@ TEST(DDSLoadTest) {
         CHECK(ctx.image_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
         CHECK(ctx.image_type() == 0);
         int w = 256, h = 256;
-        for (int32 i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             CHECK(ctx.image_width(0, i) == (w >> i));
             CHECK(ctx.image_height(0, i) == (h >> i));
             CHECK(ctx.image_depth(0, i) == 1);
-            int32 mipSize = (w>>(2+i)) * (h>>(2+i)) * 8;
+            int mipSize = (w>>(2+i)) * (h>>(2+i)) * 8;
             if (mipSize < 8) mipSize = 8;
             CHECK(ctx.image_size(0, i) == mipSize);
         }
@@ -71,7 +71,7 @@ TEST(DDSLoadTest) {
     if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const int32 size = req->Data.Size();
+        const int size = req->Data.Size();
         const void* data = req->Data.Data();
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
@@ -89,11 +89,11 @@ TEST(DDSLoadTest) {
         CHECK(ctx.image_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
         CHECK(ctx.image_type() == 0);
         int w = 256, h = 256;
-        for (int32 i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             CHECK(ctx.image_width(0, i) == (w >> i));
             CHECK(ctx.image_height(0, i) == (h >> i));
             CHECK(ctx.image_depth(0, i) == 1);
-            int32 mipSize = (w>>(2+i)) * (h>>(2+i)) * 16;
+            int mipSize = (w>>(2+i)) * (h>>(2+i)) * 16;
             if (mipSize < 8) mipSize = 16;
             CHECK(ctx.image_size(0, i) == mipSize);
         }
@@ -109,7 +109,7 @@ TEST(DDSLoadTest) {
     if (req->Status == IOStatus::OK) {
         
         // parse DDS data with gliml
-        const int32 size = req->Data.Size();
+        const int size = req->Data.Size();
         const void* data = req->Data.Data();
         CHECK(gliml::is_dds(data, size));
         gliml::context ctx;
@@ -127,11 +127,11 @@ TEST(DDSLoadTest) {
         CHECK(ctx.image_format() == GLIML_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
         CHECK(ctx.image_type() == 0);
         int w = 256, h = 256;
-        for (int32 i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             CHECK(ctx.image_width(0, i) == (w >> i));
             CHECK(ctx.image_height(0, i) == (h >> i));
             CHECK(ctx.image_depth(0, i) == 1);
-            int32 mipSize = (w>>(2+i)) * (h>>(2+i)) * 16;
+            int mipSize = (w>>(2+i)) * (h>>(2+i)) * 16;
             if (mipSize < 8) mipSize = 16;
             CHECK(ctx.image_size(0, i) == mipSize);
         }

@@ -28,7 +28,7 @@ public:
     };
 
     /// get byte size of index type
-    static int32 ByteSize(IndexType::Code c) {
+    static int ByteSize(IndexType::Code c) {
         switch (c) {
             case None:      return 0;
             case Index16:   return 2;
@@ -48,7 +48,7 @@ public:
  */
 class PixelChannel {
 public:
-    typedef uint64 Mask;
+    typedef uint64_t Mask;
     enum Bits {
         None    = 0,
 
@@ -225,7 +225,7 @@ public:
         }
     }
     /// get byte size of pixel format
-    static int32 ByteSize(Code c) {
+    static int ByteSize(Code c) {
         switch (c) {
             case RGBA32F:
                 return 16;
@@ -252,7 +252,7 @@ public:
         }
     }
     /// get number of bits in a pixel format channel (only for non-compressed formats and non-depth formats!)
-    static int8 NumBits(Code pixelFormat, PixelChannel::Bits channel) {
+    static int8_t NumBits(Code pixelFormat, PixelChannel::Bits channel) {
         switch (pixelFormat) {
             case RGBA32F:
                 if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
@@ -321,7 +321,7 @@ public:
         return 0;
     }
     /// compute row-pitch (distance in bytes from one row of data to next)
-    static int32 RowPitch(PixelFormat::Code fmt, int32 width) {
+    static int RowPitch(PixelFormat::Code fmt, int width) {
         int pitch;
         switch (fmt) {
             case PixelFormat::DXT1:
@@ -338,9 +338,9 @@ public:
             case PixelFormat::PVRTC4_RGB:
             case PixelFormat::PVRTC4_RGBA:
                 {
-                    const int32 blockSize = 4*4;
-                    const int32 bpp = 4;
-                    int32 widthBlocks = width / 4;
+                    const int blockSize = 4*4;
+                    const int bpp = 4;
+                    int widthBlocks = width / 4;
                     widthBlocks = widthBlocks < 2 ? 2 : widthBlocks;
                     pitch = widthBlocks * ((blockSize * bpp) / 8);
                 }
@@ -348,9 +348,9 @@ public:
             case PixelFormat::PVRTC2_RGB:
             case PixelFormat::PVRTC2_RGBA:
                 {
-                    const int32 blockSize = 8 * 4;
-                    const int32 bpp = 2;
-                    int32 widthBlocks = width / 4;
+                    const int blockSize = 8 * 4;
+                    const int bpp = 2;
+                    int widthBlocks = width / 4;
                     widthBlocks = widthBlocks < 2 ? 2 : widthBlocks;
                     pitch = widthBlocks * ((blockSize * bpp) / 8);
                 }
@@ -525,7 +525,7 @@ public:
 class VertexAttr {
 public:
     /// vertex attribute enum
-    enum Code : uint8 {
+    enum Code : uint8_t {
         Position = 0,   ///< "position"
         Normal,         ///< "normal"
         TexCoord0,      ///< "texcoord0"
@@ -587,7 +587,7 @@ public:
 class VertexFormat {
 public:
     /// format enum (don't change order, and append to end!)
-    enum Code : uint8 {
+    enum Code : uint8_t {
         Float,          ///< single component float, expanded to (x, 0, 0, 1)
         Float2,         ///< 2-component float, expanded to (x, y, 0, 1)
         Float3,         ///< 3-component float, expanded to (x, y, z, 1)
@@ -606,7 +606,7 @@ public:
     };
 
     /// get the byte size of a vertex format code
-    static int32 ByteSize(Code c) {
+    static int ByteSize(Code c) {
         switch (c) {
             case Float:
                 return 4;
@@ -813,7 +813,7 @@ public:
 */
 class UniformType {
 public:
-    enum Code : uint8 {
+    enum Code : uint8_t {
         Float = 0,
         Vec2,
         Vec3,
@@ -829,17 +829,17 @@ public:
     };
 
     /// get the byte size of a uniform type, see GL std140 layout spec for details
-    static int32 ByteSize(Code c, int32 numElements) {
+    static int ByteSize(Code c, int numElements) {
         switch (c) {
-            case Float:     return numElements * sizeof(float32);
-            case Vec2:      return numElements * 2 * sizeof(float32);
-            case Vec3:      return numElements * 4 * sizeof(float32); // NOT A BUG
-            case Vec4:      return numElements * 4 * sizeof(float32);
-            case Mat2:      return numElements * 2 * 2 * sizeof(float32);
-            case Mat3:      return numElements * 3 * 3 * sizeof(float32); // FIXME!
-            case Mat4:      return numElements * 4 * 4 * sizeof(float32);
-            case Int:       return numElements * sizeof(int32);
-            case Bool:      return numElements * sizeof(int32);
+            case Float:     return numElements * sizeof(float);
+            case Vec2:      return numElements * 2 * sizeof(float);
+            case Vec3:      return numElements * 4 * sizeof(float); // NOT A BUG
+            case Vec4:      return numElements * 4 * sizeof(float);
+            case Mat2:      return numElements * 2 * 2 * sizeof(float);
+            case Mat3:      return numElements * 3 * 3 * sizeof(float); // FIXME!
+            case Mat4:      return numElements * 4 * 4 * sizeof(float);
+            case Int:       return numElements * sizeof(int);
+            case Bool:      return numElements * sizeof(int);
             default:
                 o_error("invalid scalar uniform type code!\n");
                 return 0;
@@ -855,7 +855,7 @@ public:
 */
 class VertexStepFunction {
 public:
-    enum Code : uint8 {
+    enum Code : uint8_t {
         PerVertex = 0,
         PerInstance = 1,
     };

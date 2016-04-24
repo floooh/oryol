@@ -34,7 +34,7 @@ public:
     
 protected:
     /// setup the resource container
-    void setup(int32 labelStackCapacity, int32 registryCapacity);
+    void setup(int labelStackCapacity, int registryCapacity);
     /// discard the resource container
     void discard();
     /// return true if valid
@@ -46,7 +46,7 @@ protected:
     
     Array<ResourceLabel> labelStack;
     _priv::resourceRegistry registry;
-    uint32 curLabelCount;
+    uint32_t curLabelCount;
     bool valid;
 };
 

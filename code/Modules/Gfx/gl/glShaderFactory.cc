@@ -80,7 +80,7 @@ glShaderFactory::SetupResource(shader& shd) {
     /// attributes which exist in the shader (may be with more shader source generation)
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
     o_assert_dbg(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
-    for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+    for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
         ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
     }
     ORYOL_GL_CHECK_ERROR();
@@ -119,12 +119,12 @@ glShaderFactory::SetupResource(shader& shd) {
 
     // resolve uniform locations
     this->pointers.renderer->useProgram(glProg);
-    const int32 numUniformBlocks = setup.NumUniformBlocks();
-    for (int32 ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
+    const int numUniformBlocks = setup.NumUniformBlocks();
+    for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
         const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
         ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
-        int32 ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-        const int32 numUniforms = layout.NumComponents();
+        int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
+        const int numUniforms = layout.NumComponents();
         for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
             const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
             const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
@@ -134,11 +134,11 @@ glShaderFactory::SetupResource(shader& shd) {
 
     // resolve texture locations
     int glTextureLocation = 0;
-    const int32 numTextureBlocks = setup.NumTextureBlocks();
-    for (int32 tbIndex = 0; tbIndex < numTextureBlocks; tbIndex++) {
+    const int numTextureBlocks = setup.NumTextureBlocks();
+    for (int tbIndex = 0; tbIndex < numTextureBlocks; tbIndex++) {
         const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
         ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
-        const int32 numTextures = layout.NumComponents();
+        const int numTextures = layout.NumComponents();
         for (int texIndex = 0; texIndex < numTextures; texIndex++) {
             const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
             const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());

@@ -25,7 +25,7 @@ public:
     /// copy constructor
     TimePoint(const TimePoint& rhs);
     /// create from a raw time value
-    TimePoint(int64 raw);
+    TimePoint(int64_t raw);
     
     /// assignment
     void operator=(const TimePoint& rhs);
@@ -49,10 +49,10 @@ public:
     /// return duration since another point in time
     Duration Since(const TimePoint& rhs) const;
     /// get the raw time value
-    int64 getRaw() const;
+    int64_t getRaw() const;
     
 private:
-    int64 val;
+    int64_t val;
 };
 
 //------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ val(rhs.val) {
 
 //------------------------------------------------------------------------------
 inline
-TimePoint::TimePoint(int64 raw) :
+TimePoint::TimePoint(int64_t raw) :
 val(raw) {
     // empty
 }
@@ -160,7 +160,7 @@ TimePoint::Since(const TimePoint& rhs) const {
 }
 
 //------------------------------------------------------------------------------
-inline int64
+inline int64_t
 TimePoint::getRaw() const {
     return this->val;
 }
