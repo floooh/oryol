@@ -520,7 +520,7 @@ osxBridge::onMouseClick(int button, int action, int mods) {
 
 //------------------------------------------------------------------------------
 void
-osxBridge::onCursorMotion(float64 x, float64 y) {
+osxBridge::onCursorMotion(double x, double y) {
     if (this->cursorMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
         if ((x == 0.0) && (y == 0.0)) {
             return;
@@ -583,7 +583,7 @@ osxBridge::onInputChar(unsigned int codepoint, int mods, int plain) {
 
 //------------------------------------------------------------------------------
 void
-osxBridge::onInputScroll(float64 xoffset, float64 yoffset) {
+osxBridge::onInputScroll(double xoffset, double yoffset) {
     if (this->callbacks.scroll) {
         this->callbacks.scroll(xoffset, yoffset);
     }

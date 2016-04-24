@@ -70,7 +70,7 @@ mtlTextureFactory::SetupResource(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlTextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
+mtlTextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
 
@@ -116,12 +116,12 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
 
     // get size of new render target
-    int32 width, height;
+    int width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
         const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
-        height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
+        width = int(dispAttrs.FramebufferWidth * setup.RelWidth);
+        height = int(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared depth-buffer render target, obtain width and height
@@ -213,7 +213,7 @@ mtlTextureFactory::setupTextureAttrs(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
+mtlTextureFactory::createFromPixelData(texture& tex, const void* data, int size) {
     o_assert_dbg(nil == tex.mtlTextures[0]);
     o_assert_dbg(nil == tex.mtlSamplerState);
 
@@ -326,7 +326,7 @@ mtlTextureFactory::createSamplerState(texture& tex) {
     o_assert_dbg(nil == tex.mtlSamplerState);
 
     // check if an identical state already exists
-    const int32 cacheIndex = this->samplerCache.FindIndex(tex.Setup.Sampler.Hash);
+    const int cacheIndex = this->samplerCache.FindIndex(tex.Setup.Sampler.Hash);
     if (InvalidIndex != cacheIndex) {
         // re-use existing sampler-state object
         SamplerCacheItem& item = this->samplerCache.ValueAtIndex(cacheIndex);
@@ -368,7 +368,7 @@ mtlTextureFactory::releaseSamplerState(texture& tex) {
 
     // find cache entry (linear search is ok, since total number of
     // sampler state will be low
-    for (int32 index = this->samplerCache.Size()-1; index >= 0; index--) {
+    for (int index = this->samplerCache.Size()-1; index >= 0; index--) {
         SamplerCacheItem& item = this->samplerCache.ValueAtIndex(index);
         if (item.mtlSamplerState == tex.mtlSamplerState) {
             o_assert_dbg(item.useCount > 0);

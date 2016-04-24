@@ -32,7 +32,7 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
-    ResourceState::Code SetupResource(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code SetupResource(mesh& mesh, const void* data, int size);
     /// discard the resource
     void DestroyResource(mesh& mesh);
 
@@ -41,7 +41,7 @@ public:
     /// helper method to create empty mesh
     ResourceState::Code createEmptyMesh(mesh& mesh);
     /// create mesh from data
-    ResourceState::Code createFromData(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code createFromData(mesh& mesh, const void* data, int size);
 
 private:
     /// setup vertex/index buffer attrs structs in the mesh
@@ -49,7 +49,7 @@ private:
     /// setup the primitive groups in the mesh
     void setupPrimGroups(mesh& msh);
     /// helper method to create vertex or index buffer
-    ORYOL_OBJC_TYPED_ID(MTLBuffer) createBuffer(const void* data, uint32 dataSize, Usage::Code usage);
+    ORYOL_OBJC_TYPED_ID(MTLBuffer) createBuffer(const void* data, uint32_t dataSize, Usage::Code usage);
 
     gfxPointers pointers;
     bool isValid;

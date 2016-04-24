@@ -89,7 +89,7 @@ public:
     /// called from view when mouse is clicked
     void onMouseClick(int button, int action, int mods);
     /// called from view when mouse cursor moves
-    void onCursorMotion(float64 x, float64 y);
+    void onCursorMotion(double x, double y);
     /// called form view when mouse cursor enters/leaves window
     void onCursorEnter(bool entered);
     /// called from view when a key has been pressed
@@ -97,7 +97,7 @@ public:
     /// called from view when a character has been entered
     void onInputChar(unsigned int codepoint, int mods, int plain);
     /// called form view when mouse wheel is scrolled
-    void onInputScroll(float64 xoffset, float64 yoffset);
+    void onInputScroll(double xoffset, double yoffset);
 
     /// called per frame by the MTKView delegate
     void onFrame();
@@ -128,8 +128,8 @@ public:
         typedef void (*cursorEnterFunc)(bool entered);
         typedef void (*scrollFunc)(double x, double y);
         typedef void (*keyFunc)(int key, int scancode, int action, int modifiers);
-        typedef void (*charFunc)(uint32 codepoint);
-        typedef void (*charModsFunc)(uint32 codepoint, int modifiers);
+        typedef void (*charFunc)(uint32_t codepoint);
+        typedef void (*charModsFunc)(uint32_t codepoint, int modifiers);
 
         /// window position changed callback hook
         windowFocusFunc focus = nullptr;
@@ -156,14 +156,14 @@ public:
     MTKView* mtkView;
 
     int cursorMode;
-    uint32 modifierFlags;
-    float64 warpDeltaX, warpDeltaY;
-    float64 cursorPosX, cursorPosY;
-    float64 winCursorPosX, winCursorPosY;
-    float64 mouseScale;
+    uint32_t modifierFlags;
+    double warpDeltaX, warpDeltaY;
+    double cursorPosX, cursorPosY;
+    double winCursorPosX, winCursorPosY;
+    double mouseScale;
     char  mouseButtons[ORYOL_OSXBRIDGE_MOUSE_BUTTON_LAST + 1];
     char  keys[ORYOL_OSXBRIDGE_KEY_LAST + 1];
-    int16 publicKeys[256];
+    int16_t publicKeys[256];
 };
 
 } // namespace _priv

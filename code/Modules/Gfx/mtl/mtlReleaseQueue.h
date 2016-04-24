@@ -25,17 +25,17 @@ public:
     /// return true if object has been setup
     bool isValid() const;
     /// call per-frame to release ids when safe
-    void garbageCollect(int32 frameIndex);
+    void garbageCollect(int frameIndex);
 
     /// add an id to be released when no longer used by GPU
-    void releaseDeferred(int32 frameIndex, ORYOL_OBJC_ID obj);
+    void releaseDeferred(int frameIndex, ORYOL_OBJC_ID obj);
 
     struct freeItem {
         freeItem();
-        freeItem(int32 frameIndex, ORYOL_OBJC_ID obj);
+        freeItem(int frameIndex, ORYOL_OBJC_ID obj);
         ~freeItem();
 
-        int32 frameIndex;
+        int frameIndex;
         ORYOL_OBJC_ID obj;
     };
     Queue<freeItem> releaseQueue;

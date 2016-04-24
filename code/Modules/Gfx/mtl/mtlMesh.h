@@ -21,12 +21,12 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    static const int32 NumSlots = GfxConfig::MtlMaxInflightFrames;
+    static const int NumSlots = GfxConfig::MtlMaxInflightFrames;
     struct buffer {
         buffer();
-        int32 updateFrameIndex;
-        uint8 numSlots;
-        uint8 activeSlot;
+        int updateFrameIndex;
+        uint8_t numSlots;
+        uint8_t activeSlot;
         StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), NumSlots> mtlBuffers;
     };
     // indices into buffers array (first entry is vertex buffers, second entry is index buffers

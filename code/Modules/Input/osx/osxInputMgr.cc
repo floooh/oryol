@@ -136,18 +136,18 @@ osxInputMgr::mouseButtonCallback(int button, int action, int mods) {
 
 //------------------------------------------------------------------------------
 void
-osxInputMgr::cursorPosCallback(float64 x, float64 y) {
+osxInputMgr::cursorPosCallback(double x, double y) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)x, (float32)y);
+        const glm::vec2 pos((float)x, (float)y);
         self->Mouse.onPosMov(pos);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-osxInputMgr::scrollCallback(float64 xOffset, float64 yOffset) {
+osxInputMgr::scrollCallback(double xOffset, double yOffset) {
     if (nullptr != self) {
-        const glm::vec2 scroll((float32)xOffset, (float32)yOffset);
+        const glm::vec2 scroll((float)xOffset, (float)yOffset);
         self->Mouse.onScroll(scroll);
     }
 }
@@ -173,7 +173,7 @@ osxInputMgr::mapKey(int osxBridgeKey) const {
 void
 osxInputMgr::setupKeyTable() {
 
-    for (int32 i = 0; i <= ORYOL_OSXBRIDGE_KEY_LAST; i++) {
+    for (int i = 0; i <= ORYOL_OSXBRIDGE_KEY_LAST; i++) {
         keyTable[i] = Key::InvalidKey;
     }
     

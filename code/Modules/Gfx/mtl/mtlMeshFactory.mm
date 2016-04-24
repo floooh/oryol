@@ -62,7 +62,7 @@ mtlMeshFactory::SetupResource(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlMeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
+mtlMeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(msh.Setup.ShouldSetupFromData());
     return this->createFromData(msh, data, size);
@@ -122,7 +122,7 @@ void
 mtlMeshFactory::setupPrimGroups(mesh& msh) {
     msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
     o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < msh.numPrimGroups; i++) {
+    for (int i = 0; i < msh.numPrimGroups; i++) {
         msh.primGroups[i] = msh.Setup.PrimitiveGroup(i);
     }
 }
@@ -139,7 +139,7 @@ mtlMeshFactory::createEmptyMesh(mesh& msh) {
 
     // create vertex buffer(s)
     const auto& vbAttrs = msh.vertexBufferAttrs;
-    const int32 vbSize = msh.Setup.NumVertices * msh.Setup.Layout.ByteSize();
+    const int vbSize = msh.Setup.NumVertices * msh.Setup.Layout.ByteSize();
     msh.buffers[mesh::vb].numSlots = Usage::Immutable == vbAttrs.BufferUsage ? 1 : 2;
     for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::vb].numSlots; slotIndex++) {
         msh.buffers[mesh::vb].mtlBuffers[slotIndex] = this->createBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
@@ -150,8 +150,8 @@ mtlMeshFactory::createEmptyMesh(mesh& msh) {
     const auto& ibAttrs = msh.indexBufferAttrs;
     if (IndexType::None != ibAttrs.Type) {
         msh.buffers[mesh::ib].numSlots = Usage::Immutable == ibAttrs.BufferUsage ? 1 : 2;
-        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
-        for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::ib].numSlots; slotIndex++) {
+        const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        for (uint8_t slotIndex = 0; slotIndex < msh.buffers[mesh::ib].numSlots; slotIndex++) {
             msh.buffers[mesh::ib].mtlBuffers[slotIndex] = this->createBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
         }
     }
@@ -161,7 +161,7 @@ mtlMeshFactory::createEmptyMesh(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
+mtlMeshFactory::createFromData(mesh& msh, const void* data, int size) {
     o_assert_dbg(nil == msh.buffers[mesh::vb].mtlBuffers[0]);
     o_assert_dbg(nil == msh.buffers[mesh::ib].mtlBuffers[0]);
     o_assert_dbg(1 == msh.buffers[mesh::vb].numSlots);
@@ -176,7 +176,7 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     // create vertex buffer
     if (msh.Setup.NumVertices > 0) {
         const auto& vbAttrs = msh.vertexBufferAttrs;
-        const int32 vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
+        const int vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
         msh.buffers[mesh::vb].numSlots = Usage::Immutable == vbAttrs.BufferUsage ? 1 : 2;
         const uint8* vertices = nullptr;
         if (InvalidIndex != msh.Setup.DataVertexOffset) {
@@ -192,7 +192,7 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int32 size) {
     // create optional index buffer
     if (msh.indexBufferAttrs.Type != IndexType::None) {
         const auto& ibAttrs = msh.indexBufferAttrs;
-        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         msh.buffers[mesh::ib].numSlots = Usage::Immutable == ibAttrs.BufferUsage ? 1 : 2;
         const uint8* indices = nullptr;
         if (InvalidIndex != msh.Setup.DataIndexOffset) {
@@ -228,16 +228,16 @@ mtlMeshFactory::createFullscreenQuad(mesh& msh) {
     msh.numPrimGroups = 1;
     msh.primGroups[0] = PrimitiveGroup(0, 6);
 
-    const float32 topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
-    const float32 botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
-    float32 vertices[] = {
+    const float topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
+    const float botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
+    float vertices[] = {
         -1.0f, +1.0f, 0.0f, 0.0f, topV,     // top-left corner
         +1.0f, +1.0f, 0.0f, 1.0f, topV,     // top-right corner
         +1.0f, -1.0f, 0.0f, 1.0f, botV,     // bottom-right corner
         -1.0f, -1.0f, 0.0f, 0.0f, botV,     // bottom-left corner
     };
 
-    uint16 indices[] = {
+    uint16_t indices[] = {
         0, 2, 1,            // topleft -> bottomright -> topright
         0, 3, 2,            // topleft -> bottomleft -> bottomright
     };
