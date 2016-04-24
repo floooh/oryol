@@ -49,7 +49,7 @@ tbOryolFile::Size() {
 //------------------------------------------------------------------------------
 size_t
 tbOryolFile::Read(void* buf, size_t elemSize, size_t count) {
-    int32 numBytes = int32(elemSize) * int32(count);
+    int numBytes = int(elemSize) * int(count);
     if ((this->pos + numBytes) > this->size) {
         numBytes = this->size - this->pos;
     }

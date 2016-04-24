@@ -83,7 +83,7 @@ imguiWrapper::setupFontTexture() {
     unsigned char* pixels;
     int width, height;
     io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
-    const int imgSize = width * height * sizeof(uint8);
+    const int imgSize = width * height * sizeof(uint8_t);
 
     auto texSetup = TextureSetup::FromPixelData(width, height, 1, TextureType::Texture2D, PixelFormat::L8);
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
@@ -129,7 +129,7 @@ imguiWrapper::setupMeshAndDrawState() {
 
 //------------------------------------------------------------------------------
 void
-imguiWrapper::NewFrame(float32 frameDurationInSeconds) {
+imguiWrapper::NewFrame(float frameDurationInSeconds) {
 
     ImGuiIO& io = ImGui::GetIO();
     DisplayAttrs dispAttrs = Gfx::RenderTargetAttrs();
@@ -211,7 +211,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
 
         // need to copy indices one by one and add the current base vertex index :/
         const ImDrawIdx* srcIndexPtr = &cmd_list->IdxBuffer.front();
-        const uint16 baseVertexIndex = numVertices;
+        const uint16_t baseVertexIndex = numVertices;
         for (int i = 0; i < cmdListNumIndices; i++) {
             self->indexData[numIndices++] = srcIndexPtr[i] + baseVertexIndex;
         }
@@ -248,7 +248,7 @@ imguiWrapper::imguiRenderDrawLists(ImDrawData* draw_data) {
             elmOffset += pcmd->ElemCount;
         }
     }
-    Gfx::ApplyScissorRect(0, 0, (int32)ImGui::GetIO().DisplaySize.x, (int32)ImGui::GetIO().DisplaySize.y);
+    Gfx::ApplyScissorRect(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 }
 
 } // namespace _priv

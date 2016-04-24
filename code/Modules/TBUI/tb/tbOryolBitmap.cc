@@ -39,7 +39,7 @@ tbOryolBitmap::Init(int w, int h, tb::uint32* data) {
 
 //------------------------------------------------------------------------------
 void
-tbOryolBitmap::SetData(uint32* data) {
+tbOryolBitmap::SetData(uint32_t* data) {
     o_assert_dbg(this->texture.IsValid());
     this->destroyTexture();
     this->createTexture(data);

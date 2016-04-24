@@ -49,7 +49,7 @@ soundResourceContainer::Create(const SoundEffectSetup& setup) {
 
 //------------------------------------------------------------------------------
 Id
-soundResourceContainer::Create(const SoundEffectSetup& setup, const void* data, int32 size) {
+soundResourceContainer::Create(const SoundEffectSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);

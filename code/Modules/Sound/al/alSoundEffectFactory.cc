@@ -14,18 +14,18 @@ alSoundEffectFactory::setupResource(soundEffect& effect) {
     o_assert_dbg(effect.Setup.NumVoices <= SoundEffectSetup::MaxNumVoices);
 
     // compute number of samples
-    const int32 numSamples = int32(effect.Setup.Duration * effect.Setup.BufferFrequency);
+    const int numSamples = int(effect.Setup.Duration * effect.Setup.BufferFrequency);
     o_assert_dbg(numSamples > 0);
     o_assert2(numSamples <= MaxNumBufferSamples, "Too many samples in sound effect!\n");
 
     // call optional the sample-func to generate samples
     if (effect.Setup.SampleFunc) {
-        const float32 dt = 1.0f / effect.Setup.BufferFrequency; // FIXME: will we run into precision problems with big buffers?
+        const float dt = 1.0f / effect.Setup.BufferFrequency; // FIXME: will we run into precision problems with big buffers?
         effect.Setup.SampleFunc(dt, this->sampleBuffer, numSamples);
     }
     else {
         // if no sample-func is provided, just fill the buffer with silence
-        Memory::Clear(this->sampleBuffer, numSamples * sizeof(int16));
+        Memory::Clear(this->sampleBuffer, numSamples * sizeof(int16_t));
     }
 
     // create the alBuffer and alSources
@@ -37,7 +37,7 @@ alSoundEffectFactory::setupResource(soundEffect& effect) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-alSoundEffectFactory::setupResource(soundEffect& effect, const void* data, int32 size) {
+alSoundEffectFactory::setupResource(soundEffect& effect, const void* data, int size) {
     o_error("alSoundEffectFactory::setupResource() from data not yet implemented!\n");
     return ResourceState::Failed;
 }
@@ -61,7 +61,7 @@ alSoundEffectFactory::destroyResource(soundEffect& effect) {
 
 //------------------------------------------------------------------------------
 void
-alSoundEffectFactory::createBufferAndSources(soundEffect& effect, const int16* samples, int32 numSamples) {
+alSoundEffectFactory::createBufferAndSources(soundEffect& effect, const int16_t* samples, int numSamples) {
     o_assert_dbg(0 == effect.alBuffer);
 
     alGenBuffers(1, &effect.alBuffer);
@@ -72,7 +72,7 @@ alSoundEffectFactory::createBufferAndSources(soundEffect& effect, const int16* s
     effect.nextSourceIndex = 0;
     if (numSamples > 0) {
         o_assert_dbg(nullptr != samples);
-        alBufferData(effect.alBuffer, AL_FORMAT_MONO16, samples, numSamples * sizeof(int16), effect.Setup.BufferFrequency);
+        alBufferData(effect.alBuffer, AL_FORMAT_MONO16, samples, numSamples * sizeof(int16_t), effect.Setup.BufferFrequency);
         ORYOL_SOUND_AL_CHECK_ERROR();
     }
 

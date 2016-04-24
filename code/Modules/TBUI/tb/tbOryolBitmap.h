@@ -36,8 +36,8 @@ public:
     void createTexture(tb::uint32* data);
     
     tbOryolBatchRenderer *renderer;
-    int32 width;
-    int32 height;
+    int width;
+    int height;
     
     ResourceLabel label;
     Id texture;

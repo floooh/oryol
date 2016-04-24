@@ -103,7 +103,7 @@ alSoundMgr::printALInfo() {
 
 //------------------------------------------------------------------------------
 int
-alSoundMgr::play(soundEffect* effect, int32 loopCount, float pitch, float volume) {
+alSoundMgr::play(soundEffect* effect, int loopCount, float pitch, float volume) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != effect);
     o_assert_dbg(effect->State == ResourceState::Valid);

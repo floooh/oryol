@@ -22,7 +22,7 @@ public:
     /// return true if wrapper is valid
     bool IsValid() const;
     /// call before issuing ImGui commands
-    void NewFrame(float32 frameDurationInSeconds);
+    void NewFrame(float frameDurationInSeconds);
 
 private:
     /// setup font texture

@@ -31,7 +31,7 @@ IMUI::Discard() {
 void
 IMUI::NewFrame(Duration frameDuration) {
     o_assert_dbg(IsValid());
-    state->imguiWrapper.NewFrame((float32)frameDuration.AsSeconds());
+    state->imguiWrapper.NewFrame((float)frameDuration.AsSeconds());
 }
 
 //------------------------------------------------------------------------------

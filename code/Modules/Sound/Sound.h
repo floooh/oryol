@@ -45,14 +45,14 @@ public:
     /// create a sound effect resource with data in stream
     static Id CreateResource(const SoundEffectSetup& setup, const Buffer& data);
     /// create a sound effect resource with raw data
-    static Id CreateResource(const SoundEffectSetup& setup, const void* data, int32 size);
+    static Id CreateResource(const SoundEffectSetup& setup, const void* data, int size);
     /// lookup a resource id by Locator
     static Id LookupResource(const Locator& locator);
     /// destroy one or several sound resources by matching label
     static void DestroyResources(ResourceLabel label);
 
     /// play a sound effect, return Voice handle
-    static Voice Play(Id snd, int32 loopCount=1, float pitch=1.0f, float volume=1.0f);
+    static Voice Play(Id snd, int loopCount=1, float pitch=1.0f, float volume=1.0f);
     /// stop playback of sound effect voice
     static void Stop(Id snd, Voice voice);
     /// set the frequency-shift of a playing sound

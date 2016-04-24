@@ -46,7 +46,7 @@ soundEffectFactoryBase::setupResource(soundEffect& /*effect*/) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-soundEffectFactoryBase::setupResource(soundEffect& /*effect*/, const void* /*data*/, int32 /*size*/) {
+soundEffectFactoryBase::setupResource(soundEffect& /*effect*/, const void* /*data*/, int /*size*/) {
     return ResourceState::Valid;
 }
 

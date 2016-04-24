@@ -22,9 +22,9 @@ public:
     /// the alBuffer object
     ALuint alBuffer;
     /// the next source index to grab for playback
-    int32 nextSourceIndex;
+    int nextSourceIndex;
     /// number of valid sources
-    int32 numSources;
+    int numSources;
     /// alSource objects, used round-robin for playback
     StaticArray<ALuint, SoundEffectSetup::MaxNumVoices> alSources;
 

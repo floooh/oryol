@@ -37,7 +37,7 @@ public:
     void add(const Locator& loc, Buffer&& data);
 
 private:
-    int32 uniqueCounter;
+    int uniqueCounter;
     Array<Buffer> resPool;
 };
 

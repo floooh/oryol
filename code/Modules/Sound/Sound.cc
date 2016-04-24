@@ -63,7 +63,7 @@ Sound::CreateResource(const SetupAndData<SoundEffectSetup>& setupAndData) {
 
 //------------------------------------------------------------------------------
 Id
-Sound::CreateResource(const SoundEffectSetup& setup, const void* data, int32 size) {
+Sound::CreateResource(const SoundEffectSetup& setup, const void* data, int size) {
     o_assert_dbg(IsValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
@@ -79,7 +79,7 @@ Sound::DestroyResources(ResourceLabel label) {
 
 //------------------------------------------------------------------------------
 Sound::Voice
-Sound::Play(Id resId, int32 loopCount, float pitch, float volume) {
+Sound::Play(Id resId, int loopCount, float pitch, float volume) {
     o_assert_dbg(IsValid());
     soundEffect* sndEffect = state->resourceContainer.lookupSoundEffect(resId);
     if (sndEffect) {

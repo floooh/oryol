@@ -24,7 +24,7 @@ public:
     /// create sound effect resource
     Id Create(const SoundEffectSetup& setup);
     /// create sound effect resource with raw data
-    Id Create(const SoundEffectSetup& setup, const void* data, int32 size);
+    Id Create(const SoundEffectSetup& setup, const void* data, int size);
     /// destroy resources by label
     void Destroy(ResourceLabel label);
 

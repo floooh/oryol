@@ -58,15 +58,15 @@ public:
     virtual tb::TBBitmap *CreateBitmap(int width, int height, tb::uint32 *data);
     
     struct Batch {
-        uint16 startIndex = 0;
-        uint16 numVertices = 0;
+        uint16_t startIndex = 0;
+        uint16_t numVertices = 0;
         Id texture;
-        uint32 batchId = 0;
+        uint32_t batchId = 0;
         tb::TBRect clipRect;
         tb::TBBitmapFragment* fragment = nullptr;
     };
     /// add a single quad
-    void addQuad(const tb::TBRect& dstRect, const tb::TBRect& srcRect, uint32 color, tb::TBBitmap* bitmap, tb::TBBitmapFragment* fragment);    
+    void addQuad(const tb::TBRect& dstRect, const tb::TBRect& srcRect, uint32_t color, tb::TBBitmap* bitmap, tb::TBBitmapFragment* fragment);
     /// setup white texture used for untextured areas
     void setupWhiteTexture();
     /// setup the mesh, shader and draw state
@@ -86,13 +86,13 @@ private:
     bool isValid;
     
     float fOpacitity;
-    uint8 ui8Opacity;
+    uint8_t ui8Opacity;
     tb::TBRect screenRect;
     tb::TBRect clipRect;
     int translationX;
     int translationY;
     float u0, v0, u1, v1;
-    uint32 batchId;
+    uint32_t batchId;
     bool inFlushBatch;
     
     static const int MaxNumVertices = 64 * 1024;
@@ -106,11 +106,11 @@ private:
     Array<ResourceLabel> texturesForDeletion;
     int curBatchIndex;
     Batch batches[MaxNumBatches];
-    uint16 curVertexIndex;
+    uint16_t curVertexIndex;
     struct Vertex {
-        float32 x, y;
-        float32 u, v;
-        uint32 c;
+        float x, y;
+        float u, v;
+        uint32_t c;
     } vertexData[MaxNumVertices];
 };
 

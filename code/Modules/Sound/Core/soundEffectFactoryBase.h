@@ -29,7 +29,7 @@ public:
     /// setup resource
     ResourceState::Code setupResource(soundEffect& effect);
     /// setup with 'raw' data
-    ResourceState::Code setupResource(soundEffect& effect, const void* data, int32 size);
+    ResourceState::Code setupResource(soundEffect& effect, const void* data, int size);
     /// destroy a resource
     void destroyResource(soundEffect& effect);
 

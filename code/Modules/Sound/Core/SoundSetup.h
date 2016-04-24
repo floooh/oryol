@@ -12,11 +12,11 @@ namespace Oryol {
 class SoundSetup {
 public:
     /// sound effect pool size
-    int32 SoundEffectPoolSize = 128;
+    int SoundEffectPoolSize = 128;
     /// initial resource label stack capacity
-    int32 ResourceLabelStackCapacity = 256;
+    int ResourceLabelStackCapacity = 256;
     /// initial resource registry capacity
-    int32 ResourceRegistryCapacity = 256;
+    int ResourceRegistryCapacity = 256;
 };
 
 } // namespace Oryol
