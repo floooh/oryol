@@ -26,7 +26,7 @@ ioWorker::stop() {
     o_assert(this->threadStartRequested);
     this->threadStopRequested = true;
     #if ORYOL_HAS_THREADS
-        this->wakeup.notify_one();
+        this->transferCondVar.notify_one();
         this->thread.join();
     #endif
     this->threadStopped = true;
@@ -53,6 +53,12 @@ ioWorker::doWork() {
     }
     o_assert_dbg(this->writeQueue.Empty());
 
+    #if ORYOL_HAS_THREADS
+    if (!this->transferQueue.Empty()) {
+        this->transferCondVar.notify_one();
+    }
+    #endif
+
     #if !ORYOL_HAS_THREADS
         // if platform has no threads, pump the message queue right
         // FIXME: we could do without all those queue transfers here!
@@ -74,11 +80,11 @@ ioWorker::threadFunc(ioWorker* self) {
     while (!self->threadStopRequested) {
 
         // wait for messages to arrive, and if so, transfer to read queue
-        std::unique_lock<std::mutex> lock(self->wakeupMutex);
-        self->wakeup.wait(lock);
+        std::unique_lock<std::mutex> lock(self->transferMutex);
+        self->transferCondVar.wait(lock);
         self->moveTransferToReadQueue();
         lock.unlock();
-        
+
         // now process the messages, this happens without locking
         while (!self->readQueue.Empty()) {
             self->onMsg(std::move(self->readQueue.Dequeue()));
@@ -112,25 +118,20 @@ void
 ioWorker::moveWriteToTransferQueue() {
     o_assert(this->isSendThread());
     // if the transfer queue is empty, we can do a very fast complete move
-    #if ORYOL_HAS_THREADS
-        this->transferQueueLock.lock();
-    #endif
-    if (this->transferQueue.Empty()) {
-        this->transferQueue = std::move(this->writeQueue);
-    }
-    else {
-        // otherwise move messages one by one
-        while (!this->writeQueue.Empty()) {
-            this->transferQueue.Enqueue(this->writeQueue.Dequeue());
+    {
+        #if ORYOL_HAS_THREADS
+        std::lock_guard<std::mutex> lock(this->transferMutex);
+        #endif
+        if (this->transferQueue.Empty()) {
+            this->transferQueue = std::move(this->writeQueue);
+        }
+        else {
+            // otherwise move messages one by one
+            while (!this->writeQueue.Empty()) {
+                this->transferQueue.Enqueue(this->writeQueue.Dequeue());
+            }
         }
     }
-    #if ORYOL_HAS_THREADS
-        // signal the worker thread if work is to be done
-        if (!this->transferQueue.Empty()) {
-            this->wakeup.notify_one();
-        }
-        this->transferQueueLock.unlock();
-    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -138,13 +139,7 @@ void
 ioWorker::moveTransferToReadQueue() {
     o_assert(this->isWorkerThread());
     o_assert(this->readQueue.Empty());
-    #if ORYOL_HAS_THREADS
-        this->transferQueueLock.lock();
-    #endif
     this->readQueue = std::move(this->transferQueue);
-    #if ORYOL_HAS_THREADS
-        this->transferQueueLock.unlock();
-    #endif
 }
 
 //------------------------------------------------------------------------------

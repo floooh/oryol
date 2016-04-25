@@ -69,9 +69,8 @@ private:
     std::thread::id sendThreadId;
     std::thread::id workThreadId;
     std::thread thread;
-    std::mutex transferQueueLock;
-    std::mutex wakeupMutex;
-    std::condition_variable wakeup;
+    std::mutex transferMutex;
+    std::condition_variable transferCondVar;
     #endif
     bool threadStartRequested = false;
     bool threadStopRequested = false;
