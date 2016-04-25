@@ -55,7 +55,7 @@ private:
     ID3D12Device* d3d12Device;          // shortcut ptr, owned by d3d12Renderer
     d3d12DescAllocator* descAllocator;  // shortcut ptr, owned by d3d12Renderer
     Id samplerHeap;
-    Map<uint64, int> cache;   // key: hash of sampler states, value: slot index in cache
+    Map<uint64_t, int> cache;   // key: hash of sampler states, value: slot index in cache
     #if ORYOL_DEBUG
     StaticArray<SamplerState, MaxNumSamplers> dbgStore;
     #endif

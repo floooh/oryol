@@ -66,9 +66,9 @@ d3d12SamplerCache::Lookup(const SamplerState* samplers, int numSamplers) {
     int slotIndex = InvalidIndex;
 
     // compute hash over sampler states
-    const uint64 seed = 0xABADFEEDDEADBEEF;
-    uint64 hash = fasthash64(samplers, numSamplers * sizeof(SamplerState), seed);
-    int32 cacheIndex = this->cache.FindIndex(hash);
+    const uint64_t seed = 0xABADFEEDDEADBEEF;
+    uint64_t hash = fasthash64(samplers, numSamplers * sizeof(SamplerState), seed);
+    int cacheIndex = this->cache.FindIndex(hash);
     if (InvalidIndex != cacheIndex) {
         // found an existing entry
         slotIndex = this->cache.ValueAtIndex(cacheIndex);
@@ -101,7 +101,7 @@ d3d12SamplerCache::Lookup(const SamplerState* samplers, int numSamplers) {
 
         // setup range of d3d12 samplers in sampler heap
         D3D12_SAMPLER_DESC d3d12SamplerDesc;
-        const uint32 incrSize = this->descAllocator->DescriptorIncrementSize(this->samplerHeap);
+        const uint32_t incrSize = this->descAllocator->DescriptorIncrementSize(this->samplerHeap);
         D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
         this->descAllocator->CPUHandle(cpuHandle, this->samplerHeap, slotIndex);
         for (int i = 0; i < numSamplers; i++) {

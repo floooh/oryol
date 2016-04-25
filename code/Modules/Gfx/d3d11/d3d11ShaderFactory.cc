@@ -54,7 +54,7 @@ d3d11ShaderFactory::SetupResource(shader& shd) {
 
     // create vertex shader
     const void* vsPtr = nullptr;
-    uint32 vsSize = 0;
+    uint32_t vsSize = 0;
     setup.VertexShaderByteCode(slang, vsPtr, vsSize);
     o_assert_dbg(vsPtr);
     hr = this->d3d11Device->CreateVertexShader(vsPtr, vsSize, NULL, &shd.d3d11VertexShader);
@@ -63,7 +63,7 @@ d3d11ShaderFactory::SetupResource(shader& shd) {
 
     // create pixel shader
     const void* psPtr = nullptr;
-    uint32 psSize = 0;
+    uint32_t psSize = 0;
     setup.FragmentShaderByteCode(slang, psPtr, psSize);
     o_assert_dbg(psPtr);
     hr = this->d3d11Device->CreatePixelShader(psPtr, psSize, NULL, &shd.d3d11PixelShader);
@@ -75,7 +75,7 @@ d3d11ShaderFactory::SetupResource(shader& shd) {
     Memory::Clear(&cbDesc, sizeof(cbDesc));
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
         const ShaderStage::Code bindStage = setup.UniformBlockBindStage(i);
-        const int32 bindSlot = setup.UniformBlockBindSlot(i);
+        const int bindSlot = setup.UniformBlockBindSlot(i);
         const UniformBlockLayout& layout = setup.UniformBlockLayout(i);
         o_assert_dbg(InvalidIndex != bindSlot);
 

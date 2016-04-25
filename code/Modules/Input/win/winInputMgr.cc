@@ -144,7 +144,7 @@ winInputMgr::mouseButtonCallback(int winButton, int winAction, int winMods) {
 void
 winInputMgr::cursorPosCallback(double winX, double winY) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)winX, (float32)winY);
+        const glm::vec2 pos((float)winX, (float)winY);
         self->Mouse.onPosMov(pos);
     }
 }
@@ -153,7 +153,7 @@ winInputMgr::cursorPosCallback(double winX, double winY) {
 void
 winInputMgr::scrollCallback(double winX, double winY) {
     if (nullptr != self) {
-        const glm::vec2 scroll((float32)winX, (float32)winY);
+        const glm::vec2 scroll((float)winX, (float)winY);
         self->Mouse.Scroll = scroll;
     }
 }
@@ -179,7 +179,7 @@ winInputMgr::mapKey(int winKey) const {
 void
 winInputMgr::setupKeyTable() {
 
-    for (int32 i = 0; i <= ORYOL_WIN_KEY_LAST; i++) {
+    for (int i = 0; i <= ORYOL_WIN_KEY_LAST; i++) {
         keyTable[i] = Key::InvalidKey;
     }
 

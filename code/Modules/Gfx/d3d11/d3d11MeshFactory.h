@@ -30,18 +30,18 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
-    ResourceState::Code SetupResource(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code SetupResource(mesh& mesh, const void* data, int size);
     /// discard the resource
     void DestroyResource(mesh& mesh);
 
     /// helper method to setup a mesh object as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
     /// create from data
-    ResourceState::Code createBuffers(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code createBuffers(mesh& mesh, const void* data, int size);
 
 private:
     /// helper method to create vertex or index buffer
-    ID3D11Buffer* createBuffer(const void* vertexData, uint32 vertexDataSize, uint32 d3d11BindFlags, Usage::Code usage);
+    ID3D11Buffer* createBuffer(const void* vertexData, uint32_t vertexDataSize, uint32_t d3d11BindFlags, Usage::Code usage);
     /// helper method to populate vertex and index buffer attributes in mesh object
     void setupAttrs(mesh& mesh);
     /// helper method to populate primitive groups array in mesh object

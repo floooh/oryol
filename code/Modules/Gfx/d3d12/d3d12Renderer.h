@@ -50,31 +50,31 @@ public:
     /// apply a render target (default or offscreen)
     void applyRenderTarget(texture* rt, const ClearState& clearState);
     /// apply viewport
-    void applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
+    void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
     /// apply scissor rect
-    void applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft);
+    void applyScissorRect(int x, int y, int width, int height, bool originTopLeft);
     /// apply draw state
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
-    void applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize);
     /// apply a textures
-    void applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures);
+    void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
     /// submit a draw call with primitive group index in current mesh
-    void draw(int32 primGroupIndex);
+    void draw(int primGroupIndex);
     /// submit a draw call with direct primitive group
     void draw(const PrimitiveGroup& primGroup);
     /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int32 primGroupIndex, int32 numInstances);
+    void drawInstanced(int primGroupIndex, int numInstances);
     /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances);
+    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances);
     /// update vertex data
-    void updateVertices(mesh* msh, const void* data, int32 numBytes);
+    void updateVertices(mesh* msh, const void* data, int numBytes);
     /// update index data
-    void updateIndices(mesh* msh, const void* data, int32 numBytes);
+    void updateIndices(mesh* msh, const void* data, int numBytes);
     /// update texture data
     void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSize);
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(void* buf, int32 bufNumBytes);
+    void readPixels(void* buf, int bufNumBytes);
 
     /// wait for the previous frame to finish
     void frameSync();
@@ -93,9 +93,9 @@ public:
     d3d12SamplerCache samplerCache;
 
     /// the current frame index, starts at 0 and is incremented in commitFrame
-    uint64 frameIndex;
+    uint64_t frameIndex;
     /// the current frame index module the max number of in-flight-frames
-    uint32 curFrameRotateIndex;
+    uint32_t curFrameRotateIndex;
     /// get the current (frame-rotated) command list
     ID3D12GraphicsCommandList* curCommandList() const {
         return this->frameResources[this->curFrameRotateIndex].commandList;
@@ -127,7 +127,7 @@ private:
     /// destroy the root signature object
     void destroyRootSignature();
     /// create the per-frame resources
-    void createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame);
+    void createFrameResources(int cbSize, int maxDrawCallsPerFrame);
     /// destroy the per-frame resource
     void destroyFrameResources();
     /// perform a render-target transition
@@ -135,7 +135,7 @@ private:
     /// (re-)set the root signature and descriptor heaps on the current command list
     void resetRootSignatureAndDescriptorHeaps();
     /// perform actual framebuffer resize (called from frameSync())
-    void doResize(int32 resizeWidth, int32 resizeHeight);
+    void doResize(int resizeWidth, int resizeHeight);
 
     bool valid;
     GfxSetup gfxSetup;
@@ -158,7 +158,7 @@ private:
     StaticArray<Id, d3d12Config::NumFrames> renderTargetViews;
     StaticArray<int, d3d12Config::NumFrames> rtvDescriptorSlots;
     int dsvDescriptorSlot;
-    int32 curBackBufferIndex;
+    int curBackBufferIndex;
     
     // root signature slots, ordered from low to high change-frequency
     enum rootParam {
@@ -180,16 +180,16 @@ private:
         ID3D12GraphicsCommandList* commandList = nullptr;
         ID3D12Resource* constantBuffer = nullptr;
         Id srvHeap;
-        uint8* cbCpuPtr = nullptr;
-        uint64 cbGpuPtr = 0;
+        uint8_t* cbCpuPtr = nullptr;
+        uint64_t cbGpuPtr = 0;
     };
     StaticArray<frameResources, d3d12Config::NumFrames> frameResources;
-    int32 curCBOffset;
-    int32 curSRVSlotIndex;
+    int curCBOffset;
+    int curSRVSlotIndex;
 
     bool resizeFlag;
-    int32 resizeWidth;
-    int32 resizeHeight;
+    int resizeWidth;
+    int resizeHeight;
 };
 
 } // namespace _priv

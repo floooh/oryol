@@ -112,7 +112,7 @@ winURLLoader::doRequestInternal(const Ptr<IORead>& req) {
                         BOOL queryDataResult = WinHttpQueryDataAvailable(hRequest, &bytesToRead);
                         o_assert(queryDataResult);
                         if (bytesToRead > 0) {
-                            uint8* dstPtr = req->Data.Add(bytesToRead);
+                            uint8_t* dstPtr = req->Data.Add(bytesToRead);
                             o_assert(nullptr != dstPtr);
                             DWORD bytesRead = 0;
                             BOOL readDataResult = WinHttpReadData(hRequest, dstPtr, bytesToRead, &bytesRead);
@@ -162,7 +162,7 @@ winURLLoader::obtainConnection(const URL& url) {
         const String portString = url.Port();
         INTERNET_PORT port = INTERNET_DEFAULT_HTTP_PORT;
         if (!portString.Empty()) {
-            port = StringConverter::FromString<int16>(portString);
+            port = StringConverter::FromString<int16_t>(portString);
         }
         con.hConnection = WinHttpConnect(this->hSession,        // hSession
                                           host.AsCStr(),        // pswzServerName
@@ -184,7 +184,7 @@ winURLLoader::obtainConnection(const URL& url) {
 void
 winURLLoader::garbageCollectConnections() {
     std::chrono::steady_clock::time_point curTime = std::chrono::steady_clock::now();
-    for (int32 i = this->connections.Size() - 1; i >= 0; i--) {
+    for (int i = this->connections.Size() - 1; i >= 0; i--) {
         const String key = this->connections.KeyAtIndex(i);
         const connection con = this->connections.ValueAtIndex(i);
         std::chrono::seconds age = std::chrono::duration_cast<std::chrono::seconds>(curTime - con.timeStamp); 

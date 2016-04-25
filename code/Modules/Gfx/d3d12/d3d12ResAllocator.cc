@@ -34,13 +34,13 @@ d3d12ResAllocator::DestroyAll() {
 
 //------------------------------------------------------------------------------
 void
-d3d12ResAllocator::GarbageCollect(uint64 frameIndex) {
+d3d12ResAllocator::GarbageCollect(uint64_t frameIndex) {
 
     // release all resources from longer then NumFrames befores,
     // these are definitely no longer accessed by the GPU
-    const uint64 safeNumFrames = d3d12Config::NumFrames + 1;
+    const uint64_t safeNumFrames = d3d12Config::NumFrames + 1;
     if (frameIndex > safeNumFrames) {
-        const uint64 minReleaseFrame = frameIndex - safeNumFrames;
+        const uint64_t minReleaseFrame = frameIndex - safeNumFrames;
         freeItem item;
         while (!this->releaseQueue.Empty() && (this->releaseQueue.Front().frameIndex < minReleaseFrame)) {
             this->releaseQueue.Dequeue(item);
@@ -53,7 +53,7 @@ d3d12ResAllocator::GarbageCollect(uint64 frameIndex) {
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32 size) {
+d3d12ResAllocator::createBuffer(ID3D12Device* d3d12Device, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initialState, uint32_t size) {
 
     D3D12_HEAP_PROPERTIES heapProps;
     d3d12Types::initHeapProps(&heapProps, heapType);
@@ -94,7 +94,7 @@ d3d12ResAllocator::Transition(ID3D12GraphicsCommandList* cmdList, ID3D12Resource
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size) {
+d3d12ResAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32_t size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(size > 0);
 
@@ -105,7 +105,7 @@ d3d12ResAllocator::AllocUploadBuffer(ID3D12Device* d3d12Device, uint32 size) {
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, D3D12_RESOURCE_STATES state, uint32 size) {
+d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, D3D12_RESOURCE_STATES state, uint32_t size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(size > 0);
 
@@ -116,7 +116,7 @@ d3d12ResAllocator::AllocDefaultBuffer(ID3D12Device* d3d12Device, D3D12_RESOURCE_
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, D3D12_RESOURCE_STATES state, const void* data, uint32 size) {
+d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64_t frameIndex, D3D12_RESOURCE_STATES state, const void* data, uint32_t size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(cmdList);
     o_assert_dbg(size > 0);
@@ -129,7 +129,7 @@ d3d12ResAllocator::AllocStaticBuffer(ID3D12Device* d3d12Device, ID3D12GraphicsCo
 
 //------------------------------------------------------------------------------
 void
-d3d12ResAllocator::CopyBufferData(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, D3D12_RESOURCE_STATES state, ID3D12Resource* dstResource, ID3D12Resource* optUploadBuffer, const void* data, uint32 size) {
+d3d12ResAllocator::CopyBufferData(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64_t frameIndex, D3D12_RESOURCE_STATES state, ID3D12Resource* dstResource, ID3D12Resource* optUploadBuffer, const void* data, uint32_t size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(cmdList);
     o_assert_dbg(data && (size > 0));
@@ -214,7 +214,7 @@ d3d12ResAllocator::AllocRenderTarget(ID3D12Device* d3d12Device, int width, int h
 }
 
 //------------------------------------------------------------------------------
-uint32
+uint32_t
 d3d12ResAllocator::ComputeTextureCopyFootprint(ID3D12Device* d3d12Device, const TextureSetup& setup) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg((setup.Width > 0) && (setup.Height > 0) && (setup.NumMipMaps > 0));
@@ -235,12 +235,12 @@ d3d12ResAllocator::ComputeTextureCopyFootprint(ID3D12Device* d3d12Device, const 
         nullptr,            // pNumRows
         nullptr,            // pRowSizeInBytes
         &dstTotalSize);     // pTotalBytes
-    return (uint32) dstTotalSize;
+    return (uint32_t) dstTotalSize;
 }
 
 //------------------------------------------------------------------------------
 ID3D12Resource*
-d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64 frameIndex, const TextureSetup& setup, const void* data, int32 size) {
+d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64_t frameIndex, const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(d3d12Device);
     o_assert_dbg(cmdList);
     o_assert_dbg((setup.Width > 0) && (setup.Height > 0) && (setup.NumMipMaps > 0));
@@ -274,7 +274,7 @@ d3d12ResAllocator::AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommand
 void
 d3d12ResAllocator::CopyTextureData(ID3D12Device* d3d12Device, 
     ID3D12GraphicsCommandList* cmdList, 
-    uint64 frameIndex, 
+    uint64_t frameIndex, 
     ID3D12Resource* dstTexture, 
     ID3D12Resource* optUploadBuffer, 
     const void* data, 
@@ -294,7 +294,7 @@ d3d12ResAllocator::CopyTextureData(ID3D12Device* d3d12Device,
 
     // request texture layout information
     const int numSubResources = offsetsAndSizes.NumFaces * offsetsAndSizes.NumMipMaps;
-    const int32 maxNumSubResources = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
+    const int maxNumSubResources = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
     o_assert(numSubResources <= maxNumSubResources);
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT dstLayouts[maxNumSubResources] = { 0 };
     UINT dstNumRows[maxNumSubResources] = { 0 };
@@ -314,7 +314,7 @@ d3d12ResAllocator::CopyTextureData(ID3D12Device* d3d12Device,
     // optionally create a temporary upload buffer
     ID3D12Resource* uploadBuffer = optUploadBuffer;
     if (nullptr == uploadBuffer) {
-        uploadBuffer = this->AllocUploadBuffer(d3d12Device, uint32(dstTotalSize));
+        uploadBuffer = this->AllocUploadBuffer(d3d12Device, uint32_t(dstTotalSize));
     }
 
     // copy the source data into the upload buffer
@@ -326,26 +326,26 @@ d3d12ResAllocator::CopyTextureData(ID3D12Device* d3d12Device,
     dstLoc.pResource = dstTexture;
     dstLoc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 
-    uint8* dstStartPtr = nullptr;
+    uint8_t* dstStartPtr = nullptr;
     hr = uploadBuffer->Map(0, nullptr, (void**)&dstStartPtr);
     o_assert(SUCCEEDED(hr) && dstStartPtr);
 
-    const uint8* srcStartPtr = (const uint8*)data;
+    const uint8_t* srcStartPtr = (const uint8_t*)data;
     int subResourceIndex = 0;
     for (int faceIndex = 0; faceIndex < offsetsAndSizes.NumFaces; faceIndex++) {
         for (int mipIndex = 0; mipIndex < offsetsAndSizes.NumMipMaps; mipIndex++, subResourceIndex++) {
 
-            const uint8* srcPtr = srcStartPtr + offsetsAndSizes.Offsets[faceIndex][mipIndex];
-            const uint32 srcRowPitch = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
-            const uint32 srcNumRows = offsetsAndSizes.Sizes[faceIndex][mipIndex] / srcRowPitch;
+            const uint8_t* srcPtr = srcStartPtr + offsetsAndSizes.Offsets[faceIndex][mipIndex];
+            const uint32_t srcRowPitch = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
+            const uint32_t srcNumRows = offsetsAndSizes.Sizes[faceIndex][mipIndex] / srcRowPitch;
             o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= srcRowPitch);
             o_assert_dbg(dstRowSizeInBytes[subResourceIndex] <= dstLayouts[subResourceIndex].Footprint.RowPitch);
             o_assert_dbg((srcNumRows * srcRowPitch) == offsetsAndSizes.Sizes[faceIndex][mipIndex]);
             o_assert_dbg(srcNumRows == dstNumRows[subResourceIndex]);
 
-            uint8* dstPtr = dstStartPtr + dstLayouts[subResourceIndex].Offset;
-            const uint32 dstRowSize = (const uint32)dstRowSizeInBytes[subResourceIndex];
-            for (uint32 rowIndex = 0; rowIndex < srcNumRows; rowIndex++) {
+            uint8_t* dstPtr = dstStartPtr + dstLayouts[subResourceIndex].Offset;
+            const uint32_t dstRowSize = (const uint32_t)dstRowSizeInBytes[subResourceIndex];
+            for (uint32_t rowIndex = 0; rowIndex < srcNumRows; rowIndex++) {
                 o_assert_dbg((dstPtr + dstRowSize) <= (dstStartPtr + dstTotalSize));
                 std::memcpy(dstPtr, srcPtr, dstRowSize);
                 dstPtr += dstLayouts[subResourceIndex].Footprint.RowPitch;
@@ -371,7 +371,7 @@ d3d12ResAllocator::CopyTextureData(ID3D12Device* d3d12Device,
 
 //------------------------------------------------------------------------------
 void
-d3d12ResAllocator::ReleaseDeferred(uint64 frameIndex, ID3D12Object* res) {
+d3d12ResAllocator::ReleaseDeferred(uint64_t frameIndex, ID3D12Object* res) {
     o_assert_dbg(res);
 
     // place a new item in the free-queue, the actual release will happen

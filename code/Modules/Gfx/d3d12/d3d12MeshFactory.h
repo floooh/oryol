@@ -29,14 +29,14 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
-    ResourceState::Code SetupResource(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code SetupResource(mesh& mesh, const void* data, int size);
     /// discard the resource
     void DestroyResource(mesh& mesh);
 
     /// helper method to setup a mesh object as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
     /// create vertex and index buffers, all 
-    ResourceState::Code create(mesh& mesh, const void* data, int32 size);
+    ResourceState::Code create(mesh& mesh, const void* data, int size);
 
 private:
     /// helper method to setup mesh vertex/index buffer attributes struct
@@ -44,7 +44,7 @@ private:
     /// helper method to setup mesh primitive group array
     void setupPrimGroups(mesh& mesh);
     /// helper method to create d3d12 buffer objects for different usage scenarios
-    void createBuffers(mesh& msh, int type, Usage::Code usage, const void* data, int32 size);
+    void createBuffers(mesh& msh, int type, Usage::Code usage, const void* data, int size);
 
     gfxPointers pointers;
     bool isValid = false;

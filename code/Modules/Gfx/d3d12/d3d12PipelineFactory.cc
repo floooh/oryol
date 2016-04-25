@@ -71,7 +71,7 @@ d3d12PipelineFactory::DestroyResource(pipeline& pip) {
     o_assert_dbg(this->isValid);
     if (pip.d3d12PipelineState) {
         d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
-        const uint64 frameIndex = this->pointers.renderer->frameIndex;
+        const uint64_t frameIndex = this->pointers.renderer->frameIndex;
         resAllocator.ReleaseDeferred(frameIndex, pip.d3d12PipelineState);
     }
     pipelineFactoryBase::DestroyResource(pip);

@@ -20,7 +20,7 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    static const int32 NumSlots = d3d12Config::NumFrames;
+    static const int NumSlots = d3d12Config::NumFrames;
     struct buffer {
         buffer() : 
             updateFrameIndex(InvalidIndex),
@@ -29,9 +29,9 @@ public:
             d3d12RenderBuffers.Fill(nullptr);
             d3d12UploadBuffers.Fill(nullptr);
         }
-        uint64 updateFrameIndex;
-        uint8 numSlots;
-        uint8 activeSlot;
+        uint64_t updateFrameIndex;
+        uint8_t numSlots;
+        uint8_t activeSlot;
         StaticArray<ID3D12Resource*,NumSlots> d3d12RenderBuffers;
         StaticArray<ID3D12Resource*,NumSlots> d3d12UploadBuffers;
     };

@@ -39,8 +39,8 @@ namespace _priv {
 // Compression function for Merkle-Damgard construction.
 // This function is generated using the framework provided.
 //------------------------------------------------------------------------------
-inline uint64
-fasthash_mix(uint64 h) {
+inline uint64_t
+fasthash_mix(uint64_t h) {
     h ^= h >> 23;
     h *= 0x2127599bf4325c37ULL;
     h ^= h >> 47;
@@ -48,15 +48,15 @@ fasthash_mix(uint64 h) {
 }
 
 //------------------------------------------------------------------------------
-inline uint64 
-fasthash64(const void *buf, size_t len, uint64 seed)
+inline uint64_t 
+fasthash64(const void *buf, size_t len, uint64_t seed)
 {
-    const uint64    m = 0x880355f21e6d1965ULL;
-    const uint64 *pos = (const uint64 *)buf;
-    const uint64 *end = pos + (len / 8);
+    const uint64_t    m = 0x880355f21e6d1965ULL;
+    const uint64_t *pos = (const uint64_t *)buf;
+    const uint64_t *end = pos + (len / 8);
     const unsigned char *pos2;
-    uint64 h = seed ^ (len * m);
-    uint64 v;
+    uint64_t h = seed ^ (len * m);
+    uint64_t v;
 
     while (pos != end) {
         v = *pos++;
@@ -68,13 +68,13 @@ fasthash64(const void *buf, size_t len, uint64 seed)
     v = 0;
 
     switch (len & 7) {
-    case 7: v ^= (uint64)pos2[6] << 48;
-    case 6: v ^= (uint64)pos2[5] << 40;
-    case 5: v ^= (uint64)pos2[4] << 32;
-    case 4: v ^= (uint64)pos2[3] << 24;
-    case 3: v ^= (uint64)pos2[2] << 16;
-    case 2: v ^= (uint64)pos2[1] << 8;
-    case 1: v ^= (uint64)pos2[0];
+    case 7: v ^= (uint64_t)pos2[6] << 48;
+    case 6: v ^= (uint64_t)pos2[5] << 40;
+    case 5: v ^= (uint64_t)pos2[4] << 32;
+    case 4: v ^= (uint64_t)pos2[3] << 24;
+    case 3: v ^= (uint64_t)pos2[2] << 16;
+    case 2: v ^= (uint64_t)pos2[1] << 8;
+    case 1: v ^= (uint64_t)pos2[0];
         h ^= fasthash_mix(v);
         h *= m;
     }
@@ -83,14 +83,14 @@ fasthash64(const void *buf, size_t len, uint64 seed)
 }
 
 //------------------------------------------------------------------------------
-inline uint32 
-fasthash32(const void *buf, size_t len, uint32 seed)
+inline uint32_t
+fasthash32(const void *buf, size_t len, uint32_t seed)
 {
     // the following trick converts the 64-bit hashcode to Fermat
     // residue, which shall retain information from both the higher
     // and lower parts of hashcode.
-    uint64 h = fasthash64(buf, len, seed);
-    return uint32(h - (h >> 32));
+    uint64_t h = fasthash64(buf, len, seed);
+    return uint32_t(h - (h >> 32));
 }
 
 } // namespace _priv

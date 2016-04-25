@@ -96,7 +96,7 @@ public:
 class PixelFormat {
 public:
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64 {
+    enum Code : uint64_t {
     #else
     enum Code {
     #endif
@@ -435,7 +435,7 @@ class TextureFilterMode {
 public:
     /// filtering modes
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16 {
+    enum Code : uint16_t {
     #else
     enum Code {
     #endif
@@ -477,7 +477,7 @@ class TextureWrapMode {
 public:
     /// wrap modes
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16 {
+    enum Code : uint16_t {
     #else
     enum Code {
     #endif
@@ -686,7 +686,7 @@ public:
 class Face {
 public:
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16 {
+    enum Code : uint16_t {
     #else
     enum Code {
     #endif
@@ -708,7 +708,7 @@ public:
 class CompareFunc {
 public:
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16 {
+    enum Code : uint16_t {
     #else
     enum Code {
     #endif
@@ -734,7 +734,7 @@ public:
 class StencilOp {
 public:
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16 {
+    enum Code : uint16_t {
     #else
     enum Code {
     #endif
@@ -760,7 +760,7 @@ public:
 class BlendFactor {
 public:
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64 {
+    enum Code : uint64_t {
     #else
     enum Code {
     #endif
@@ -793,7 +793,7 @@ public:
 class BlendOperation {
 public:
     #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64 {
+    enum Code : uint64_t {
     #else
     enum Code {
     #endif

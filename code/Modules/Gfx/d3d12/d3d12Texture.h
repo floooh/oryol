@@ -28,10 +28,10 @@ public:
         ID3D12Resource* d3d12UploadBuffer;      // only if dynamic texture
         D3D12_RESOURCE_STATES d3d12TextureState;
     };
-    static const int32 NumSlots = d3d12Config::NumFrames;
-    uint64 updateFrameIndex;
-    uint32 numSlots;
-    uint32 activeSlot;
+    static const int NumSlots = d3d12Config::NumFrames;
+    uint64_t updateFrameIndex;
+    uint32_t numSlots;
+    uint32_t activeSlot;
     StaticArray<slot, NumSlots> slots;
 
     ID3D12Resource* d3d12DepthBufferRes;

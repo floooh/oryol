@@ -50,7 +50,7 @@ private:
     static void scrollCallback(double xOffset, double yOffset);
 
     static winInputMgr* self;
-    int32 runLoopId;
+    int runLoopId;
 };
 
 } // namespace _priv

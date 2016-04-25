@@ -22,7 +22,7 @@ public:
     /// pointer to and size of compiled shader data
     struct shaderBlob {
         const void* ptr = nullptr;
-        uint32 size = 0;
+        uint32_t size = 0;
     };
     shaderBlob vertexShader;
     shaderBlob pixelShader;
