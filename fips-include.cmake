@@ -14,10 +14,6 @@ if (ORYOL_USE_LIBCURL)
     add_definitions(-DORYOL_USE_LIBCURL=1)
 endif()
 
-# for TurboBadger UI support, override the search path for the 
-# tb_config.h overriden header file
-include_directories(${ORYOL_DIR}/code/Modules/TBUI/tb)
-
 # profiling enabled?
 if (FIPS_PROFILING)
     add_definitions(-DORYOL_PROFILING=1)

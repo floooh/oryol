@@ -149,9 +149,6 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
     for ext in ['txt', 'dump'] :
         for dataFile in glob.glob(proj_dir + '/data/*.{}'.format(ext)) :
             shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
-    tbui_from = '{}/data/tbui'.format(proj_dir)
-    tbui_to   = '{}/data/tbui'.format(webpage_dir)
-    shutil.copytree(tbui_from, tbui_to)
 
 #-------------------------------------------------------------------------------
 def build_deploy_webpage(fips_dir, proj_dir) :
