@@ -1,7 +1,0 @@
-fips_begin_app(Fractal windowed)
-    fips_vs_warning_level(3)
-    fips_files(Fractal.cc)
-    oryol_shader(shaders.shd)    
-    fips_deps(Gfx Input IMUI)
-    oryol_add_web_sample(Fractal "Simple fractal explorer" "emscripten,pnacl,android" "Fractal.jpg" "Fractal/Fractal.cc")
-fips_end_app()
