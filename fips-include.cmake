@@ -176,14 +176,6 @@ else()
 endif()
 
 #-------------------------------------------------------------------------------
-#   Add a sample file to the web samples description file
-#
-file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
-macro(oryol_add_web_sample name desc type image src)
-    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
-endmacro()
-
-#-------------------------------------------------------------------------------
 #   Wrap shader code generation
 #
 macro(oryol_shader shd)
