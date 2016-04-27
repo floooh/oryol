@@ -146,7 +146,7 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
     tex_dstdir = webpage_dir + '/data'
     texexport.configure(proj_dir, tex_srcdir, tex_dstdir)
     texexport.exportSampleTextures()
-    for ext in ['txt', 'dump'] :
+    for ext in ['txt'] :
         for dataFile in glob.glob(proj_dir + '/data/*.{}'.format(ext)) :
             shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
 
