@@ -32,10 +32,16 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         if not os.path.isdir(platform_dir) :
             os.makedirs(platform_dir)
 
+    # link to the Extension Samples
+    content  = '<div class="thumb">\n'
+    content += '  <div class="thumb-title">To Extension Samples...</div>\n'
+    content += '  <div class="img-frame"><a href="http://floooh.github.com/oryol-samples/index.html"><img class="image" src="ext_samples.jpg"></img></a></div>\n'
+    content += '</div>\n'
+    
     # build the thumbnail gallery
-    content = ''
     for sample in samples :
         if sample['name'] != '__end__' :
+            log.info('> adding thumbnail for {}'.format(sample['name']))
             name    = sample['name']
             imgPath = sample['image']
             types   = sample['type'] 
@@ -68,7 +74,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         f.write(html)
 
     # copy other required files
-    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png'] :
+    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
         log.info('> copy file: {}'.format(name))
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
