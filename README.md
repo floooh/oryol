@@ -17,6 +17,12 @@ soon-ish Vulkan from the same C++ and shader source
 |OSX + Linux (OpenGL)|[![Build Status](https://travis-ci.org/floooh/oryol.svg?branch=master)](https://travis-ci.org/floooh/oryol)|
 |Windows (OpenGL + D3D11)|[![Build status](https://ci.appveyor.com/api/projects/status/hn5sup2y532h64jg/branch/master?svg=true)](https://ci.appveyor.com/project/floooh/oryol/branch/master)|
 
+### Live Demos:
+
+- Oryol Core Samples: http://floooh.github.io/oryol/
+- Oryol Extension Samples: http://floooh.github.io/oryol-samples/
+- KC85 emulator: http://floooh.github.io/virtualkc/
+
 ### How to Build (Quick'n'Dirty):
 
 You need: cmake, python and your platform's default C/C++ development environment.
@@ -42,12 +48,6 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 * [Core Module](code/Modules/Core/README.md)
 * [IO Module](code/Modules/IO/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
-
-### Live Demos:
-
-- Oryol Core Samples: http://floooh.github.io/oryol/
-- Oryol Extension Samples: http://floooh.github.io/oryol-samples/
-- KC85 emulator: http://floooh.github.io/virtualkc/
 
 ### Extension Modules:
 
