@@ -56,11 +56,11 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             content += '  <div class="img-frame"><a href="asmjs/{}.html"><img class="image" src="{}" title="{}"></img></a></div>\n'.format(name,imgFileName,desc)
             content += '  <div class="thumb-bar">\n'
             content += '    <ul class="thumb-list">\n'
-            if 'emscripten' in types :
+            if BuildEmscripten and 'emscripten' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="asmjs/{}.html">asm.js</a></li>\n'.format(name)
-            if 'pnacl' in types :
+            if BuildPNaCl and 'pnacl' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="pnacl/{}.html">pnacl</a></li>\n'.format(name)
-            if 'emscripten' in types :
+            if BuildWasm and 'emscripten' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="wasm/{}.html">wasm</a></li>\n'.format(name)
             content += '    </ul>\n'
             content += '  </div>\n'
