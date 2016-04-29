@@ -19,12 +19,6 @@ imports:
         git: https://github.com/floooh/fips-remotery.git
     fips-vld:
         git: https://github.com/floooh/fips-vld.git
-    fips-turbobadger:
-        git: https://github.com/fungos/fips-turbobadger.git
-    fips-imgui:
-        git: https://github.com/fungos/fips-imgui.git
-    fips-soloud:
-        git: https://github.com/floooh/fips-soloud.git
 
 exports:
     header-dirs :
@@ -41,7 +35,4 @@ exports:
         Assets :        code/Modules/Assets
         Dbg :           code/Modules/Dbg
         Input :         code/Modules/Input
-        IMUI :          code/Modules/IMUI
-        TBUI :          code/Modules/TBUI
-        Sound :         code/Modules/Sound
         

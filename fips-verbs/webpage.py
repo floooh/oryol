@@ -32,10 +32,16 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         if not os.path.isdir(platform_dir) :
             os.makedirs(platform_dir)
 
+    # link to the Extension Samples
+    content  = '<div class="thumb">\n'
+    content += '  <div class="thumb-title">To Extension Samples...</div>\n'
+    content += '  <div class="img-frame"><a href="http://floooh.github.com/oryol-samples/index.html"><img class="image" src="ext_samples.jpg"></img></a></div>\n'
+    content += '</div>\n'
+    
     # build the thumbnail gallery
-    content = ''
     for sample in samples :
         if sample['name'] != '__end__' :
+            log.info('> adding thumbnail for {}'.format(sample['name']))
             name    = sample['name']
             imgPath = sample['image']
             types   = sample['type'] 
@@ -50,11 +56,11 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             content += '  <div class="img-frame"><a href="asmjs/{}.html"><img class="image" src="{}" title="{}"></img></a></div>\n'.format(name,imgFileName,desc)
             content += '  <div class="thumb-bar">\n'
             content += '    <ul class="thumb-list">\n'
-            if 'emscripten' in types :
+            if BuildEmscripten and 'emscripten' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="asmjs/{}.html">asm.js</a></li>\n'.format(name)
-            if 'pnacl' in types :
+            if BuildPNaCl and 'pnacl' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="pnacl/{}.html">pnacl</a></li>\n'.format(name)
-            if 'emscripten' in types :
+            if BuildWasm and 'emscripten' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="wasm/{}.html">wasm</a></li>\n'.format(name)
             content += '    </ul>\n'
             content += '  </div>\n'
@@ -68,7 +74,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         f.write(html)
 
     # copy other required files
-    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png'] :
+    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
         log.info('> copy file: {}'.format(name))
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
@@ -146,12 +152,9 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
     tex_dstdir = webpage_dir + '/data'
     texexport.configure(proj_dir, tex_srcdir, tex_dstdir)
     texexport.exportSampleTextures()
-    for ext in ['txt', 'dump'] :
+    for ext in ['txt'] :
         for dataFile in glob.glob(proj_dir + '/data/*.{}'.format(ext)) :
             shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
-    tbui_from = '{}/data/tbui'.format(proj_dir)
-    tbui_to   = '{}/data/tbui'.format(webpage_dir)
-    shutil.copytree(tbui_from, tbui_to)
 
 #-------------------------------------------------------------------------------
 def build_deploy_webpage(fips_dir, proj_dir) :

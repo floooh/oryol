@@ -14,10 +14,6 @@ if (ORYOL_USE_LIBCURL)
     add_definitions(-DORYOL_USE_LIBCURL=1)
 endif()
 
-# for TurboBadger UI support, override the search path for the 
-# tb_config.h overriden header file
-include_directories(${ORYOL_DIR}/code/Modules/TBUI/tb)
-
 # profiling enabled?
 if (FIPS_PROFILING)
     add_definitions(-DORYOL_PROFILING=1)
@@ -178,14 +174,6 @@ if (FIPS_EMSCRIPTEN OR FIPS_PNACL)
 else()
     add_definitions(-DORYOL_SAMPLE_URL=\"${ORYOL_SAMPLE_URL}\")
 endif()
-
-#-------------------------------------------------------------------------------
-#   Add a sample file to the web samples description file
-#
-file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
-macro(oryol_add_web_sample name desc type image src)
-    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
-endmacro()
 
 #-------------------------------------------------------------------------------
 #   Wrap shader code generation

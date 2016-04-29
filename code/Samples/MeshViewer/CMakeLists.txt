@@ -1,7 +1,0 @@
-fips_begin_app(MeshViewer windowed)
-    fips_vs_warning_level(3)
-    fips_files(MeshViewer.cc)
-    oryol_shader(shaders.shd)
-    fips_deps(Gfx Assets HTTP Input IMUI)
-    oryol_add_web_sample(MeshViewer "Load and render .omsh mesh files" "emscripten,pnacl" MeshViewer.jpg "MeshViewer/MeshViewer.cc")
-fips_end_app()
