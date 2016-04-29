@@ -41,8 +41,8 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 
 ### Getting Started:
 
-* [How to Build](doc/BUILD.md)
 * [What's New](doc/NEWS.md)
+* [How to Build](doc/BUILD.md)
 * [Design Manifesto](doc/DESIGN-MANIFESTO.md)
 * [10,000ft View](doc/OVERVIEW.md)
 * [Core Module](code/Modules/Core/README.md)

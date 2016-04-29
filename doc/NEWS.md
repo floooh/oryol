@@ -1,5 +1,10 @@
 # What's New
 
+- **29-Apr-2016**: Big Spring Cleanup 2: Exodus
+
+  I have moved some modules and samples out into external
+  github repositories, more info here: http://floooh.github.io/2016/04/26/oryol-spring-cleaning.html
+
 - **24-Apr-2016**: Big spring cleanup:
     - the Messaging module has been removed
     - the Synth module has been removed (the recommended audio solution
