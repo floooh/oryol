@@ -43,11 +43,6 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/DrawCallPerf/DrawCallPerf.jpg
   src: DrawCallPerf/DrawCallPerf.cc
-- name: DrawCallExplorer
-  desc: Explore 3D API draw call behaviour
-  type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/DrawCallExplorer/DrawCallExplorer.jpg
-  src: DrawCallExplorer/DrawCallExplorer.cc
 - name: Instancing
   desc: Instanced rendering
   type: emscripten,pnacl,android
@@ -83,61 +78,16 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/DebugText/DebugText.jpg
   src: DebugText/DebugText.cc
-- name: MeshViewer
-  desc: Load and render .omsh mesh files
-  type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/MeshViewer/MeshViewer.jpg
-  src: MeshViewer/MeshViewer.cc
-- name: Paclone
-  desc: Simple Pacman clone (work in progress!
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/Paclone/Paclone.jpg
-  src: Paclone/Paclone.cc
-- name: ImGuiDemo
-  desc: ImGui UI integration
-  type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/ImGuiDemo/ImGuiDemo.jpg
-  src: ImGuiDemo/ImGuiDemo.cc
-- name: TurboBadgerDemo
-  desc: Turbobadger UI integration
-  type: emscripten,pnacl
-  image: /Users/floh/projects/oryol/code/Samples/TurboBadgerDemo/TurboBadgerDemo.jpg
-  src: TurboBadgerDemo/TurboBadgerDemo.cc
-- name: Fractal
-  desc: Simple fractal explorer
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/Fractal/Fractal.jpg
-  src: Fractal/Fractal.cc
-- name: SoloudTedSid
-  desc: Soloud integration
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/SoloudTedSid/SoloudTedSid.jpg
-  src: SoloudTedSid/SoloudTedSid.cc
-- name: SoloudMOD
-  desc: Soloud MOD sample
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/SoloudMOD/SoloudMOD.jpg
-  src: SoloudMOD/SoloudMOD.cc
 - name: TestInput
   desc: Test Input module functionality
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/TestInput/TestInput.jpg
   src: TestInput/TestInput.cc
-- name: SynthTest
-  desc: Most simple Synth audio sample
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/SynthTest/SynthTest.jpg
-  src: SynthTest/SynthTest.cc
 - name: ResourceStress
   desc: Resource loading stresstest
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/ResourceStress/none
   src: ResourceStress/ResourceStress.cc
-- name: HTTPClientSample
-  desc: Low-level HTTP loading sample
-  type: emscripten,pnack,android
-  image: /Users/floh/projects/oryol/code/Samples/HTTPClientSample/none
-  src: HTTPClientSample/HTTPClientSample.cc
 - name: CoreHello
   desc: Low-level hello world sample
   type: emscripten
@@ -153,11 +103,6 @@
   type: emscripten,pnacl
   image: /Users/floh/projects/oryol/code/Samples/IOQueueSample/none
   src: IOQueueSample/IOQueueSample.cc
-- name: SoundTest
-  desc: Test Sound module functionality
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/SoundTest/none
-  src: SoundTest/SoundTest.cc
 - name: Julia
   desc: Fractal demo
   type: emscripten,pnacl,android
