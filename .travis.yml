@@ -12,7 +12,9 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - george-edison55-cmake-3.x
     packages:
+      - cmake
       - gcc-4.8
       - g++-4.8
       - libglu1-mesa-dev
@@ -24,14 +26,7 @@ install:
   # LINUX
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50; fi
   # get a recent cmake (from https://github.com/boostorg/hana/blob/master/.travis.yml)
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      CMAKE_URL="http://www.cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz"
-      mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-    else
-      brew install cmake
-    fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install cmake; fi
 
 script:
   - echo $TRAVIS_OS_NAME
