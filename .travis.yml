@@ -12,7 +12,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - george-edison55-cmake-3.x
+      - kalakris-cmake
     packages:
       - cmake
       - gcc-4.8
