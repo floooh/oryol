@@ -29,7 +29,7 @@ You need: cmake, python and your platform's default C/C++ development environmen
 ```bash
 > mkdir projects
 > cd projects
-> git clone https://github.com/floooh/oryol
+> git clone --depth 5 https://github.com/floooh/oryol
 > cd oryol
 > ./fips build
 > ./fips run Triangle
