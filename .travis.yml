@@ -12,9 +12,10 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - kalakris-cmake
+      - george-edison55-precise-backports # cmake 3.x
     packages:
       - cmake
+      - cmake-data
       - gcc-4.8
       - g++-4.8
       - libglu1-mesa-dev
