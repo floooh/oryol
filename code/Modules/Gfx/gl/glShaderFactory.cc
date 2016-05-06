@@ -142,11 +142,15 @@ glShaderFactory::SetupResource(shader& shd) {
         for (int texIndex = 0; texIndex < numTextures; texIndex++) {
             const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
             const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-            o_assert_dbg(-1 != glUniformLocation);
-            shd.bindSampler(tbBindStage, texIndex, glTextureLocation);
-            // set the sampler index in the shader program, this will never change
-            ::glUniform1i(glUniformLocation, glTextureLocation);
-            glTextureLocation++;
+            if (-1 != glUniformLocation) {
+                shd.bindSampler(tbBindStage, texIndex, glTextureLocation);
+                // set the sampler index in the shader program, this will never change
+                ::glUniform1i(glUniformLocation, glTextureLocation);
+                glTextureLocation++;
+            }
+            else {
+                Log::Warn("Shader uniform '%s' not found, will be ignored!\n", comp.Name.AsCStr());
+            }
         }
     }
         

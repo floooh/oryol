@@ -1183,7 +1183,9 @@ glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **t
     for (int i = 0; i < numTextures; i++) {
         const texture* tex = textures[i];
         const int samplerIndex = shd->getSamplerIndex(bindStage, i);
-        this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
+        if (-1 != samplerIndex) {
+            this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
+        }
     }
 }
 
