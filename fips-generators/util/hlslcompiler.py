@@ -65,6 +65,7 @@ def callFxc(cmd) :
     ''' 
     call the fxc compiler and return its output
     '''
+    print(cmd)
     child = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     out = ''
     while True :
@@ -130,7 +131,7 @@ def parseOutput(output, lines) :
         sys.exit(10) 
 
 #-------------------------------------------------------------------------------
-def validate(lines, type, slVersion, outPath, cName) :
+def validate(lines, type, slVersion, outPath, cName, args) :
     '''
     Validate a vertex-/fragment-shader pair.
     '''
@@ -151,6 +152,13 @@ def validate(lines, type, slVersion, outPath, cName) :
     with open(hlsl_src_path, 'w') as f :
         writeFile(f, lines)
 
-    cmd = [fxcPath, '/T', profile[type], '/O3', '/Fh', outPath, '/Vn', cName, hlsl_src_path]
+    cmd = [fxcPath, '/T', profile[type], '/Fh', outPath, '/Vn', cName]
+    if 'debug' in args and args['debug'] == 'true' :
+        cmd.extend(['/Zi', '/Od'])
+    else :
+        cmd.append('/O3')
+    cmd.append(hlsl_src_path)
+    
     output = callFxc(cmd)
     parseOutput(output, lines)
+

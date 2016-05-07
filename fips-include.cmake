@@ -3,7 +3,7 @@ set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # cmake options
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/data/" CACHE STRING "Sample data URL")
-
+option(ORYOL_DEBUG_SHADERS "Enable/disable debug info for shaders" OFF)
 if (FIPS_MACOS OR FIPS_LINUX OR FIPS_ANDROID)
     option(ORYOL_USE_LIBCURL "Use libcurl instead of native APIs" ON)
 else() 
@@ -179,6 +179,11 @@ endif()
 #   Wrap shader code generation
 #
 macro(oryol_shader shd)
-    fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE)
+    if (ORYOL_DEBUG_SHADERS)
+        set(args "{debug: 'true'}")
+    else()
+        set(args "{debug: 'false'}")
+    endif()
+    fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE ARGS ${args})
 endmacro()
 

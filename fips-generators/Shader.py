@@ -1535,7 +1535,7 @@ class ShaderLibrary :
                     srcLines = fs.generatedSource[slVersion]
                     glslcompiler.validate(srcLines, 'fs', slVersion)
 
-    def validateAndWriteShadersHLSL(self, absHdrPath) :
+    def validateAndWriteShadersHLSL(self, absHdrPath, args) :
         '''
         Run the shader sources through the HLSL compiler,
         and let HLSL compiler generate shader byte code in header file
@@ -1547,12 +1547,12 @@ class ShaderLibrary :
                     srcLines = vs.generatedSource[slVersion]
                     cName = vs.name + '_' + slVersion + '_src'
                     outPath = rootPath + '_' + cName + '.h'
-                    hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName)
+                    hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName, args)
                 for fs in self.fragmentShaders.values() :
                     srcLines = fs.generatedSource[slVersion]
                     cName = fs.name + '_' + slVersion + '_src'
                     outPath = rootPath + '_' + cName + '.h'
-                    hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName)
+                    hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName, args)
 
     def validateAndWriteShadersMetal(self, absHdrPath) :
         '''
@@ -1824,7 +1824,7 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(input, out_src, out_hdr) :
+def generate(input, out_src, out_hdr, args) :
     if util.isDirty(Version, [input], [out_src, out_hdr]) :
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
@@ -1835,7 +1835,7 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.generateShaderSourcesMetal()
         shaderLibrary.validateShadersGLSL()
         if platform.system() == 'Windows' :
-            shaderLibrary.validateAndWriteShadersHLSL(out_hdr)
+            shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
         if platform.system() == 'Darwin' :
             shaderLibrary.validateAndWriteShadersMetal(out_hdr)
         generateSource(out_src, shaderLibrary)
