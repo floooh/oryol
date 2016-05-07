@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 56
+Version = 57
 
 import os
 import sys
@@ -65,6 +65,9 @@ glslVersionNumber = {
 # declare language-specific mapping macros
 slMacros = {
     'glsl100': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
@@ -76,6 +79,9 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl120': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
@@ -87,6 +93,9 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl150': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
         '_color': '_FragColor',
         '_fragcoord': 'gl_FragCoord',
@@ -98,6 +107,9 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture(s,t)'
     },
     'hlsl5': {
+        'ORYOL_GLSL': '(0)',
+        'ORYOL_HLSL': '(1)',
+        'ORYOL_METALSL': '(0)',
         '_position': '_oPosition',
         '_color': '_oColor',
         '_const': 'static const',
@@ -116,6 +128,9 @@ slMacros = {
         'fract(x)': 'frac(x)'
     },
     'metal': {
+        'ORYOL_GLSL': '(0)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(1)',
         '_position': 'vs_out._vofi_position',
         '_color': '_fo_color',
         '_const': 'constant',
@@ -862,8 +877,8 @@ class GLSLGenerator :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
         # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+        for macro in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(macro, slMacros[slVersion][macro])))
 
         # precision modifiers 
         # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
