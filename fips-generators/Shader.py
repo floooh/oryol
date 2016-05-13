@@ -701,8 +701,6 @@ class Parser :
         if len(args) != 1:
             util.fmtError("@highp must have 1 arg (type)")
         type = args[0]
-        if checkListDup(type, self.current.highPrecision) :
-            util.fmtError("@highp type '{}' already defined in '{}'!".format(type, self.current.name))
         self.current.highPrecision.append(type)
 
     #---------------------------------------------------------------------------
