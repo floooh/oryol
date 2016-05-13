@@ -30,7 +30,7 @@
   <script type="text/javascript" src="../wasm.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '${name}.wasm.txt')
+    xhr.open('GET', '${name}.wasm.txt', true)
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
       Module.wasmBinary = xhr.response;
