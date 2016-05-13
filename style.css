@@ -30,6 +30,7 @@ body {
     margin-top: 8px;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 10px;
     width: 300px;
     height: auto;
     background-color: white;
@@ -166,7 +167,7 @@ a.thumb-link:hover, a.thumb-link:active {
     background: linear-gradient(red,orange,yellow,green,blue);
 }
 .game-border {
-    margin-top: 10px;
+    margin-top: 0px;
     margin-left: auto;
     margin-right: auto;
     display: block;

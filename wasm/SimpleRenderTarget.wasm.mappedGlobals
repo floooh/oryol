@@ -1,0 +1,24 @@
+{
+"A": { "address": 152, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"B": { "address": 160, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
+,"C": { "address": 168, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"gc": { "address": 176, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
+,"i": { "address": 8, "type": 1, "import": 1, "module": "env", "base": "STACKTOP" }
+,"j": { "address": 16, "type": 1, "import": 1, "module": "env", "base": "STACK_MAX" }
+,"k": { "address": 24, "type": 1, "import": 1, "module": "env", "base": "tempDoublePtr" }
+,"l": { "address": 32, "type": 1, "import": 1, "module": "env", "base": "ABORT" }
+,"m": { "address": 40, "type": 1, "import": 1, "module": "env", "base": "cttz_i8" }
+,"n": { "address": 48, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"o": { "address": 56, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"p": { "address": 64, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"q": { "address": 72, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"r": { "address": 80, "type": 4, "import": 1, "module": "global", "base": "NaN" }
+,"s": { "address": 88, "type": 4, "import": 1, "module": "global", "base": "Infinity" }
+,"t": { "address": 96, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"u": { "address": 104, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"v": { "address": 112, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"w": { "address": 120, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"x": { "address": 128, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
+,"y": { "address": 136, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+,"z": { "address": 144, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+}

@@ -25,8 +25,8 @@ var Module = {
         }
         var elm = document.getElementById('output');
         elm.style.display = 'block';
-        elm.value += 'ERROR: ' + text + '\n';
-        element.scrollTop = element.scrollHeight;
+        elm.value += text + '\n';
+        elm.scrollTop = elm.scrollHeight;
     },
     canvas: (function() {
         var canvas = document.getElementById('canvas');
