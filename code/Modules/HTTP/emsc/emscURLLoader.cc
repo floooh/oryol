@@ -24,7 +24,7 @@ emscURLLoader::doRequest(const Ptr<IORead>& req) {
 //------------------------------------------------------------------------------
 void
 emscURLLoader::startRequest(const Ptr<IORead>& req) {
-    o_assert(req.isValid() && !req->Handled());
+    o_assert(req.isValid() && !req->Handled);
 
     // bump the requests refcount and get a raw pointer
     IORead* reqPtr = req.get();
