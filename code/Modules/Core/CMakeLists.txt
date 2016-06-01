@@ -144,6 +144,7 @@ fips_begin_unittest(Core)
         ClockTest.cc
         DurationTest.cc
         TimePointTest.cc
+        LogTest.cc
     )
     fips_deps(Core)
 fips_end_unittest()

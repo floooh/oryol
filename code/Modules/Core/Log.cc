@@ -79,12 +79,28 @@ Log::Dbg(const char* msg, ...) {
 
 //------------------------------------------------------------------------------
 void
+Log::VDbg(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Dbg) {
+        Log::vprint(Level::Dbg, msg, args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 Log::Info(const char* msg, ...) {
     if (curLogLevel >= Level::Info) {
         va_list args;
         va_start(args, msg);
         Log::vprint(Level::Info, msg, args);
         va_end(args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Log::VInfo(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Info) {
+        Log::vprint(Level::Info, msg, args);
     }
 }
 
@@ -101,12 +117,28 @@ Log::Warn(const char* msg, ...) {
 
 //------------------------------------------------------------------------------
 void
+Log::VWarn(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Warn) {
+        Log::vprint(Level::Warn, msg, args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 Log::Error(const char* msg, ...) {
     if (curLogLevel >= Level::Error) {
         va_list args;
         va_start(args, msg);
         Log::vprint(Level::Error, msg, args);
         va_end(args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Log::VError(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Error) {
+        Log::vprint(Level::Error, msg, args);
     }
 }
 
