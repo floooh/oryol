@@ -183,7 +183,8 @@ StringBuilder::Append(const char* ptr, int startIndex, int endIndex) {
     o_assert(endIndex >= startIndex);
     const int length = endIndex - startIndex;
     if (length > 0) {
-        o_assert(ptr);
+        // ptr must be valid and not in this string builder's buffer
+        o_assert(ptr && ((ptr < this->buffer) || (ptr >= (this->buffer+this->size))));
         this->ensureRoom(length);
         o_assert(this->buffer);
         std::strncpy(this->buffer + this->size, ptr + startIndex, length);
@@ -312,9 +313,10 @@ StringBuilder::PopBack() {
 //------------------------------------------------------------------------------
 void
 StringBuilder::substituteCommon(char* occur, int matchLen, int substLen, const char* subst) {
+    o_assert((occur >= this->buffer) && (occur < (this->buffer+this->size)));
     const int diff = substLen - matchLen;
     if (diff > 0) {
-        // Preserve occur if buffer is reallocated by ensureRoom
+        // preserve occur if buffer is reallocated by ensureRoom
         size_t offs = occur - this->buffer;
         this->ensureRoom(diff);
         occur = this->buffer + offs;
