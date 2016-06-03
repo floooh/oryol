@@ -314,7 +314,10 @@ void
 StringBuilder::substituteCommon(char* occur, int matchLen, int substLen, const char* subst) {
     const int diff = substLen - matchLen;
     if (diff > 0) {
+        // Preserve occur if buffer is reallocated by ensureRoom
+        size_t offs = occur - this->buffer;
         this->ensureRoom(diff);
+        occur = this->buffer + offs;
     }
     
     // move tail in or out
