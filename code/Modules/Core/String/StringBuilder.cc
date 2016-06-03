@@ -177,14 +177,14 @@ StringBuilder::Append(char c) {
 //------------------------------------------------------------------------------
 void
 StringBuilder::Append(const char* ptr, int startIndex, int endIndex) {
+    // ptr must be valid and not in this string builder's buffer
+    o_assert(ptr && ((ptr < this->buffer) || (ptr >= (this->buffer+this->size))));
     if (EndOfString == endIndex) {
         endIndex = int(std::strlen(ptr));
     }
     o_assert(endIndex >= startIndex);
     const int length = endIndex - startIndex;
     if (length > 0) {
-        // ptr must be valid and not in this string builder's buffer
-        o_assert(ptr && ((ptr < this->buffer) || (ptr >= (this->buffer+this->size))));
         this->ensureRoom(length);
         o_assert(this->buffer);
         std::strncpy(this->buffer + this->size, ptr + startIndex, length);
