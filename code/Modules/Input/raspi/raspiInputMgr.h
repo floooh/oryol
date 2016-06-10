@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief input manager for Raspberry Pi using /dev/input
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/Core/inputMgrBase.h"
 #include "Core/RunLoop.h"
 
 namespace Oryol {
