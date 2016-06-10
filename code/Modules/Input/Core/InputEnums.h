@@ -8,12 +8,12 @@
 
 namespace Oryol {
 
-/// mouse buttons
+/// (mouse) buttons
 struct MouseButton {
     enum Code {
-        LMB = 0,
-        MMB,
-        RMB,
+        Left = 0,
+        Middle,
+        Right,
         
         NumMouseButtons,
         InvalidMouseButton,

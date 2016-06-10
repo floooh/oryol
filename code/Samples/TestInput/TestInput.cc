@@ -73,7 +73,7 @@ TestInputApp::OnInit() {
     }
     Input::Setup();
     Input::SetMousePointerLockHandler([this](const InputEvent& event) -> PointerLockMode::Code {
-        if (event.MouseButton == MouseButton::LMB) {
+        if (event.Button == MouseButton::Left) {
             if (event.Type == InputEvent::MouseButtonDown) {
                 this->pointerLock = true;
                 return PointerLockMode::Enable;
@@ -159,9 +159,9 @@ TestInputApp::printMouseState() {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::Print("\n MOUSE STATUS (LMB for pointerlock):\n\n\r");
         
-        this->testMouseButton(MouseButton::LMB, "LMB");
-        this->testMouseButton(MouseButton::MMB, "MMB");
-        this->testMouseButton(MouseButton::RMB, "RMB");
+        this->testMouseButton(MouseButton::Left, "LMB");
+        this->testMouseButton(MouseButton::Middle, "MMB");
+        this->testMouseButton(MouseButton::Right, "RMB");
         Dbg::TextColor(this->pointerLock ? this->pressedColor : this->defaultColor);
         Dbg::PrintF(" POINTERLOCK");
 
@@ -344,7 +344,7 @@ TestInputApp::handleKeyboardInput() {
 void
 TestInputApp::handleMouseInput() {
     if (Input::MouseAttached()) {
-        if (Input::MouseButtonPressed(MouseButton::LMB)) {
+        if (Input::MouseButtonPressed(MouseButton::Left)) {
             this->polar.y -= Input::MouseMovement().x * 0.01f;
             this->polar.x = glm::clamp(this->polar.x + Input::MouseMovement().y * 0.01f, this->minLatitude, this->maxLatitude);
         }

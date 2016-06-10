@@ -78,7 +78,7 @@ InstancingApp::OnRunning() {
     Gfx::CommitFrame();
     
     // toggle particle update
-    if ((Input::MouseAttached() && Input::MouseButtonDown(MouseButton::LMB)) ||
+    if ((Input::MouseAttached() && Input::MouseButtonDown(MouseButton::Left)) ||
         (Input::TouchpadAttached() && Input::TouchTapped())) {
         this->updateEnabled = !this->updateEnabled;
     }

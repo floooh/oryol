@@ -129,9 +129,9 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
     if (nullptr != self) {
         MouseButton::Code btn;
         switch (glfwButton) {
-            case GLFW_MOUSE_BUTTON_LEFT:    btn = MouseButton::LMB; break;
-            case GLFW_MOUSE_BUTTON_RIGHT:   btn = MouseButton::RMB; break;
-            case GLFW_MOUSE_BUTTON_MIDDLE:  btn = MouseButton::MMB; break;
+            case GLFW_MOUSE_BUTTON_LEFT:    btn = MouseButton::Left; break;
+            case GLFW_MOUSE_BUTTON_RIGHT:   btn = MouseButton::Right; break;
+            case GLFW_MOUSE_BUTTON_MIDDLE:  btn = MouseButton::Middle; break;
             default:                        btn = MouseButton::InvalidMouseButton; break;
         }
         if (btn != MouseButton::InvalidMouseButton) {

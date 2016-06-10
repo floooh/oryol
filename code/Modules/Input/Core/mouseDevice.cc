@@ -78,7 +78,7 @@ mouseDevice::onScroll(const glm::vec2& scroll) {
     o_assert_dbg(this->dispatcher);
 
     this->scroll = scroll;
-    this->dispatcher->notifyEvent(InputEvent(InputEvent::MouseScroll, this->scroll));
+    this->dispatcher->notifyEvent(InputEvent(InputEvent::MouseScrolling, this->scroll));
 }
 
 //------------------------------------------------------------------------------

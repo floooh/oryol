@@ -23,7 +23,7 @@ public:
         MouseMove,
         MouseButtonDown,
         MouseButtonUp,
-        MouseScroll,
+        MouseScrolling,
         TouchTapped,
         TouchDoubleTapped,
         TouchPanningStarted,
@@ -46,13 +46,13 @@ public:
     /// ASCII code (if Type is WChar)
     wchar_t WCharCode = 0;
     /// mouse movement (if type is MouseMove)
-    glm::vec2 MouseMovement;
+    glm::vec2 Movement;
     /// mouse position (if type is MouseMove)
-    glm::vec2 MousePosition;
+    glm::vec2 Position;
     /// mouse scrolling (if type is MouseScroll)
-    glm::vec2 MouseScrollMovement;
+    glm::vec2 Scrolling;
     /// mouse button (if type is MouseButtonDown, MouseButtonUp)
-    MouseButton::Code MouseButton = MouseButton::InvalidMouseButton;
+    MouseButton::Code Button = MouseButton::InvalidMouseButton;
     /// touch positions
     StaticArray<glm::vec2,2> TouchPosition;
     /// touch start positions
@@ -63,9 +63,9 @@ public:
     InputEvent() { };
     explicit InputEvent(enum Type t, Key::Code k) : Type(t), KeyCode(k) { };
     explicit InputEvent(enum Type t, wchar_t c) : Type(t), WCharCode(c) { };
-    explicit InputEvent(enum Type t, const glm::vec2& mov, const glm::vec2& pos) : Type(t), MouseMovement(mov), MousePosition(pos) { };
-    explicit InputEvent(enum Type t, MouseButton::Code b) : Type(t), MouseButton(b) { };
-    explicit InputEvent(enum Type t, const glm::vec2& scroll) : Type(t), MouseScrollMovement(scroll) { };
+    explicit InputEvent(enum Type t, const glm::vec2& mov, const glm::vec2& pos) : Type(t), Movement(mov), Position(pos) { };
+    explicit InputEvent(enum Type t, MouseButton::Code b) : Type(t), Button(b) { };
+    explicit InputEvent(enum Type t, const glm::vec2& scroll) : Type(t), Scrolling(scroll) { };
 };
 
 } // namespace Oryol
