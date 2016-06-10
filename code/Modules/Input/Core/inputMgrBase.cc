@@ -10,7 +10,9 @@ namespace _priv {
 //------------------------------------------------------------------------------
 inputMgrBase::inputMgrBase() :
 valid(false) {
-    // empty
+    this->keyboard.dispatcher = &this->dispatcher;
+    this->mouse.dispatcher = &this->dispatcher;
+
 }
     
 //------------------------------------------------------------------------------
@@ -44,18 +46,18 @@ inputMgrBase::isValid() const {
 //------------------------------------------------------------------------------
 void
 inputMgrBase::reset() {
-    if (this->Keyboard.Attached) {
-        this->Keyboard.reset();
+    if (this->keyboard.attached) {
+        this->keyboard.reset();
     }
-    if (this->Mouse.Attached) {
-        this->Mouse.reset();
+    if (this->mouse.attached) {
+        this->mouse.reset();
     }
-    if (this->Touchpad.Attached) {
-        this->Touchpad.reset();
+    if (this->touchpad.attached) {
+        this->touchpad.reset();
     }
     for (int i = 0; i < MaxNumGamepads; i++) {
-        if (this->Gamepad[i].Attached) {
-            this->Gamepad[i].reset();
+        if (this->gamepad[i].attached) {
+            this->gamepad[i].reset();
         }
     }    
 }
@@ -68,47 +70,33 @@ inputMgrBase::getInputSetup() const {
 
 //------------------------------------------------------------------------------
 void
-inputMgrBase::beginCaptureText() {
-    o_assert_dbg(this->valid);
-    this->Keyboard.beginCaptureText();
-}
-
-//------------------------------------------------------------------------------
-void
-inputMgrBase::endCaptureText() {
-    o_assert_dbg(this->valid);
-    this->Keyboard.endCaptureText();
-}
-
-//------------------------------------------------------------------------------
-void
 inputMgrBase::onTouchEvent(const touchEvent& event) {
     o_assert_dbg(event.numTouches > 0);
-    if (this->Touchpad.Attached) {
+    if (this->touchpad.attached) {
         if (this->inputSetup.TapEnabled) {
             if (gestureState::action == this->singleTapDetector.detect(event)) {
-                this->Touchpad.onTapped(this->singleTapDetector.position);
+                this->touchpad.onTapped(this->singleTapDetector.position);
             }
         }
         if (this->inputSetup.DoubleTapEnabled) {
             if (gestureState::action == this->doubleTapDetector.detect(event)) {
-                this->Touchpad.onDoubleTapped(this->doubleTapDetector.position);
+                this->touchpad.onDoubleTapped(this->doubleTapDetector.position);
             }
         }
         if (this->inputSetup.PanEnabled) {
             switch (this->panDetector.detect(event)) {
                 case gestureState::start:
-                    this->Touchpad.onPanningStarted(this->panDetector.position, this->panDetector.startPosition);
+                    this->touchpad.onPanningStarted(this->panDetector.position, this->panDetector.startPosition);
                     break;
                 case gestureState::move:
-                    this->Touchpad.onPanning(this->panDetector.position, this->panDetector.startPosition);
+                    this->touchpad.onPanning(this->panDetector.position, this->panDetector.startPosition);
                     break;
                 case gestureState::end:
-                    this->Touchpad.onPanningEnded(this->panDetector.position, this->panDetector.startPosition);
+                    this->touchpad.onPanningEnded(this->panDetector.position, this->panDetector.startPosition);
                     break;
                 default:
-                    if (this->Touchpad.Panning) {
-                        this->Touchpad.onPanningCancelled();
+                    if (this->touchpad.panning) {
+                        this->touchpad.onPanningCancelled();
                     }
                     break;
             }
@@ -116,29 +104,29 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
         if (this->inputSetup.PinchEnabled) {
             switch (this->pinchDetector.detect(event)) {
                 case gestureState::start:
-                    this->Touchpad.onPinchingStarted(
+                    this->touchpad.onPinchingStarted(
                         this->pinchDetector.position0,
                         this->pinchDetector.position1,
                         this->pinchDetector.startPosition0,
                         this->pinchDetector.startPosition1);
                     break;
                 case gestureState::move:
-                    this->Touchpad.onPinching(
+                    this->touchpad.onPinching(
                         this->pinchDetector.position0,
                         this->pinchDetector.position1,
                         this->pinchDetector.startPosition0,
                         this->pinchDetector.startPosition1);
                     break;
                 case gestureState::end:
-                    this->Touchpad.onPinchingEnded(
+                    this->touchpad.onPinchingEnded(
                         this->pinchDetector.position0,
                         this->pinchDetector.position1,
                         this->pinchDetector.startPosition0,
                         this->pinchDetector.startPosition1);
                     break;
                 default:
-                    if (this->Touchpad.Pinching) {
-                        this->Touchpad.onPinchingCancelled();
+                    if (this->touchpad.pinching) {
+                        this->touchpad.onPinchingCancelled();
                     }
                     break;
             }

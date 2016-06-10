@@ -6,17 +6,17 @@ fips_begin_module(Input)
     fips_files(Input.cc Input.h)
     fips_dir(Core)
     fips_files(
-        Gamepad.cc Gamepad.h
-        InputSetup.h
+        InputSetup.h InputEnums.h InputEvent.h
         Key.cc Key.h
-        Keyboard.cc Keyboard.h
-        Mouse.cc Mouse.h
-        Sensors.h
-        Touchpad.cc Touchpad.h
+        inputDispatcher.cc inputDispatcher.h
+        gamepadDevice.cc gamepadDevice.h
+        keyboardDevice.cc keyboardDevice.h
+        mouseDevice.cc mouseDevice.h
+        sensorDevice.h
+        touchpadDevice.cc touchpadDevice.h
+        inputMgrBase.h inputMgrBase.cc
         inputMgr.h
     )
-    fips_dir(base)
-    fips_files(inputMgrBase.cc inputMgrBase.h)
     fips_dir(touch)
     fips_files(
         gestureState.h

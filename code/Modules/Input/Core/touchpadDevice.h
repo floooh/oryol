@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Touchpad
-    @ingroup Input
+    @class Oryol::_priv::touchpadDevice
+    @ingroup _priv
     @brief access to touchpad state
 */
 #include "Core/Types.h"
@@ -13,72 +13,44 @@
 #include <functional>
 
 namespace Oryol {
+namespace _priv {
+
+class inputDispatcher;
     
-class Touchpad {
+class touchpadDevice {
 public:
     /// max number of touch positions
     static const int MaxNumTouches = 2;
 
-    /// touch event for event-driven input handling (vs polling)
-    struct Event {
-        /// event type
-        enum Type {
-            Tapped = 0,
-            DoubleTapped,
-            PanningStarted,
-            Panning,
-            PanningEnded,
-            PanningCancelled,
-            PinchingStarted,
-            Pinching,
-            PinchingEnded,
-            PinchingCancelled,
-
-            NumTypes,
-            InvalidType
-        } Type;
-
-        /// touch positions
-        StaticArray<glm::vec2, MaxNumTouches> Position;
-        /// start positions
-        StaticArray<glm::vec2, MaxNumTouches> StartPosition;
-        /// movement
-        StaticArray<glm::vec2, MaxNumTouches> Movement;
-    };
-    /// unique event handler id typedef
-    typedef unsigned int EventHandlerId;
-    /// touch event handler typedef
-    typedef std::function<void(const Event&)> EventHandler;
-
     /// constructor
-    Touchpad();
+    touchpadDevice();
     
     /// touchpad valid?
-    bool Attached;
+    bool attached;
     
     /// single-tapped?
-    bool Tapped;
+    bool tapped;
     /// double-tapped?
-    bool DoubleTapped;
+    bool doubleTapped;
     /// started panning
-    bool PanningStarted;
+    bool panningStarted;
     /// panning gesture underway?
-    bool Panning;
+    bool panning;
     /// ended panning
-    bool PanningEnded;
+    bool panningEnded;
     /// started pinching
-    bool PinchingStarted;
+    bool pinchingStarted;
     /// pinching underway
-    bool Pinching;
+    bool pinching;
     /// ended pinching
-    bool PinchingEnded;
+    bool pinchingEnded;
 
     /// current position (1 for tap/pan, 2 for pinch)
-    StaticArray<glm::vec2, MaxNumTouches> Position;
+    StaticArray<glm::vec2, MaxNumTouches> position;
     /// current movement (1 for tap/pan, 2 for pinch)
-    StaticArray<glm::vec2, MaxNumTouches> Movement;
+    StaticArray<glm::vec2, MaxNumTouches> movement;
     /// start position (useful for tap/pan)
-    StaticArray<glm::vec2, MaxNumTouches> StartPosition;
+    StaticArray<glm::vec2, MaxNumTouches> startPosition;
 
     /// called when single-tap detected
     void onTapped(const glm::vec2& pos);
@@ -101,19 +73,11 @@ public:
     /// called when pinching suddenly ended
     void onPinchingCancelled();
     
-    /// subscribe to touch events
-    EventHandlerId subscribe(EventHandler handler);
-    /// unsubscribe from touch events
-    void unsubscribe(EventHandlerId id);
     /// reset the touchpad state
     void reset();
 
-private:
-    /// notify event handlers
-    void notifyEventHandlers(const Event& event);
-
-    EventHandlerId uniqueIdCounter;
-    Map<EventHandlerId, EventHandler> eventHandlers;
+    inputDispatcher* dispatcher = nullptr;    
 };
 
+} // namespace _priv
 } // namespace Oryol
