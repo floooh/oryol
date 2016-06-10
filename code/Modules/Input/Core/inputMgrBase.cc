@@ -12,7 +12,7 @@ inputMgrBase::inputMgrBase() :
 valid(false) {
     this->keyboard.dispatcher = &this->dispatcher;
     this->mouse.dispatcher = &this->dispatcher;
-
+    this->touchpad.dispatcher = &this->dispatcher;
 }
     
 //------------------------------------------------------------------------------

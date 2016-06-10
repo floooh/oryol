@@ -92,7 +92,7 @@ iosInputMgr::setup(const InputSetup& setup) {
         o_error("iosInputMgr: Gfx::Setup() must be called before Input::Setup()!\n");
         return;
     }
-    this->Touchpad.Attached = true;
+    this->touchpad.attached = true;
 
     // create the input delegate object
     this->inputDelegate = [[iosInputDelegate alloc] init];
@@ -102,7 +102,7 @@ iosInputMgr::setup(const InputSetup& setup) {
         this->motionManager = [[CMMotionManager alloc] init];
         if ([this->motionManager isDeviceMotionAvailable]) {
             [this->motionManager startDeviceMotionUpdates];
-            this->Sensors.Attached = true;
+            this->sensors.attached = true;
             this->motionRunLoopId = Core::PreRunLoop()->Add([this]() { this->sampleMotionData(); });
         }
         else {
@@ -168,14 +168,14 @@ iosInputMgr::sampleMotionData() {
         if (this->inputSetup.AccelerometerEnabled) {
             static const float earthGravity = 9.80665f;
             glm::vec3 accel(cmGravity.x + cmUserAccel.x, cmGravity.y + cmUserAccel.y, cmGravity.z + cmUserAccel.z);
-            this->Sensors.Acceleration = accel * earthGravity;
+            this->sensors.acceleration = accel * earthGravity;
         }
         
         // attitude
         if (this->inputSetup.GyrometerEnabled) {
-            this->Sensors.Yaw   = motionData.attitude.yaw;
-            this->Sensors.Pitch = motionData.attitude.pitch;
-            this->Sensors.Roll  = motionData.attitude.roll;
+            this->sensors.yaw   = motionData.attitude.yaw;
+            this->sensors.pitch = motionData.attitude.pitch;
+            this->sensors.roll  = motionData.attitude.roll;
         }
     }
 }
