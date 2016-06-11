@@ -1,5 +1,9 @@
 # What's New
 
+- **11-Jun-2016**: I have cleaned up the Input module API, unfortunately
+this breaks existing code. See the README in code/Modules/Input for 
+a complete documentation.
+
 - **29-Apr-2016**: Big Spring Cleanup 2: Exodus
 
   I have moved some modules and samples out into external
