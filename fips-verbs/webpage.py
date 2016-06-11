@@ -14,7 +14,7 @@ GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
 BuildEmscripten = True
 BuildPNaCl = True 
-BuildWasm = True
+BuildWasm = False
 ExportAssets = True
 
 #-------------------------------------------------------------------------------
