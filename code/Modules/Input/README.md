@@ -96,7 +96,7 @@ what keys or buttons you're looking for
 - you need to keep track of the exact number of input actions happening
 during a frame, even if the same action happens multiple times in the
 same frame
-- you're application flow is better suited to handling events instead
+- your application flow is better suited to handling events instead
 of polling each frame
 
 Event handling is described in detail at the bottom of this file, let's
