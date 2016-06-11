@@ -63,7 +63,8 @@ SensorsApp::OnInit() {
 glm::mat4
 SensorsApp::computeMVP() {
     glm::mat4 model = glm::mat4();
-    glm::mat4 att = glm::yawPitchRoll(Input::SensorPitch(), -Input::SensorRoll(), 0.0f);
+    const glm::vec3& ypr = Input::SensorYawPitchRoll();
+    glm::mat4 att = glm::yawPitchRoll(ypr.y, -ypr.z, 0.0f);
     glm::vec3 eye = glm::vec3(att[2]) * 6.0f;
     glm::vec3 up = glm::vec3(att[1]);
     glm::mat4 view = glm::lookAt(eye, glm::vec3(0.0f), up);
@@ -86,8 +87,8 @@ SensorsApp::OnRunning() {
         Dbg::Print("\n Rotate device to see effect\n\r");
     }
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r",
-        Input::SensorYaw(), Input::SensorPitch(), Input::SensorRoll());
+    const glm::vec3& ypr = Input::SensorYawPitchRoll();
+    Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r", ypr.x, ypr.y, ypr.z);
     Dbg::PrintF(" frame time: %.3fms", frameTime.AsMilliSeconds());
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

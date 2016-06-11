@@ -265,9 +265,9 @@ emscInputMgr::emscDeviceOrientation(int eventType, const EmscriptenDeviceOrienta
     emscInputMgr* self = (emscInputMgr*) userData;
 
     // FIXME: the roll angle needs some fixing
-    self->sensors.roll  = glm::radians(e->gamma);
-    self->sensors.pitch = glm::radians(e->beta);
-    self->sensors.yaw   = glm::radians(e->alpha);
+    self->sensors.yawPitchRoll.x = glm::radians(e->gamma);
+    self->sensors.yawPitchRoll.y = glm::radians(e->beta);
+    self->sensors.yawPitchRoll.z = glm::radians(e->alpha);
 
     return true;
 }

@@ -32,13 +32,13 @@ public:
     /// typedef for input event callback id
     typedef _priv::inputDispatcher::callbackId CallbackId;
     /// subscribe to input events
-    static CallbackId SubscribeInputEvents(InputEventCallback cb);
+    static CallbackId SubscribeEvents(InputEventCallback cb);
     /// unsubscribe from input events
-    static void UnsubscribeInputEvents(CallbackId id);
+    static void UnsubscribeEvents(CallbackId id);
     /// set mouse pointer-lock handler, decide here when to activate/deactive pointer-lock
-    static void SetMousePointerLockHandler(PointerLockCallback cb);
+    static void SetPointerLockHandler(PointerLockCallback cb);
     /// clear the mouse pointer-lock handler
-    static void ClearMousePointerLockHandler();
+    static void ClearPointerLockHandler();
 
     /// return true if a keyboard is attached
     static bool KeyboardAttached();
@@ -59,7 +59,7 @@ public:
     /// test if any key was repeated last frame
     static bool AnyKeyRepeat();
     /// get captured text
-    static const wchar_t* CapturedText();
+    static const wchar_t* Text();
 
     /// return true if a mouse is attached
     static bool MouseAttached();
@@ -69,9 +69,9 @@ public:
     static bool MouseButtonDown(MouseButton::Code btn);
     /// test if mouse button was release last frame
     static bool MouseButtonUp(MouseButton::Code btn);
-    /// mouse position (unbounded pixel coords)
+    /// mouse position in pixel coords
     static const glm::vec2& MousePosition();
-    /// mouse movement since last frame
+    /// mouse movement in pixels since last frame
     static const glm::vec2& MouseMovement();
     /// scroll movement (usually provided by mouse wheel)
     static const glm::vec2& MouseScroll();
@@ -118,12 +118,8 @@ public:
     static bool SensorsAttached();
     /// gravity sensor acceleration vector including gravity in m/sec^2
     static const glm::vec3& SensorAcceleration();
-    /// device orientation: yaw
-    static float SensorYaw();
-    /// device orientation: pitch
-    static float SensorPitch();
-    /// device orientation: roll
-    static float SensorRoll();
+    /// get device orientation as yaw=x, pitch=y, roll=z angles
+    static const glm::vec3& SensorYawPitchRoll();
 
 private:
     struct _state {

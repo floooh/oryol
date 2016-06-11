@@ -35,28 +35,28 @@ Input::IsValid() {
 
 //------------------------------------------------------------------------------
 Input::CallbackId
-Input::SubscribeInputEvents(InputEventCallback cb) {
+Input::SubscribeEvents(InputEventCallback cb) {
     o_assert_dbg(state);
     return state->inputManager.dispatcher.subscribeEvents(cb);
 }
 
 //------------------------------------------------------------------------------
 void
-Input::UnsubscribeInputEvents(CallbackId id) {
+Input::UnsubscribeEvents(CallbackId id) {
     o_assert_dbg(state);
     state->inputManager.dispatcher.unsubscribeEvents(id);
 }
 
 //------------------------------------------------------------------------------
 void
-Input::SetMousePointerLockHandler(PointerLockCallback cb) {
+Input::SetPointerLockHandler(PointerLockCallback cb) {
     o_assert_dbg(state);
     state->inputManager.dispatcher.pointerLockHandler = cb;
 }
 
 //------------------------------------------------------------------------------
 void
-Input::ClearMousePointerLockHandler() {
+Input::ClearPointerLockHandler() {
     o_assert_dbg(state);
     state->inputManager.dispatcher.pointerLockHandler = 0;
 }
@@ -126,7 +126,7 @@ Input::AnyKeyRepeat() {
 
 //------------------------------------------------------------------------------
 const wchar_t*
-Input::CapturedText() {
+Input::Text() {
     o_assert_dbg(state);
     return state->inputManager.keyboard.capturedText();
 }
@@ -321,24 +321,10 @@ Input::SensorAcceleration() {
 }
 
 //------------------------------------------------------------------------------
-float
-Input::SensorYaw() {
+const glm::vec3&
+Input::SensorYawPitchRoll() {
     o_assert_dbg(state);
-    return state->inputManager.sensors.yaw;
-}
-
-//------------------------------------------------------------------------------
-float
-Input::SensorPitch() {
-    o_assert_dbg(state);
-    return state->inputManager.sensors.pitch;
-}
-
-//------------------------------------------------------------------------------
-float
-Input::SensorRoll() {
-    o_assert_dbg(state);
-    return state->inputManager.sensors.roll;
+    return state->inputManager.sensors.yawPitchRoll;
 }
 
 } // namespace Input

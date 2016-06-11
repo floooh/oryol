@@ -72,7 +72,7 @@ TestInputApp::OnInit() {
         Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     }
     Input::Setup();
-    Input::SetMousePointerLockHandler([this](const InputEvent& event) -> PointerLockMode::Code {
+    Input::SetPointerLockHandler([this](const InputEvent& event) -> PointerLockMode::Code {
         if (event.Button == MouseButton::Left) {
             if (event.Type == InputEvent::MouseButtonDown) {
                 this->pointerLock = true;
@@ -187,8 +187,8 @@ TestInputApp::printKeyboardState() {
         for (int key = 0; key < Key::NumKeys; key++) {
             this->testKey((Key::Code)key, Key::ToString((Key::Code)key));
         }
-        if (Input::CapturedText()[0]) {
-            this->lastCaptured = StringConverter::WideToUTF8(Input::CapturedText());
+        if (Input::Text()[0]) {
+            this->lastCaptured = StringConverter::WideToUTF8(Input::Text());
         }
         Dbg::PrintF("\n\n\r last char: %s\n\r", this->lastCaptured.AsCStr());
     }
@@ -260,14 +260,11 @@ TestInputApp::printSensorState() {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::Print("\n\n\r SENSOR STATUS:\n\n\r");
         Dbg::TextColor(glm::vec4(1.0f));
-        Dbg::PrintF(" acceleration: %.3f %.3f %.3f\n\r",
-                    Input::SensorAcceleration().x,
-                    Input::SensorAcceleration().y,
-                    Input::SensorAcceleration().z);
+        const glm::vec3& acc = Input::SensorAcceleration();
+        const glm::vec3& ypr = Input::SensorYawPitchRoll();
+        Dbg::PrintF(" acceleration: %.3f %.3f %.3f\n\r", acc.x, acc.y, acc.z);
         Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r",
-                    glm::degrees(Input::SensorYaw()),
-                    glm::degrees(Input::SensorPitch()),
-                    glm::degrees(Input::SensorRoll()));
+                    glm::degrees(ypr.x), glm::degrees(ypr.y), glm::degrees(ypr.z));
     }
     else {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));

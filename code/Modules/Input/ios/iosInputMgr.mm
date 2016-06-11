@@ -173,9 +173,9 @@ iosInputMgr::sampleMotionData() {
         
         // attitude
         if (this->inputSetup.GyrometerEnabled) {
-            this->sensors.yaw   = motionData.attitude.yaw;
-            this->sensors.pitch = motionData.attitude.pitch;
-            this->sensors.roll  = motionData.attitude.roll;
+            this->sensors.yawPitchRoll.x = motionData.attitude.yaw;
+            this->sensors.yawPitchRoll.y = motionData.attitude.pitch;
+            this->sensors.yawPitchRoll.z = motionData.attitude.roll;
         }
     }
 }
