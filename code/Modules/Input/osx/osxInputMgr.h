@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief input manager wrapper for OSX without GLFW
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/core/inputMgrBase.h"
 
 namespace Oryol {
 namespace _priv {
