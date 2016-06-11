@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief provide input on emscripten platform
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/Core/inputMgrBase.h"
 #include "Core/RunLoop.h"
 #include <emscripten/html5.h>
 
@@ -34,10 +34,10 @@ private:
     /// map HTML5 key code to Oryol keycode
     Key::Code mapKey(unsigned long html5KeyCode) const;
     /// map HTML5 mouse button code to Oryol mouse button
-    Mouse::Button mapMouseButton(unsigned short html5Btn) const;
+    MouseButton::Code mapMouseButton(unsigned short html5Btn) const;
 
     /// update mouse pointer lock state
-    static bool updatePointerLockMode(Mouse::PointerLockMode lockMode);
+    static bool updatePointerLockMode(PointerLockMode::Code lockMode);
     /// key down callback
     static EM_BOOL emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void* userData);
     /// key up callback

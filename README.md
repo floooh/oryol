@@ -40,12 +40,13 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 
 ### Getting Started:
 
-* [What's New](doc/NEWS.md)
+* [What's New](doc/NEWS.md) (updated: 11-Jun-2016)
 * [How to Build](doc/BUILD.md)
 * [Design Manifesto](doc/DESIGN-MANIFESTO.md)
 * [10,000ft View](doc/OVERVIEW.md)
 * [Core Module](code/Modules/Core/README.md)
 * [IO Module](code/Modules/IO/README.md)
+* [Input Module](code/Modules/Input/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
 
 ### Extension Modules:

@@ -22,7 +22,7 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    glm::mat4 computeMVP(const Sensors& sensor);
+    glm::mat4 computeMVP();
 
     DrawState drawState;
     Shader::VSParams vsParams;
@@ -61,9 +61,10 @@ SensorsApp::OnInit() {
 
 //------------------------------------------------------------------------------
 glm::mat4
-SensorsApp::computeMVP(const Sensors& sensors) {
+SensorsApp::computeMVP() {
     glm::mat4 model = glm::mat4();
-    glm::mat4 att = glm::yawPitchRoll(sensors.Pitch, -sensors.Roll, 0.0f);
+    const glm::vec3& ypr = Input::SensorYawPitchRoll();
+    glm::mat4 att = glm::yawPitchRoll(ypr.y, -ypr.z, 0.0f);
     glm::vec3 eye = glm::vec3(att[2]) * 6.0f;
     glm::vec3 up = glm::vec3(att[1]);
     glm::mat4 view = glm::lookAt(eye, glm::vec3(0.0f), up);
@@ -74,20 +75,20 @@ SensorsApp::computeMVP(const Sensors& sensors) {
 AppState::Code
 SensorsApp::OnRunning() {
     
-    const Sensors& sensors = Input::Sensors();
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
-    this->vsParams.ModelViewProjection = this->computeMVP(sensors);
+    this->vsParams.ModelViewProjection = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0);
-    if (!Input::Sensors().Attached) {
+    if (!Input::SensorsAttached()) {
         Dbg::Print("\n Please run on mobile device!\n\r");
     }
     else {
         Dbg::Print("\n Rotate device to see effect\n\r");
     }
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r", sensors.Yaw, sensors.Pitch, sensors.Roll);
+    const glm::vec3& ypr = Input::SensorYawPitchRoll();
+    Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r", ypr.x, ypr.y, ypr.z);
     Dbg::PrintF(" frame time: %.3fms", frameTime.AsMilliSeconds());
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

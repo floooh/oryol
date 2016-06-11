@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Sensors
+    @class Oryol::_priv::Sensors
     @ingroup Input
     @brief returns device sensory data
 */
@@ -9,19 +9,17 @@
 #include "glm/mat4x4.hpp"
 
 namespace Oryol {
+namespace _priv {
 
-class Sensors {
+class sensorDevice {
 public:
     /// does the host platform provide sensory data?
-    bool Attached = false;
+    bool attached = false;
     /// acceleration vector including gravity in m/sec^2
-    glm::vec3 Acceleration{0.0f, -9.80665f, 0.0f};
-    /// device orientation: yaw
-    float Yaw = 0.0f;
-    /// device orientation: pitch
-    float Pitch = 0.0f;
-    /// device orientation: roll
-    float Roll = 0.0f;
+    glm::vec3 acceleration{0.0f, -9.80665f, 0.0f};
+    /// device orientation: yaw, pitch, roll angles
+    glm::vec3 yawPitchRoll;
 };
 
+} // namespace _priv
 } // namespace Oryol

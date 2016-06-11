@@ -79,8 +79,7 @@ DrawCallPerfApp::OnRunning() {
     Gfx::CommitFrame();
 
     // toggle particle update
-    const Mouse& mouse = Input::Mouse();
-    if (mouse.Attached && mouse.ButtonDown(Mouse::Button::LMB)) {
+    if (Input::MouseAttached() && Input::MouseButtonDown(MouseButton::Left)) {
         this->updateEnabled = !this->updateEnabled;
     }
     

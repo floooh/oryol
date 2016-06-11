@@ -44,8 +44,8 @@ androidInputMgr::setup(const InputSetup& setup) {
     this->highDPI = Gfx::GfxSetup().HighDPI;
 
     inputMgrBase::setup(setup);
-    this->Touchpad.Attached = true;
-    this->Sensors.Attached = true;
+    this->touchpad.attached = true;
+    this->sensors.attached = true;
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
     androidBridge::ptr()->setSensorEventCallback(this->onSensorEvent);
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });   
@@ -130,9 +130,9 @@ androidInputMgr::onSensorEvent(const ASensorEvent* event) {
         case ASENSOR_TYPE_ACCELEROMETER:
             if (self->inputSetup.AccelerometerEnabled) {
                 // NOTE: x and y are swapped because the default orientation is landscape
-                self->Sensors.Acceleration.x = event->acceleration.y;
-                self->Sensors.Acceleration.y = -event->acceleration.x;
-                self->Sensors.Acceleration.z = -event->acceleration.z;
+                self->sensors.acceleration.x = event->acceleration.y;
+                self->sensors.acceleration.y = -event->acceleration.x;
+                self->sensors.acceleration.z = -event->acceleration.z;
             }
             break;
 

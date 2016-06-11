@@ -6,15 +6,17 @@
     @brief base class for platform-specific input managers
 */
 #include "Input/Core/InputSetup.h"
-#include "Input/Core/Keyboard.h"
-#include "Input/Core/Mouse.h"
-#include "Input/Core/Gamepad.h"
-#include "Input/Core/Touchpad.h"
-#include "Input/Core/Sensors.h"
+#include "Input/Core/InputEvent.h"
+#include "Input/Core/keyboardDevice.h"
+#include "Input/Core/mouseDevice.h"
+#include "Input/Core/gamepadDevice.h"
+#include "Input/Core/touchpadDevice.h"
+#include "Input/Core/sensorDevice.h"
 #include "Input/touch/touchEvent.h"
 #include "Input/touch/tapDetector.h"
 #include "Input/touch/panDetector.h"
 #include "Input/touch/pinchDetector.h"
+#include "Input/Core/inputDispatcher.h"
 
 namespace Oryol {
 namespace _priv {
@@ -37,34 +39,23 @@ public:
     /// get the input setup object
     const InputSetup& getInputSetup() const;
 
-    /// max number of gamepads
+    class keyboardDevice keyboard;
+    class mouseDevice mouse;
+    class touchpadDevice touchpad;
+    class sensorDevice sensors;
     static const int MaxNumGamepads = 4;
-    /// keyboard state
-    class Keyboard Keyboard;
-    /// mouse state
-    class Mouse Mouse;
-    /// gamepad state
-    StaticArray<class Gamepad, MaxNumGamepads> Gamepad;
-    /// touchpad state
-    class Touchpad Touchpad;
-    /// sensor state
-    class Sensors Sensors;
-
-    /// begin text capturing
-    void beginCaptureText();
-    /// end text capturing
-    void endCaptureText();
+    StaticArray<class gamepadDevice, MaxNumGamepads> gamepad;
 
     /// handle a touch event (detect gestures)
     void onTouchEvent(const touchEvent& event);
-    
-protected:
+
     bool valid;
     InputSetup inputSetup;
+    inputDispatcher dispatcher;
     tapDetector singleTapDetector;
     tapDetector doubleTapDetector;
     class panDetector panDetector;
-    class pinchDetector pinchDetector;        
+    class pinchDetector pinchDetector;
 };
 
 } // namespace _priv

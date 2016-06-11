@@ -4,7 +4,7 @@
     @class Oryol::_priv::pnaclInputMgr
     @brief PNaCl platform input manager class
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/Core/inputMgrBase.h"
 #include "ppapi/cpp/input_event.h"
 #include "Core/RunLoop.h"
 
@@ -29,7 +29,7 @@ private:
     /// convert nacl key code to oryol key code
     Key::Code mapKey(uint32_t naclKeyCode) const;
     /// map NaCl mouse button to Oryol mouse button
-    Mouse::Button mapMouseButton(PP_InputEvent_MouseButton naclBtn);
+    MouseButton::Code mapMouseButton(PP_InputEvent_MouseButton naclBtn);
     /// input event callback from pnaclInstance::HandleInputEvent
     bool handleEvent(const pp::InputEvent& ie);
     /// called on mouse-down event from handleEvent
@@ -58,3 +58,4 @@ private:
 
 } // namespace _priv
 } // namespace Oryol
+
