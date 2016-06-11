@@ -151,7 +151,6 @@ pnaclInputMgr::onKeyDown(const pp::KeyboardInputEvent& ie) {
         this->keyboard.onKeyDown(key);
         return true;
     }
-    Log::Info("unhandled key code: %d\n", ie.GetKeyCode());
     return false;
 }
 
@@ -290,7 +289,10 @@ pnaclInputMgr::setupKeyTable() {
     this->keyTable[144] = Key::NumLock;
     this->keyTable[145] = Key::ScrollLock;
     this->keyTable[173] = Key::Minus;
+    this->keyTable[186] = Key::Semicolon;
+    this->keyTable[187] = Key::Equal;
     this->keyTable[188] = Key::Comma;
+    this->keyTable[189] = Key::Minus;
     this->keyTable[190] = Key::Period;
     this->keyTable[191] = Key::Slash;
     this->keyTable[192] = Key::GraveAccent;

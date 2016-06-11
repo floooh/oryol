@@ -347,6 +347,7 @@ emscInputMgr::setupKeyTable() {
     this->keyTable[88] = Key::X;
     this->keyTable[89] = Key::Y;
     this->keyTable[90] = Key::Z;
+    this->keyTable[91] = Key::LeftSuper;
     this->keyTable[93] = Key::Menu;
     this->keyTable[96] = Key::Num0;
     this->keyTable[97] = Key::Num1;
@@ -378,7 +379,10 @@ emscInputMgr::setupKeyTable() {
     this->keyTable[144] = Key::NumLock;
     this->keyTable[145] = Key::ScrollLock;
     this->keyTable[173] = Key::Minus;
+    this->keyTable[186] = Key::Semicolon;
+    this->keyTable[187] = Key::Equal;
     this->keyTable[188] = Key::Comma;
+    this->keyTable[189] = Key::Minus;
     this->keyTable[190] = Key::Period;
     this->keyTable[191] = Key::Slash;
     this->keyTable[192] = Key::GraveAccent;
