@@ -96,7 +96,7 @@ what keys or buttons you're looking for
 - you need to keep track of the exact number of input actions happening
 during a frame, even if the same action happens multiple times in the
 same frame
-- you're application flow if better suited to handling events instead
+- you're application flow is better suited to handling events instead
 of polling each frame
 
 Event handling is described in detail at the bottom of this file, let's
@@ -125,26 +125,22 @@ Input::KeyboardAttached() returns false.
 To check the current state of specific keys:
 
 ```cpp
-    // check if a key is currently pressed (held down) or
-    // was pressed during the last frame:
+    // check if a key is currently pressed (held down) or was pressed during the last frame:
     if (Input::KeyPressed(Key::W)) {
         ...
     }
     
-    // check if a key was pressed down at least once 
-    // during the last frame:
+    // check if a key was pressed down at least once during the last frame:
     if (Input::KeyDown(Key::A)) {
         ...
     }
 
-    // check if a key was released at least once 
-    // during the last frame:
+    // check if a key was released at least once during the last frame:
     if (Input::KeyUp(Key::S)) {
         ...
     }
 
-    // check if a key-repeat happened at least once 
-    // during the last frame:
+    // check if a key-repeat happened at least once during the last frame:
     if (Input::KeyRepeat(Key::D)) {
         ...
     }
@@ -206,20 +202,17 @@ To check the state of the (up to 3) mouse buttons, use the following
 functions:
 
 ```cpp
-    // check if left mouse button is current held down, or
-    // was held down during the last frame:
+    // check if left mouse button is current held down, or was held down during the last frame:
     if (Input::MouseButtonPressed(MouseButton::Left)) {
         ...
     }
 
-    // check if middle mouse button was pressed down at least
-    // once during the last frame:
+    // check if middle mouse button was pressed down at least once during the last frame:
     if (Input::MouseButtonDown(MouseButton::Middle)) {
         ...
     }
 
-    // check if the right mouse button was released at least once
-    // during the last frame:
+    // check if the right mouse button was released at least once during the last frame:
     if (Input::MouseButtonUp(MouseButton::Right)) {
         ...
     }
@@ -290,7 +283,7 @@ the HTML5 [Pointer Lock
 API](https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API). 
 
 Here's an example that enables pointer-lock when the left mouse button
-is pressed, and disabled pointer-lock again when the left mouse button
+is pressed, and disables pointer-lock again when the left mouse button
 is released. This is useful for a mixed input scenario, where the
 mouse should act as a 'point-n-click' mouse, but also should
 control a camera when a mouse button is held down:
@@ -329,10 +322,10 @@ on web browsers:
   
 ### Touch Input
 
-The touch input functions provide access to basic touch- and multi-touch-
-input, and is currently only implemented on mobile platforms and not
-for notebook touchpads (although there's a gray area on browsers running
-on notebooks, which might expose the notebook's touchpad as touch device).
+The touch input functions provide access to basic touch- and multi-touch-input,
+and is currently only implemented on mobile platforms and not for notebook
+touchpads (although there's a gray area on browsers running on notebooks, which
+might expose the notebook's touchpad as touch device).
 
 Oryol's touch support includes a few platform-agnostic **gesture recognizers**.
 Gesture input isn't standardized between platforms in the same way that mouse
@@ -431,7 +424,7 @@ the tap happened).
 ### Device Sensors
 
 Most mobile devices have at least gravity and gyroscope sensors that provide
-information about the current orientation of the device in relative to
+information about the current orientation of the device relative to
 the closest planetary body.
 
 In the Oryol Input module, these sensors can be queried with the 
