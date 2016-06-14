@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 57
+Version = 58
 
 import os
 import sys
@@ -1279,7 +1279,6 @@ class MetalGenerator :
 
         # write fragment shader input structure
         lines.append(Line('struct {}_fs_in_t {{'.format(fs.name)))
-        lines.append(Line('    float4 _vofi_position [[position]];'))
         for input in fs.inputs :
             lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
         lines.append(Line('};'))
