@@ -23,7 +23,7 @@ using namespace Oryol::_priv;
 // This works around an AppKit bug, where key up events while holding
 // down the command key don't get sent to the key window.
 - (void)sendEvent:(NSEvent *)event {
-    if ([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask)) {
+    if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand)) {
         [[self keyWindow] sendEvent:event];
     }
     else {
@@ -102,16 +102,16 @@ using namespace Oryol::_priv;
 //------------------------------------------------------------------------------
 static int translateFlags(NSUInteger flags) {
     int mods = 0;
-    if (flags & NSShiftKeyMask) {
+    if (flags & NSEventModifierFlagShift) {
         mods |= ORYOL_OSXBRIDGE_MOD_SHIFT;
     }
-    if (flags & NSControlKeyMask) {
+    if (flags & NSEventModifierFlagControl) {
         mods |= ORYOL_OSXBRIDGE_MOD_CONTROL;
     }
-    if (flags & NSAlternateKeyMask) {
+    if (flags & NSEventModifierFlagOption) {
         mods |= ORYOL_OSXBRIDGE_MOD_ALT;
     }
-    if (flags & NSCommandKeyMask) {
+    if (flags & NSEventModifierFlagCommand) {
         mods |= ORYOL_OSXBRIDGE_MOD_SUPER;
     }
     return mods;
@@ -242,7 +242,7 @@ static int translateKey(unsigned int key) {
 - (void)flagsChanged:(NSEvent *)event {
     osxBridge* bridge = osxBridge::ptr();
     int action;
-    const unsigned int modifierFlags = [event modifierFlags] & NSDeviceIndependentModifierFlagsMask;
+    const unsigned int modifierFlags = [event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
     const int key = translateKey([event keyCode]);
     const int mods = translateFlags(modifierFlags);
 
@@ -607,10 +607,10 @@ osxBridge::createWindow() {
 
     // window
     const NSUInteger style =
-        NSTitledWindowMask |
-        NSClosableWindowMask |
-        NSMiniaturizableWindowMask |
-        NSResizableWindowMask;
+        NSWindowStyleMaskTitled |
+        NSWindowStyleMaskClosable |
+        NSWindowStyleMaskMiniaturizable |
+        NSWindowStyleMaskResizable;
     this->appWindow = [[NSWindow alloc]
         initWithContentRect:NSMakeRect(0, 0, 64, 32)
         styleMask:style
