@@ -9,6 +9,12 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+ioWorker::ioWorker() :
+threadStopRequested(false) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
 void
 ioWorker::start(const ioPointers& ptrs) {
     o_assert(!this->threadStartRequested);
@@ -54,8 +60,11 @@ ioWorker::doWork() {
     o_assert_dbg(this->writeQueue.Empty());
 
     #if ORYOL_HAS_THREADS
-    if (!this->transferQueue.Empty()) {
-        this->transferCondVar.notify_one();
+    {
+        std::lock_guard<std::mutex> lock(this->transferMutex);
+        if (!this->transferQueue.Empty()) {
+            this->transferCondVar.notify_one();
+        }
     }
     #endif
 
@@ -80,10 +89,12 @@ ioWorker::threadFunc(ioWorker* self) {
     while (!self->threadStopRequested) {
 
         // wait for messages to arrive, and if so, transfer to read queue
-        std::unique_lock<std::mutex> lock(self->transferMutex);
-        self->transferCondVar.wait(lock);
-        self->moveTransferToReadQueue();
-        lock.unlock();
+        {
+            std::unique_lock<std::mutex> lock(self->transferMutex);
+            self->transferCondVar.wait(lock);
+            self->moveTransferToReadQueue();
+            lock.unlock();
+        }
 
         // now process the messages, this happens without locking
         while (!self->readQueue.Empty()) {

@@ -19,6 +19,7 @@
 #include "IO/FS/ioRequests.h"
 #include "IO/FS/FileSystem.h"
 #if ORYOL_HAS_THREADS
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -29,6 +30,8 @@ namespace _priv {
 
 class ioWorker {
 public:
+    /// constructor
+    ioWorker();
     /// setup and start the worker thread
     void start(const ioPointers& ptrs);
     /// stop the worker thread, wait for join
@@ -72,8 +75,12 @@ private:
     std::mutex transferMutex;
     std::condition_variable transferCondVar;
     #endif
+    #if ORYOL_HAS_ATOMIC
+    std::atomic<bool> threadStopRequested;
+    #else
+    bool threadStopRequested;
+    #endif
     bool threadStartRequested = false;
-    bool threadStopRequested = false;
     bool threadStopped = false;
 };
 
