@@ -563,8 +563,8 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         imgInfo.arrayLayers = 1;
         imgInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imgInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imgInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        imgInfo.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        imgInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        imgInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkResult err = vkCreateImage(this->Device, &imgInfo, nullptr, &this->depthBuffer.image);
         o_assert(!err && this->depthBuffer.image);
 
@@ -581,6 +581,14 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
         // bind memory
         err = vkBindImageMemory(this->Device, this->depthBuffer.image, this->depthBuffer.mem, 0);
         o_assert(!err);
+
+        // transition image layout from undefined to depth-stencil-attachment-optimal
+        vlkResAllocator::transitionImageLayout(
+            this->commandBuffer,
+            this->depthBuffer.image,
+            VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
         // create image view object
         VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
