@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 55
+Version = 58
 
 import os
 import sys
@@ -74,6 +74,9 @@ glslVersionNumber = {
 # declare language-specific mapping macros
 slMacros = {
     'glsl100': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
@@ -85,6 +88,9 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl120': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
@@ -96,6 +102,9 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl150': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
         '_color': '_FragColor',
         '_fragcoord': 'gl_FragCoord',
@@ -118,6 +127,9 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture(s,t)'
     },
     'hlsl5': {
+        'ORYOL_GLSL': '(0)',
+        'ORYOL_HLSL': '(1)',
+        'ORYOL_METALSL': '(0)',
         '_position': '_oPosition',
         '_color': '_oColor',
         '_const': 'static const',
@@ -136,6 +148,9 @@ slMacros = {
         'fract(x)': 'frac(x)'
     },
     'metal': {
+        'ORYOL_GLSL': '(0)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(1)',
         '_position': 'vs_out._vofi_position',
         '_color': '_fo_color',
         '_const': 'constant',
@@ -177,9 +192,9 @@ validUniformArrayTypes = [
 ]
 
 uniformCType = {
-    'bool':         'int32',
-    'int':          'int32',
-    'float':        'float32',
+    'bool':         'int',
+    'int':          'int',
+    'float':        'float',
     'vec2':         'glm::vec2',
     'vec3':         'glm::vec3',
     'vec4':         'glm::vec4',
@@ -457,22 +472,22 @@ class Shader(Snippet) :
 
     def dump(self) :
         Snippet.dump(self)
-        print 'UniformBlockRefs:'
+        print('UniformBlockRefs:')
         for uniformBlockRef in self.uniformBlockRefs :
             uniformBlockRef.dump()
-        print 'UniformBlocks:'
+        print('UniformBlocks:')
         for uniformBlock in self.uniformBlocks :
             uniformBlock.dump()
-        print 'TextureBlockRefs:'
+        print('TextureBlockRefs:')
         for textureBlockRef in self.textureBlockRefs :
             textureBlockRef.dump()
-        print 'TextureBlocks:'
+        print('TextureBlocks:')
         for textureBlock in self.textureBlocks :
             textureBlock.dump()
-        print 'Inputs:'
+        print('Inputs:')
         for input in self.inputs :
             input.dump()
-        print 'Outputs:'
+        print('Outputs:')
         for output in self.outputs :
             output.dump()
 
@@ -706,8 +721,6 @@ class Parser :
         if len(args) != 1:
             util.fmtError("@highp must have 1 arg (type)")
         type = args[0]
-        if checkListDup(type, self.current.highPrecision) :
-            util.fmtError("@highp type '{}' already defined in '{}'!".format(type, self.current.name))
         self.current.highPrecision.append(type)
 
     #---------------------------------------------------------------------------
@@ -910,8 +923,8 @@ class GLSLGenerator :
             lines.append(Line('#extension GL_ARB_shading_language_420pack : enable'))
 
         # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+        for macro in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(macro, slMacros[slVersion][macro])))
 
         # precision modifiers 
         # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
@@ -1318,7 +1331,6 @@ class MetalGenerator :
 
         # write fragment shader input structure
         lines.append(Line('struct {}_fs_in_t {{'.format(fs.name)))
-        lines.append(Line('    float4 _vofi_position [[position]];'))
         for input in fs.inputs :
             lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
         lines.append(Line('};'))
@@ -1361,22 +1373,22 @@ class ShaderLibrary :
 
     def dump(self) :
         dumpObj(self)
-        print 'Blocks:'
+        print('Blocks:')
         for cb in self.codeBlocks.values() :
             cb.dump()
-        print 'UniformBlocks:'
+        print('UniformBlocks:')
         for ub in self.uniformBlocks.values() :
             ub.dump()
-        print 'TextureBlocks:'
+        print('TextureBlocks:')
         for tb in self.textureBlocks.values() :
             tb.dump()
-        print 'Vertex Shaders:'
+        print('Vertex Shaders:')
         for vs in self.vertexShaders.values() :
             vs.dump()
-        print 'Fragment Shaders:'
+        print('Fragment Shaders:')
         for fs in self.fragmentShaders.values() :
             fs.dump()
-        print 'Programs:'
+        print('Programs:')
         for prog in self.programs.values() :
             program.dump()
 
@@ -1587,7 +1599,7 @@ class ShaderLibrary :
                     srcLines = fs.generatedSource[slVersion]
                     glslcompiler.validate(srcLines, 'fs', slVersion)
 
-    def validateAndWriteShadersHLSL(self, absHdrPath) :
+    def validateAndWriteShadersHLSL(self, absHdrPath, args) :
         '''
         Run the shader sources through the HLSL compiler,
         and let HLSL compiler generate shader byte code in header file
@@ -1599,12 +1611,12 @@ class ShaderLibrary :
                     srcLines = vs.generatedSource[slVersion]
                     cName = vs.name + '_' + slVersion + '_src'
                     outPath = rootPath + '_' + cName + '.h'
-                    hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName)
+                    hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName, args)
                 for fs in self.fragmentShaders.values() :
                     srcLines = fs.generatedSource[slVersion]
                     cName = fs.name + '_' + slVersion + '_src'
                     outPath = rootPath + '_' + cName + '.h'
-                    hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName)
+                    hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName, args)
 
     def validateAndWriteShadersMetal(self, absHdrPath) :
         '''
@@ -1660,9 +1672,9 @@ def writeProgramHeader(f, shdLib, program) :
             stageName = 'FS'
         f.write('        #pragma pack(push,1)\n')
         f.write('        struct {} {{\n'.format(ub.bindName))
-        f.write('            static const int32 _bindSlotIndex = {};\n'.format(ub.bindSlot))
+        f.write('            static const int _bindSlotIndex = {};\n'.format(ub.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const int64 _layoutHash = {};\n'.format(ub.getHash()))
+        f.write('            static const int64_t _layoutHash = {};\n'.format(ub.getHash()))
         for type in ub.uniformsByType :
             for uniform in ub.uniformsByType[type] :
                 if uniform.num == 1 :
@@ -1672,7 +1684,7 @@ def writeProgramHeader(f, shdLib, program) :
                 # for vec3's we need to add a padding field, FIXME: would be good
                 # to try filling the padding fields with float params!
                 if type == 'vec3' :
-                    f.write('            float32 _pad_{};\n'.format(uniform.bindName))
+                    f.write('            float _pad_{};\n'.format(uniform.bindName))
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
     f.write('        static ShaderSetup Setup();\n')
@@ -1684,7 +1696,7 @@ def writeTextureBlocksHeader(f, shdLib) :
     for tb in shdLib.textureBlocks.values() :
         f.write('    struct {} {{\n'.format(tb.bindName))
         for tex in tb.textures :
-            f.write('        static const int32 {} = {};\n'.format(tex.bindName, tex.bindSlot))
+            f.write('        static const int {} = {};\n'.format(tex.bindName, tex.bindSlot))
         f.write('    };\n')
 
 #-------------------------------------------------------------------------------
@@ -1876,7 +1888,7 @@ def generateSource(absSourcePath, shdLib) :
     f.close()
 
 #-------------------------------------------------------------------------------
-def generate(input, out_src, out_hdr) :
+def generate(input, out_src, out_hdr, args) :
     if util.isDirty(Version, [input], [out_src, out_hdr]) :
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
@@ -1887,7 +1899,7 @@ def generate(input, out_src, out_hdr) :
         shaderLibrary.generateShaderSourcesMetal()
         shaderLibrary.validateShadersGLSL()
         if platform.system() == 'Windows' :
-            shaderLibrary.validateAndWriteShadersHLSL(out_hdr)
+            shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
         if platform.system() == 'Darwin' :
             shaderLibrary.validateAndWriteShadersMetal(out_hdr)
         generateSource(out_src, shaderLibrary)

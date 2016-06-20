@@ -28,10 +28,10 @@ public:
     /// GL depth render buffer
     GLuint glDepthRenderbuffer;
 
-    static const int32 MaxNumSlots = 2;
-    int32 updateFrameIndex;
-    uint8 numSlots;
-    uint8 activeSlot;
+    static const int MaxNumSlots = 2;
+    int updateFrameIndex;
+    uint8_t numSlots;
+    uint8_t activeSlot;
     StaticArray<GLuint, MaxNumSlots> glTextures;
 };
 

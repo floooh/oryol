@@ -21,8 +21,10 @@ namespace Oryol {
 class RefCounted {
     OryolBaseClassDecl(RefCounted);
 public:
+    /// destructor needs to be virtual
+    virtual ~RefCounted() { };
     /// get reference count
-    int32 GetRefCount() const;
+    int GetRefCount() const;
     /// add reference
     void addRef();
     /// release reference (calls destructor when ref_count reaches zero)
@@ -30,9 +32,9 @@ public:
 
 private:
     #if ORYOL_HAS_ATOMIC
-    std::atomic<int32> refCount{0};
+    std::atomic<int> refCount{0};
     #else
-    int32 refCount{0};
+    int32_t refCount{0};
     #endif
 };
 
@@ -60,7 +62,7 @@ RefCounted::release() {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 RefCounted::GetRefCount() const
 {
     return this->refCount;

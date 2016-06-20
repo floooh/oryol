@@ -39,9 +39,9 @@ public:
     /// construct from C string (allocates!)
     String(const char* cstr);
     /// construct from raw byte sequence, endIndex can be EndOfString
-    String(const char* ptr, int32 startIndex, int32 endIndex);
+    String(const char* ptr, int startIndex, int endIndex);
     /// construct from substring of other string, endIndex can be EndOfString
-    String(const String& rhs, int32 startIndex, int32 endIndex);
+    String(const String& rhs, int startIndex, int endIndex);
     /// construct from StringAtom (allocates!)
     String(const StringAtom& str);
     
@@ -76,9 +76,9 @@ public:
     bool operator>=(const String& rhs) const;
 
     /// assign from raw byte sequence, endIndex can be EndOfString
-    void Assign(const char* ptr, int32 startIndex, int32 endIndex);
+    void Assign(const char* ptr, int startIndex, int endIndex);
     /// assign from other string, with start index and endIndex, endIndex can be EndOfString
-    void Assign(const String& rhs, int32 startIndex, int32 endIndex);
+    void Assign(const String& rhs, int startIndex, int endIndex);
     /// get as C-String, will always return a valid ptr, even if String is empty
     const char* AsCStr() const;
     /// get as StringAtom (slow)
@@ -89,7 +89,7 @@ public:
     char Front() const;
     
     /// get string length in number of bytes
-    int32 Length() const;
+    int Length() const;
     /// return true if contains a non-empty string
     bool IsValid() const;
     /// return true if empty
@@ -97,23 +97,23 @@ public:
     /// clear content
     void Clear();
     /// get the refcount of this string
-    int32 RefCount() const;
+    int RefCount() const;
     
 private:
     /// shared string data header, this is followed by the actual string
     struct StringData {
         #if ORYOL_HAS_ATOMIC
-        std::atomic<int32> refCount{0};
+        std::atomic<int> refCount{0};
         #else
-        int32 refCount{0};
+        int refCount{0};
         #endif
-        int32 length;
+        int length;
     };
     
     /// create new string data block, numBytes does not include the terminating 0
-    void create(const char* ptr, int32 len);
+    void create(const char* ptr, int len);
     /// private alloc function for len
-    void alloc(int32 len);
+    void alloc(int len);
     /// destroy shared string data block
     void destroy();
     /// increment refcount

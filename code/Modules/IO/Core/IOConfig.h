@@ -3,11 +3,16 @@
 /**
     @file IOConfig.h
     @ingroup IO
-    @brief Configuration defines for the Oryol IO module.
+    @brief compile-time configuration settings for IO system
 */
-#include "Core/Config.h"
+#include "Core/Types.h"
 
-/// minimum grow size for streams (in bytes)
-#define ORYOL_STREAM_DEFAULT_MIN_GROW (256)
-/// maximum grow size for streams (in bytes)
-#define ORYOL_STREAM_DEFAULT_MAX_GROW (1<<18)   // 256 kByte
+namespace Oryol {
+
+class IOConfig {
+public:
+    /// number of IO workers (== number of HTTP connections)
+    static const int NumWorkers = 4;
+};
+
+} // namespace Oryol

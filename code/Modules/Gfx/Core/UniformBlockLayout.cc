@@ -41,7 +41,7 @@ UniformBlockLayout::Add(const StringAtom& name, UniformType::Code type) {
 
 //------------------------------------------------------------------------------
 UniformBlockLayout&
-UniformBlockLayout::Add(const StringAtom& name, UniformType::Code type, int32 numElements) {
+UniformBlockLayout::Add(const StringAtom& name, UniformType::Code type, int numElements) {
     return this->Add(Component(name, type, numElements));
 }
 

@@ -3,11 +3,11 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
-#include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
@@ -36,11 +36,11 @@ private:
     glm::mat4 model;
     Shader::VSParams vsParams;
     bool updateEnabled = true;
-    int32 frameCount = 0;
-    int32 curNumParticles = 0;
+    int frameCount = 0;
+    int curNumParticles = 0;
     TimePoint lastFrameTimePoint;
-    static const int32 MaxNumParticles = 1024 * 1024;
-    const int32 NumParticlesEmittedPerFrame = 100;
+    static const int MaxNumParticles = 1024 * 1024;
+    const int NumParticlesEmittedPerFrame = 100;
     glm::vec4 positions[MaxNumParticles];
     glm::vec4 vectors[MaxNumParticles];
 };
@@ -78,9 +78,8 @@ InstancingApp::OnRunning() {
     Gfx::CommitFrame();
     
     // toggle particle update
-    const Mouse& mouse = Input::Mouse();
-    const Touchpad& tpad = Input::Touchpad();
-    if ((mouse.Attached && mouse.ButtonDown(Mouse::Button::LMB)) || (tpad.Attached && tpad.Tapped)) {
+    if ((Input::MouseAttached() && Input::MouseButtonDown(MouseButton::Left)) ||
+        (Input::TouchpadAttached() && Input::TouchTapped())) {
         this->updateEnabled = !this->updateEnabled;
     }
     
@@ -99,7 +98,7 @@ InstancingApp::OnRunning() {
 //------------------------------------------------------------------------------
 void
 InstancingApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
+    float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->vsParams.ModelViewProjection = this->proj * this->view * this->model;
@@ -108,7 +107,7 @@ InstancingApp::updateCamera() {
 //------------------------------------------------------------------------------
 void
 InstancingApp::emitParticles() {
-    for (int32 i = 0; i < NumParticlesEmittedPerFrame; i++) {
+    for (int i = 0; i < NumParticlesEmittedPerFrame; i++) {
         if (this->curNumParticles < MaxNumParticles) {
             this->positions[this->curNumParticles] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
             glm::vec3 rnd = glm::ballRand(0.5f);
@@ -122,8 +121,8 @@ InstancingApp::emitParticles() {
 //------------------------------------------------------------------------------
 void
 InstancingApp::updateParticles() {
-    const float32 frameTime = 1.0f / 60.0f;
-    for (int32 i = 0; i < this->curNumParticles; i++) {
+    const float frameTime = 1.0f / 60.0f;
+    for (int i = 0; i < this->curNumParticles; i++) {
         auto& pos = this->positions[i];
         auto& vec = this->vectors[i];
         vec.y -= 1.0f * frameTime;
@@ -178,8 +177,8 @@ InstancingApp::OnInit() {
     this->drawState.Pipeline = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     
     return App::OnInit();

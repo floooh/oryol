@@ -18,7 +18,7 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();    
 private:
-    glm::mat4 computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos);
+    glm::mat4 computeMVP(const glm::mat4& proj, float rotX, float rotY, const glm::vec3& pos);
 
     Id renderTarget;
     DrawState offscreenDrawState;
@@ -30,8 +30,8 @@ private:
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
-    float32 angleX = 0.0f;
-    float32 angleY = 0.0f;
+    float angleX = 0.0f;
+    float angleY = 0.0f;
 };
 OryolMain(SimpleRenderTargetApp);
 
@@ -119,8 +119,8 @@ SimpleRenderTargetApp::OnInit() {
     this->displayDrawState.FSTexture[Textures::Texture] = this->renderTarget;
 
     // setup static transform matrices
-    float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
@@ -137,7 +137,7 @@ SimpleRenderTargetApp::OnCleanup() {
 
 //------------------------------------------------------------------------------
 glm::mat4
-SimpleRenderTargetApp::computeMVP(const glm::mat4& proj, float32 rotX, float32 rotY, const glm::vec3& pos) {
+SimpleRenderTargetApp::computeMVP(const glm::mat4& proj, float rotX, float rotY, const glm::vec3& pos) {
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));

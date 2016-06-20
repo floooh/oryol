@@ -4,7 +4,7 @@
     @class Oryol::iosInputMgr
     @brief input manager for iOS
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/Core/inputMgrBase.h"
 #include "Core/ios/iosBridge.h"
 #include "Core/RunLoop.h"
 

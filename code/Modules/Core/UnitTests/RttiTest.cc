@@ -24,7 +24,6 @@ public:
     /// destructor
     virtual ~A() { Log::Info("destructor ~A called for '%p'\n", this); };
 };
-OryolClassImpl(A);
 
 class AA : public A {
     OryolClassDecl(AA);
@@ -35,7 +34,6 @@ public:
     /// destructor
     virtual ~AA() { Log::Info("destructor ~AA called for '%p'\n", this); };
 };
-OryolClassImpl(AA);
 
 class AB : public A {
     OryolClassDecl(AB);
@@ -46,7 +44,6 @@ public:
     /// destructor
     virtual ~AB() { Log::Info("destructor ~AB called for '%p'\n", this); };
 };
-OryolClassImpl(AB);
 
 //------------------------------------------------------------------------------
 TEST(Rtti) {

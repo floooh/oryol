@@ -9,7 +9,7 @@
 using namespace Oryol;
 
 TEST(SetTest) {
-    Set<int32> set;
+    Set<int> set;
     CHECK(set.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(set.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     CHECK(set.Size() == 0);

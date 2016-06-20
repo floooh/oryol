@@ -58,18 +58,18 @@ TEST(MeshBuilderTest) {
     CHECK(meshSetup.PrimitiveGroup(0).NumElements == 6);
     
     // see MeshBuilder header for those sizes
-    const uint32 vbufSize = 4 * 5 * sizeof(float32);
-    const uint32 ibufSize = 6 * sizeof(uint16);
-    const uint32 allDataSize = vbufSize + ibufSize;
+    const uint32_t vbufSize = 4 * 5 * sizeof(float);
+    const uint32_t ibufSize = 6 * sizeof(uint16_t);
+    const uint32_t allDataSize = vbufSize + ibufSize;
     CHECK(buildResult.Data.Size() == allDataSize);
     
     // check the generated data
-    const uint8* ptr = buildResult.Data.Data();
+    const uint8_t* ptr = buildResult.Data.Data();
     o_assert(nullptr != ptr);
     CHECK(ptr != nullptr);
 
     // check vertices
-    const float32* vPtr = (const float32*) ptr;
+    const float* vPtr = (const float*) ptr;
     CHECK(vPtr[0] == 0.0f); CHECK(vPtr[1] == 0.0f); CHECK(vPtr[2] == 0.0f);
     CHECK(vPtr[3] == 0.0f); CHECK(vPtr[4] == 0.0f);
     CHECK(vPtr[5] == 1.0f); CHECK(vPtr[6] == 0.0f); CHECK(vPtr[7] == 0.0f);
@@ -80,7 +80,7 @@ TEST(MeshBuilderTest) {
     CHECK(vPtr[18] == 0.0f); CHECK(vPtr[19] == 1.0f);
     
     // check indices
-    const uint16* iPtr = (const uint16*) &(vPtr[20]);
+    const uint16_t* iPtr = (const uint16_t*) &(vPtr[20]);
     CHECK(iPtr[0] == 0); CHECK(iPtr[1] == 1); CHECK(iPtr[2] == 2);
     CHECK(iPtr[3] == 0); CHECK(iPtr[4] == 2); CHECK(iPtr[5] == 3);
 }

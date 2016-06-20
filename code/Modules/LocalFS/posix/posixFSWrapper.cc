@@ -32,30 +32,30 @@ posixFSWrapper::openWrite(const char* path) {
 }
 
 //------------------------------------------------------------------------------
-int32
-posixFSWrapper::write(handle h, const void* ptr, int32 numBytes) {
+int
+posixFSWrapper::write(handle h, const void* ptr, int numBytes) {
     o_assert_dbg(invalidHandle != h);
     o_assert_dbg(ptr);
-    return (int32) fwrite(ptr, 1, numBytes, (FILE*)h);
+    return (int) fwrite(ptr, 1, numBytes, (FILE*)h);
 }
 
 //------------------------------------------------------------------------------
-int32
-posixFSWrapper::read(handle h, void* ptr, int32 numBytes) {
+int
+posixFSWrapper::read(handle h, void* ptr, int numBytes) {
     o_assert_dbg(invalidHandle != h);
     o_assert_dbg(ptr);
-    return (int32) fread(ptr, 1, numBytes, (FILE*)h);
+    return (int) fread(ptr, 1, numBytes, (FILE*)h);
 }
 
 //------------------------------------------------------------------------------
 bool
-posixFSWrapper::seek(handle h, int32 offset) { 
+posixFSWrapper::seek(handle h, int offset) {
     o_assert_dbg(invalidHandle != h);
     return 0 == fseek((FILE*)h, offset, SEEK_SET);
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 posixFSWrapper::size(handle h) {
     o_assert_dbg(invalidHandle != h);
     FILE* fp = (FILE*) h;
@@ -63,7 +63,7 @@ posixFSWrapper::size(handle h) {
     fseek(fp, 0, SEEK_END);
     long size = ftell(fp);
     fseek(fp, off, SEEK_SET);
-    return (int32) size;
+    return (int) size;
 }
 
 //------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ posixFSWrapper::getExecutableDir() {
     if (length > 0) {
         StringBuilder strBuilder(buf, 0, length);
         strBuilder.SubstituteAll("\\", "/");
-        int32 slashIndex = strBuilder.FindLastOf(0, length, "/");
+        int slashIndex = strBuilder.FindLastOf(0, length, "/");
         o_assert((slashIndex > 0) && (slashIndex < (strBuilder.Length()-1)));
         String result(strBuilder.AsCStr(), 0, slashIndex+1);
         return result;

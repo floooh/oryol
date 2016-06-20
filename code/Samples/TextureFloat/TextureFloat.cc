@@ -5,7 +5,7 @@
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
@@ -98,8 +98,8 @@ TextureFloatApp::OnInit() {
     this->copyDrawState.FSTexture[Textures::Texture] = this->renderTarget;
 
     // setup static transform matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
     this->view = glm::mat4();
 

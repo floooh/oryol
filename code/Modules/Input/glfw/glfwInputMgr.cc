@@ -33,8 +33,8 @@ void
 glfwInputMgr::setup(const InputSetup& setup) {
     
     inputMgrBase::setup(setup);
-    this->Keyboard.Attached = true;
-    this->Mouse.Attached = true;
+    this->keyboard.attached = true;
+    this->mouse.attached = true;
     
     // first check that the Gfx module has already been initialized
     GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
@@ -90,8 +90,8 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::reset() {
-    for (int32 i = 0; i < MaxNumGamepads; i++) {
-        this->Gamepad[i].Attached = glfwJoystickPresent(i) != 0;
+    for (int i = 0; i < MaxNumGamepads; i++) {
+        this->gamepad[i].attached = glfwJoystickPresent(i) != 0;
     }
     inputMgrBase::reset();
 }
@@ -103,13 +103,13 @@ glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, in
         Key::Code key = self->mapKey(glfwKey);
         if (Key::InvalidKey != key) {
             if (glfwAction == GLFW_PRESS) {
-                self->Keyboard.onKeyDown(key);
+                self->keyboard.onKeyDown(key);
             }
             else if (glfwAction == GLFW_RELEASE) {
-                self->Keyboard.onKeyUp(key);
+                self->keyboard.onKeyUp(key);
             }
             else {
-                self->Keyboard.onKeyRepeat(key);
+                self->keyboard.onKeyRepeat(key);
             }
         }
     }
@@ -119,7 +119,7 @@ glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, in
 void
 glfwInputMgr::charCallback(GLFWwindow* win, unsigned int unicode) {
     if (nullptr != self) {
-        self->Keyboard.onChar((wchar_t)unicode);
+        self->keyboard.onChar((wchar_t)unicode);
     }
 }
 
@@ -127,26 +127,26 @@ glfwInputMgr::charCallback(GLFWwindow* win, unsigned int unicode) {
 void
 glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwAction, int glfwMods) {
     if (nullptr != self) {
-        Mouse::Button btn;
+        MouseButton::Code btn;
         switch (glfwButton) {
-            case GLFW_MOUSE_BUTTON_LEFT:    btn = Mouse::LMB; break;
-            case GLFW_MOUSE_BUTTON_RIGHT:   btn = Mouse::RMB; break;
-            case GLFW_MOUSE_BUTTON_MIDDLE:  btn = Mouse::MMB; break;
-            default:                        btn = Mouse::InvalidButton; break;
+            case GLFW_MOUSE_BUTTON_LEFT:    btn = MouseButton::Left; break;
+            case GLFW_MOUSE_BUTTON_RIGHT:   btn = MouseButton::Right; break;
+            case GLFW_MOUSE_BUTTON_MIDDLE:  btn = MouseButton::Middle; break;
+            default:                        btn = MouseButton::InvalidMouseButton; break;
         }
-        if (btn != Mouse::InvalidButton) {
-            Mouse::PointerLockMode lockMode = Mouse::PointerLockModeDontCare;
+        if (btn != MouseButton::InvalidMouseButton) {
+            PointerLockMode::Code lockMode = PointerLockMode::DontCare;
             if (glfwAction == GLFW_PRESS) {
-                lockMode = self->Mouse.onButtonDown(btn);
+                lockMode = self->mouse.onButtonDown(btn);
             }
             else if (glfwAction == GLFW_RELEASE) {
-                lockMode = self->Mouse.onButtonUp(btn);
+                lockMode = self->mouse.onButtonUp(btn);
             }
-            if (Mouse::PointerLockModeEnable == lockMode) {
+            if (PointerLockMode::Enable == lockMode) {
                 GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
                 glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             }
-            else if (Mouse::PointerLockModeDisable == lockMode) {
+            else if (PointerLockMode::Disable == lockMode) {
                 GLFWwindow* glfwWindow = _priv::glfwDisplayMgr::getGlfwWindow();
                 glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
@@ -158,8 +158,8 @@ glfwInputMgr::mouseButtonCallback(GLFWwindow* win, int glfwButton, int glfwActio
 void
 glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)glfwX, (float32)glfwY);
-        self->Mouse.onPosMov(pos);
+        const glm::vec2 pos((float)glfwX, (float)glfwY);
+        self->mouse.onPosMov(pos);
     }
 }
 
@@ -167,8 +167,8 @@ glfwInputMgr::cursorPosCallback(GLFWwindow* win, double glfwX, double glfwY) {
 void
 glfwInputMgr::scrollCallback(GLFWwindow* win, double glfwX, double glfwY) {
     if (nullptr != self) {
-        const glm::vec2 scroll((float32)glfwX, (float32)glfwY);
-        self->Mouse.onScroll(scroll);
+        const glm::vec2 scroll((float)glfwX, (float)glfwY);
+        self->mouse.onScroll(scroll);
     }
 }
 
@@ -193,7 +193,7 @@ glfwInputMgr::mapKey(int glfwKey) const {
 void
 glfwInputMgr::setupKeyTable() {
 
-    for (int32 i = 0; i <= GLFW_KEY_LAST; i++) {
+    for (int i = 0; i <= GLFW_KEY_LAST; i++) {
         keyTable[i] = Key::InvalidKey;
     }
     

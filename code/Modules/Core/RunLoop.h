@@ -33,7 +33,7 @@ namespace Oryol {
 class RunLoop {
 public:
     /// runloop Id
-    typedef int32 Id;
+    typedef int Id;
     /// invalid runloop Id const
     static const Id InvalidId = 0;
     /// runloop function typedef

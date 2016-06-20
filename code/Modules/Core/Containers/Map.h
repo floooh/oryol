@@ -56,17 +56,17 @@ public:
     void operator=(Map&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow_, int32 maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    void SetAllocStrategy(int minGrow_, int maxGrow_=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// get min grow value
-    int32 GetMinGrow() const;
+    int GetMinGrow() const;
     /// get max grow value
-    int32 GetMaxGrow() const;
+    int GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     /// get capacity of array
-    int32 Capacity() const;
+    int Capacity() const;
 
     /// read/write access single element
     VALUE& operator[](const KEY& key);
@@ -74,7 +74,7 @@ public:
     const VALUE& operator[](const KEY& key) const;
     
     /// increase capacity to hold at least numElements more elements
-    void Reserve(int32 numElements);
+    void Reserve(int numElements);
     /// trim capacity to size (this involves a re-alloc)
     void Trim();
     /// clear the array (deletes elements, keeps capacity)
@@ -108,17 +108,17 @@ public:
     /// end bulk-mode (sorting happens here)
     void EndBulk();
     /// find the first duplicate element, or InvalidIndex if not found, this is O(N)!
-    int32 FindDuplicate(int32 startIndex) const;
+    int FindDuplicate(int startIndex) const;
     /// find an element, returns index, or InvalidIndex
-    int32 FindIndex(const KEY& key) const;
+    int FindIndex(const KEY& key) const;
     /// erase element at index
-    void EraseIndex(int32 index);
+    void EraseIndex(int index);
     /// get key at index
-    const KEY& KeyAtIndex(int32 index) const;
+    const KEY& KeyAtIndex(int index) const;
     /// get value at index (read-only)
-    const VALUE& ValueAtIndex(int32 index) const;
+    const VALUE& ValueAtIndex(int index) const;
     /// get value at index (read/write)
-    VALUE& ValueAtIndex(int32 index);
+    VALUE& ValueAtIndex(int index);
     
     /// C++ conform begin, MAY RETURN nullptr!
     KeyValuePair<KEY, VALUE>* begin();
@@ -137,13 +137,13 @@ private:
     /// move content
     void move(Map&& rhs);
     /// reallocate with new capacity
-    void adjustCapacity(int32 newCapacity);
+    void adjustCapacity(int newCapacity);
     /// grow to make room
     void grow();
     
     _priv::elementBuffer<KeyValuePair<KEY,VALUE>> buffer;
-    int32 minGrow;
-    int32 maxGrow;
+    int minGrow;
+    int maxGrow;
     bool inBulkMode;
 };
     
@@ -196,25 +196,25 @@ Map<KEY, VALUE>::operator=(Map&& rhs) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::SetAllocStrategy(int32 minGrow_, int32 maxGrow_) {
+Map<KEY, VALUE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
     this->minGrow = minGrow_;
     this->maxGrow = maxGrow_;
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 Map<KEY, VALUE>::GetMinGrow() const {
     return this->minGrow;
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 Map<KEY, VALUE>::GetMaxGrow() const {
     return this->maxGrow;
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 Map<KEY, VALUE>::Size() const {
     return this->buffer.size();
 }
@@ -222,11 +222,11 @@ Map<KEY, VALUE>::Size() const {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> bool
 Map<KEY, VALUE>::Empty() const {
-    return this->buffer.elmStart == this->buffer.elmEnd;
+    return this->buffer.size() == 0;
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 Map<KEY, VALUE>::Capacity() const {
     return this->buffer.capacity();
 }
@@ -235,16 +235,16 @@ Map<KEY, VALUE>::Capacity() const {
 template<class KEY, class VALUE> bool
 Map<KEY, VALUE>::Contains(const KEY& key) const {
     o_assert_dbg(!this->inBulkMode);
-    return std::binary_search(this->buffer.elmStart, this->buffer.elmEnd, key);
+    return std::binary_search(this->buffer._begin(), this->buffer._end(), key);
 }
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> VALUE&
 Map<KEY, VALUE>::operator[](const KEY& key) {
     o_assert_dbg(!this->inBulkMode);
-    o_assert_dbg(this->buffer.elmStart);
-    auto kvp = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    o_assert((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
+    o_assert_dbg(this->buffer.buf);
+    auto kvp = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    o_assert((kvp != this->buffer._end()) && (key == kvp->key));    // not found if this triggers
     return kvp->value;
 }
 
@@ -252,16 +252,16 @@ Map<KEY, VALUE>::operator[](const KEY& key) {
 template<class KEY, class VALUE> const VALUE&
 Map<KEY, VALUE>::operator[](const KEY& key) const {
     o_assert_dbg(!this->inBulkMode);
-    o_assert_dbg(this->buffer.elmStart);
-    auto kvp = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    o_assert_dbg((kvp != this->buffer.elmEnd) && (key == kvp->key));    // not found if this triggers
+    o_assert_dbg(this->buffer.buf);
+    auto kvp = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    o_assert_dbg((kvp != this->buffer._end()) && (key == kvp->key));    // not found if this triggers
     return kvp->value;
 }
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::Reserve(int32 numElements) {
-    int32 newCapacity = this->buffer.size() + numElements;
+Map<KEY, VALUE>::Reserve(int numElements) {
+    int newCapacity = this->buffer.size() + numElements;
     if (newCapacity > this->buffer.capacity()) {
         this->adjustCapacity(newCapacity);
     }
@@ -270,7 +270,7 @@ Map<KEY, VALUE>::Reserve(int32 numElements) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::Trim() {
-    const int32 curSize = this->buffer.size();
+    const int curSize = this->buffer.size();
     if (curSize < this->buffer.capacity()) {
         this->adjustCapacity(curSize);
     }
@@ -289,8 +289,8 @@ Map<KEY, VALUE>::Add(const KeyValuePair<KEY, VALUE>& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    int32 index = ptr - this->buffer.elmStart;
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    int index = int(ptr - this->buffer._begin());
     this->buffer.insert(index, kvp);
 }
 
@@ -301,8 +301,8 @@ Map<KEY, VALUE>::Add(KeyValuePair<KEY, VALUE>&& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    int32 index = int32(ptr - this->buffer.elmStart);
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    int index = int(ptr - this->buffer._begin());
     this->buffer.insert(index, std::move(kvp));
 }
 
@@ -319,12 +319,12 @@ Map<KEY, VALUE>::AddUnique(const KeyValuePair<KEY, VALUE>& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    if ((ptr != this->buffer.elmEnd) && (ptr->key == kvp.key)) {
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    if ((ptr != this->buffer._end()) && (ptr->key == kvp.key)) {
         return false;
     }
     else {
-        int32 index = ptr - this->buffer.elmStart;
+        int index = int(ptr - this->buffer._begin());
         this->buffer.insert(index, kvp);
         return true;
     }
@@ -337,12 +337,12 @@ Map<KEY, VALUE>::AddUnique(KeyValuePair<KEY, VALUE>&& kvp) {
     if (this->buffer.spare() == 0) {
         this->grow();
     }
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, kvp.key);
-    if ((ptr != this->buffer.elmEnd) && (ptr->key == kvp.key)) {
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), kvp.key);
+    if ((ptr != this->buffer._end()) && (ptr->key == kvp.key)) {
         return false;
     }
     else {
-        int32 index = int32(ptr - this->buffer.elmStart);
+        int index = int(ptr - this->buffer._begin());
         this->buffer.insert(index, std::move(kvp));
         return true;
     }
@@ -357,9 +357,9 @@ Map<KEY, VALUE>::AddUnique(const KEY& key, const VALUE& value) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::Erase(const KEY& key) {
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    if (ptr != this->buffer.elmEnd) {
-        const int32 index = int32(ptr - this->buffer.elmStart);
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    if (ptr != this->buffer._end()) {
+        const int index = int(ptr - this->buffer._begin());
         while ((index < this->buffer.size()) && (this->buffer[index].key == key)) {
             this->buffer.erase(index);
         }
@@ -420,16 +420,16 @@ template<class KEY, class VALUE> void
 Map<KEY, VALUE>::EndBulk() {
     o_assert(this->inBulkMode);
     this->inBulkMode = false;
-    std::sort(this->buffer.elmStart, this->buffer.elmEnd);
+    std::sort(this->buffer._begin(), this->buffer._end());
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
-Map<KEY, VALUE>::FindDuplicate(int32 startIndex) const {
+template<class KEY, class VALUE> int
+Map<KEY, VALUE>::FindDuplicate(int startIndex) const {
     o_assert(!this->inBulkMode);
-    const int32 size = this->buffer.size();
+    const int size = this->buffer.size();
     if (startIndex < size) {
-        for (int32 index = startIndex; index < (size - 1); index++) {
+        for (int index = startIndex; index < (size - 1); index++) {
             if (this->buffer[index].key == this->buffer[index + 1].key) {
                 return index;
             }
@@ -439,12 +439,12 @@ Map<KEY, VALUE>::FindDuplicate(int32 startIndex) const {
 }
     
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 Map<KEY, VALUE>::FindIndex(const KEY& key) const {
     o_assert(!this->inBulkMode);
-    auto ptr = std::lower_bound(this->buffer.elmStart, this->buffer.elmEnd, key);
-    if ((ptr != this->buffer.elmEnd) && (key == ptr->key)) {
-        return int32(ptr - this->buffer.elmStart);
+    auto ptr = std::lower_bound(this->buffer._begin(), this->buffer._end(), key);
+    if ((ptr != this->buffer._end()) && (key == ptr->key)) {
+        return int(ptr - this->buffer._begin());
     }
     else {
         return InvalidIndex;
@@ -453,50 +453,50 @@ Map<KEY, VALUE>::FindIndex(const KEY& key) const {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::EraseIndex(int32 index) {
+Map<KEY, VALUE>::EraseIndex(int index) {
     this->buffer.erase(index);
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const KEY&
-Map<KEY, VALUE>::KeyAtIndex(int32 index) const {
+Map<KEY, VALUE>::KeyAtIndex(int index) const {
     return this->buffer[index].key;
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const VALUE&
-Map<KEY, VALUE>::ValueAtIndex(int32 index) const {
+Map<KEY, VALUE>::ValueAtIndex(int index) const {
     return this->buffer[index].value;
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> VALUE&
-Map<KEY, VALUE>::ValueAtIndex(int32 index) {
+Map<KEY, VALUE>::ValueAtIndex(int index) {
     return this->buffer[index].value;
 }
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::begin() {
-    return this->buffer.elmStart;
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::begin() const {
-    return this->buffer.elmStart;
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::end() {
-    return this->buffer.elmEnd;
+    return this->buffer._end();
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const KeyValuePair<KEY, VALUE>*
 Map<KEY, VALUE>::end() const {
-    return this->buffer.elmEnd;
+    return this->buffer._end();
 }
 
 //------------------------------------------------------------------------------
@@ -529,9 +529,9 @@ Map<KEY, VALUE>::move(Map&& rhs) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-Map<KEY, VALUE>::adjustCapacity(int32 newCapacity) {
+Map<KEY, VALUE>::adjustCapacity(int newCapacity) {
     // have a balanced front and back spare
-    int32 frontSpare = (newCapacity - this->buffer.size()) >> 1;
+    int frontSpare = (newCapacity - this->buffer.size()) >> 1;
     o_assert_dbg(frontSpare >= 0);
     this->buffer.alloc(newCapacity, frontSpare);
 }
@@ -539,7 +539,7 @@ Map<KEY, VALUE>::adjustCapacity(int32 newCapacity) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 Map<KEY, VALUE>::grow() {
-    const int32 curCapacity = this->buffer.capacity();
+    const int curCapacity = this->buffer.capacity();
     int growBy = curCapacity >> 1;
     if (growBy < minGrow) {
         growBy = minGrow;

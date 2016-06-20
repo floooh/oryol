@@ -21,14 +21,14 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    static const int32 MaxNumSlots = 2;
+    static const int MaxNumSlots = 2;
     struct buffer {
         buffer() : updateFrameIndex(-1), numSlots(1), activeSlot(0) {
             this->glBuffers.Fill(0);
         }
-        int32 updateFrameIndex;
-        uint8 numSlots;
-        uint8 activeSlot;
+        int updateFrameIndex;
+        uint8_t numSlots;
+        uint8_t activeSlot;
         StaticArray<GLuint, MaxNumSlots> glBuffers;
     };
     static const int vb = 0;

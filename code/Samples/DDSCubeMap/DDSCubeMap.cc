@@ -27,8 +27,8 @@ private:
     Shader::VSParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
-    float32 angleX = 0.0f;
-    float32 angleY = 0.0f;
+    float angleX = 0.0f;
+    float angleY = 0.0f;
     ClearState clearState;
 };
 OryolMain(DDSCubeMapApp);
@@ -104,8 +104,8 @@ DDSCubeMapApp::OnInit() {
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     // setup projection and view matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

@@ -9,7 +9,7 @@
     in the project https://github.com/floooh/oryol-tools
 */
 #include "Gfx/Resource/MeshLoaderBase.h"
-#include "IO/IOProtocol.h"
+#include "IO/FS/ioRequests.h"
 
 namespace Oryol {
 
@@ -30,7 +30,7 @@ public:
     virtual void Cancel() override;
 private:
     Id resId;
-    Ptr<IOProtocol::Read> ioRequest;
+    Ptr<IORead> ioRequest;
 };
 
 } // namespace Oryol

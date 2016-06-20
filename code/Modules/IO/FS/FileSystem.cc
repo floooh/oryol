@@ -7,8 +7,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(FileSystem);
-
 //------------------------------------------------------------------------------
 FileSystem::FileSystem() {
     // empty
@@ -21,28 +19,20 @@ FileSystem::~FileSystem() {
 
 //------------------------------------------------------------------------------
 void
-FileSystem::Init(const StringAtom& scheme_) {
+FileSystem::init(const StringAtom& scheme_) {
     this->scheme = scheme_;
 }
 
 //------------------------------------------------------------------------------
 void
-FileSystem::InitLane() {
+FileSystem::initLane() {
     // this is called per IO lane
 }
 
 //------------------------------------------------------------------------------
 void
-FileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
-    // implement in subclass!
-    o_warn("FileSystem::onRead(): message not handled by FileSystem!\n");
-}
-
-//------------------------------------------------------------------------------
-void
-FileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
-    // implement in subclass!
-    o_warn("FileSystem::onWrite(): message not handled by FileSystem!\n");
+FileSystem::onMsg(const Ptr<IORequest>& ioReq) {
+    o_warn("FileSystem::onMsg(): message not handled by FileSystem!\n");
 }
 
 } // namespace Oryol

@@ -9,10 +9,6 @@ fips_begin_module(Assets)
         OmshParser.cc OmshParser.h
         MeshLoader.cc MeshLoader.h
     )
-    fips_dir(Sound)
-    fips_files(
-        SoundGen.cc SoundGen.h
-    )
 fips_end_module()
 
 fips_begin_unittest(Assets)

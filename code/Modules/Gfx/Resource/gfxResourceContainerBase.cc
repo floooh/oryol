@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "IO/IO.h"
 #include "gfxResourceContainerBase.h"
 #include "Gfx/Core/displayMgr.h"
 
@@ -87,7 +86,7 @@ gfxResourceContainerBase::Create(const MeshSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainerBase::Create(const MeshSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::Create(const MeshSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
@@ -131,7 +130,7 @@ gfxResourceContainerBase::Create(const TextureSetup& setup) {
     
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainerBase::Create(const TextureSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::Create(const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid());
     o_assert_dbg(nullptr != data);
     o_assert_dbg(size > 0);
@@ -165,7 +164,7 @@ gfxResourceContainerBase::prepareAsync(const MeshSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-gfxResourceContainerBase::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::initAsync(const Id& resId, const MeshSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid());
     
     // the prepared resource may have been destroyed while it was loading
@@ -197,7 +196,7 @@ gfxResourceContainerBase::prepareAsync(const TextureSetup& setup) {
 
 //------------------------------------------------------------------------------
 template<> ResourceState::Code 
-gfxResourceContainerBase::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int32 size) {
+gfxResourceContainerBase::initAsync(const Id& resId, const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid());
     
     // the prepared resource may have been destroyed while it was loading
@@ -378,7 +377,7 @@ gfxResourceContainerBase::update() {
     this->pipelinePool.Update();
 
     // trigger loaders, and remove from pending array if finished
-    for (int32 i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
+    for (int i = this->pendingLoaders.Size() - 1; i >= 0; i--) {
         const auto& loader = this->pendingLoaders[i];
         ResourceState::Code state = loader->Continue();
         if (ResourceState::Pending != state) {
@@ -428,7 +427,7 @@ gfxResourceContainerBase::QueryPoolInfo(GfxResourceType::Code resType) const {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 gfxResourceContainerBase::QueryFreeSlots(GfxResourceType::Code resourceType) const {
     o_assert_dbg(this->isValid());
 

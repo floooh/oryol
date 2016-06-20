@@ -40,9 +40,9 @@ public:
     virtual void HandleMessage(const pp::Var& message);
 
     /// get current canvas width
-    int32 GetCanvasWidth() const;
+    int GetCanvasWidth() const;
     /// get current canvas height
-    int32 GetCanvasHeight() const;
+    int GetCanvasHeight() const;
 
     /// this will be called by App::StartMainLoop
     void startMainLoop(App* app);
@@ -69,12 +69,12 @@ private:
     static pnaclInstance* self;
     pp::CompletionCallbackFactory<pnaclInstance> callbackFactory;
     pp::Graphics3D context;
-    int32 width;
-    int32 height;
+    int width;
+    int height;
     App* app;
     RWLock msgLock;
     Queue<pp::Var> msgQueue;
-    static const int32 MaxQueuedEvents = 64;
+    static const int MaxQueuedEvents = 64;
     std::function<bool(const pp::InputEvent&)> inputEventFunc;
     std::function<bool(const pp::View&)> viewEventFunc;
 };

@@ -15,7 +15,7 @@ namespace _priv {
 class panDetector {
 public:
     /// minimum distance after touch is detected as panning
-    static const int32 MinMovedDistance = 10;
+    static const int MinMovedDistance = 10;
     
     /// feed new touch event and return detected state
     gestureState::Code detect(const touchEvent& newEvent);
@@ -28,7 +28,7 @@ public:
     
 private:
     /// check if distance between 2 points is less then
-    bool distLess(const glm::vec2& pos0, const glm::vec2& pos1, int32 dist) const;
+    bool distLess(const glm::vec2& pos0, const glm::vec2& pos1, int dist) const;
     
     touchEvent startEvent;
     bool panning = false;

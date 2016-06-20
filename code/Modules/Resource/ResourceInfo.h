@@ -14,7 +14,7 @@ public:
     /// current state of the resource
     ResourceState::Code State = ResourceState::InvalidState;
     /// age of current state in number of frame
-    int32 StateAge = 0;
+    int StateAge = 0;
 };
 
 } // namespace Oryol

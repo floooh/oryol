@@ -23,8 +23,8 @@ private:
     Shader::Params params;
     glm::mat4 view;
     glm::mat4 proj;
-    float32 angleX = 0.0f;
-    float32 angleY = 0.0f;
+    float angleX = 0.0f;
+    float angleY = 0.0f;
 };
 OryolMain(PackedNormalsApp);
 
@@ -45,7 +45,7 @@ PackedNormalsApp::OnRunning() {
         glm::vec3(+2.0f, -1.0f, -6.0f),
         glm::vec3(0.0f, -1.0f, -6.0f)
     };
-    int32 primGroupIndex = 0;
+    int primGroupIndex = 0;
     for (const auto& pos : positions) {
         this->params.ModelViewProjection = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
@@ -79,8 +79,8 @@ PackedNormalsApp::OnInit() {
     ps.RasterizerState.SampleCount = 4;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 
-    float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

@@ -22,7 +22,7 @@ resourceContainerBase::~resourceContainerBase() {
 
 //------------------------------------------------------------------------------
 void
-resourceContainerBase::setup(int32 labelStackCapacity, int32 registryCapacity) {
+resourceContainerBase::setup(int labelStackCapacity, int registryCapacity) {
     o_assert_dbg(!this->valid);
     this->labelStack.Reserve(labelStackCapacity);
     this->registry.Setup(registryCapacity);

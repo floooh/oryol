@@ -19,35 +19,20 @@ imports:
         git: https://github.com/floooh/fips-remotery.git
     fips-vld:
         git: https://github.com/floooh/fips-vld.git
-    fips-turbobadger:
-        git: https://github.com/fungos/fips-turbobadger.git
-    fips-imgui:
-        git: https://github.com/fungos/fips-imgui.git
 
 exports:
     header-dirs :
         - code
         - code/Modules
-        - code/Ext
     modules :
         # engine modules
         Core :          code/Modules/Core
         IO :            code/Modules/IO
-        Messaging :     code/Modules/Messaging
+        LocalFS :       code/Modules/LocalFS
         HTTP :          code/Modules/HTTP
         Gfx :           code/Modules/Gfx
         Resource :      code/Modules/Resource
         Assets :        code/Modules/Assets
-        Time :          code/Modules/Time
         Dbg :           code/Modules/Dbg
         Input :         code/Modules/Input
-        Synth :         code/Modules/Synth
-        IMUI :          code/Modules/IMUI
-        TBUI :          code/Modules/TBUI
-        Sound :         code/Modules/Sound
         
-        # ext libs
-        ConvertUTF:         code/Ext/ConvertUTF
-        android-native:     code/Ext/android_native
-        flextgl:            code/Ext/flextgl
-

@@ -9,7 +9,7 @@ namespace Oryol {
     
 //------------------------------------------------------------------------------
 GfxSetup::GfxSetup() {
-    for (int32 i = 0; i < GfxResourceType::NumResourceTypes; i++) {
+    for (int i = 0; i < GfxResourceType::NumResourceTypes; i++) {
         this->poolSizes[i] = GfxConfig::DefaultResourcePoolSize;
         this->throttling[i] = 0;    // unthrottled
     }
@@ -17,7 +17,7 @@ GfxSetup::GfxSetup() {
 
 //------------------------------------------------------------------------------
 GfxSetup
-GfxSetup::Window(int32 w, int32 h, String title) {
+GfxSetup::Window(int w, int h, String title) {
     o_assert((w > 0) && (h > 0));
 
     GfxSetup setup;
@@ -30,7 +30,7 @@ GfxSetup::Window(int32 w, int32 h, String title) {
 
 //------------------------------------------------------------------------------
 GfxSetup
-GfxSetup::Fullscreen(int32 w, int32 h, String title) {
+GfxSetup::Fullscreen(int w, int h, String title) {
     o_assert((w > 0) && (h > 0));
     
     GfxSetup setup;
@@ -43,7 +43,7 @@ GfxSetup::Fullscreen(int32 w, int32 h, String title) {
 
 //------------------------------------------------------------------------------
 GfxSetup
-GfxSetup::WindowMSAA4(int32 w, int32 h, String title) {
+GfxSetup::WindowMSAA4(int w, int h, String title) {
     GfxSetup setup = Window(w, h, title);
     setup.SampleCount = 4;
     return setup;
@@ -51,7 +51,7 @@ GfxSetup::WindowMSAA4(int32 w, int32 h, String title) {
 
 //------------------------------------------------------------------------------
 GfxSetup
-GfxSetup::FullscreenMSAA4(int32 w, int32 h, String title) {
+GfxSetup::FullscreenMSAA4(int w, int h, String title) {
     GfxSetup setup = Fullscreen(w, h, title);
     setup.SampleCount = 4;
     return setup;
@@ -78,14 +78,14 @@ GfxSetup::GetDisplayAttrs() const {
 
 //------------------------------------------------------------------------------
 void
-GfxSetup::SetPoolSize(GfxResourceType::Code type, int32 size) {
+GfxSetup::SetPoolSize(GfxResourceType::Code type, int size) {
     o_assert_range(type, GfxResourceType::NumResourceTypes);
     o_assert(size > 0);
     this->poolSizes[type] = size;
 }
     
 //------------------------------------------------------------------------------
-int32
+int
 GfxSetup::PoolSize(GfxResourceType::Code type) const {
     o_assert_range(type, GfxResourceType::NumResourceTypes);
     return this->poolSizes[type];
@@ -93,13 +93,13 @@ GfxSetup::PoolSize(GfxResourceType::Code type) const {
     
 //------------------------------------------------------------------------------
 void
-GfxSetup::SetThrottling(GfxResourceType::Code type, int32 maxCreatePerFrame) {
+GfxSetup::SetThrottling(GfxResourceType::Code type, int maxCreatePerFrame) {
     o_assert_range(type, GfxResourceType::NumResourceTypes);
     this->throttling[type] = maxCreatePerFrame;
 }
     
 //------------------------------------------------------------------------------
-int32
+int
 GfxSetup::Throttling(GfxResourceType::Code type) const {
     o_assert_range(type, GfxResourceType::NumResourceTypes);
     return this->throttling[type];

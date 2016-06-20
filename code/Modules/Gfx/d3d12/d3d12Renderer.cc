@@ -92,7 +92,7 @@ d3d12Renderer::discard() {
 
     // need to wait that the GPU is done before destroying objects
     this->curCommandList()->Close();
-    const uint64 waitFrameIndex = this->frameIndex - 1;
+    const uint64_t waitFrameIndex = this->frameIndex - 1;
     if (this->d3d12Fence->GetCompletedValue() < waitFrameIndex) {
         HRESULT hr = this->d3d12Fence->SetEventOnCompletion(waitFrameIndex, this->fenceEvent);
         o_assert(SUCCEEDED(hr));
@@ -115,7 +115,7 @@ d3d12Renderer::discard() {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::createFrameResources(int32 cbSize, int32 maxDrawCallsPerFrame) {
+d3d12Renderer::createFrameResources(int cbSize, int maxDrawCallsPerFrame) {
     HRESULT hr;
 
     this->curFrameRotateIndex = 0;
@@ -424,12 +424,12 @@ d3d12Renderer::frameSync() {
     HRESULT hr;
 
     // set a fence with the current frame index...
-    const uint64 newFenceValue = this->frameIndex;
+    const uint64_t newFenceValue = this->frameIndex;
     hr = this->d3d12CommandQueue->Signal(this->d3d12Fence, newFenceValue);
     o_assert(SUCCEEDED(hr));
 
     // wait on the previous frame
-    uint64 waitFenceValue = this->frameIndex - 1;
+    uint64_t waitFenceValue = this->frameIndex - 1;
     if (this->d3d12Fence->GetCompletedValue() < waitFenceValue) {
         hr = this->d3d12Fence->SetEventOnCompletion(waitFenceValue, this->fenceEvent);
         o_assert(SUCCEEDED(hr));
@@ -621,7 +621,7 @@ d3d12Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+d3d12Renderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     D3D12_VIEWPORT vp;
     vp.TopLeftX = (FLOAT)x;
     vp.TopLeftY = (FLOAT)(originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
@@ -634,7 +634,7 @@ d3d12Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool o
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+d3d12Renderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     D3D12_RECT rect;
     rect.left = x;
     rect.top = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
@@ -712,7 +712,7 @@ d3d12Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
     if (nullptr == this->curPipeline) {
         return;
     }
@@ -722,7 +722,7 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     // the uniform-block expected at the binding stage and slot
     const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
-    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
     o_assert(byteSize == layout.ByteSize());
@@ -731,14 +731,14 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
     // copy uniform data into global constant buffer
     o_assert2((this->curCBOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global constant buffer exhausted!");
     const auto& frameRes = this->frameResources[this->curFrameRotateIndex];
-    uint8* dstPtr = frameRes.cbCpuPtr + this->curCBOffset;
+    uint8_t* dstPtr = frameRes.cbCpuPtr + this->curCBOffset;
     std::memcpy(dstPtr, ptr, byteSize);
 
     // get the GPU address of current constant buffer location and set
     // the constant buffer location directly in the root signature
     // the root parameter index can be: VSConstantBuffer0, VSConstantBuffer1, 
     // PSConstantBuffer0 or PSConstantBuffer1
-    const uint64 cbGpuPtr = frameRes.cbGpuPtr + this->curCBOffset;
+    const uint64_t cbGpuPtr = frameRes.cbGpuPtr + this->curCBOffset;
     o_assert_dbg(bindSlot < 2);
     UINT rootParamIndex = ShaderStage::VS == bindStage ? VSConstantBuffer0 : PSConstantBuffer0;
     rootParamIndex += bindSlot;
@@ -750,7 +750,7 @@ d3d12Renderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, in
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
+d3d12Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures) {
     o_assert_dbg(numTextures < GfxConfig::MaxNumShaderTextures);
     if (nullptr == this->curPipeline) {
         return;
@@ -794,7 +794,7 @@ d3d12Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, in
     const auto& frameRes = this->frameResources[this->curFrameRotateIndex];
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;    
     this->descAllocator.CPUHandle(cpuHandle, frameRes.srvHeap, this->curSRVSlotIndex);
-    const uint32 incrSize = this->descAllocator.DescriptorIncrementSize(frameRes.srvHeap);
+    const uint32_t incrSize = this->descAllocator.DescriptorIncrementSize(frameRes.srvHeap);
     for (int i = 0; i < numTextures; i++) {
         const texture* tex = textures[i];
         d3d12Types::initSRVDesc(&srvDesc, tex->textureAttrs);
@@ -854,7 +854,7 @@ d3d12Renderer::draw(const PrimitiveGroup& primGroup) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::draw(int32 primGroupIndex) {
+d3d12Renderer::draw(int primGroupIndex) {
     o_assert_dbg(this->valid);
     if (nullptr == this->curPipeline) {
         return;
@@ -873,7 +873,7 @@ d3d12Renderer::draw(int32 primGroupIndex) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_assert2_dbg(this->rtValid, "No render target set!\n");
     if (nullptr == this->curPipeline) {
         return;
@@ -900,7 +900,7 @@ d3d12Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
+d3d12Renderer::drawInstanced(int primGroupIndex, int numInstances) {
     o_assert_dbg(this->valid);
     if (nullptr == this->curPipeline) {
         return;
@@ -919,7 +919,7 @@ d3d12Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 
 //------------------------------------------------------------------------------
 static int
-obtainUpdateBufferSlotIndex(mesh::buffer& buf, uint64 frameIndex) {
+obtainUpdateBufferSlotIndex(mesh::buffer& buf, uint64_t frameIndex) {
     // helper function to get the right buffer for a vertex-
     // or index-buffer update, this is implemented with
     // multi-buffering to prevent a sync-stall with the GPU
@@ -937,7 +937,7 @@ obtainUpdateBufferSlotIndex(mesh::buffer& buf, uint64 frameIndex) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
+d3d12Renderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
@@ -977,7 +977,7 @@ d3d12Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+d3d12Renderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
@@ -1056,7 +1056,7 @@ d3d12Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttr
 
 //------------------------------------------------------------------------------
 void
-d3d12Renderer::readPixels(void* buf, int32 bufNumBytes) {
+d3d12Renderer::readPixels(void* buf, int bufNumBytes) {
     o_warn("d3d12Renderer::readPixels()\n");
 }
 

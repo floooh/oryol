@@ -58,8 +58,7 @@ d3d11MeshFactory::SetupResource(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
-    o_assert_dbg(this->isValid);
+d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(msh.Setup.ShouldSetupFromData());
     return this->createBuffers(msh, data, size);
 }
@@ -80,7 +79,7 @@ d3d11MeshFactory::DestroyResource(mesh& mesh) {
 
 //------------------------------------------------------------------------------
 ID3D11Buffer*
-d3d11MeshFactory::createBuffer(const void* data, uint32 dataSize, uint32 d3d11BindFlags, Usage::Code usage) {
+d3d11MeshFactory::createBuffer(const void* data, uint32_t dataSize, uint32_t d3d11BindFlags, Usage::Code usage) {
     o_assert_dbg(this->d3d11Device);
     o_assert_dbg((D3D11_BIND_VERTEX_BUFFER == d3d11BindFlags) || (D3D11_BIND_INDEX_BUFFER == d3d11BindFlags));
 
@@ -129,9 +128,9 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     mesh.primGroups[0] = PrimitiveGroup(0, 6);
 
     // vertices
-    const float32 topV = mesh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
-    const float32 botV = mesh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
-    float32 vertices[] = {
+    const float topV = mesh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
+    const float botV = mesh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
+    float vertices[] = {
         -1.0f, +1.0f, 0.0f, 0.0f, topV,     // top-left corner
         +1.0f, +1.0f, 0.0f, 1.0f, topV,     // top-right corner
         +1.0f, -1.0f, 0.0f, 1.0f, botV,     // bottom-right corner
@@ -139,7 +138,7 @@ d3d11MeshFactory::createFullscreenQuad(mesh& mesh) {
     };
 
     // indices
-    uint16 indices[] = {
+    uint16_t indices[] = {
         0, 2, 1,            // topleft -> bottomright -> topright
         0, 3, 2,            // topleft -> bottomleft -> bottomright
     };
@@ -173,14 +172,14 @@ void
 d3d11MeshFactory::setupPrimGroups(mesh& mesh) {
     mesh.numPrimGroups = mesh.Setup.NumPrimitiveGroups();
     o_assert_dbg(mesh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < mesh.numPrimGroups; i++) {
+    for (int i = 0; i < mesh.numPrimGroups; i++) {
         mesh.primGroups[i] = mesh.Setup.PrimitiveGroup(i);
     }
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int32 size) {
+d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int size) {
     o_assert_dbg(nullptr == mesh.d3d11VertexBuffer);
     o_assert_dbg(nullptr == mesh.d3d11IndexBuffer);
 
@@ -190,10 +189,10 @@ d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int32 size) {
     const auto& ibAttrs = mesh.indexBufferAttrs;
     
     if (mesh.Setup.NumVertices > 0) {
-        const int32 vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-        const uint8* vertices = nullptr;
+        const int vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
+        const uint8_t* vertices = nullptr;
         if (InvalidIndex != mesh.Setup.DataVertexOffset) {
-            const uint8* ptr = (const uint8*)data;
+            const uint8_t* ptr = (const uint8_t*)data;
             o_assert_dbg(ptr && (size > 0));
             vertices = ptr + mesh.Setup.DataVertexOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
@@ -201,12 +200,12 @@ d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int32 size) {
         mesh.d3d11VertexBuffer = this->createBuffer(vertices, vbSize, D3D11_BIND_VERTEX_BUFFER, vbAttrs.BufferUsage);
     }
     if (IndexType::None != ibAttrs.Type) {
-        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
-        const uint8* indices = nullptr;
+        const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        const uint8_t* indices = nullptr;
         if (InvalidIndex != mesh.Setup.DataIndexOffset) {
-            const uint8* ptr = (const uint8*)data;
+            const uint8_t* ptr = (const uint8_t*)data;
             o_assert_dbg(ptr && (size > 0));
-            indices = ((const uint8*)ptr) + mesh.Setup.DataIndexOffset;
+            indices = ((const uint8_t*)ptr) + mesh.Setup.DataIndexOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
         mesh.d3d11IndexBuffer = this->createBuffer(indices, ibSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);

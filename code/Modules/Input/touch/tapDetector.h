@@ -15,16 +15,16 @@ namespace _priv {
 class tapDetector {
 public:
     /// timeout for touch in milliseconds
-    static const int32 TouchTimeout = 250;
+    static const int TouchTimeout = 250;
     /// timeout between multiple taps
-    static const int32 TapTimeout = 750;
+    static const int TapTimeout = 750;
     /// max pixel distance from tap start
-    static const int32 MaxTouchDistance = 20;
+    static const int MaxTouchDistance = 20;
     /// max pixel distance between taps
-    static const int32 MaxTapDistance = 30;
+    static const int MaxTapDistance = 30;
     
     /// number of required taps
-    int32 numRequiredTaps = 1;
+    int numRequiredTaps = 1;
     /// feed new touch event and return detected state (if any)
     gestureState::Code detect(const touchEvent& newEvent);
     /// reset the detector
@@ -34,12 +34,12 @@ public:
     
 private:
     /// check if 2 touch events are within the tap max distance
-    bool withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int32 maxDist) const;
+    bool withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int maxDist) const;
     /// check if 2 touch events are within a timeout
-    bool withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int32 timeOutMs) const;
+    bool withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int timeOutMs) const;
     
     touchEvent tapEvent;
-    int32 tapCount = 0;
+    int tapCount = 0;
 };
     
 } // namespace _priv

@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>${name}</title>
+<link href='https://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="../style.css"/>
+<link rel="icon" type="image/png" href="favicon.png"/>
+</head>
+<body>
+  <div class="game-title">${name}<span class="game-subtitle"><a class="game-sdk-link" href="https://github.com/WebAssembly/">WebAssembly</a></span></div>
+  <div class="game-rainbow"></div>
+
+  <div class="nav-bar" style="width:400px">
+    <ul class="nav-list">
+        <li class="nav-item"><a class="nav-link" style="width:90px" href="../index.html">home</a></li>
+        <li class="nav-item"><a class="nav-link" style="width:90px" href="${source}" target="_blank">source</a></li>
+        <li class="nav-item"><a class="nav-link" style="width:90px" onclick="callAsEventHandler('enter_soft_fullscreen')" href="javascript:void(0);">expand</a></li>
+        <li class="nav-item"><a class="nav-link" style="width:130px" onclick="callAsEventHandler('enter_fullscreen')" href="javascript:void(0);">fullscreen</a></li>
+        <div class="break"></div>
+    </ul>
+  </div>
+
+  <div class="game-border">
+    <canvas class="game" id="canvas" hidden oncontextmenu="event.preventDefault()" width="100" height="100"></canvas>
+  </div>
+  <textarea class="game-output" readonly hidden id="output" rows="8" cols="80"></textarea>
+  <div class="bottom"></div>
+
+  <script type="text/javascript" src="../wasm.js"></script>
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '${name}.wasm.txt', true)
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function() {
+      Module.wasmBinary = xhr.response;
+      (function() {
+        var memoryInitializer = '${name}.html.mem.txt';
+        if (typeof Module['locateFile'] === 'function') {
+          memoryInitializer = Module['locateFile'](memoryInitializer);
+        } else if (Module['memoryInitializerPrefixURL']) {
+          memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+        }
+        var xhr = Module['memoryInitializerRequest'] = new XMLHttpRequest();
+        xhr.open('GET', memoryInitializer, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.send(null)
+      })();
+      var script = document.createElement('script');
+      script.src = "${name}.js";
+      document.body.appendChild(script);
+    };
+    xhr.send(null);
+  </script>
+</body>
+</html>

@@ -22,17 +22,17 @@ public:
             /// depth compare-function
             CompareFunc::Code DepthCmpFunc:5;
             /// depth write enabled flag
-            uint16 DepthWriteEnabled:1;
+            uint16_t DepthWriteEnabled:1;
             /// stencil-enabled flag
-            uint16 StencilEnabled:1;
+            uint16_t StencilEnabled:1;
             /// stencil read-mask
-            uint16 StencilReadMask : 8;
+            uint16_t StencilReadMask : 8;
             /// stencil write-mask
-            uint16 StencilWriteMask : 8;
+            uint16_t StencilWriteMask : 8;
             /// stencil-ref value
-            uint16 StencilRef : 8;
+            uint16_t StencilRef : 8;
         };
-        uint32 Hash;
+        uint32_t Hash;
     };
 
     /// constructor

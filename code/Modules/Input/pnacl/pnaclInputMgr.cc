@@ -25,8 +25,8 @@ pnaclInputMgr::~pnaclInputMgr() {
 void
 pnaclInputMgr::setup(const InputSetup& setup) {
     inputMgrBase::setup(setup);
-    this->Keyboard.Attached = true;
-    this->Mouse.Attached = true;
+    this->keyboard.attached = true;
+    this->mouse.attached = true;
     this->setupKeyTable();
 
     pnaclInstance::Instance()->enableInput([this] (const pp::InputEvent& e) {
@@ -82,22 +82,22 @@ pnaclInputMgr::handleEvent(const pp::InputEvent& ie) {
 }
 
 //------------------------------------------------------------------------------
-Mouse::Button
+MouseButton::Code
 pnaclInputMgr::mapMouseButton(PP_InputEvent_MouseButton naclBtn) {
     switch (naclBtn) {
-        case PP_INPUTEVENT_MOUSEBUTTON_LEFT:   return Mouse::LMB;
-        case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE: return Mouse::MMB;
-        case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:  return Mouse::RMB;
-        default: return Mouse::InvalidButton;
+        case PP_INPUTEVENT_MOUSEBUTTON_LEFT:   return MouseButton::Left;
+        case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE: return MouseButton::Middle;
+        case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:  return MouseButton::Right;
+        default: return MouseButton::InvalidMouseButton;
     }    
 }
 
 //------------------------------------------------------------------------------
 bool
 pnaclInputMgr::onMouseDown(const pp::MouseInputEvent& ie) {
-    Mouse::Button btn = this->mapMouseButton(ie.GetButton());
-    if (Mouse::InvalidButton != btn) {
-        this->Mouse.onButtonDown(btn);
+    MouseButton::Code btn = this->mapMouseButton(ie.GetButton());
+    if (MouseButton::InvalidMouseButton != btn) {
+        this->mouse.onButtonDown(btn);
         return true;
     }
     return false;
@@ -106,9 +106,9 @@ pnaclInputMgr::onMouseDown(const pp::MouseInputEvent& ie) {
 //------------------------------------------------------------------------------
 bool
 pnaclInputMgr::onMouseUp(const pp::MouseInputEvent& ie) {
-    Mouse::Button btn = this->mapMouseButton(ie.GetButton());
-    if (Mouse::InvalidButton != btn) {
-        this->Mouse.onButtonUp(btn);
+    MouseButton::Code btn = this->mapMouseButton(ie.GetButton());
+    if (MouseButton::InvalidMouseButton != btn) {
+        this->mouse.onButtonUp(btn);
         return true;
     }
     return false;
@@ -119,21 +119,19 @@ bool
 pnaclInputMgr::onMouseMove(const pp::MouseInputEvent& ie) {
     pp::Point pos = ie.GetPosition();
     pp::Point mov = ie.GetMovement();
-    this->Mouse.onPosMov(glm::vec2(pos.x(), pos.y()), glm::vec2(mov.x(), mov.y()));
+    this->mouse.onPosMov(glm::vec2(pos.x(), pos.y()), glm::vec2(mov.x(), mov.y()));
     return true;
 }
 
 //------------------------------------------------------------------------------
 bool
 pnaclInputMgr::onMouseEnter(const pp::MouseInputEvent& ie) {
-    Log::Info("FIXME: onMouseEnter()\n");
     return false;
 }
 
 //------------------------------------------------------------------------------
 bool
 pnaclInputMgr::onMouseLeave(const pp::MouseInputEvent& ie) {
-    Log::Info("FIXME: onMouseLeave()\n");
     return false;
 }
 
@@ -141,7 +139,7 @@ pnaclInputMgr::onMouseLeave(const pp::MouseInputEvent& ie) {
 bool
 pnaclInputMgr::onWheel(const pp::WheelInputEvent& ie) {
     const pp::FloatPoint pos = ie.GetDelta();
-    this->Mouse.onScroll(glm::vec2(pos.x(), pos.y()));
+    this->mouse.onScroll(glm::vec2(pos.x(), pos.y()));
     return true;
 }
 
@@ -150,10 +148,9 @@ bool
 pnaclInputMgr::onKeyDown(const pp::KeyboardInputEvent& ie) {
     const Key::Code key = this->mapKey(ie.GetKeyCode());
     if (Key::InvalidKey != key) {
-        this->Keyboard.onKeyDown(key);
+        this->keyboard.onKeyDown(key);
         return true;
     }
-    Log::Info("unhandled key code: %d\n", ie.GetKeyCode());
     return false;
 }
 
@@ -162,7 +159,7 @@ bool
 pnaclInputMgr::onKeyUp(const pp::KeyboardInputEvent& ie) {
     const Key::Code key = this->mapKey(ie.GetKeyCode());
     if (Key::InvalidKey != key) {
-        this->Keyboard.onKeyUp(key);
+        this->keyboard.onKeyUp(key);
         return true;
     }
     return false;
@@ -176,9 +173,9 @@ pnaclInputMgr::onChar(const pp::KeyboardInputEvent& ie) {
     if (len > 0) {
         static wchar_t wide[32] = { 0 };
         const unsigned char* src = (const unsigned char*) str.c_str();
-        const int32 wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
+        const int wlen = StringConverter::UTF8ToWide(src, len, wide, sizeof(wide));
         if (wlen > 0) {
-            this->Keyboard.onChar(wide[0]);
+            this->keyboard.onChar(wide[0]);
         }
     }
     return false;
@@ -200,7 +197,7 @@ void
 pnaclInputMgr::setupKeyTable() {
     
     // looks like the keycodes are identical with JS 
-    for (int32 i = 0; i < MaxNumKeys; i++) {
+    for (int i = 0; i < MaxNumKeys; i++) {
         this->keyTable[i] = Key::InvalidKey;
     }
 
@@ -292,7 +289,10 @@ pnaclInputMgr::setupKeyTable() {
     this->keyTable[144] = Key::NumLock;
     this->keyTable[145] = Key::ScrollLock;
     this->keyTable[173] = Key::Minus;
+    this->keyTable[186] = Key::Semicolon;
+    this->keyTable[187] = Key::Equal;
     this->keyTable[188] = Key::Comma;
+    this->keyTable[189] = Key::Minus;
     this->keyTable[190] = Key::Period;
     this->keyTable[191] = Key::Slash;
     this->keyTable[192] = Key::GraveAccent;

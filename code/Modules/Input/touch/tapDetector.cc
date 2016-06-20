@@ -19,18 +19,18 @@ tapDetector::reset() {
 
 //------------------------------------------------------------------------------
 bool
-tapDetector::withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int32 timeOutMs) const {
+tapDetector::withinTimeout(const touchEvent& newEvent, const touchEvent& oldEvent, int timeOutMs) const {
     return (newEvent.time - oldEvent.time).AsMilliSeconds() < timeOutMs;
 }
 
 //------------------------------------------------------------------------------
 bool
-tapDetector::withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int32 maxDist) const {
+tapDetector::withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int maxDist) const {
 
     // FIXME: take device DPI into account
 
-    float32 dx = newEvent.points[0].pos.x - oldEvent.points[0].pos.x;
-    float32 dy = newEvent.points[0].pos.y - oldEvent.points[0].pos.y;
+    float dx = newEvent.points[0].pos.x - oldEvent.points[0].pos.x;
+    float dy = newEvent.points[0].pos.y - oldEvent.points[0].pos.y;
     return (dx * dx + dy * dy) < (maxDist * maxDist);
 }
 

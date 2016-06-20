@@ -23,7 +23,7 @@ WideString::destroy() {
 
 //------------------------------------------------------------------------------
 void
-WideString::create(const wchar_t* ptr, int32 numChars) {
+WideString::create(const wchar_t* ptr, int numChars) {
     o_assert(0 != ptr);
     if ((ptr[0] != 0) && (numChars > 0)) {
         this->data = (StringData*) Memory::Alloc(sizeof(StringData) + ((numChars + 1) * sizeof(wchar_t)));
@@ -79,11 +79,11 @@ strPtr(0) {
 //------------------------------------------------------------------------------
 WideString::WideString(const wchar_t* str) {
     o_assert(nullptr != str);
-    this->create(str, int32(std::wcslen(str)));
+    this->create(str, int(std::wcslen(str)));
 }
     
 //------------------------------------------------------------------------------
-WideString::WideString(const wchar_t* ptr, int32 numCharacters) {
+WideString::WideString(const wchar_t* ptr, int numCharacters) {
     o_assert((nullptr != ptr) && (0 < numCharacters));
     this->create(ptr, numCharacters);
 }
@@ -113,7 +113,7 @@ void
 WideString::operator=(const wchar_t* str) {
     o_assert(0 != str);
     this->release();
-    this->create(str, int32(std::wcslen(str)));
+    this->create(str, int(std::wcslen(str)));
 }
     
 //------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ WideString::operator>=(const WideString& rhs) const {
 }
     
 //------------------------------------------------------------------------------
-int32
+int
 WideString::Length() const {
     if (nullptr == this->data) {
         return 0;
@@ -217,7 +217,7 @@ WideString::Length() const {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 WideString::ByteLength() const {
     if (nullptr == this->data) {
         return 0;
@@ -257,7 +257,7 @@ WideString::Clear() {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 WideString::RefCount() const {
     if (nullptr == this->data) {
         return 0;
@@ -269,11 +269,11 @@ WideString::RefCount() const {
 
 //------------------------------------------------------------------------------
 void
-WideString::Assign(const wchar_t* ptr, int32 numChars) {
+WideString::Assign(const wchar_t* ptr, int numChars) {
     o_assert(nullptr != ptr);
     this->release();
     if (0 == numChars) {
-        numChars = int32(std::wcslen(ptr));
+        numChars = int(std::wcslen(ptr));
     }
     this->create(ptr, numChars);
 }

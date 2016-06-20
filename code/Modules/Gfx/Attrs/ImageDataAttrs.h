@@ -25,13 +25,13 @@ public:
     };
 
     /// number of faces
-    int32 NumFaces;
+    int NumFaces;
     /// number of mipmaps
-    int32 NumMipMaps;
+    int NumMipMaps;
     /// pixel data mipmap image offsets
-    StaticArray<StaticArray<int32, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Offsets;
+    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Offsets;
     /// pixel data mipmap image sizes
-    StaticArray<StaticArray<int32, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Sizes;
+    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Sizes;
 };
 
 } // namespace Oryol

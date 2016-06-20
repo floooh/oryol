@@ -47,17 +47,17 @@ public:
     void operator=(ArrayMap&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    void SetAllocStrategy(int minGrow, int maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// get min grow value
-    int32 GetMinGrow() const;
+    int GetMinGrow() const;
     /// get max grow value
-    int32 GetMaxGrow() const;
+    int GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     /// get capacity of array
-    int32 Capacity() const;
+    int Capacity() const;
     
     /// test if an element exists
     bool Contains(const KEY& key) const;
@@ -68,7 +68,7 @@ public:
     const VALUE& operator[](const KEY& key) const;
     
     /// increase capacity to hold at least numElements more elements
-    void Reserve(int32 numElements);
+    void Reserve(int numElements);
     /// trim capacity to size (this involves a re-alloc)
     void Trim();
     /// clear the array (deletes elements, keeps capacity)
@@ -80,11 +80,11 @@ public:
     void Add(KEY&& key, VALUE&& value);
     
     /// find value index
-    int32 FindValueIndex(const KEY& key);
+    int FindValueIndex(const KEY& key);
     /// read-access value at index
-    const VALUE& ValueAtIndex(int32 valueIndex) const;
+    const VALUE& ValueAtIndex(int valueIndex) const;
     /// read-write-access value at index
-    VALUE& ValueAtIndex(int32 valueIndex);
+    VALUE& ValueAtIndex(int valueIndex);
     
     /// erase element by key, reasonably fast, but destroys value ordering
     void EraseSwap(const KEY& key);
@@ -101,7 +101,7 @@ public:
     VALUE* end() const;
     
 private:
-    Map<KEY, int32> indexMap;        // maps keys to indices into value array
+    Map<KEY, int> indexMap;        // maps keys to indices into value array
     Array<VALUE> valueArray;
 };
 
@@ -147,25 +147,25 @@ ArrayMap<KEY, VALUE>::operator=(ArrayMap&& rhs) {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-ArrayMap<KEY, VALUE>::SetAllocStrategy(int32 minGrow, int32 maxGrow) {
+ArrayMap<KEY, VALUE>::SetAllocStrategy(int minGrow, int maxGrow) {
     this->indexMap.SetAllocStrategy(minGrow, maxGrow);
     this->valueArray.SetAllocStrategy(minGrow, maxGrow);
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 ArrayMap<KEY, VALUE>::GetMinGrow() const {
     return this->valueArray.GetMinGrow();
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 ArrayMap<KEY, VALUE>::GetMaxGrow() const {
     return this->valueArray.GetMaxGrow();
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 ArrayMap<KEY, VALUE>::Size() const {
     return this->valueArray.Size();
 }
@@ -177,7 +177,7 @@ ArrayMap<KEY, VALUE>::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 ArrayMap<KEY, VALUE>::Capacity() const {
     return this->valueArray.Capacity();
 }
@@ -202,7 +202,7 @@ ArrayMap<KEY, VALUE>::operator[](const KEY& key) const {
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
-ArrayMap<KEY, VALUE>::Reserve(int32 numElements) {
+ArrayMap<KEY, VALUE>::Reserve(int numElements) {
     this->indexMap.Reserve(numElements);
     this->valueArray.Reserve(numElements);
 }
@@ -236,33 +236,33 @@ ArrayMap<KEY, VALUE>::Add(KEY&& key, VALUE&& value) {
 }
     
 //------------------------------------------------------------------------------
-template<class KEY, class VALUE> int32
+template<class KEY, class VALUE> int
 ArrayMap<KEY, VALUE>::FindValueIndex(const KEY& key) {
     return this->indexMap[key];
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> const VALUE&
-ArrayMap<KEY, VALUE>::ValueAtIndex(int32 valueIndex) const {
+ArrayMap<KEY, VALUE>::ValueAtIndex(int valueIndex) const {
     return this->valueArray[valueIndex];
 }
 
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> VALUE&
-ArrayMap<KEY, VALUE>::ValueAtIndex(int32 valueIndex) {
+ArrayMap<KEY, VALUE>::ValueAtIndex(int valueIndex) {
     return this->valueArray[valueIndex];
 }
     
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 ArrayMap<KEY, VALUE>::EraseSwap(const KEY& key) {
-    const int32 mapIndex = this->indexMap.FindIndex(key);
-    const int32 valueIndex = this->indexMap.ValueAtIndex(mapIndex);
+    const int mapIndex = this->indexMap.FindIndex(key);
+    const int valueIndex = this->indexMap.ValueAtIndex(mapIndex);
     this->indexMap.EraseIndex(mapIndex);
     this->valueArray.EraseSwapBack(valueIndex);
     
     // fix-up indices
-    const int32 swappedIndex = this->valueArray.Size();
+    const int swappedIndex = this->valueArray.Size();
     if (valueIndex != swappedIndex) {
         for (auto& elm : this->indexMap) {
             if (swappedIndex == elm.value) {
@@ -276,8 +276,8 @@ ArrayMap<KEY, VALUE>::EraseSwap(const KEY& key) {
 //------------------------------------------------------------------------------
 template<class KEY, class VALUE> void
 ArrayMap<KEY, VALUE>::Erase(const KEY& key) {
-    const int32 mapIndex = this->indexMap.FindIndex(key);
-    const int32 valueIndex = this->indexMap.ValueAtIndex(mapIndex);
+    const int mapIndex = this->indexMap.FindIndex(key);
+    const int valueIndex = this->indexMap.ValueAtIndex(mapIndex);
     this->indexMap.EraseIndex(mapIndex);
     this->valueArray.Erase(valueIndex);
     

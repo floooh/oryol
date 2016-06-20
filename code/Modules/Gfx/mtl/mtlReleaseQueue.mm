@@ -67,11 +67,11 @@ mtlReleaseQueue::isValid() const {
 
 //------------------------------------------------------------------------------
 void
-mtlReleaseQueue::garbageCollect(int32 frameIndex) {
+mtlReleaseQueue::garbageCollect(int frameIndex) {
     o_assert_dbg(this->isValid());
-    const int32 safeNumFrames = GfxConfig::MtlMaxInflightFrames + 1;
+    const int safeNumFrames = GfxConfig::MtlMaxInflightFrames + 1;
     if (frameIndex > safeNumFrames) {
-        const int32 minReleaseFrame = frameIndex - GfxConfig::MtlMaxInflightFrames;
+        const int minReleaseFrame = frameIndex - GfxConfig::MtlMaxInflightFrames;
         while (!this->releaseQueue.Empty() && (this->releaseQueue.Front().frameIndex < minReleaseFrame)) {
             this->releaseQueue.Dequeue();
             o_dbg("mtlReleaseQueue: defer-released resource!\n");
@@ -81,7 +81,7 @@ mtlReleaseQueue::garbageCollect(int32 frameIndex) {
 
 //------------------------------------------------------------------------------
 void
-mtlReleaseQueue::releaseDeferred(int32 frameIndex, ORYOL_OBJC_ID obj) {
+mtlReleaseQueue::releaseDeferred(int frameIndex, ORYOL_OBJC_ID obj) {
     o_assert_dbg(this->isValid());
     this->releaseQueue.Enqueue(frameIndex, obj);
 }

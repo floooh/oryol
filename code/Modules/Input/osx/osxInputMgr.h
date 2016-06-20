@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief input manager wrapper for OSX without GLFW
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/core/inputMgrBase.h"
 
 namespace Oryol {
 namespace _priv {
@@ -35,18 +35,18 @@ private:
     /// GLFW key callback
     static void keyCallback(int key, int scancode, int action, int mods);
     /// GLFW char callback
-    static void charCallback(uint32 unicode);
+    static void charCallback(uint32_t unicode);
     /// GLFW mouse button callback
     static void mouseButtonCallback(int button, int action, int mods);
     /// GLFW cursor position callback
-    static void cursorPosCallback(float64 x, float64 y);
+    static void cursorPosCallback(double x, double y);
     /// GLFW cursor enter callback
     static void cursorEnterCallback(bool entered);
     /// GLFW scroll callback
-    static void scrollCallback(float64 xOffset, float64 yOffset);
+    static void scrollCallback(double xOffset, double yOffset);
     
     static osxInputMgr* self;
-    int32 runLoopId;
+    int runLoopId;
 };
 
 } // namespace _priv

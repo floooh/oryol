@@ -60,7 +60,7 @@ assignRegistry::ResolveAssigns(const String& str) const {
     builder.Set(str);
     
     // while there are assigns to replace...
-    int32 index;
+    int index;
     while ((index = builder.FindFirstOf(0, EndOfString, ":")) != EndOfString) {
         // ignore DOS drive letters
         if (index > 1) {

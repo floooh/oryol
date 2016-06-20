@@ -3,11 +3,11 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Dbg/Dbg.h"
 #include "Input/Input.h"
-#include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
@@ -33,11 +33,11 @@ private:
     Shader::PerFrameParams perFrameParams;
     Shader::PerParticleParams perParticleParams;
     bool updateEnabled = true;
-    int32 frameCount = 0;
-    int32 curNumParticles = 0;
+    int frameCount = 0;
+    int curNumParticles = 0;
     TimePoint lastFrameTimePoint;
-    static const int32 NumParticlesEmittedPerFrame = 100;
-    static const int32 MaxNumParticles = 1024 * 1024;
+    static const int NumParticlesEmittedPerFrame = 100;
+    static const int MaxNumParticles = 1024 * 1024;
     struct {
         glm::vec4 pos;
         glm::vec4 vec;
@@ -68,7 +68,7 @@ DrawCallPerfApp::OnRunning() {
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->perFrameParams);
-    for (int32 i = 0; i < this->curNumParticles; i++) {
+    for (int i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.Translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
         Gfx::Draw(0);
@@ -79,8 +79,7 @@ DrawCallPerfApp::OnRunning() {
     Gfx::CommitFrame();
 
     // toggle particle update
-    const Mouse& mouse = Input::Mouse();
-    if (mouse.Attached && mouse.ButtonDown(Mouse::Button::LMB)) {
+    if (Input::MouseAttached() && Input::MouseButtonDown(MouseButton::Left)) {
         this->updateEnabled = !this->updateEnabled;
     }
     
@@ -102,7 +101,7 @@ DrawCallPerfApp::OnRunning() {
 //------------------------------------------------------------------------------
 void
 DrawCallPerfApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
+    float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->perFrameParams.ModelViewProjection = this->proj * this->view * this->model;
@@ -111,7 +110,7 @@ DrawCallPerfApp::updateCamera() {
 //------------------------------------------------------------------------------
 void
 DrawCallPerfApp::emitParticles() {
-    for (int32 i = 0; i < NumParticlesEmittedPerFrame; i++) {
+    for (int i = 0; i < NumParticlesEmittedPerFrame; i++) {
         if (this->curNumParticles < MaxNumParticles) {
             this->particles[this->curNumParticles].pos = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
             glm::vec3 rnd = glm::ballRand(0.5f);
@@ -125,8 +124,8 @@ DrawCallPerfApp::emitParticles() {
 //------------------------------------------------------------------------------
 void
 DrawCallPerfApp::updateParticles() {
-    const float32 frameTime = 1.0f / 60.0f;
-    for (int32 i = 0; i < this->curNumParticles; i++) {
+    const float frameTime = 1.0f / 60.0f;
+    for (int i = 0; i < this->curNumParticles; i++) {
         auto& curParticle = this->particles[i];
         curParticle.vec.y -= 1.0f * frameTime;
         curParticle.pos += curParticle.vec * frameTime;
@@ -165,8 +164,8 @@ DrawCallPerfApp::OnInit() {
     this->drawState.Pipeline = Gfx::CreateResource(ps);
     
     // setup projection and view matrices
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();

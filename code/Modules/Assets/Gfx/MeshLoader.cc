@@ -9,8 +9,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(MeshLoader);
-
 //------------------------------------------------------------------------------
 MeshLoader::MeshLoader(const MeshSetup& setup_) :
 MeshLoaderBase(setup_) {
@@ -32,7 +30,7 @@ MeshLoader::~MeshLoader() {
 void
 MeshLoader::Cancel() {
     if (this->ioRequest) {
-        this->ioRequest->SetCancelled();
+        this->ioRequest->Cancelled = true;
         this->ioRequest = nullptr;
     }
 }
@@ -40,15 +38,8 @@ MeshLoader::Cancel() {
 //------------------------------------------------------------------------------
 Id
 MeshLoader::Start() {
-    
-    // prepare the Gfx resource
     this->resId = Gfx::resource().prepareAsync(this->setup);
-    
-    // fire IO request to start loading the texture data
-    this->ioRequest = IOProtocol::Read::Create();
-    this->ioRequest->Url = setup.Locator.Location();
-    IO::Put(this->ioRequest);
-    
+    this->ioRequest = IO::LoadFile(setup.Locator.Location());
     return this->resId;
 }
 
@@ -60,12 +51,12 @@ MeshLoader::Continue() {
     
     ResourceState::Code result = ResourceState::Pending;
     
-    if (this->ioRequest->Handled()) {
+    if (this->ioRequest->Handled) {
         if (IOStatus::OK == this->ioRequest->Status) {
             // async loading has finished, use OmshParser to
             // create a MeshSetup object from the loaded data
             const void* data = this->ioRequest->Data.Data();
-            const int32 numBytes = this->ioRequest->Data.Size();
+            const int numBytes = this->ioRequest->Data.Size();
 
             MeshSetup meshSetup = MeshSetup::FromData(this->setup);
             if (OmshParser::Parse(data, numBytes, meshSetup)) {

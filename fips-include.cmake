@@ -5,12 +5,8 @@ set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ORYOL_DIR}/cmake/modules/")
 
 # cmake options
-set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/" CACHE STRING "Sample data URL")
-set(ORYOL_SYNTH_NUM_VOICES "2" CACHE STRING "Synth module: number of voices")
-add_definitions(-DORYOL_SYNTH_NUM_VOICES=${ORYOL_SYNTH_NUM_VOICES})
-set(ORYOL_SYNTH_NUM_TRACKS_PER_VOICE "2" CACHE STRING "Synth module: number of tracks per voice")
-add_definitions(-DORYOL_SYNTH_NUM_TRACKS_PER_VOICE=${ORYOL_SYNTH_NUM_TRACKS_PER_VOICE})
-
+set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/data/" CACHE STRING "Sample data URL")
+option(ORYOL_DEBUG_SHADERS "Enable/disable debug info for shaders" OFF)
 if (FIPS_MACOS OR FIPS_LINUX OR FIPS_ANDROID)
     option(ORYOL_USE_LIBCURL "Use libcurl instead of native APIs" ON)
 else() 
@@ -20,10 +16,6 @@ endif()
 if (ORYOL_USE_LIBCURL)
     add_definitions(-DORYOL_USE_LIBCURL=1)
 endif()
-
-# for TurboBadger UI support, override the search path for the 
-# tb_config.h overriden header file
-include_directories(${ORYOL_DIR}/code/Modules/TBUI/tb)
 
 # profiling enabled?
 if (FIPS_PROFILING)
@@ -196,23 +188,20 @@ if (FIPS_FORCE_NO_THREADS)
     add_definitions(-DORYOL_FORCE_NO_THREADS=1)
 endif()
 if (FIPS_EMSCRIPTEN OR FIPS_PNACL)
-    add_definitions(-DORYOL_SAMPLE_URL=\"http://localhost/\")
+    add_definitions(-DORYOL_SAMPLE_URL=\"http://localhost/../data/\") # HACK
 else()
     add_definitions(-DORYOL_SAMPLE_URL=\"${ORYOL_SAMPLE_URL}\")
 endif()
 
 #-------------------------------------------------------------------------------
-#   Add a sample file to the web samples description file
-#
-file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
-macro(oryol_add_web_sample name desc type image src)
-    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
-endmacro()
-
-#-------------------------------------------------------------------------------
 #   Wrap shader code generation
 #
 macro(oryol_shader shd)
-    fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE)
+    if (ORYOL_DEBUG_SHADERS)
+        set(args "{debug: 'true'}")
+    else()
+        set(args "{debug: 'false'}")
+    endif()
+    fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE ARGS ${args})
 endmacro()
 

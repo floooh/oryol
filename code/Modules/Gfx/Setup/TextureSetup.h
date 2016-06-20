@@ -22,13 +22,13 @@ public:
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup texture from raw pixel data
-    static TextureSetup FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    static TextureSetup FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup empty texture (usually for dynamic streaming of CPU generated texture data)
-    static TextureSetup Empty(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code Usage);
+    static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code Usage);
     /// setup as absolute-size render target
-    static TextureSetup RenderTarget(int32 w, int32 h);
+    static TextureSetup RenderTarget(int w, int h);
     /// setup as render target with size relative to current display size
-    static TextureSetup RelSizeRenderTarget(float32 relWidth, float32 relHeight);
+    static TextureSetup RelSizeRenderTarget(float relWidth, float relHeight);
     /// create render target with shared depth buffer
     static TextureSetup SharedDepthRenderTarget(const Id& depthRenderTarget);
 
@@ -54,15 +54,15 @@ public:
     /// texture type (default is Texture2D)
     TextureType::Code Type;
     /// the width in pixels (only if absolute-size render target)
-    int32 Width;
+    int Width;
     /// the height in pixels (only if absolute-size render target)
-    int32 Height;
+    int Height;
     /// display-relative width (only if screen render target)
-    float32 RelWidth;
+    float RelWidth;
     /// display-relative height (only if screen render target)
-    float32 RelHeight;
+    float RelHeight;
     /// number of mipmaps (default is 1, only for FromPixelData)
-    int32 NumMipMaps;
+    int NumMipMaps;
     /// the color pixel format (only if render target)
     PixelFormat::Code ColorFormat;
     /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)

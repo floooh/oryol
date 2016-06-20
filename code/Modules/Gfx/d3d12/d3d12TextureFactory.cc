@@ -61,7 +61,7 @@ d3d12TextureFactory::SetupResource(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12TextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
+d3d12TextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
 
@@ -77,7 +77,7 @@ d3d12TextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     d3d12DescAllocator& descAllocator = this->pointers.renderer->descAllocator;
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    const uint64_t frameIndex = this->pointers.renderer->frameIndex;
 
     for (const auto& slot : tex.slots) {
         if (slot.d3d12TextureRes) {
@@ -122,12 +122,12 @@ d3d12TextureFactory::createRenderTarget(texture& tex) {
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
 
     // get size of new render target
-    int32 width, height;
+    int width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
         const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
-        height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
+        width = int(dispAttrs.FramebufferWidth * setup.RelWidth);
+        height = int(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
@@ -202,7 +202,7 @@ d3d12TextureFactory::setupTextureAttrs(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code 
-d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
+d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int size) {
     o_assert_dbg(nullptr == tex.slots[0].d3d12TextureRes);
     o_assert_dbg(1 == tex.numSlots);
     o_assert_dbg(nullptr != data);
@@ -225,7 +225,7 @@ d3d12TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    const uint64_t frameIndex = this->pointers.renderer->frameIndex;
     tex.slots[0].d3d12TextureRes = resAllocator.AllocTexture(d3d12Device, cmdList, frameIndex, setup, data, size);
     tex.slots[0].d3d12TextureState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
@@ -254,9 +254,9 @@ d3d12TextureFactory::createEmptyTexture(texture& tex) {
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     ID3D12Device* d3d12Device = this->pointers.renderer->d3d12Device;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
-    const uint32 copyFootprint = resAllocator.ComputeTextureCopyFootprint(d3d12Device, setup);
-    for (uint32 slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
+    const uint64_t frameIndex = this->pointers.renderer->frameIndex;
+    const uint32_t copyFootprint = resAllocator.ComputeTextureCopyFootprint(d3d12Device, setup);
+    for (uint32_t slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
         tex.slots[slotIndex].d3d12TextureRes = resAllocator.AllocTexture(d3d12Device, cmdList, frameIndex, setup, nullptr, 0);
         o_assert_dbg(nullptr != tex.slots[slotIndex].d3d12TextureRes);
         tex.slots[slotIndex].d3d12TextureState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;

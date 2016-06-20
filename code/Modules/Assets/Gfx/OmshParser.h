@@ -50,10 +50,10 @@ namespace Oryol {
 class OmshParser {
 public:
     /// parse block of memory into MeshSetup object
-    static bool Parse(const void* ptr, uint32 size, MeshSetup& outSetup);
+    static bool Parse(const void* ptr, uint32_t size, MeshSetup& outSetup);
 private:
     /// translate OMSH primtype to actual primtype
-    static PrimitiveType::Code translatePrimType(uint32 omshPrimType);
+    static PrimitiveType::Code translatePrimType(uint32_t omshPrimType);
 };
 
 } // namespace Oryol

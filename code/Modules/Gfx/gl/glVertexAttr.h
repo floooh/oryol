@@ -28,21 +28,29 @@ public:
     };
     /// test for equality
     bool operator==(const glVertexAttr& rhs) const {
-        return 0 == std::memcmp(this, &rhs, sizeof(glVertexAttr));
+        return (this->index == rhs.index) &&
+               (this->enabled == rhs.enabled) &&
+               (this->vbIndex == rhs.vbIndex) &&
+               (this->divisor == rhs.divisor) &&
+               (this->stride == rhs.stride) &&
+               (this->size == rhs.size) &&
+               (this->normalized == rhs.normalized) &&
+               (this->offset == rhs.offset) &&
+               (this->type == rhs.type);
     };
     /// test for inequality
     bool operator!=(const glVertexAttr& rhs) const {
-        return 0 != std::memcmp(this, &rhs, sizeof(glVertexAttr));
+        return !operator==(rhs);
     };
 
-    uint8 index;
-    uint8 enabled;
-    uint8 vbIndex;
-    uint8 divisor;
-    uint8 stride;
-    uint8 size;
-    uint8 normalized;
-    uint32 offset;
+    uint8_t index;
+    uint8_t enabled;
+    uint8_t vbIndex;
+    uint8_t divisor;
+    uint8_t stride;
+    uint8_t size;
+    uint8_t normalized;
+    uint32_t offset;
     GLenum type;
 };
 

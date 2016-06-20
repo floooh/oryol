@@ -18,11 +18,15 @@ class LocalFileSystem : public FileSystem {
     OryolClassCreator(LocalFileSystem);
 public:
     /// called once on main-thread
-    virtual void Init(const StringAtom& scheme) override;
-    /// called when the IOProtocol::Read message is received
-    virtual void onRead(const Ptr<IOProtocol::Read>& msg) override;
-    /// called when the IOProtocol::Write message is received
-    virtual void onWrite(const Ptr<IOProtocol::Write>& msg) override;
+    virtual void init(const StringAtom& scheme) override;
+    /// called when IO message should be handled
+    virtual void onMsg(const Ptr<IORequest>& ioReq) override;
+
+private:
+    /// handle IORead msg
+    void onRead(const Ptr<IORead>& ioRead);
+    /// handle IOWrite msg
+    void onWrite(const Ptr<IOWrite>& ioWrite);
 };
 
 } // namespace Oryol

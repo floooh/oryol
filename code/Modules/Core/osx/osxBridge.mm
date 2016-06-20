@@ -23,7 +23,7 @@ using namespace Oryol::_priv;
 // This works around an AppKit bug, where key up events while holding
 // down the command key don't get sent to the key window.
 - (void)sendEvent:(NSEvent *)event {
-    if ([event type] == NSKeyUp && ([event modifierFlags] & NSCommandKeyMask)) {
+    if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand)) {
         [[self keyWindow] sendEvent:event];
     }
     else {
@@ -102,16 +102,16 @@ using namespace Oryol::_priv;
 //------------------------------------------------------------------------------
 static int translateFlags(NSUInteger flags) {
     int mods = 0;
-    if (flags & NSShiftKeyMask) {
+    if (flags & NSEventModifierFlagShift) {
         mods |= ORYOL_OSXBRIDGE_MOD_SHIFT;
     }
-    if (flags & NSControlKeyMask) {
+    if (flags & NSEventModifierFlagControl) {
         mods |= ORYOL_OSXBRIDGE_MOD_CONTROL;
     }
-    if (flags & NSAlternateKeyMask) {
+    if (flags & NSEventModifierFlagOption) {
         mods |= ORYOL_OSXBRIDGE_MOD_ALT;
     }
-    if (flags & NSCommandKeyMask) {
+    if (flags & NSEventModifierFlagCommand) {
         mods |= ORYOL_OSXBRIDGE_MOD_SUPER;
     }
     return mods;
@@ -242,7 +242,7 @@ static int translateKey(unsigned int key) {
 - (void)flagsChanged:(NSEvent *)event {
     osxBridge* bridge = osxBridge::ptr();
     int action;
-    const unsigned int modifierFlags = [event modifierFlags] & NSDeviceIndependentModifierFlagsMask;
+    const unsigned int modifierFlags = [event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
     const int key = translateKey([event keyCode]);
     const int mods = translateFlags(modifierFlags);
 
@@ -520,7 +520,7 @@ osxBridge::onMouseClick(int button, int action, int mods) {
 
 //------------------------------------------------------------------------------
 void
-osxBridge::onCursorMotion(float64 x, float64 y) {
+osxBridge::onCursorMotion(double x, double y) {
     if (this->cursorMode == ORYOL_OSXBRIDGE_CURSOR_DISABLED) {
         if ((x == 0.0) && (y == 0.0)) {
             return;
@@ -583,7 +583,7 @@ osxBridge::onInputChar(unsigned int codepoint, int mods, int plain) {
 
 //------------------------------------------------------------------------------
 void
-osxBridge::onInputScroll(float64 xoffset, float64 yoffset) {
+osxBridge::onInputScroll(double xoffset, double yoffset) {
     if (this->callbacks.scroll) {
         this->callbacks.scroll(xoffset, yoffset);
     }
@@ -607,10 +607,10 @@ osxBridge::createWindow() {
 
     // window
     const NSUInteger style =
-        NSTitledWindowMask |
-        NSClosableWindowMask |
-        NSMiniaturizableWindowMask |
-        NSResizableWindowMask;
+        NSWindowStyleMaskTitled |
+        NSWindowStyleMaskClosable |
+        NSWindowStyleMaskMiniaturizable |
+        NSWindowStyleMaskResizable;
     this->appWindow = [[NSWindow alloc]
         initWithContentRect:NSMakeRect(0, 0, 64, 32)
         styleMask:style

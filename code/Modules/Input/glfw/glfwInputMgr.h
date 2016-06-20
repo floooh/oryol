@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief provide input on platforms using GLFW
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/Core/inputMgrBase.h"
 
 struct GLFWwindow;
 
@@ -50,7 +50,7 @@ private:
     static void scrollCallback(GLFWwindow* win, double xOffset, double yOffset);
     
     static glfwInputMgr* self;
-    int32 runLoopId;
+    int runLoopId;
 };
 
 } // namespace _priv

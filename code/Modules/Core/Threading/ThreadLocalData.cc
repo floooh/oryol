@@ -10,7 +10,7 @@
 namespace Oryol {
     
 pthread_key_t ThreadLocalData::key = 0;
-std::atomic<int32> ThreadLocalData::curSlot{0};
+std::atomic<int> ThreadLocalData::curSlot{0};
     
 //------------------------------------------------------------------------------
 void
@@ -40,7 +40,7 @@ ThreadLocalData::PointerTable() {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 ThreadLocalData::Alloc() {
     o_assert_dbg(curSlot < (MaxNumSlots - 1));
     return curSlot++;
@@ -48,7 +48,7 @@ ThreadLocalData::Alloc() {
     
 //------------------------------------------------------------------------------
 void
-ThreadLocalData::Set(int32 slotIndex, void* ptr) {
+ThreadLocalData::Set(int slotIndex, void* ptr) {
     o_assert_range_dbg(slotIndex, MaxNumSlots);
     void** table = PointerTable();
     table[slotIndex] = ptr;

@@ -32,8 +32,8 @@ void
 winInputMgr::setup(const InputSetup& setup) {
 
     inputMgrBase::setup(setup);
-    this->Keyboard.Attached = true;
-    this->Mouse.Attached = true;
+    this->keyboard.attached = true;
+    this->mouse.attached = true;
 
     // first check that the Gfx module has already been initialized
     // (directly access the 'private' interface of winDisplayMgr, 
@@ -91,13 +91,13 @@ winInputMgr::keyCallback(int winKey, int /*winScancode*/, int winAction, int /*w
         Key::Code key = self->mapKey(winKey);
         if (Key::InvalidKey != key) {
             if (winAction == ORYOL_WIN_PRESS) {
-                self->Keyboard.onKeyDown(key);
+                self->keyboard.onKeyDown(key);
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
-                self->Keyboard.onKeyUp(key);
+                self->keyboard.onKeyUp(key);
             }
             else {
-                self->Keyboard.onKeyRepeat(key);
+                self->keyboard.onKeyRepeat(key);
             }
         }
     }
@@ -107,7 +107,7 @@ winInputMgr::keyCallback(int winKey, int /*winScancode*/, int winAction, int /*w
 void
 winInputMgr::charCallback(unsigned int unicode) {
     if (nullptr != self) {
-        self->Keyboard.onChar((wchar_t)unicode);
+        self->keyboard.onChar((wchar_t)unicode);
     }
 }
 
@@ -115,25 +115,25 @@ winInputMgr::charCallback(unsigned int unicode) {
 void
 winInputMgr::mouseButtonCallback(int winButton, int winAction, int winMods) {
     if (nullptr != self) {
-        Mouse::Button btn;
+        MouseButton::Code btn;
         switch (winButton) {
-            case ORYOL_WIN_MOUSE_BUTTON_LEFT:    btn = Mouse::LMB; break;
-            case ORYOL_WIN_MOUSE_BUTTON_RIGHT:   btn = Mouse::RMB; break;
-            case ORYOL_WIN_MOUSE_BUTTON_MIDDLE:  btn = Mouse::MMB; break;
-            default:                               btn = Mouse::InvalidButton; break;
+            case ORYOL_WIN_MOUSE_BUTTON_LEFT:    btn = MouseButton::Left; break;
+            case ORYOL_WIN_MOUSE_BUTTON_RIGHT:   btn = MouseButton::Right; break;
+            case ORYOL_WIN_MOUSE_BUTTON_MIDDLE:  btn = MouseButton::Middle; break;
+            default:                             btn = MouseButton::InvalidMouseButton; break;
         }
-        if (btn != Mouse::InvalidButton) {
-            Mouse::PointerLockMode lockMode = Mouse::PointerLockMode::PointerLockModeDontCare;
+        if (btn != MouseButton::InvalidMouseButton) {
+            PointerLockMode::Code lockMode = PointerLockMode::DontCare;
             if (winAction == ORYOL_WIN_PRESS) {
-                lockMode = self->Mouse.onButtonDown(btn);
+                lockMode = self->mouse.onButtonDown(btn);
             }
             else if (winAction == ORYOL_WIN_RELEASE) {
-                lockMode = self->Mouse.onButtonUp(btn);
+                lockMode = self->mouse.onButtonUp(btn);
             }
-            if (Mouse::PointerLockModeEnable == lockMode) {
+            if (PointerLockMode::Enable == lockMode) {
                 winDisplayMgr::self->setInputMode(ORYOL_WIN_CURSOR, ORYOL_WIN_CURSOR_DISABLED);
             }
-            else if (Mouse::PointerLockModeDisable == lockMode) {
+            else if (PointerLockMode::Disable == lockMode) {
                 winDisplayMgr::self->setInputMode(ORYOL_WIN_CURSOR, ORYOL_WIN_CURSOR_NORMAL);
             }
         }
@@ -144,8 +144,8 @@ winInputMgr::mouseButtonCallback(int winButton, int winAction, int winMods) {
 void
 winInputMgr::cursorPosCallback(double winX, double winY) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)winX, (float32)winY);
-        self->Mouse.onPosMov(pos);
+        const glm::vec2 pos((float)winX, (float)winY);
+        self->mouse.onPosMov(pos);
     }
 }
 
@@ -153,15 +153,15 @@ winInputMgr::cursorPosCallback(double winX, double winY) {
 void
 winInputMgr::scrollCallback(double winX, double winY) {
     if (nullptr != self) {
-        const glm::vec2 scroll((float32)winX, (float32)winY);
-        self->Mouse.Scroll = scroll;
+        const glm::vec2 scroll((float)winX, (float)winY);
+        self->mouse.scroll = scroll;
     }
 }
 
 //------------------------------------------------------------------------------
 void
 winInputMgr::cursorEnterCallback(int entered) {
-    Log::Info("cursorenter: %d\n", entered);
+    // empty
 }
 
 //------------------------------------------------------------------------------
@@ -179,7 +179,7 @@ winInputMgr::mapKey(int winKey) const {
 void
 winInputMgr::setupKeyTable() {
 
-    for (int32 i = 0; i <= ORYOL_WIN_KEY_LAST; i++) {
+    for (int i = 0; i <= ORYOL_WIN_KEY_LAST; i++) {
         keyTable[i] = Key::InvalidKey;
     }
 

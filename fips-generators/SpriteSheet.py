@@ -5,7 +5,7 @@ import genutil as util
 from util import png
 import os
 
-Version = 6 
+Version = 7 
 
 #-------------------------------------------------------------------------------
 class Sprite :
@@ -70,10 +70,10 @@ class SpriteSheet :
         self.imageHeight = img[1]
         if self.clampWidth > 0 and self.clampWidth < self.imageWidth :
             self.imageWidth = self.clampWidth
-            print 'Clamped image width to {}'.format(self.imageWidth)
+            print('Clamped image width to {}'.format(self.imageWidth))
         if self.clampHeight > 0 and self.clampHeight < self.imageHeight :
             self.imageHeight = self.clampHeight
-            print 'Clamped image height to {}'.format(self.imageHeight)
+            print('Clamped image height to {}'.format(self.imageHeight))
 
         self.imagePixels = img[2]
         self.imageInfo = img[3]
@@ -104,10 +104,10 @@ class SpriteSheet :
         numPixels = self.imageWidth * self.imageHeight
         numBytes = numPixels * 4
         f.write('struct Sheet {\n')
-        f.write('    static const Oryol::int32 Width{' + str(self.imageWidth) + '};\n')
-        f.write('    static const Oryol::int32 Height{' + str(self.imageHeight) + '};\n')
-        f.write('    static const Oryol::int32 NumBytes{' + str(numBytes) + '};\n')
-        f.write('    static const Oryol::uint32 Pixels[{}];\n'.format(numPixels))
+        f.write('    static const int Width{' + str(self.imageWidth) + '};\n')
+        f.write('    static const int Height{' + str(self.imageHeight) + '};\n')
+        f.write('    static const int NumBytes{' + str(numBytes) + '};\n')
+        f.write('    static const uint32_t Pixels[{}];\n'.format(numPixels))
         f.write('    enum SpriteId {\n')
         for sprite in self.sprites :
             f.write('        ' + sprite.name + ',\n')
@@ -127,13 +127,13 @@ class SpriteSheet :
         f.write('    static const SpriteId CharMap[256];\n')
         f.write('    static const struct sprite {\n')
         f.write('        SpriteId id;\n')
-        f.write('        Oryol::int32 X;\n')
-        f.write('        Oryol::int32 Y;\n')
-        f.write('        Oryol::int32 W;\n')
-        f.write('        Oryol::int32 H;\n')
-        f.write('        Oryol::int32 NumFrames;\n')
+        f.write('        int X;\n')
+        f.write('        int Y;\n')
+        f.write('        int W;\n')
+        f.write('        int H;\n')
+        f.write('        int NumFrames;\n')
         f.write('        Anim::Code AnimType;\n')
-        f.write('        Oryol::uint8 Char;\n')
+        f.write('        uint8_t Char;\n')
         f.write('    } Sprite[NumSprites];\n')
         f.write('};\n')
 
@@ -160,7 +160,7 @@ class SpriteSheet :
         width = self.imageWidth
         height = self.imageHeight
         numPixels = width * height
-        f.write('const Oryol::uint32 Sheet::Pixels[' + str(numPixels) + '] = {\n')
+        f.write('const uint32_t Sheet::Pixels[' + str(numPixels) + '] = {\n')
         for y,row in enumerate(self.imagePixels) :
             if y < self.imageHeight :
                 f.write('    ')

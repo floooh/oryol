@@ -17,11 +17,11 @@ public:
     /// create clear-state which doesn't clear
     static ClearState ClearNone();
     /// create clear-state which clears all targets
-    static ClearState ClearAll(const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float32 depth=1.0f, uint8 stencil=0);
+    static ClearState ClearAll(const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float depth=1.0f, uint8_t stencil=0);
     /// create clear state which only clears color
     static ClearState ClearColor(const glm::vec4& color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     /// create clear state which only clears depth-stencil
-    static ClearState ClearDepthStencil(float32 depth=1.0f, uint8 stencil=0);
+    static ClearState ClearDepthStencil(float depth=1.0f, uint8_t stencil=0);
 
     enum ClearActionBits {
         None = 0,
@@ -35,11 +35,11 @@ public:
     /// the clear color (default: black)
     glm::vec4 Color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     /// the clear depth value (default: 1.0)
-    float32 Depth = 1.0f;
+    float Depth = 1.0f;
     /// the clear stencil value (default: 0)
-    uint8 Stencil = 0;
+    uint8_t Stencil = 0;
     /// the clear action(s) (default: ClearAll)
-    uint8 Actions = AllBits;
+    uint8_t Actions = AllBits;
 };
 
 } // namespace Oryol

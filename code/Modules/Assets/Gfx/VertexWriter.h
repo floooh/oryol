@@ -13,13 +13,13 @@ namespace Oryol {
 class VertexWriter {
 public:
     /// write 1D generic vertex component with run-time pack-format selection
-    static uint8* Write(uint8* dst, VertexFormat::Code fmt, float32 x);
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x);
     /// write 2D generic vertex component with run-time pack-format selection
-    static uint8* Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y);
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y);
     /// write 3D generic vertex component with run-time pack-format selection
-    static uint8* Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, float32 z);
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y, float z);
     /// write 4D generic vertex component with run-time pack-format selection
-    static uint8* Write(uint8* dst, VertexFormat::Code fmt, float32 x, float32 y, float32 z, float32 w);
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y, float z, float w);
 };
     
 } // namespace Oryol

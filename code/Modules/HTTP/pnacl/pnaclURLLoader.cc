@@ -15,10 +15,10 @@ namespace _priv {
 
 // a helper class to wrap all request-related data into a ref-counted object
 class pnaclRequestWrapper : public RefCounted {
-    OryolClassPoolAllocDecl(pnaclRequestWrapper);
+    OryolClassDecl(pnaclRequestWrapper);
 public:
-    pnaclRequestWrapper(Ptr<HTTPProtocol::HTTPRequest> req) {
-        this->httpRequest = req;
+    pnaclRequestWrapper(Ptr<IORead> req) {
+        this->ioRequest = req;
         pp::Instance* ppInst = pnaclInstance::Instance();
         this->ppUrlRequestInfo = pp::URLRequestInfo(ppInst);
         this->ppUrlRequestInfo.SetMethod("GET");
@@ -27,13 +27,13 @@ public:
         this->ppUrlLoader = pp::URLLoader(ppInst);
     };
     virtual ~pnaclRequestWrapper() {
-        this->httpRequest = nullptr;
+        this->ioRequest = nullptr;
         this->ppUrlLoader = pp::URLLoader();
         this->ppUrlRequestInfo = pp::URLRequestInfo();
     }
 
     void readBodyData() {
-        auto& responseBody = this->httpRequest->Response->Body;
+        auto& responseBody = this->ioRequest->Data;
         pp::CompletionCallback cc = pp::CompletionCallback(pnaclURLLoader::cbOnRead, this);
         int32_t result = PP_OK;
         do {
@@ -48,19 +48,18 @@ public:
         }
     }
 
-    Ptr<HTTPProtocol::HTTPRequest> httpRequest;
+    Ptr<IORead> ioRequest;
     pp::URLRequestInfo ppUrlRequestInfo;
     pp::URLLoader ppUrlLoader;
-    static const int32 ReadBufferSize = 4096;
-    uint8 readBuffer[ReadBufferSize];
+    static const int ReadBufferSize = 4096;
+    uint8_t readBuffer[ReadBufferSize];
 };
-OryolClassPoolAllocImpl(pnaclRequestWrapper);
 
 //------------------------------------------------------------------------------
 bool
-pnaclURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
-    if (baseURLLoader::doRequest(httpReq)) {
-        this->startRequest(httpReq);
+pnaclURLLoader::doRequest(const Ptr<IORead>& ioReq) {
+    if (baseURLLoader::doRequest(ioReq)) {
+        this->startRequest(ioReq);
         return true;
     }
     else {
@@ -71,14 +70,11 @@ pnaclURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
 
 //------------------------------------------------------------------------------
 void
-pnaclURLLoader::startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
-    o_assert(req.isValid() && !req->Handled());
-
-    // currently only support GET
-    o_assert(req->GetMethod() == HTTPMethod::Get);
+pnaclURLLoader::startRequest(const Ptr<IORead>& req) {
+    o_assert(req.isValid() && !req->Handled);
 
     // bump the requests refcount and get a raw pointer
-    HTTPProtocol::HTTPRequest* reqPtr = req.get();
+    IORead* reqPtr = req.get();
     reqPtr->addRef();
 
     // fire off main-thread callback to create and send the HTTP request
@@ -90,13 +86,11 @@ void
 pnaclURLLoader::cbSendRequest(void* data, int32_t /*result*/) {
     o_assert(pp::Module::Get()->core()->IsMainThread());
 
-    // FIXME: support request headers, support methods other then GET,
-    // support request body
-    Ptr<HTTPProtocol::HTTPRequest> httpRequest = (HTTPProtocol::HTTPRequest*) data;
-    auto req = pnaclRequestWrapper::Create(httpRequest); 
-    httpRequest->release();
-    req->addRef();
+    Ptr<IORead> ioReq = (IORead*) data;
+    auto req = pnaclRequestWrapper::Create(ioReq); 
+    ioReq->release();
     pnaclRequestWrapper* reqPtr = req.get();
+    reqPtr->addRef();
     ORYOL_UNUSED int32_t openResult = req->ppUrlLoader.Open(req->ppUrlRequestInfo, pp::CompletionCallback(cbRequestComplete, reqPtr));
     o_assert(PP_OK_COMPLETIONPENDING == openResult);
 }
@@ -108,32 +102,23 @@ pnaclURLLoader::cbRequestComplete(void* data, int32_t result) {
 
     Ptr<pnaclRequestWrapper> req((pnaclRequestWrapper*)data);
 
-    // create a response object, and a memory stream object which
-    // will hold the received data
-    req->httpRequest->Response = HTTPProtocol::HTTPResponse::Create();
-
     // translate response
     o_assert(!req->ppUrlLoader.is_null());
     o_assert(!req->ppUrlLoader.GetResponseInfo().is_null());
     IOStatus::Code httpStatus = (IOStatus::Code) req->ppUrlLoader.GetResponseInfo().GetStatusCode();
-    req->httpRequest->Response->Status = httpStatus;
+    req->ioRequest->Status = httpStatus;
     if (httpStatus == IOStatus::OK) {
         // response header received ok, start loading response body,
         // first get the immediately available data now, and maybe
         // do async call to fetch the rest
         req->readBodyData();
+        // NOTE: do not release since cbOnRead still needs the pnaclRequestWrapper!
     }
     else {
         // HTTP error, dump a warning, and cleanup
         Log::Warn("pnaclURLLoader::cbRequestComplete: GET '%s' returned with '%d'\n", 
-            req->httpRequest->Url.AsCStr(), httpStatus);
-        const Ptr<IOProtocol::Request>& ioReq = req->httpRequest->IoRequest;
-        if (ioReq) {
-            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->httpRequest->Response;
-            ioReq->Status = httpResponse->Status;
-            ioReq->SetHandled();
-        }                
-        req->httpRequest->SetHandled();
+            req->ioRequest->Url.AsCStr(), httpStatus);
+        req->ioRequest->Handled = true;
         req->release();
     }
 }
@@ -145,39 +130,23 @@ pnaclURLLoader::cbOnRead(void* data, int32_t result) {
     if (PP_OK == result)
     {
         // all data received
-        const Ptr<IOProtocol::Request>& ioReq = req->httpRequest->IoRequest;
-        if (ioReq) {
-            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->httpRequest->Response;
-            ioReq->Status = httpResponse->Status;
-            ioReq->Data = std::move(httpResponse->Body);
-            ioReq->Type = httpResponse->Type;
-            ioReq->ErrorDesc = httpResponse->ErrorDesc;
-            ioReq->SetHandled();
-        }        
-        req->httpRequest->SetHandled();
+        req->ioRequest->Handled = true;
         req->release();
-        return;
     }
     else if (result > 0)
     {
-        // read all available data...
-        req->httpRequest->Response->Body.Add(req->readBuffer, result);
+        // read all available data..., do not release the pnaclRequestWrapper
+        // since it is still needed in the following callbacks
+        req->ioRequest->Data.Add(req->readBuffer, result);
         req->readBodyData();
     }
     else
     {
         // an error occurred
         Log::Warn("pnaclURLLoader::cbOnRead: Error while reading body data.\n");
-        req->httpRequest->Response->Status = IOStatus::DownloadError;
-        const Ptr<IOProtocol::Request>& ioReq = req->httpRequest->IoRequest;
-        if (ioReq) {
-            const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->httpRequest->Response;
-            ioReq->Status = httpResponse->Status;
-            ioReq->SetHandled();
-        }        
-        req->httpRequest->SetHandled();
+        req->ioRequest->Status = IOStatus::DownloadError;
+        req->ioRequest->Handled = true;
         req->release();
-        return;
     }
 }
 

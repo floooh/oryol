@@ -9,7 +9,7 @@
     of the window and input handling code has been copied from GLFW to ensure
     same behaviour between the GL and D3D versions of Oryol.
 */
-#include "Input/base/inputMgrBase.h"
+#include "Input/Core/inputMgrBase.h"
 
 namespace Oryol {
 namespace _priv {
@@ -50,7 +50,7 @@ private:
     static void scrollCallback(double xOffset, double yOffset);
 
     static winInputMgr* self;
-    int32 runLoopId;
+    int runLoopId;
 };
 
 } // namespace _priv

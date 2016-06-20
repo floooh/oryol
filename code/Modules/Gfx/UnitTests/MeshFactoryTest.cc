@@ -67,7 +67,7 @@ TEST(MeshFactoryTest) {
     mesh mesh;
     mesh.Setup = buildResult.Setup;
     const void* data = buildResult.Data.Data();
-    const int32 size = buildResult.Data.Size();
+    const int size = buildResult.Data.Size();
 
     factory.SetupResource(mesh, data, size);
     CHECK(!mesh.Id.IsValid());

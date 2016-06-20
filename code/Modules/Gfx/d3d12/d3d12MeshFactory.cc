@@ -57,7 +57,7 @@ d3d12MeshFactory::SetupResource(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12MeshFactory::SetupResource(mesh& msh, const void* data, int32 size) {
+d3d12MeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(msh.Setup.ShouldSetupFromData());
     return this->create(msh, data, size);
@@ -69,7 +69,7 @@ d3d12MeshFactory::DestroyResource(mesh& msh) {
     o_assert_dbg(this->isValid);
 
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    const uint64_t frameIndex = this->pointers.renderer->frameIndex;
     for (auto& buf : msh.buffers) {
         for (ID3D12Resource* d3d12Res : buf.d3d12RenderBuffers) {
             if (d3d12Res) {
@@ -107,14 +107,14 @@ void
 d3d12MeshFactory::setupPrimGroups(mesh& msh) {
     msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
     o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int32 i = 0; i < msh.numPrimGroups; i++) {
+    for (int i = 0; i < msh.numPrimGroups; i++) {
         msh.primGroups[i] = msh.Setup.PrimitiveGroup(i);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-d3d12MeshFactory::createBuffers(mesh& msh, int bufType, Usage::Code usage, const void* data, int32 size) {
+d3d12MeshFactory::createBuffers(mesh& msh, int bufType, Usage::Code usage, const void* data, int size) {
     // FIXME: might make sense to put vertices, indices, and double buffer copies
     // into a single D3D12 buffer, but need to figure out whether 64kByte alignment
     // is needed on each subsection (guess: yes)
@@ -125,7 +125,7 @@ d3d12MeshFactory::createBuffers(mesh& msh, int bufType, Usage::Code usage, const
     o_assert_dbg(d3d12Device);
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    const uint64_t frameIndex = this->pointers.renderer->frameIndex;
     D3D12_RESOURCE_STATES initState;
     if (mesh::ib == bufType) {
         initState = D3D12_RESOURCE_STATE_INDEX_BUFFER;
@@ -135,7 +135,7 @@ d3d12MeshFactory::createBuffers(mesh& msh, int bufType, Usage::Code usage, const
     }
 
     msh.buffers[bufType].numSlots = Usage::Immutable == usage ? 1 : d3d12Mesh::NumSlots;
-    for (uint8 slotIndex = 0; slotIndex < msh.buffers[bufType].numSlots; slotIndex++) {
+    for (uint8_t slotIndex = 0; slotIndex < msh.buffers[bufType].numSlots; slotIndex++) {
         if (Usage::Stream == usage) {
             // Stream usage means the buffer is updated every frame, only
             // allocate an upload buffer, which the GPU directly renders from
@@ -160,7 +160,7 @@ d3d12MeshFactory::createBuffers(mesh& msh, int bufType, Usage::Code usage, const
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d12MeshFactory::create(mesh& msh, const void* data, int32 size) {
+d3d12MeshFactory::create(mesh& msh, const void* data, int size) {
     // generic buffer creation helper method to create vertex and/or 
     // index buffers with or without data for all usages
     o_assert_dbg(nullptr == msh.buffers[mesh::vb].d3d12RenderBuffers[0]);
@@ -175,11 +175,11 @@ d3d12MeshFactory::create(mesh& msh, const void* data, int32 size) {
 
     // create optional vertex buffer
     if (msh.Setup.NumVertices > 0) {
-        const int32 vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
-        const uint8* vertices = nullptr;
+        const int vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
+        const uint8_t* vertices = nullptr;
         if (InvalidIndex != msh.Setup.DataVertexOffset) {
             o_assert_dbg(data && (size > 0));
-            const uint8* ptr = (const uint8*) data;
+            const uint8_t* ptr = (const uint8_t*) data;
             vertices = ptr + msh.Setup.DataVertexOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
@@ -188,11 +188,11 @@ d3d12MeshFactory::create(mesh& msh, const void* data, int32 size) {
 
     // create optional index buffer
     if (ibAttrs.Type != IndexType::None) {
-        const int32 ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
-        const uint8* indices = nullptr;
+        const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
+        const uint8_t* indices = nullptr;
         if (InvalidIndex != msh.Setup.DataIndexOffset) {
             o_assert_dbg(data && (size > 0));
-            const uint8* ptr = (const uint8*)data;
+            const uint8_t* ptr = (const uint8_t*)data;
             indices = ptr + msh.Setup.DataIndexOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
@@ -226,9 +226,9 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     msh.primGroups[0] = PrimitiveGroup(0, 6);
 
     // vertices
-    const float32 topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
-    const float32 botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
-    float32 vertices[] = {
+    const float topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
+    const float botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
+    float vertices[] = {
         -1.0f, +1.0f, 0.0f, 0.0f, topV,     // top-left corner
         +1.0f, +1.0f, 0.0f, 1.0f, topV,     // top-right corner
         +1.0f, -1.0f, 0.0f, 1.0f, botV,     // bottom-right corner
@@ -236,7 +236,7 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     };
 
     // indices
-    uint16 indices[] = {
+    uint16_t indices[] = {
         0, 2, 1,            // topleft -> bottomright -> topright
         0, 3, 2,            // topleft -> bottomleft -> bottomright
     };
@@ -246,7 +246,7 @@ d3d12MeshFactory::createFullscreenQuad(mesh& msh) {
     o_assert_dbg(d3d12Device);
     d3d12ResAllocator& resAllocator = this->pointers.renderer->resAllocator;
     ID3D12GraphicsCommandList* cmdList = this->pointers.renderer->curCommandList();
-    const uint64 frameIndex = this->pointers.renderer->frameIndex;
+    const uint64_t frameIndex = this->pointers.renderer->frameIndex;
 
     msh.buffers[mesh::vb].d3d12RenderBuffers[0] = resAllocator.AllocStaticBuffer(d3d12Device, cmdList, frameIndex, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, vertices, sizeof(vertices));
     o_assert_dbg(nullptr != msh.buffers[mesh::vb].d3d12RenderBuffers[0]);

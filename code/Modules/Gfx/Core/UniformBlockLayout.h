@@ -25,16 +25,16 @@ public:
         /// construct from name, type and number
         Component(const StringAtom& name, UniformType::Code type);
         /// construct from name, type and number of array entries
-        Component(const StringAtom& name, UniformType::Code type, int32 num);
+        Component(const StringAtom& name, UniformType::Code type, int num);
 
         /// return true if the component is valid
         bool IsValid() const;
         /// compute the byte size of the component
-        int32 ByteSize() const;
+        int ByteSize() const;
 
         StringAtom Name;        ///< the uniform binding name
         UniformType::Code Type; ///< data type of the uniform
-        int32 Num;              ///< >1 if a uniform array
+        int Num;              ///< >1 if a uniform array
     };
 
     /// constructor
@@ -46,28 +46,28 @@ public:
     bool Empty() const;
 
     /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
-    int64 TypeHash;
+    int64_t TypeHash;
 
     /// add a uniform component to the layout
     UniformBlockLayout& Add(const Component& comp);
     /// add a scalar uniform component to the layout
     UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type);
     /// add an array uniform component to the layout
-    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int32 numElements);
+    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int numElements);
     /// get number of components in the layout
-    int32 NumComponents() const;
+    int NumComponents() const;
     /// get component at index
-    const Component& ComponentAt(int32 componentIndex) const;
+    const Component& ComponentAt(int componentIndex) const;
     /// get the overall byte size of the uniform layout
-    int32 ByteSize() const;
+    int ByteSize() const;
     /// get byte offset of a component
-    int32 ComponentByteOffset(int32 componentIndex) const;
+    int ComponentByteOffset(int componentIndex) const;
 
 private:
-    int32 numComps;
-    int32 byteSize;
+    int numComps;
+    int byteSize;
     StaticArray<Component, GfxConfig::MaxNumUniformBlockLayoutComponents> comps;
-    StaticArray<int32, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
+    StaticArray<int, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
 };
 
 //------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ Num(1) {
 
 //------------------------------------------------------------------------------
 inline
-UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type, int32 num) :
+UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type, int num) :
 Name(name),
 Type(type),
 Num(num) {
@@ -105,7 +105,7 @@ UniformBlockLayout::Component::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 UniformBlockLayout::Component::ByteSize() const {
     return UniformType::ByteSize(this->Type, this->Num);
 }
@@ -117,26 +117,26 @@ UniformBlockLayout::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 UniformBlockLayout::NumComponents() const {
     return this->numComps;
 }
 
 //------------------------------------------------------------------------------
 inline const UniformBlockLayout::Component&
-UniformBlockLayout::ComponentAt(int32 componentIndex) const {
+UniformBlockLayout::ComponentAt(int componentIndex) const {
     return this->comps[componentIndex];
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 UniformBlockLayout::ByteSize() const {
     return this->byteSize;
 }
 
 //------------------------------------------------------------------------------
-inline int32
-UniformBlockLayout::ComponentByteOffset(int32 componentIndex) const {
+inline int
+UniformBlockLayout::ComponentByteOffset(int componentIndex) const {
     return this->byteOffsets[componentIndex];
 }
 

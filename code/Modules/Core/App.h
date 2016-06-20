@@ -54,7 +54,7 @@ public:
     /// constructor
     App();
     /// destructor
-    ~App();
+    virtual ~App();
     
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();

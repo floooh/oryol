@@ -17,11 +17,11 @@ namespace Oryol {
 class Id {
 public:
     /// unique-stamp type (sizeof all types must remain 64 bit)
-    typedef uint32 UniqueStampT;
+    typedef uint32_t UniqueStampT;
     /// slot-index type
-    typedef uint16 SlotIndexT;
+    typedef uint16_t SlotIndexT;
     /// resource type type
-    typedef uint16 TypeT;
+    typedef uint16_t TypeT;
 
     /// invalid unique stamp constant
     static const UniqueStampT InvalidUniqueStamp = 0xFFFFFFFF;
@@ -62,12 +62,12 @@ public:
             TypeT Type;
             UniqueStampT UniqueStamp;
         };
-        uint64 Value;
+        uint64_t Value;
     };
     
 private:
     /// invalid id value
-    static const uint64 invalidId = 0xFFFFFFFFFFFFFFFF;
+    static const uint64_t invalidId = 0xFFFFFFFFFFFFFFFF;
 };
 
 //------------------------------------------------------------------------------

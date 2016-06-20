@@ -14,31 +14,28 @@ class TestFS_A : public FileSystem {
     OryolClassDecl(TestFS_A);
     OryolClassCreator(TestFS_A);
 public:
-    virtual int32 GetType() const {
+    virtual int GetType() const {
         return 0;
     };
 };
-OryolClassImpl(TestFS_A);
 
 class TestFS_B : public TestFS_A {
     OryolClassDecl(TestFS_B);
     OryolClassCreator(TestFS_B);
 public:
-    virtual int32 GetType() const override {
+    virtual int GetType() const override {
         return 1;
     };
 };
-OryolClassImpl(TestFS_B);
 
 class TestFS_C : public TestFS_A {
     OryolClassDecl(TestFS_C);
     OryolClassCreator(TestFS_C);
 public:
-    virtual int32 GetType() const override {
+    virtual int GetType() const override {
         return 2;
     };
 };
-OryolClassImpl(TestFS_C);
 
 TEST(schemeRegistryTest) {
     

@@ -15,16 +15,16 @@ public:
     union {
         #pragma pack(push,1)
         struct {
-            uint16 CullFaceEnabled : 1;
-            uint16 DepthOffsetEnabled : 1;
-            uint16 ScissorTestEnabled : 1;
-            uint16 DitherEnabled : 1;
-            uint16 AlphaToCoverageEnabled : 1;
+            uint16_t CullFaceEnabled : 1;
+            uint16_t DepthOffsetEnabled : 1;
+            uint16_t ScissorTestEnabled : 1;
+            uint16_t DitherEnabled : 1;
+            uint16_t AlphaToCoverageEnabled : 1;
             Face::Code CullFace : 3;
-            uint16 SampleCount : 4;
+            uint16_t SampleCount : 4;
         };
         #pragma pack(pop)
-        uint16 Hash;
+        uint16_t Hash;
     };
 
     /// constructor

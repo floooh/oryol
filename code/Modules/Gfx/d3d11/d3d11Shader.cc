@@ -35,9 +35,9 @@ d3d11Shader::Clear() {
 
 //------------------------------------------------------------------------------
 void
-d3d11Shader::addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb) {
+d3d11Shader::addUniformBlockEntry(ShaderStage::Code bindStage, int bindSlot, ID3D11Buffer* cb) {
     o_assert_dbg(cb);
-    const int32 cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
+    const int cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
     this->constantBuffers[cbIndex] = cb;
 }
 

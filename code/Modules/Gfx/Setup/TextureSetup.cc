@@ -50,7 +50,7 @@ TextureSetup::FromFile(const class Locator& loc, const TextureSetup& blueprint, 
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::RenderTarget(int32 w, int32 h) {
+TextureSetup::RenderTarget(int w, int h) {
     o_assert(w > 0);
     o_assert(h > 0);
 
@@ -65,7 +65,7 @@ TextureSetup::RenderTarget(int32 w, int32 h) {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+TextureSetup::FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint) {
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
@@ -85,7 +85,7 @@ TextureSetup::FromPixelData(int32 w, int32 h, int32 numMipMaps, TextureType::Cod
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::Empty(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
+TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
     o_assert(w > 0);
     o_assert(h > 0);
     o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
@@ -106,7 +106,7 @@ TextureSetup::Empty(int32 w, int32 h, int32 numMipMaps, TextureType::Code type, 
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::RelSizeRenderTarget(float32 relWidth, float32 relHeight) {
+TextureSetup::RelSizeRenderTarget(float relWidth, float relHeight) {
     o_assert(relWidth > 0.0f);
     o_assert(relHeight > 0.0f);
 

@@ -61,7 +61,7 @@ StringAtom::setupFromCString(const char* str) {
         stringAtomTable* table = stringAtomTable::threadLocalPtr();
         
         // get hash of string
-        int32 hash = stringAtomTable::HashForString(str);
+        int32_t hash = stringAtomTable::HashForString(str);
         
         // check if string already exists in table
         this->data = table->Find(hash, str);

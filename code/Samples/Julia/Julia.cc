@@ -66,8 +66,8 @@ JuliaApp::OnInit() {
     this->drawState.Pipeline = Gfx::CreateResource(ps);
     this->fsParams.NumColors = 128.0;
 
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
 

@@ -41,10 +41,10 @@ raspiInputMgr::setup(const InputSetup& setup) {
     inputMgrBase::setup(setup);
     if (this->openDevices()) {
         if (-1 != this->kbdFd) {
-            this->Keyboard.Attached = true;
+            this->keyboard.attached = true;
         }
         if (-1 != this->mouseFd) {
-            this->Mouse.Attached = true;
+            this->mouse.attached = true;
         }
     }
     this->runLoopId = Core::PreRunLoop()->Add([this]() { this->pollInput(); });
@@ -163,9 +163,9 @@ raspiInputMgr::onKey(unsigned short code, int val) {
     const Key::Code key = this->mapKey(code);
     if (Key::InvalidKey != key) {
         switch (val) {
-            case 0: this->Keyboard.onKeyUp(key); break;
-            case 1: this->Keyboard.onKeyDown(key); break;
-            case 2: this->Keyboard.onKeyRepeat(key); break;
+            case 0: this->keyboard.onKeyUp(key); break;
+            case 1: this->keyboard.onKeyDown(key); break;
+            case 2: this->keyboard.onKeyRepeat(key); break;
             default: /* can't happen */ break;
         }
     }
@@ -179,7 +179,7 @@ raspiInputMgr::onKey(unsigned short code, int val) {
     if ((val == 1) || (val == 2)) {
         wchar_t wchr = this->mapChar(code, this->leftShift|this->rightShift);
         if (0 != wchr) {
-            this->Keyboard.onChar(wchr);
+            this->keyboard.onChar(wchr);
         }
     }
 }
@@ -187,19 +187,19 @@ raspiInputMgr::onKey(unsigned short code, int val) {
 //------------------------------------------------------------------------------
 void
 raspiInputMgr::onMouseButton(unsigned short code, int val) {
-    Mouse::Button btn;
+    MouseButton::Code btn;
     switch (code) {
-        case BTN_LEFT:      btn = Mouse::LMB; break;
-        case BTN_RIGHT:     btn = Mouse::RMB; break;
-        case BTN_MIDDLE:    btn = Mouse::MMB; break;
-        default:            btn = Mouse::InvalidButton; break;
+        case BTN_LEFT:      btn = MouseButton::Left; break;
+        case BTN_RIGHT:     btn = MouseButton::Right; break;
+        case BTN_MIDDLE:    btn = MouseButton::Middle; break;
+        default:            btn = MouseButton::InvalidMouseButton; break;
     }
-    if (Mouse::InvalidButton != btn) {
+    if (MouseButton::InvalidMouseButton != btn) {
         if (1 == val) {
-            this->Mouse.onButtonDown(btn);
+            this->mouse.onButtonDown(btn);
         }
         else if (0 == val) {
-            this->Mouse.onButtonUp(btn);
+            this->mouse.onButtonUp(btn);
         }
     }
 }
@@ -229,12 +229,12 @@ raspiInputMgr::onMouseMove(unsigned short code, int val) {
         }
         const glm::vec2 pos((float32)(this->curMouseX / mouseSensitivity),
                             (float32)(this->curMouseY / mouseSensitivity));
-        this->Mouse.onPosMov(pos);
+        this->mouse.onPosMov(pos);
     }
     else if (code == 8) {
         // mouse wheel, val is +1 or -1
         const glm::vec2 scroll(0.0f, (float32)val);
-        this->Mouse.onScroll(scroll);
+        this->mouse.onScroll(scroll);
     }
 }
 

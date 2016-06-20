@@ -7,8 +7,17 @@
     NOTE: keep as many headers out of here as possible, at least
     on compilers which don't have pre-compiled-headers turned on.
 */
-#ifdef __STRICT_ANSI__
-#undef __STRICT_ANSI__
+
+// this is a workaround when using clang with the GNU std lib,
+// this fails without __STRICT_ANSI__ because clang doesn't
+// know the __float128 type
+#if __clang__ && ORYOL_LINUX && !defined(__STRICT_ANSI__)
+#define __STRICT_ANSI__
 #endif
 
+// and another workaround for PNaCl which requires __STRICT_ANSI__
+// to be undefined :/
+#if ORYOL_PNACL && defined(__STRICT_ANSI__)
+#undef __STRICT_ANSI__
+#endif
 #include <cstddef>

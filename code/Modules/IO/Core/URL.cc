@@ -175,17 +175,17 @@ URL::crack(String urlString) {
         }
         
         // extract host fields
-        int32 leftStartIndex = this->indices[schemeEnd] + 3;
-        int32 leftEndIndex = builder.FindFirstOf(leftStartIndex, EndOfString, "/");
+        int leftStartIndex = this->indices[schemeEnd] + 3;
+        int leftEndIndex = builder.FindFirstOf(leftStartIndex, EndOfString, "/");
         if (EndOfString == leftEndIndex) {
             leftEndIndex = builder.Length();
         }
         if (leftStartIndex != leftEndIndex) {
             // extract user and password
-            int32 userAndPwdEndIndex = builder.FindFirstOf(leftStartIndex, leftEndIndex, "@");
+            int userAndPwdEndIndex = builder.FindFirstOf(leftStartIndex, leftEndIndex, "@");
             if (EndOfString != userAndPwdEndIndex) {
                 // only user, or user:pwd?
-                int32 userEndIndex = builder.FindFirstOf(leftStartIndex, userAndPwdEndIndex, ":");
+                int userEndIndex = builder.FindFirstOf(leftStartIndex, userAndPwdEndIndex, ":");
                 if (EndOfString != userEndIndex) {
                     // user and password
                     this->indices[userStart] = leftStartIndex;
@@ -202,7 +202,7 @@ URL::crack(String urlString) {
             }
             
             // extract host and port
-            int32 hostEndIndex = builder.FindFirstOf(leftStartIndex, leftEndIndex, ":");
+            int hostEndIndex = builder.FindFirstOf(leftStartIndex, leftEndIndex, ":");
             if (EndOfString != hostEndIndex) {
                 // host and port
                 this->indices[hostStart] = leftStartIndex;
@@ -220,11 +220,11 @@ URL::crack(String urlString) {
         // is there any path component?
         if (leftEndIndex != builder.Length()) {
             // extract right-hand-side (path, fragment, query)
-            int32 rightStartIndex = leftEndIndex + 1;
-            int32 rightEndIndex = builder.Length();
+            int rightStartIndex = leftEndIndex + 1;
+            int rightEndIndex = builder.Length();
             
-            int32 pathStartIndex = rightStartIndex;
-            int32 pathEndIndex = builder.FindFirstOf(rightStartIndex, rightEndIndex, "#?");
+            int pathStartIndex = rightStartIndex;
+            int pathEndIndex = builder.FindFirstOf(rightStartIndex, rightEndIndex, "#?");
             if (EndOfString == pathEndIndex) {
                 pathEndIndex = rightEndIndex;
             }
@@ -235,8 +235,8 @@ URL::crack(String urlString) {
 
             // extract query
             if ((pathEndIndex != rightEndIndex) && (builder.At(pathEndIndex) == '?')) {
-                int32 queryStartIndex = pathEndIndex + 1;
-                int32 queryEndIndex = builder.FindFirstOf(queryStartIndex, rightEndIndex, "#");
+                int queryStartIndex = pathEndIndex + 1;
+                int queryEndIndex = builder.FindFirstOf(queryStartIndex, rightEndIndex, "#");
                 if (EndOfString == queryEndIndex) {
                     queryEndIndex = rightEndIndex;
                 }
@@ -249,8 +249,8 @@ URL::crack(String urlString) {
             
             // extract fragment
             if ((pathEndIndex != rightEndIndex) && (builder.At(pathEndIndex) == '#')) {
-                int32 fragStartIndex = pathEndIndex + 1;
-                int32 fragEndIndex = builder.FindFirstOf(fragStartIndex, rightEndIndex, "?");
+                int fragStartIndex = pathEndIndex + 1;
+                int fragEndIndex = builder.FindFirstOf(fragStartIndex, rightEndIndex, "?");
                 if (EndOfString == fragEndIndex) {
                     fragEndIndex = rightEndIndex;
                 }
@@ -427,11 +427,11 @@ URL::Query() const {
         Map<String, String> query;
         StringBuilder builder;
         builder.Set(this->content.AsCStr(), this->indices[queryStart], this->indices[queryEnd]);
-        int32 kvpStartIndex = 0;
-        int32 kvpEndIndex = 0;
+        int kvpStartIndex = 0;
+        int kvpEndIndex = 0;
         do {
             kvpEndIndex = builder.FindFirstOf(kvpStartIndex, EndOfString, "&");
-            int32 keyEndIndex = builder.FindFirstOf(kvpStartIndex, kvpEndIndex, "=");
+            int keyEndIndex = builder.FindFirstOf(kvpStartIndex, kvpEndIndex, "=");
             if (EndOfString != keyEndIndex) {
                 // key and value
                 String key(builder.GetSubString(kvpStartIndex, keyEndIndex));

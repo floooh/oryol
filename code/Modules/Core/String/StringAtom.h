@@ -73,7 +73,7 @@ public:
     /// return true if empty (contains no string, or empty string)
     bool Empty() const;
     /// get length
-    int32 Length() const;
+    int Length() const;
     /// get contained c-string
     const char* AsCStr() const;
     /// get String (slow because string object must be constructed)
@@ -207,7 +207,7 @@ StringAtom::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-inline int32
+inline int
 StringAtom::Length() const {
     if (nullptr != this->data) {
         return this->data->length;

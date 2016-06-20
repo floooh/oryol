@@ -10,9 +10,9 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 bool
-emscURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
-    if (baseURLLoader::doRequest(httpReq)) {
-        this->startRequest(httpReq);
+emscURLLoader::doRequest(const Ptr<IORead>& req) {
+    if (baseURLLoader::doRequest(req)) {
+        this->startRequest(req);
         return true;
     }
     else {
@@ -23,14 +23,11 @@ emscURLLoader::doRequest(const Ptr<HTTPProtocol::HTTPRequest>& httpReq) {
 
 //------------------------------------------------------------------------------
 void
-emscURLLoader::startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req) {
-    o_assert(req.isValid() && !req->Handled());
-
-    // currently only support GET
-    o_assert(HTTPMethod::Get == req->Method);
+emscURLLoader::startRequest(const Ptr<IORead>& req) {
+    o_assert(req.isValid() && !req->Handled);
 
     // bump the requests refcount and get a raw pointer
-    HTTPProtocol::HTTPRequest* reqPtr = req.get();
+    IORead* reqPtr = req.get();
     reqPtr->addRef();
 
     // start the asynchronous XHR
@@ -47,30 +44,11 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
     o_assert(0 != buffer);
     o_assert(size > 0);
 
-    // user data is a HTTPRequest ptr, put it back into a smart pointer
-    Ptr<HTTPProtocol::HTTPRequest> req = userData;
+    Ptr<IORead> req = userData;
     req->release();
-
-    // create a HTTPResponse and fill it out
-    Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
-    response->Status = IOStatus::OK;
-
-    // write response body
-    const Ptr<IOProtocol::Request>& ioReq = req->IoRequest;
-    response->Body.Add((const uint8*)buffer, size);
-
-    // set the response on the request, mark the request as handled
-    // also fill the embedded IORequest object
-    req->Response = response;
-    if (ioReq) {
-        const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->Response;
-        ioReq->Status = httpResponse->Status;
-        ioReq->Data = std::move(httpResponse->Body);
-        ioReq->Type = httpResponse->Type;
-        ioReq->ErrorDesc = httpResponse->ErrorDesc;
-        ioReq->SetHandled();
-    }
-    req->SetHandled();
+    req->Status = IOStatus::OK;
+    req->Data.Add((const uint8_t*)buffer, size);
+    req->Handled = true;
 }
 
 //------------------------------------------------------------------------------
@@ -79,23 +57,15 @@ emscURLLoader::onFailed(void* userData) {
     o_assert(0 != userData);
 
     // user data is a HTTPRequest ptr, put it back into a smart pointer
-    Ptr<HTTPProtocol::HTTPRequest> req = userData;
+    Ptr<IORead> req = userData;
     req->release();
     Log::Dbg("emscURLLoader::onFailed(url=%s)\n", req->Url.AsCStr());
 
     // hmm we don't know why it failed, so make something up, we should definitely
     // fix this somehow (looks like the wget2 functions also pass a HTTP status code)
     const IOStatus::Code ioStatus = IOStatus::NotFound;
-    Ptr<HTTPProtocol::HTTPResponse> response = HTTPProtocol::HTTPResponse::Create();
-    response->Status = ioStatus;
-    req->Response = response;
-    const Ptr<IOProtocol::Request>& ioReq = req->IoRequest;
-    if (ioReq) {
-        const Ptr<HTTPProtocol::HTTPResponse>& httpResponse = req->Response;
-        ioReq->Status = httpResponse->Status;
-        ioReq->SetHandled();
-    }
-    req->SetHandled();
+    req->Status = ioStatus;
+    req->Handled = true;
 }
 
 } // namespace _priv

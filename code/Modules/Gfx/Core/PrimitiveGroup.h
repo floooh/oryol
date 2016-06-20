@@ -15,8 +15,8 @@ namespace Oryol {
 
 class PrimitiveGroup {
 public:
-    int32 BaseElement;
-    int32 NumElements;
+    int BaseElement;
+    int NumElements;
 
     /// default constructor
     PrimitiveGroup() :
@@ -25,7 +25,7 @@ public:
         // empty
     }
     /// construct for indexed or non-indexed
-    PrimitiveGroup(int32 baseElement, int32 numElements) :
+    PrimitiveGroup(int baseElement, int numElements) :
         BaseElement(baseElement),
         NumElements(numElements) {
         // empty

@@ -225,7 +225,7 @@ d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+d3d11Renderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->d3d11DeviceContext);
 
     D3D11_VIEWPORT vp;
@@ -240,7 +240,7 @@ d3d11Renderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool o
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+d3d11Renderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->d3d11DeviceContext);
 
     D3D11_RECT rect;
@@ -376,7 +376,7 @@ d3d11Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int ubBindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(0 != layoutHash);
     if (nullptr == this->curPipeline) {
@@ -390,7 +390,7 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
     #if ORYOL_DEBUG
     // verify that the provided uniform block struct is type compatible
     // with the uniform block expected at the binding stage and slot
-    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
     #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
@@ -406,7 +406,7 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int32 ubBindSlot
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
+d3d11Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(this->valid);
     if (nullptr == this->curPipeline) {
@@ -472,7 +472,7 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::draw(int32 primGroupIndex) {
+d3d11Renderer::draw(int primGroupIndex) {
     o_assert_dbg(this->valid);
     if (nullptr == this->curPipeline) {
         return;
@@ -491,7 +491,7 @@ d3d11Renderer::draw(int32 primGroupIndex) {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_assert_dbg(this->valid);
     o_assert2_dbg(this->rtValid, "No render target set!");
     if (nullptr == this->curPipeline) {
@@ -510,7 +510,7 @@ d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
+d3d11Renderer::drawInstanced(int primGroupIndex, int numInstances) {
     o_assert_dbg(this->valid);
     if (nullptr == this->curPipeline) {
         return;
@@ -529,7 +529,7 @@ d3d11Renderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
+d3d11Renderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(msh->d3d11VertexBuffer);
@@ -550,7 +550,7 @@ d3d11Renderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+d3d11Renderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(msh->d3d11IndexBuffer);
@@ -586,11 +586,11 @@ d3d11Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttr
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
     
     D3D11_MAPPED_SUBRESOURCE mapped;
-    for (int32 mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
+    for (int mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
         o_assert_dbg(offsetsAndSizes.Sizes[0][mipIndex] > 0);
-        const int32 mipWidth = std::max(attrs.Width >> mipIndex, 1);
-        const int32 mipHeight = std::max(attrs.Height >> mipIndex, 1);
-        const int32 srcPitch = PixelFormat::RowPitch(attrs.ColorFormat, mipWidth);
+        const int mipWidth = std::max(attrs.Width >> mipIndex, 1);
+        const int mipHeight = std::max(attrs.Height >> mipIndex, 1);
+        const int srcPitch = PixelFormat::RowPitch(attrs.ColorFormat, mipWidth);
         HRESULT hr = this->d3d11DeviceContext->Map(
             tex->d3d11Texture2D,        // pResource
             mipIndex,                   // Subresource
@@ -598,17 +598,17 @@ d3d11Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttr
             0,                          // MapFlags
             &mapped);                   // pMappedResource
         o_assert_dbg(SUCCEEDED(hr));
-        o_assert_dbg(srcPitch <= (int32)mapped.RowPitch);
-        uint8* dstPtr = (uint8*)mapped.pData;
-        const uint8* srcPtr = ((const uint8*)data) + offsetsAndSizes.Offsets[0][mipIndex];
+        o_assert_dbg(srcPitch <= (int)mapped.RowPitch);
+        uint8_t* dstPtr = (uint8_t*)mapped.pData;
+        const uint8_t* srcPtr = ((const uint8_t*)data) + offsetsAndSizes.Offsets[0][mipIndex];
         if (srcPitch == mapped.RowPitch) {
-            const int32 mipSize = offsetsAndSizes.Sizes[0][mipIndex];
+            const int mipSize = offsetsAndSizes.Sizes[0][mipIndex];
             o_assert_dbg(mipSize == (srcPitch*mipHeight));
             std::memcpy(dstPtr, srcPtr, mipSize);
         }
         else {
             o_error("d3dRenderer::updateTexture(): srcPitch!=dstPitch, FIXME UNTESTED!\n");
-            for (int32 rowIndex = 0; rowIndex < mipHeight; rowIndex++) {
+            for (int rowIndex = 0; rowIndex < mipHeight; rowIndex++) {
                 std::memcpy(dstPtr, srcPtr, srcPitch);
                 dstPtr += mapped.RowPitch;
                 srcPtr += srcPitch;
@@ -620,7 +620,7 @@ d3d11Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttr
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::readPixels(void* buf, int32 bufNumBytes) {
+d3d11Renderer::readPixels(void* buf, int bufNumBytes) {
     o_error("d3d11Renderer::readPixels() NOT IMPLEMENTED!\n");
 }
 

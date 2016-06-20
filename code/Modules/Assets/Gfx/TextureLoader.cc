@@ -10,12 +10,16 @@
 
 namespace Oryol {
 
-OryolClassImpl(TextureLoader);
-
 //------------------------------------------------------------------------------
 TextureLoader::TextureLoader(const TextureSetup& setup_) :
 TextureLoaderBase(setup_) {
     // empty
+}
+
+//------------------------------------------------------------------------------
+TextureLoader::TextureLoader(const TextureSetup& setup_, LoadedFunc loadedFunc_) :
+TextureLoaderBase(setup_, loadedFunc_) {
+  // empty
 }
 
 //------------------------------------------------------------------------------
@@ -27,7 +31,7 @@ TextureLoader::~TextureLoader() {
 void
 TextureLoader::Cancel() {
     if (this->ioRequest) {
-        this->ioRequest->SetCancelled();
+        this->ioRequest->Cancelled = true;
         this->ioRequest = nullptr;
     }
 }
@@ -35,15 +39,8 @@ TextureLoader::Cancel() {
 //------------------------------------------------------------------------------
 Id
 TextureLoader::Start() {
-    
-    // prepare the Gfx resource
     this->resId = Gfx::resource().prepareAsync(this->setup);
-    
-    // fire IO request to start loading the texture data
-    this->ioRequest = IOProtocol::Read::Create();
-    this->ioRequest->Url = setup.Locator.Location();
-    IO::Put(this->ioRequest);
-    
+    this->ioRequest = IO::LoadFile(setup.Locator.Location());
     return this->resId;
 }
 
@@ -55,12 +52,12 @@ TextureLoader::Continue() {
     
     ResourceState::Code result = ResourceState::Pending;
     
-    if (this->ioRequest->Handled()) {
+    if (this->ioRequest->Handled) {
         if (IOStatus::OK == this->ioRequest->Status) {
             // yeah, IO is done, let gliml parse the texture data
             // and create the texture resource
-            const uint8* data = this->ioRequest->Data.Data();
-            const int32 numBytes = this->ioRequest->Data.Size();
+            const uint8_t* data = this->ioRequest->Data.Data();
+            const int numBytes = this->ioRequest->Data.Size();
             
             gliml::context ctx;
             ctx.enable_dxt(true);
@@ -68,6 +65,14 @@ TextureLoader::Continue() {
             ctx.enable_etc2(true);
             if (ctx.load(data, numBytes)) {
                 TextureSetup texSetup = this->buildSetup(this->setup, &ctx, data);
+
+                // call the Loaded callback if defined, this
+                // gives the app a chance to look at the
+                // setup object, and possibly modify it
+                if (this->onLoaded) {
+                  this->onLoaded(texSetup);
+                }
+
                 // NOTE: the prepared texture resource might have already been
                 // destroyed at this point, if this happens, initAsync will
                 // silently fail and return ResourceState::InvalidState
@@ -89,11 +94,11 @@ TextureLoader::Continue() {
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8* data) {
-    const int32 w = ctx->image_width(0, 0);
-    const int32 h = ctx->image_height(0, 0);
-    const int32 numFaces = ctx->num_faces();
-    const int32 numMips = ctx->num_mipmaps(0);
+TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8_t* data) {
+    const int w = ctx->image_width(0, 0);
+    const int h = ctx->image_height(0, 0);
+    const int numFaces = ctx->num_faces();
+    const int numMips = ctx->num_mipmaps(0);
     PixelFormat::Code pixelFormat = PixelFormat::InvalidPixelFormat;
     switch(ctx->image_internal_format()) {
         case GLIML_GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -171,10 +176,10 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
     
     // setup mipmap offsets
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx->num_mipmaps(0));
-    for (int32 faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-        for (int32 mipIndex = 0; mipIndex < numMips; mipIndex++) {
-            const uint8* cur = (const uint8*) ctx->image_data(faceIndex, mipIndex);
-            newSetup.ImageData.Offsets[faceIndex][mipIndex] = int32(cur - data);
+    for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+        for (int mipIndex = 0; mipIndex < numMips; mipIndex++) {
+            const uint8_t* cur = (const uint8_t*) ctx->image_data(faceIndex, mipIndex);
+            newSetup.ImageData.Offsets[faceIndex][mipIndex] = int(cur - data);
             newSetup.ImageData.Sizes[faceIndex][mipIndex] = ctx->image_size(faceIndex, mipIndex);
         }
     }

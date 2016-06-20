@@ -22,10 +22,10 @@ public:
     /// clear the object
     void Clear();
 
-    static const int32 NumSlots = GfxConfig::MtlMaxInflightFrames;
-    int32 updateFrameIndex;
-    uint8 numSlots;
-    uint8 activeSlot;
+    static const int NumSlots = GfxConfig::MtlMaxInflightFrames;
+    int updateFrameIndex;
+    uint8_t numSlots;
+    uint8_t activeSlot;
     StaticArray<ORYOL_OBJC_TYPED_ID(MTLTexture), NumSlots> mtlTextures;
 
     ORYOL_OBJC_TYPED_ID(MTLSamplerState) mtlSamplerState;

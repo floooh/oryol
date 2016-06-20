@@ -4,11 +4,7 @@
     @class Oryol::_priv::emscURLLoader
     @ingroup _priv
     @brief private: emscripten implementation of URL loader
-    @see URLLoader, HTTPClient
-
-    A emscURLLoader will process http requests sequentially. In order to
-    handle several requests in parallel, create and feed several
-    URLLoaders in parallel.
+    @see urlLoader
 */
 #include "HTTP/base/baseURLLoader.h"
 
@@ -18,16 +14,16 @@ namespace _priv {
 class emscURLLoader : public baseURLLoader {
 public:
     /// process one request
-    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    bool doRequest(const Ptr<IORead>& req);
 
 private:
     /// start the next, called from doWork
-    void startRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    void startRequest(const Ptr<IORead>& req);
     /// success callback
     static void onLoaded(void* userData, void* buffer, int size);
     /// failure callback
     static void onFailed(void* userData);
 };
-    
+
 } // namespace _priv 
 } // namespace Oryol

@@ -41,7 +41,7 @@ public:
     /// draw text (only adds to internal buffer)
     void printf(const char* text, std::va_list args);
     /// reposition the cursor
-    void cursorPos(uint8 x, uint8 y);
+    void cursorPos(uint8_t x, uint8_t y);
     /// change text color
     void textColor(const glm::vec4& color);
     /// draw the accumulated text
@@ -58,14 +58,14 @@ private:
     /// setup the text pipeline state object
     void  setupTextPipeline();
     /// convert the provides string object into vertices, and return number of vertices
-    int32 convertStringToVertices(const String& str);
+    int convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
-    int32 writeVertex(int32 vertexIndex, uint8 x, uint8 y, uint8 u, uint8 v, uint32 rgba);
+    int writeVertex(int vertexIndex, uint8_t x, uint8_t y, uint8_t u, uint8_t v, uint32_t rgba);
     
-    static const int32 MaxNumColumns = 120;
-    static const int32 MaxNumLines = 80;
-    static const int32 MaxNumChars = MaxNumColumns * MaxNumLines;
-    static const int32 MaxNumVertices = MaxNumChars * 6;
+    static const int MaxNumColumns = 120;
+    static const int MaxNumLines = 80;
+    static const int MaxNumChars = MaxNumColumns * MaxNumLines;
+    static const int MaxNumVertices = MaxNumChars * 6;
     
     glm::vec2 textScale;
     VertexLayout vertexLayout;
@@ -77,7 +77,7 @@ private:
     
     struct Vertex {
         float x, y, u, v;
-        uint32 color;
+        uint32_t color;
     };
     struct Vertex vertexData[MaxNumVertices];
 };

@@ -19,11 +19,11 @@ public:
         // default constructor
         Header() : table(0), hash(0), length(0), str(0) { };
         /// constructor
-        Header(const stringAtomTable* t, int32 hsh, int32 len, const char* s) : table(t), hash(hsh), length(len), str(s) { };
+        Header(const stringAtomTable* t, int32_t hsh, int len, const char* s) : table(t), hash(hsh), length(len), str(s) { };
     
         const stringAtomTable* table;
-        int32 hash;
-        int32 length;
+        int32_t hash;
+        int length;
         const char* str;
     };
 
@@ -31,15 +31,15 @@ public:
     ~stringAtomBuffer();
     
     /// add a new string to the buffer, return pointer to start of header
-    const Header* AddString(stringAtomTable* table, int32 hash, const char* str);
+    const Header* AddString(stringAtomTable* table, int32_t hash, const char* str);
     
 private:
     /// allocate a new chunk
     void allocChunk();
 
-    static const int32 chunkSize = (1<<14);    // careful with this: each thread has its own stringbuffer!
-    Array<int8*> chunks;
-    int8* curPointer = 0;        // this is always aligned to min(sizeof(header), ORYOL_MAX_PLATFORM_ALIGN)
+    static const int chunkSize = (1<<14);    // careful with this: each thread has its own stringbuffer!
+    Array<int8_t*> chunks;
+    int8_t* curPointer = 0;        // this is always aligned to min(sizeof(header), ORYOL_MAX_PLATFORM_ALIGN)
 };
     
 } // namespace Oryol

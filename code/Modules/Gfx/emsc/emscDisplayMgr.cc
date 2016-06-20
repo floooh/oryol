@@ -11,12 +11,14 @@
 namespace Oryol {
 namespace _priv {
 
+emscDisplayMgr* emscDisplayMgr::self = nullptr;
+
 //------------------------------------------------------------------------------
 emscDisplayMgr::emscDisplayMgr() :
 storedCanvasWidth(0),
 storedCanvasHeight(0),
 ctx(0) {
-    // empty
+    self = this;
 }
 
 //------------------------------------------------------------------------------
@@ -24,6 +26,7 @@ emscDisplayMgr::~emscDisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
     }
+    self = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -47,11 +50,6 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
     o_assert2(this->ctx > 0, "Failed to create WebGL context");
     emscripten_webgl_make_context_current(this->ctx);
-
-    EMSCRIPTEN_RESULT res = emscripten_set_fullscreenchange_callback(0, this, 1, emscFullscreenChanged);
-    if (EMSCRIPTEN_RESULT_SUCCESS != res) {
-        Log::Warn("emscripten_set_fullscreenchange_callback failed!\n");
-    }
 
     glInfo::Setup();
     glExt::Setup();
@@ -80,30 +78,44 @@ emscDisplayMgr::glBindDefaultFramebuffer() {
 
 //------------------------------------------------------------------------------
 EM_BOOL
-emscDisplayMgr::emscFullscreenChanged(int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData) {
-    emscDisplayMgr* self = (emscDisplayMgr*) userData;
-    o_assert(nullptr != self);
-
-    int newWidth, newHeight;
-    if (e->isFullscreen) {
-        // switch to fullscreen
-        newWidth = e->screenWidth;
-        newHeight = e->screenHeight;
-        self->storedCanvasWidth = self->displayAttrs.FramebufferWidth;
-        self->storedCanvasHeight = self->displayAttrs.FramebufferHeight;
-    }
-    else {
-        // switch back from fullscreen
-        newWidth = self->storedCanvasWidth;
-        newHeight = self->storedCanvasHeight;
-    }
-    emscripten_set_canvas_size(newWidth, newHeight);
-    self->displayAttrs.FramebufferWidth = newWidth;
+emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void* userData) {
+    int newWidth, newHeight, isFullscreen;
+    emscripten_get_canvas_size(&newWidth, &newHeight, &isFullscreen);
+    self->displayAttrs.FramebufferWidth = newWidth; 
     self->displayAttrs.FramebufferHeight = newHeight;
-    Log::Info("emscFullscreenChanged: new canvas size (w=%d, h=%d)\n", newWidth, newHeight);
-
     return true;
 }
 
+//------------------------------------------------------------------------------
+extern "C" {
+
+// this function can be called from Javascript to enter 'real' fullscreen mode
+void enter_fullscreen() {
+    EmscriptenFullscreenStrategy fsStrategy = { };
+    fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
+    fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+    fsStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST;
+    fsStrategy.canvasResizedCallback = emscDisplayMgr::emscCanvasSizeChanged;
+    fsStrategy.canvasResizedCallbackUserData = nullptr;    
+    EMSCRIPTEN_RESULT res;
+    res = emscripten_request_fullscreen_strategy(nullptr, false, &fsStrategy);
+}
+
+// this function can be called from Javascript to enter 'soft' fullscreen mode
+// NOTE: there's currently no programmatical way to leave this 
+// soft fullscreen mode in Oryol (would need a separate Gfx call)
+void enter_soft_fullscreen() {
+    EmscriptenFullscreenStrategy fsStrategy = { };
+    fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
+    fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+    fsStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST;
+    fsStrategy.canvasResizedCallback = emscDisplayMgr::emscCanvasSizeChanged;
+    fsStrategy.canvasResizedCallbackUserData = nullptr;    
+    EMSCRIPTEN_RESULT res;
+    res = emscripten_enter_soft_fullscreen(nullptr, &fsStrategy);
+}
+
+} // extern "C"
 } // namespace _priv
 } // namespace Oryol
+

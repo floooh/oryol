@@ -37,9 +37,9 @@ public:
     /// add a logger object
     static void AddLogger(const Ptr<Logger>& p);
     /// get number of loggers
-    static int32 GetNumLoggers();
+    static int GetNumLoggers();
     /// get logger at index
-    static Ptr<Logger> GetLogger(int32 index);
+    static Ptr<Logger> GetLogger(int index);
     
     /// set current log level
     static void SetLogLevel(Level l);
@@ -47,14 +47,22 @@ public:
     static Level GetLogLevel();
     /// print a debug message
     static void Dbg(const char* msg, ...) __attribute__((format(printf, 1, 2)));
+    /// print a debug message (with va_list)
+    static void VDbg(const char* msg, va_list args);
     /// print an info message
     static void Info(const char* msg, ...) __attribute__((format(printf, 1, 2)));
+    /// print an info message (with va_list)
+    static void VInfo(const char* msg, va_list args);
     /// print a warning
     static void Warn(const char* msg, ...) __attribute__((format(printf, 1, 2)));
+    /// print a warning (with va_list)
+    static void VWarn(const char* msg, va_list args);
     /// print an error (use o_error() macro to also abort the program)
     static void Error(const char* msg, ...) __attribute__((format(printf, 1, 2)));
+    /// print an error (with va_list)
+    static void VError(const char* msg, va_list args);
     /// print an assert message
-    static void AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func);
+    static void AssertMsg(const char* cond, const char* msg, const char* file, int line, const char* func);
 
 private:
     /// generic vprint-style method

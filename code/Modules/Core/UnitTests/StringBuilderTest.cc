@@ -133,7 +133,7 @@ TEST(StringBuilderTest) {
     // test tokenize
     Array<String> tokens;
     builder.Set("One Two Three");
-    int32 numTokens = builder.Tokenize(" ", tokens);
+    int numTokens = builder.Tokenize(" ", tokens);
     CHECK(builder.Length() == 0);
     CHECK(numTokens == tokens.Size());
     CHECK(tokens.Size() == 3);

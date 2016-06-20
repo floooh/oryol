@@ -32,7 +32,7 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
-    ResourceState::Code SetupResource(texture& tex, const void* data, int32 size);
+    ResourceState::Code SetupResource(texture& tex, const void* data, int size);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -42,7 +42,7 @@ private:
     /// create a render-target texture
     ResourceState::Code createRenderTarget(texture& tex);
     /// create a texture from pixel-data in memory
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    ResourceState::Code createFromPixelData(texture& tex, const void* data, int size);
     /// create an empty texture
     ResourceState::Code createEmptyTexture(texture& tex);
     /// create a sampler state object and set in texture object
@@ -56,9 +56,9 @@ private:
     // cache to re-use existing sampler state objects
     struct SamplerCacheItem {
         ORYOL_OBJC_TYPED_ID(MTLSamplerState) mtlSamplerState;
-        int32 useCount;
+        int useCount;
     };
-    Map<uint32, SamplerCacheItem> samplerCache;
+    Map<uint32_t, SamplerCacheItem> samplerCache;
 };
     
 } // namespace _priv

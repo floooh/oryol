@@ -10,7 +10,6 @@
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/KeyValuePair.h"
-#include "IO/IOProtocol.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
 #include "Gfx/Setup/GfxSetup.h"
@@ -42,11 +41,11 @@ public:
     /// create a resource object
     template<class SETUP> Id Create(const SETUP& setup);
     /// create a resource object with data
-    template<class SETUP> Id Create(const SETUP& setup, const void* data, int32 size);
+    template<class SETUP> Id Create(const SETUP& setup, const void* data, int size);
     /// asynchronously load resource object
     Id Load(const Ptr<ResourceLoader>& loader);
     /// query number of free slots for resource type
-    int32 QueryFreeSlots(GfxResourceType::Code resourceType) const;
+    int QueryFreeSlots(GfxResourceType::Code resourceType) const;
     /// query resource info (fast)
     ResourceInfo QueryResourceInfo(const Id& id) const;
     /// query resource pool info (slow)
@@ -57,7 +56,7 @@ public:
     /// prepare async creation (usually called at start of async Load)
     template<class SETUP> Id prepareAsync(const SETUP& setup);
     /// setup async resource (usually called during async Load)
-    template<class SETUP> ResourceState::Code initAsync(const Id& resId, const SETUP& setup, const void* data, int32 size);
+    template<class SETUP> ResourceState::Code initAsync(const Id& resId, const SETUP& setup, const void* data, int size);
     /// notify resource container that async creation had failed
     ResourceState::Code failedAsync(const Id& resId);
 

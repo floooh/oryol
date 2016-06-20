@@ -33,8 +33,8 @@ void
 osxInputMgr::setup(const InputSetup& setup) {
     
     inputMgrBase::setup(setup);
-    this->Keyboard.Attached = true;
-    this->Mouse.Attached = true;
+    this->keyboard.attached = true;
+    this->mouse.attached = true;
     
     this->setupKeyTable();
     this->setupCallbacks();
@@ -85,13 +85,13 @@ osxInputMgr::keyCallback(int osxKey, int /*scancode*/, int action, int /*mods*/)
         Key::Code key = self->mapKey(osxKey);
         if (Key::InvalidKey != key) {
             if (action == ORYOL_OSXBRIDGE_PRESS) {
-                self->Keyboard.onKeyDown(key);
+                self->keyboard.onKeyDown(key);
             }
             else if (action == ORYOL_OSXBRIDGE_RELEASE) {
-                self->Keyboard.onKeyUp(key);
+                self->keyboard.onKeyUp(key);
             }
             else {
-                self->Keyboard.onKeyRepeat(key);
+                self->keyboard.onKeyRepeat(key);
             }
         }
     }
@@ -101,7 +101,7 @@ osxInputMgr::keyCallback(int osxKey, int /*scancode*/, int action, int /*mods*/)
 void
 osxInputMgr::charCallback(unsigned int unicode) {
     if (nullptr != self) {
-        self->Keyboard.onChar((wchar_t)unicode);
+        self->keyboard.onChar((wchar_t)unicode);
     }
 }
 
@@ -109,25 +109,25 @@ osxInputMgr::charCallback(unsigned int unicode) {
 void
 osxInputMgr::mouseButtonCallback(int button, int action, int mods) {
     if (nullptr != self) {
-        Mouse::Button btn;
+        MouseButton::Code btn;
         switch (button) {
-            case ORYOL_OSXBRIDGE_MOUSE_BUTTON_LEFT:     btn = Mouse::LMB; break;
-            case ORYOL_OSXBRIDGE_MOUSE_BUTTON_RIGHT:    btn = Mouse::RMB; break;
-            case ORYOL_OSXBRIDGE_MOUSE_BUTTON_MIDDLE:   btn = Mouse::MMB; break;
-            default:                                    btn = Mouse::InvalidButton; break;
+            case ORYOL_OSXBRIDGE_MOUSE_BUTTON_LEFT:     btn = MouseButton::Left; break;
+            case ORYOL_OSXBRIDGE_MOUSE_BUTTON_RIGHT:    btn = MouseButton::Right; break;
+            case ORYOL_OSXBRIDGE_MOUSE_BUTTON_MIDDLE:   btn = MouseButton::Middle; break;
+            default:                                    btn = MouseButton::InvalidMouseButton; break;
         }
-        if (btn != Mouse::InvalidButton) {
-            Mouse::PointerLockMode lockMode = Mouse::PointerLockModeDontCare;
+        if (btn != MouseButton::InvalidMouseButton) {
+            PointerLockMode::Code lockMode = PointerLockMode::DontCare;
             if (action == ORYOL_OSXBRIDGE_PRESS) {
-                lockMode = self->Mouse.onButtonDown(btn);
+                lockMode = self->mouse.onButtonDown(btn);
             }
             else if (action == ORYOL_OSXBRIDGE_RELEASE) {
-                lockMode = self->Mouse.onButtonUp(btn);
+                lockMode = self->mouse.onButtonUp(btn);
             }
-            if (Mouse::PointerLockModeEnable == lockMode) {
+            if (PointerLockMode::Enable == lockMode) {
                 osxBridge::ptr()->setCursorMode(ORYOL_OSXBRIDGE_CURSOR_DISABLED);
             }
-            else if (Mouse::PointerLockModeDisable == lockMode) {
+            else if (PointerLockMode::Disable == lockMode) {
                 osxBridge::ptr()->setCursorMode(ORYOL_OSXBRIDGE_CURSOR_NORMAL);
             }
         }
@@ -136,19 +136,19 @@ osxInputMgr::mouseButtonCallback(int button, int action, int mods) {
 
 //------------------------------------------------------------------------------
 void
-osxInputMgr::cursorPosCallback(float64 x, float64 y) {
+osxInputMgr::cursorPosCallback(double x, double y) {
     if (nullptr != self) {
-        const glm::vec2 pos((float32)x, (float32)y);
-        self->Mouse.onPosMov(pos);
+        const glm::vec2 pos((float)x, (float)y);
+        self->mouse.onPosMov(pos);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-osxInputMgr::scrollCallback(float64 xOffset, float64 yOffset) {
+osxInputMgr::scrollCallback(double xOffset, double yOffset) {
     if (nullptr != self) {
-        const glm::vec2 scroll((float32)xOffset, (float32)yOffset);
-        self->Mouse.onScroll(scroll);
+        const glm::vec2 scroll((float)xOffset, (float)yOffset);
+        self->mouse.onScroll(scroll);
     }
 }
 
@@ -173,7 +173,7 @@ osxInputMgr::mapKey(int osxBridgeKey) const {
 void
 osxInputMgr::setupKeyTable() {
 
-    for (int32 i = 0; i <= ORYOL_OSXBRIDGE_KEY_LAST; i++) {
+    for (int i = 0; i <= ORYOL_OSXBRIDGE_KEY_LAST; i++) {
         keyTable[i] = Key::InvalidKey;
     }
     

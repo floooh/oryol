@@ -29,19 +29,19 @@ public:
     /// the D3D1 pixel shader
     ID3D11PixelShader* d3d11PixelShader;
     /// add a uniform block entry
-    void addUniformBlockEntry(ShaderStage::Code bindStage, int32 bindSlot, ID3D11Buffer* cb);
+    void addUniformBlockEntry(ShaderStage::Code bindStage, int bindSlot, ID3D11Buffer* cb);
     /// get uniform block constant buffer at bind stage and slot (can return nullptr)
-    ID3D11Buffer* getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const;
+    ID3D11Buffer* getConstantBuffer(ShaderStage::Code bindStage, int bindSlot) const;
 
 private:
-    static const int32 NumConstantBuffers = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
+    static const int NumConstantBuffers = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
     StaticArray<ID3D11Buffer*, NumConstantBuffers> constantBuffers;
 };
 
 //------------------------------------------------------------------------------
 inline ID3D11Buffer*
-d3d11Shader::getConstantBuffer(ShaderStage::Code bindStage, int32 bindSlot) const {
-    const int32 cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
+d3d11Shader::getConstantBuffer(ShaderStage::Code bindStage, int bindSlot) const {
+    const int cbIndex = (GfxConfig::MaxNumUniformBlocksPerStage * bindStage) + bindSlot;
     return this->constantBuffers[cbIndex];
 }
 

@@ -17,7 +17,7 @@
 #include <Windows.h>
 #endif
 #if ORYOL_ANDROID
-#include "android_native/android_native_app_glue.h"
+#include "Core/android/android_native_app_glue.h"
 #endif
 #if ORYOL_PNACL
 #include "Core/pnacl/pnaclModule.h"

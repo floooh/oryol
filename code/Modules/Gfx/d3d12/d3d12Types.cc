@@ -99,9 +99,9 @@ d3d12Types::asBlendOp(BlendOperation::Code op) {
 }
 
 //------------------------------------------------------------------------------
-uint8
+uint8_t
 d3d12Types::asColorWriteMask(PixelChannel::Mask mask) {
-    uint8 res = 0;
+    uint8_t res = 0;
     if (mask & PixelChannel::Red)   res |= D3D12_COLOR_WRITE_ENABLE_RED;
     if (mask & PixelChannel::Green) res |= D3D12_COLOR_WRITE_ENABLE_GREEN;
     if (mask & PixelChannel::Blue)  res |= D3D12_COLOR_WRITE_ENABLE_BLUE;
@@ -225,7 +225,7 @@ d3d12Types::asSemanticName(VertexAttr::Code attr) {
 }
 
 //------------------------------------------------------------------------------
-uint32
+uint32_t
 d3d12Types::asSemanticIndex(VertexAttr::Code attr) {
     switch (attr) {
         case VertexAttr::TexCoord1:

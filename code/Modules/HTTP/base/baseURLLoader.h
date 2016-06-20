@@ -6,9 +6,7 @@
     @brief private: base class for platform specific URL loaders
     @see urlLoader, HTTPClient
 */
-#include "Core/Types.h"
-#include "Core/Containers/Queue.h"
-#include "HTTP/HTTPProtocol.h"
+#include "IO/FS/ioRequests.h"
 
 namespace Oryol {
 namespace _priv {
@@ -16,7 +14,7 @@ namespace _priv {
 class baseURLLoader {
 public:
     /// process one HTTPRequest
-    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    bool doRequest(const Ptr<IORead>& ioRequest);
 };
 } // namespace _priv
 } // namespace Oryol

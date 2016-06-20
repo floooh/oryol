@@ -13,13 +13,13 @@ const char* String::emptyString = "";
 //------------------------------------------------------------------------------
 String::String(const StringAtom& str) {
     const char* cstr = str.AsCStr();
-    this->create(cstr, int32(std::strlen(cstr)));
+    this->create(cstr, int(std::strlen(cstr)));
 }
 
 //------------------------------------------------------------------------------
 String::String(const char* str) {
     if (nullptr != str) {
-        this->create(str, int32(std::strlen(str)));
+        this->create(str, int(std::strlen(str)));
     }
     else {
         this->data = nullptr;
@@ -39,7 +39,7 @@ strPtr(nullptr) {
  Construct string from substring of other string. If len is 0, this
  means "until end of string".
 */
-String::String(const String& rhs, int32 startIndex, int32 endIndex) {
+String::String(const String& rhs, int startIndex, int endIndex) {
     if (EndOfString == endIndex) {
         endIndex = rhs.Length();
     }
@@ -54,10 +54,10 @@ String::String(const String& rhs, int32 startIndex, int32 endIndex) {
  If endIndex is 0, ptr is expected to point to a null-terminated string, and 
  this string will be copied into the new string object.
 */
-String::String(const char* ptr, int32 startIndex, int32 endIndex) {
+String::String(const char* ptr, int startIndex, int endIndex) {
     o_assert(nullptr != ptr);
     if (EndOfString == endIndex) {
-        endIndex = int32(std::strlen(ptr));
+        endIndex = int(std::strlen(ptr));
     }
     o_assert(startIndex < endIndex);
     this->create(ptr + startIndex, endIndex - startIndex);
@@ -65,11 +65,11 @@ String::String(const char* ptr, int32 startIndex, int32 endIndex) {
 
 //------------------------------------------------------------------------------
 void
-String::Assign(const char* ptr, int32 startIndex, int32 endIndex) {
+String::Assign(const char* ptr, int startIndex, int endIndex) {
     o_assert(nullptr != ptr);
     this->release();
     if (EndOfString == endIndex) {
-        endIndex = int32(std::strlen(ptr));
+        endIndex = int(std::strlen(ptr));
     }
     o_assert(startIndex < endIndex);
     this->create(ptr + startIndex, endIndex - startIndex);
@@ -80,7 +80,7 @@ void
 String::operator=(const StringAtom& str) {
     this->release();
     const char* cstr = str.AsCStr();
-    this->create(cstr, int32(std::strlen(cstr)));
+    this->create(cstr, int(std::strlen(cstr)));
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ String::destroy() {
 
 //------------------------------------------------------------------------------
 void
-String::alloc(int32 len) {
+String::alloc(int len) {
     o_assert(len > 0);
     this->data = (StringData*) Memory::Alloc(sizeof(StringData) + len + 1);
     new(this->data) StringData();
@@ -113,7 +113,7 @@ String::alloc(int32 len) {
 
 //------------------------------------------------------------------------------
 void
-String::create(const char* ptr, int32 len) {
+String::create(const char* ptr, int len) {
     o_assert(0 != ptr);
     if ((ptr[0] != 0) && (len > 0)) {
         this->alloc(len);
@@ -161,7 +161,7 @@ String::release() {
  means "until end of string".
  */
 void
-String::Assign(const String& rhs, int32 startIndex, int32 endIndex) {
+String::Assign(const String& rhs, int startIndex, int endIndex) {
     this->release();
     if (EndOfString == endIndex) {
         endIndex = rhs.Length();
@@ -198,7 +198,7 @@ void
 String::operator=(const char* str) {
     this->release();
     if (nullptr != str) {
-        this->create(str, int32(std::strlen(str)));
+        this->create(str, int(std::strlen(str)));
     }
 }
 
@@ -292,7 +292,7 @@ String::operator>=(const String& rhs) const {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 String::Length() const {
     if (nullptr == this->data) {
         return 0;
@@ -332,7 +332,7 @@ String::Clear() {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 String::RefCount() const {
     if (nullptr == this->data) {
         return 0;

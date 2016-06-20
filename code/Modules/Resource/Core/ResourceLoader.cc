@@ -6,8 +6,6 @@
 
 namespace Oryol {
 
-OryolClassImpl(ResourceLoader);
-
 //------------------------------------------------------------------------------
 class Locator
 ResourceLoader::Locator() const {

@@ -20,25 +20,25 @@ dummyFSWrapper::openWrite(const char* path) {
 }
 
 //------------------------------------------------------------------------------
-int32
-dummyFSWrapper::write(handle f, const void* ptr, int32 numBytes) {
+int
+dummyFSWrapper::write(handle f, const void* ptr, int numBytes) {
     return 0;
 }
 
 //------------------------------------------------------------------------------
-int32
-dummyFSWrapper::read(handle f, void* ptr, int32 numBytes) {
+int
+dummyFSWrapper::read(handle f, void* ptr, int numBytes) {
     return 0;
 }
 
 //------------------------------------------------------------------------------
 bool
-dummyFSWrapper::seek(handle f, int32 offset) {
+dummyFSWrapper::seek(handle f, int offset) {
     return true;
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 dummyFSWrapper::size(handle f) {
     return 0;
 }

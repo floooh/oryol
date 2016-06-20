@@ -86,19 +86,19 @@ TEST(StringAtomMultiThreaded) {
 // test string atom creation performance
 TEST(StringAtomPerformance) {
 
-    const int32 numUniqueStrings = 16;  // must be 2^N
+    const int numUniqueStrings = 16;  // must be 2^N
     std::array<const char*, numUniqueStrings> uniqueStrings = {
         { "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT",
           "NINE", "TEN", "ELEVEL", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN"
         }
     };
-    const int32 mask = numUniqueStrings - 1;
+    const int mask = numUniqueStrings - 1;
     
     for (int i = 0; i < 3; i++) {
         chrono::time_point<chrono::system_clock> start, end;
         start = chrono::system_clock::now();
         
-        const int32 numStringAtoms = 1000000;
+        const int numStringAtoms = 1000000;
         Array<StringAtom> stringAtoms;
         stringAtoms.Reserve(numStringAtoms);
         for (int j = 0; j < numStringAtoms; j++) {

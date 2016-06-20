@@ -10,7 +10,6 @@
     which will expire after a couple of seconds.
  */
 #include "HTTP/base/baseURLLoader.h"
-#include "HTTP/HTTPProtocol.h"
 #include "Core/String/StringBuilder.h"
 #include <chrono>
 
@@ -26,19 +25,18 @@ public:
     winURLLoader();
     /// destructor, calls InternetCloseHandle()
     ~winURLLoader();
-    /// process one request
-    bool doRequest(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    /// process one HTTPRequest
+    bool doRequest(const Ptr<IORead>& ioRequest);
 
 private:
     /// process a single HTTP request
-    void doRequestInternal(const Ptr<HTTPProtocol::HTTPRequest>& req);
+    void doRequestInternal(const Ptr<IORead>& req);
     /// open connection, or get already open connection
     HINTERNET obtainConnection(const URL& url);
     /// garbage collect expired connections (called from doWork)
     void garbageCollectConnections();
 
     static const std::chrono::seconds connectionMaxAge;   // disconnect after 10 seconds
-    const String contentTypeString;
     HINTERNET hSession;
     struct connection {
         HINTERNET hConnection;

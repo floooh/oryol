@@ -25,7 +25,7 @@ public:
     /// index buffer attributes
     IndexBufferAttrs indexBufferAttrs;
     /// number of primitive groups
-    int32 numPrimGroups;
+    int numPrimGroups;
     /// primitive groups
     StaticArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> primGroups;
     

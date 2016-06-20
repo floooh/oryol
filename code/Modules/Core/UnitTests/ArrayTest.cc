@@ -297,7 +297,7 @@ TEST(ArrayTest) {
     CHECK(array4[3] == "Blubber");
     
     // test emplace
-    Array<KeyValuePair<int32, String>> array5;
+    Array<KeyValuePair<int, String>> array5;
     array5.Add(1, "Bla");
     array5.Add(2, "Blub");
     CHECK(array5.Size() == 2);

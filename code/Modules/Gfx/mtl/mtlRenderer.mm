@@ -153,13 +153,6 @@ mtlRenderer::commitFrame() {
     this->curUniformBufferPtr = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
-
-    // block until previous frame has finished (the semaphore
-    // has a counter of MaxRotateFrame, which is at least 2)
-    dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-
-    // safely destroy released GPU resources
-    this->releaseQueue.garbageCollect(this->frameIndex);
 }
 
 //------------------------------------------------------------------------------
@@ -171,7 +164,7 @@ mtlRenderer::renderTargetAttrs() const {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+mtlRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -189,7 +182,7 @@ mtlRenderer::applyViewPort(int32 x, int32 y, int32 width, int32 height, bool ori
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyScissorRect(int32 x, int32 y, int32 width, int32 height, bool originTopLeft) {
+mtlRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
     o_assert_dbg(width >= 0);
     o_assert_dbg(height >= 0);
@@ -231,6 +224,11 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
     // create command buffer if this is the first call in the current frame
     if (this->curCommandBuffer == nil) {
+        // block until the oldest frame in flight has finished
+        dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
+        // safely destroy released GPU resources
+        this->releaseQueue.garbageCollect(this->frameIndex);
+        // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
 
@@ -386,7 +384,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int64 layoutHash, const uint8* ptr, int32 byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -399,7 +397,7 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
     // check whether the provided struct is type-compatible with the uniform layout
     shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
-    int32 ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
     const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
     o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
     o_assert_dbg(byteSize == layout.ByteSize());
@@ -423,7 +421,7 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int32 bindSlot, int6
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int32 numTextures) {
+mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures) {
     o_assert_dbg(this->valid);
     o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                  ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
@@ -462,7 +460,7 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int3
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) {
+mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -493,7 +491,7 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int32 numInstances) 
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(int32 primGroupIndex, int32 numInstances) {
+mtlRenderer::drawInstanced(int primGroupIndex, int numInstances) {
     if (nil == this->curCommandEncoder) {
         return;
     }
@@ -519,7 +517,7 @@ mtlRenderer::draw(const PrimitiveGroup& primGroup) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::draw(int32 primGroupIndex) {
+mtlRenderer::draw(int primGroupIndex) {
     this->drawInstanced(primGroupIndex, 1);
 }
 
@@ -545,7 +543,7 @@ meshBufferRotateActiveSlot(mesh::buffer& buf, int frameIndex) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
+mtlRenderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
@@ -565,7 +563,7 @@ mtlRenderer::updateVertices(mesh* msh, const void* data, int32 numBytes) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::updateIndices(mesh* msh, const void* data, int32 numBytes) {
+mtlRenderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != msh);
     o_assert_dbg(nullptr != data);
@@ -630,7 +628,7 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::readPixels(void* buf, int32 bufNumBytes) {
+mtlRenderer::readPixels(void* buf, int bufNumBytes) {
     o_assert_dbg(this->valid);
     o_warn("mtlRenderer::readPixels()\n");
 }

@@ -30,17 +30,17 @@ public:
     void operator=(Set&& rhs);
     
     /// set allocation strategy
-    void SetAllocStrategy(int32 minGrow, int32 maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
+    void SetAllocStrategy(int minGrow, int maxGrow=ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     /// get min grow value
-    int32 GetMinGrow() const;
+    int GetMinGrow() const;
     /// get max grow value
-    int32 GetMaxGrow() const;
+    int GetMaxGrow() const;
     /// get number of elements in array
-    int32 Size() const;
+    int Size() const;
     /// return true if empty
     bool Empty() const;
     /// get capacity of array
-    int32 Capacity() const;
+    int Capacity() const;
     /// clear the array (deletes elements, keeps capacity)
     void Clear();
     /// test if an element exists
@@ -52,7 +52,7 @@ public:
     /// erase element
     void Erase(const VALUE& val);
     /// get value at index
-    const VALUE& ValueAtIndex(int32 index);
+    const VALUE& ValueAtIndex(int index);
     
     /// C++ conform begin
     VALUE* begin();
@@ -105,24 +105,24 @@ Set<VALUE>::operator=(Set&& rhs) {
     
 //------------------------------------------------------------------------------
 template<class VALUE> void
-Set<VALUE>::SetAllocStrategy(int32 minGrow, int32 maxGrow) {
+Set<VALUE>::SetAllocStrategy(int minGrow, int maxGrow) {
     this->valueArray.SetAllocStrategy(minGrow, maxGrow);
 }
 
 //------------------------------------------------------------------------------
-template<class VALUE> int32
+template<class VALUE> int
 Set<VALUE>::GetMinGrow() const {
     return this->valueArray.GetMinGrow();
 }
 
 //------------------------------------------------------------------------------
-template<class VALUE> int32
+template<class VALUE> int
 Set<VALUE>::GetMaxGrow() const {
     return this->valueArray.GetMaxGrow();
 }
 
 //------------------------------------------------------------------------------
-template<class VALUE> int32
+template<class VALUE> int
 Set<VALUE>::Size() const {
     return this->valueArray.Size();
 }
@@ -134,7 +134,7 @@ Set<VALUE>::Empty() const {
 }
 
 //------------------------------------------------------------------------------
-template<class VALUE> int32
+template<class VALUE> int
 Set<VALUE>::Capacity() const {
     return this->valueArray.Capacity();
 }
@@ -173,7 +173,7 @@ Set<VALUE>::Add(const VALUE& val) {
         o_error("Trying to insert duplicate element!\n");
     }
     else {
-        int32 index = int32(ptr - begin);
+        int index = int(ptr - begin);
         this->valueArray.Insert(index, val);
     }
 }
@@ -185,14 +185,14 @@ Set<VALUE>::Erase(const VALUE& val) {
     const VALUE* end = this->valueArray.end();
     const VALUE* ptr = std::lower_bound(begin, end, val);
     if (ptr != end) {
-        int32 index = int32(ptr - begin);
+        int index = int(ptr - begin);
         this->valueArray.Erase(index);
     }
 }
 
 //------------------------------------------------------------------------------
 template<class VALUE> const VALUE&
-Set<VALUE>::ValueAtIndex(int32 index) {
+Set<VALUE>::ValueAtIndex(int index) {
     return this->valueArray[index];
 };
     

@@ -46,7 +46,7 @@ public:
     explicit operator bool() const;
     
 private:
-    int32 slotIndex;
+    int slotIndex;
 };
 
 //------------------------------------------------------------------------------

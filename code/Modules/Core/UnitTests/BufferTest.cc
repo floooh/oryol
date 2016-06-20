@@ -21,7 +21,7 @@ TEST(BufferTest) {
     CHECK(buf0.Capacity() == 12);
     CHECK(buf0.Spare() == 12);
 
-    static const uint8 bla[] = { 1, 2, 3, 4, 5, 6, 7 };
+    static const uint8_t bla[] = { 1, 2, 3, 4, 5, 6, 7 };
     buf0.Add(bla, sizeof(bla));
     CHECK(buf0.Size() == 7);
     CHECK(!buf0.Empty());
@@ -65,8 +65,8 @@ TEST(BufferTest) {
     }
     CHECK(buf1.Empty());
     CHECK(buf1.Capacity() == 0);
-    uint8* ptr = buf2.Add(sizeof(bla));
-    for (uint8 c : bla) {
+    uint8_t* ptr = buf2.Add(sizeof(bla));
+    for (uint8_t c : bla) {
         *ptr++ = c;
     }
     CHECK(ptr == buf2.Data() + 21);

@@ -36,7 +36,7 @@ public:
     /// check if object has been setup
     static bool IsValid();
     /// get an integer value
-    static int32 Int(Code c);
+    static int Int(Code c);
     
 private:
     /// dump general GL info (extensions, constants, ...)
@@ -44,9 +44,9 @@ private:
     /// print a GL string, optionally replace spaces with newlines
     static void printString(GLenum glEnum, const char* name, bool replaceSpaceWithNewLine);
     /// print a 1..4 dimensional integer value
-    static void printInt(GLenum glEnum, const char* name, int32 dim);
+    static void printInt(GLenum glEnum, const char* name, int dim);
 
-    static int32 intValues[NumInfos];
+    static int intValues[NumInfos];
     static bool isValid;
 };
 

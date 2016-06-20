@@ -136,13 +136,13 @@ pnaclInstance::doOneFrame(int32_t) {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 pnaclInstance::GetCanvasWidth() const {
     return this->width;
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 pnaclInstance::GetCanvasHeight() const {
     return this->height;
 }

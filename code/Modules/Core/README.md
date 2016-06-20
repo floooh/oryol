@@ -1,12 +1,20 @@
 ## Core Module
 
-The Core module provides basic functionality which every Oryol app and Oryol module depends on:
+**Updated: 30-Apr-2016**
+
+The Core module provides core functionality useful for most Oryol application:
 
 * a unified application model across all target platforms
+* text logging
+* time measurement
+* memory managament functions
+* macros for attaching realtime profilers
+* per-thread run-loops
 * lifetime management for heap-allocated objects
-* a central logging facility
-* a per-thread run-loop 
-* selected alternatives for parts of the C++ std library which don't fit well into a realtime game application
+* an optional per-class RTTI system
+* custom assert macros with callstacks
+* container classes that replace the std library containers
+* string and UTF conversion helper classes
 
 ### The Oryol Application Model
 
@@ -132,8 +140,6 @@ of course you can also use the new C++11 auto keyword:
 ```cpp
 auto myObj = MyClass::Create(arg1, arg2, arg3);
 ```
-
-> TODO: write about why std::shared_ptr and std::make_shared is not used.
 
 > NOTE: Always keep in mind that there should be a good reason to use heap-allocated, 
 > ref-counted objects instead of stack-allocated or class-embedded objects. Always consider
@@ -311,8 +317,8 @@ The Log class can be called safely from any thread.
 
 ### Asserts
 
-Instead of assert(), use Oryol's specialized o_assert() macros, the standard form is 
-also active when the code is compiled in release mode (with optimizations), the _dbg()
+Instead of assert(), use Oryol's specialized o\_assert() macros, the standard form is 
+also active when the code is compiled in release mode (with optimizations), the \_dbg()
 form is only active in debug mode:
 
 ```cpp
@@ -329,7 +335,10 @@ o_assert_range(val, max);
 o_assert_range_dbg(val, max);
 ```
 
-### The RunLoop
+On some platforms, o\_assert() will log callstack dumps for better post-mortem
+debugging.
+
+### RunLoops
 
 The main thread, and each thread created by Oryol has two thread-local run-loop
 lists, one executed before the App's on-frame method, one after. An application
@@ -348,6 +357,88 @@ In a proper Oryol App, this should now print 'Hello!' to stdout 60 times per sec
 
 > NOTE: there's currently no control over the order of how RunLoop callbacks are executed in relation to each other.
 
+### Accessing Command Line Arguments
+
+On some platforms, a global object _OryolArgs_ provides access to command line arguments:
+
+```cpp
+#include "Core/Main.h"
+...
+AppState::Code MyApp::OnInit() {
+
+    if (OryolArgs.HasArg("--version")) {
+        Log::Info("version: 1.0.0\n");
+    }
+    const int DefaultLogLevel = 3;
+    int logLevel = OryolArgs.GetInt("--log", DefaultLogLevel);
+    String filename = OryolArgs.GetString("--file");
+    if (filename.IsValid()) {
+        ...
+    }
+    ...
+}
+
+```
+
+### Time Measurement
+
+The Core module offers 3 classes that deal with time measurement:
+
+- **Clock**: a high-resolution time source
+- **TimePoint**: a point in time
+- **Duration**: a time duration
+
+Sample code:
+
+```cpp
+#include "Core/Time/Clock.h"
+...
+
+    // return current time (no relation to wall-clock time,
+    // it is only useful to compute time differences)
+    TimePoint t0 = Clock::Now();
+    ...
+    TimePoint t1 = Clock::Now();
+    
+    // compute the time difference between t1 and t0
+    Duration d0 = t1 - t0;
+
+    // the method Clock::Since() is a shortcut of the above
+    Duration d1 = Clock::Since(t0);
+
+    // the Duration class has methods to return the time span 
+    // as seconds, milli- and microseconds
+    double sec = d0.AsSeconds();
+    double ms  = d0.AsMilliSeconds();
+    double us  = d0.AsMicroSeconds();
+
+    // the method Clock::LapTime() can be used to measure
+    // frame duration, it needs a TimePoint variable that persists between
+    // frames to store the current frame time in
+    static TimePoint tp;
+    Duration frameDuration = Clock::LapTime(tp);
+...
+
+```
+
+### String Handling
+
+See the [Core Module String documentation](String/README.md) for detailed
+information about string handling in the Oryol Core module. 
+
+### Memory Management
+
+The header [Core/Memory/Memory.h](Memory/Memory.h) contains static 
+helper functions for memory management.
+
+Currently these functions use the std library function (like
+std::malloc, std:free, etc). At a later time it will be possible to
+override these functions with your own implementation.
+
+### Containers
+
+See the [Core Module Containers documentation](Containers/README.md) for
+detailed information about the container classes in the Oryol Core module.
 
 ### Things you should NOT use
 

@@ -21,15 +21,15 @@ public:
     }
     
     /// number of resource slots by their state
-    StaticArray<int32, ResourceState::NumStates> NumSlotsByState;
+    StaticArray<int, ResourceState::NumStates> NumSlotsByState;
     /// resource type of the pool
-    uint16 ResourceType = Id::InvalidType;
+    uint16_t ResourceType = Id::InvalidType;
     /// overall number of slots
-    int32 NumSlots = 0;
+    int NumSlots = 0;
     /// number of used slots
-    int32 NumUsedSlots = 0;
+    int NumUsedSlots = 0;
     /// number of free slots
-    int32 NumFreeSlots = 0;
+    int NumFreeSlots = 0;
 };
 
 } // namespace Oryol

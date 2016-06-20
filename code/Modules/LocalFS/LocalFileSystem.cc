@@ -13,8 +13,8 @@ using namespace _priv;
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::Init(const StringAtom& scheme_) {
-    FileSystem::Init(scheme_);
+LocalFileSystem::init(const StringAtom& scheme_) {
+    FileSystem::init(scheme_);
     StringBuilder strBuilder;
 
     // setup the root assign
@@ -28,16 +28,28 @@ LocalFileSystem::Init(const StringAtom& scheme_) {
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
+LocalFileSystem::onMsg(const Ptr<IORequest>& req) {
+    if (req->IsA<IORead>()) {
+        this->onRead(req->DynamicCast<IORead>());
+    }
+    else if (req->IsA<IOWrite>()) {
+        this->onWrite(req->DynamicCast<IOWrite>());
+    }
+    req->Handled = true;
+}
+
+//------------------------------------------------------------------------------
+void
+LocalFileSystem::onRead(const Ptr<IORead>& msg) {
     if (msg->Url.HasPath()) {
         fsWrapper::handle h = fsWrapper::openRead(msg->Url.Path().AsCStr());
         if (fsWrapper::invalidHandle != h) {
-            const int32 startOffset = msg->StartOffset;
-            const int32 endOffset = msg->EndOffset;
+            const int startOffset = msg->StartOffset;
+            const int endOffset = msg->EndOffset;
             if (startOffset > 0) {
                 fsWrapper::seek(h, startOffset);
             }
-            int32 size;
+            int size;
             if (endOffset == EndOfFile) {
                 size = fsWrapper::size(h) - startOffset;
             }
@@ -45,8 +57,8 @@ LocalFileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
                 size = endOffset - startOffset;
             }
             if (size > 0) {
-                uint8* ptr = msg->Data.Add(size);
-                int32 bytesRead = fsWrapper::read(h, ptr, size);
+                uint8_t* ptr = msg->Data.Add(size);
+                int bytesRead = fsWrapper::read(h, ptr, size);
                 if (bytesRead != size) {
                     msg->Status = IOStatus::DownloadError;
                     msg->ErrorDesc = "Fewer bytes read then expected";
@@ -66,12 +78,11 @@ LocalFileSystem::onRead(const Ptr<IOProtocol::Read>& msg) {
         msg->Status = IOStatus::BadRequest;
         msg->ErrorDesc = "No path in URL";
     }
-    msg->SetHandled();
 }
 
 //------------------------------------------------------------------------------
 void
-LocalFileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
+LocalFileSystem::onWrite(const Ptr<IOWrite>& msg) {
     if (msg->Url.HasPath()) {
         fsWrapper::handle h = fsWrapper::openWrite(msg->Url.Path().AsCStr());
         if (fsWrapper::invalidHandle != h) {
@@ -90,7 +101,6 @@ LocalFileSystem::onWrite(const Ptr<IOProtocol::Write>& msg) {
         msg->Status = IOStatus::BadRequest;
         msg->ErrorDesc = "No path in URL";
     }
-    msg->SetHandled();
 }
 
 } // namespace Oryol

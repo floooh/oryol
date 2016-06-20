@@ -11,14 +11,14 @@ namespace Oryol {
 
 class ResourceLabel {
 public:
-    static const uint32 Invalid = 0xFFFFFFFF;
-    static const uint32 All     = 0xFFFFFFFE;
-    static const uint32 Default = 0xFFFFFFFD;
+    static const uint32_t Invalid = 0xFFFFFFFF;
+    static const uint32_t All     = 0xFFFFFFFE;
+    static const uint32_t Default = 0xFFFFFFFD;
     
     /// default constructor
     ResourceLabel() : Value(Invalid) { };
     /// construct from value
-    ResourceLabel(uint32 val) : Value(val) { };
+    ResourceLabel(uint32_t val) : Value(val) { };
     /// copy constructor
     ResourceLabel(const ResourceLabel& rhs) {
         this->Value = rhs.Value;
@@ -28,7 +28,7 @@ public:
         this->Value = rhs.Value;
     };
     /// assign raw value
-    void operator=(uint32 val) {
+    void operator=(uint32_t val) {
         this->Value = val;
     };
     /// equality
@@ -48,30 +48,30 @@ public:
         this->Value = Invalid;
     };
     /// label value
-    uint32 Value;
+    uint32_t Value;
 };
 
 //------------------------------------------------------------------------------
 inline bool
-operator==(const ResourceLabel& lhs, const uint32 rhs) {
+operator==(const ResourceLabel& lhs, const uint32_t rhs) {
     return lhs.Value == rhs;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-operator==(const uint32 lhs, const ResourceLabel& rhs) {
+operator==(const uint32_t lhs, const ResourceLabel& rhs) {
     return lhs == rhs.Value;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-operator!=(const ResourceLabel& lhs, const uint32 rhs) {
+operator!=(const ResourceLabel& lhs, const uint32_t rhs) {
     return lhs.Value != rhs;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-operator!=(const uint32 lhs, const ResourceLabel& rhs) {
+operator!=(const uint32_t lhs, const ResourceLabel& rhs) {
     return lhs != rhs.Value;
 }
 

@@ -58,7 +58,7 @@ d3d12DescAllocator::IsValid() const {
 
 //------------------------------------------------------------------------------
 Id
-d3d12DescAllocator::AllocHeap(Type type, int32 numSlots, int32 numDescriptorsPerSlot, bool allowAllocSlot) {
+d3d12DescAllocator::AllocHeap(Type type, int numSlots, int numDescriptorsPerSlot, bool allowAllocSlot) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->numHeaps < MaxNumHeaps);
     o_assert_dbg(numSlots > 0);
@@ -132,7 +132,7 @@ d3d12DescAllocator::GPUHandle(D3D12_GPU_DESCRIPTOR_HANDLE& out, const Id& heapId
 }
 
 //------------------------------------------------------------------------------
-uint32
+uint32_t
 d3d12DescAllocator::DescriptorIncrementSize(const Id& heapId) const {
     return this->heaps[heapId.SlotIndex].descIncrSize;
 }
@@ -151,7 +151,7 @@ d3d12DescAllocator::AllocSlot(const Id& heapId) {
 
 //------------------------------------------------------------------------------
 void
-d3d12DescAllocator::ReleaseSlotDeferred(const Id& heapId, uint64 frameIndex, int slotIndex) {
+d3d12DescAllocator::ReleaseSlotDeferred(const Id& heapId, uint64_t frameIndex, int slotIndex) {
     this->releaseQueue.Enqueue(heapId, frameIndex, slotIndex);
 }
 
@@ -163,11 +163,11 @@ d3d12DescAllocator::ReleaseSlotImmediate(const Id& heapId, int slotIndex) {
 
 //------------------------------------------------------------------------------
 void
-d3d12DescAllocator::GarbageCollect(uint64 frameIndex) {
+d3d12DescAllocator::GarbageCollect(uint64_t frameIndex) {
 
-    const uint64 safeNumFrames = d3d12Config::NumFrames + 1;
+    const uint64_t safeNumFrames = d3d12Config::NumFrames + 1;
     if (frameIndex > safeNumFrames) {
-        const uint64 minReleaseFrame = frameIndex - safeNumFrames;
+        const uint64_t minReleaseFrame = frameIndex - safeNumFrames;
         freeItem item;
         while (!this->releaseQueue.Empty() && (this->releaseQueue.Front().frameIndex < minReleaseFrame)) {
             this->releaseQueue.Dequeue(item);

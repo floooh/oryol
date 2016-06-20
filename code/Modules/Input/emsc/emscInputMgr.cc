@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "emscInputMgr.h"
 #include "Core/Core.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "glm/glm.hpp"
 
 namespace Oryol {
@@ -27,10 +27,10 @@ void
 emscInputMgr::setup(const InputSetup& setup) {
     inputMgrBase::setup(setup);
     this->setupKeyTable();
-    this->Keyboard.Attached = true;
-    this->Mouse.Attached = true;
-    this->Touchpad.Attached = true;
-    this->Sensors.Attached = true;
+    this->keyboard.attached = true;
+    this->mouse.attached = true;
+    this->touchpad.attached = true;
+    this->sensors.attached = true;
     this->setupCallbacks();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
@@ -92,28 +92,21 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         if (e->repeat) {
-            self->Keyboard.onKeyRepeat(key);
+            self->keyboard.onKeyRepeat(key);
         }
         else {
-            self->Keyboard.onKeyDown(key);
+            self->keyboard.onKeyDown(key);
         }
-        if (self->Keyboard.IsCapturingText()) {
-            // returning false enables keypress events, but also lets the
-            // browser react to Tab, Backspace, etc... thus we need to 
-            // filter these out
-            if ((Key::Tab == key) || (Key::BackSpace == key) || (Key::Enter == key)) {
-                // enable keypresses, but disable browser handling for Tab, BS, Enter
+        // returning false enabled keypress (WChar) events, but
+        // also makes the browser react to Tab, Backspace, etc...
+        // thus we need to filter those out
+        switch (key) {
+            case Key::Tab:
+            case Key::BackSpace:
+            case Key::Enter:
                 return true;
-            }
-            else {
-                // pass-thru event
+            default:
                 return false;
-            }
-        }
-        else {
-            // returning true disables keypress events, but also
-            // suppresses the browser from handling Tab, Backspace...
-            return true;
         }
     }
     return false;
@@ -126,7 +119,7 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     o_assert_dbg(self);
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
-        self->Keyboard.onKeyUp(key);
+        self->keyboard.onKeyUp(key);
         return true;
     }
     return false;
@@ -137,26 +130,26 @@ EM_BOOL
 emscInputMgr::emscKeyPress(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    self->Keyboard.onChar((wchar_t)e->charCode);    
+    self->keyboard.onChar((wchar_t)e->charCode);    
     return true;
 }
 
 //------------------------------------------------------------------------------
-Mouse::Button
+MouseButton::Code
 emscInputMgr::mapMouseButton(unsigned short html5Btn) const {
     switch (html5Btn) {
-        case 0:  return Mouse::LMB;
-        case 1:  return Mouse::MMB;
-        case 2:  return Mouse::RMB;
-        default: return Mouse::InvalidButton;
+        case 0:  return MouseButton::Left;
+        case 1:  return MouseButton::Middle;
+        case 2:  return MouseButton::Right;
+        default: return MouseButton::InvalidMouseButton;
     }
 }
 
 //------------------------------------------------------------------------------
 bool
-emscInputMgr::updatePointerLockMode(Mouse::PointerLockMode lockMode) {
-    if (Mouse::PointerLockModeEnable == lockMode) {
-         emscripten_request_pointerlock(0, false);
+emscInputMgr::updatePointerLockMode(PointerLockMode::Code lockMode) {
+    if (PointerLockMode::Enable == lockMode) {
+        emscripten_request_pointerlock(0, false);
         return true;
     }
     else {
@@ -170,9 +163,9 @@ EM_BOOL
 emscInputMgr::emscMouseDown(int eventType, const EmscriptenMouseEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    const Mouse::Button btn = self->mapMouseButton(e->button);
-    if (Mouse::InvalidButton != btn) {
-        Mouse::PointerLockMode lockMode = self->Mouse.onButtonDown(btn);
+    const MouseButton::Code btn = self->mapMouseButton(e->button);
+    if (MouseButton::InvalidMouseButton != btn) {
+        PointerLockMode::Code lockMode = self->mouse.onButtonDown(btn);
         self->pointerLockActive = updatePointerLockMode(lockMode);
     }
     return true;
@@ -183,9 +176,9 @@ EM_BOOL
 emscInputMgr::emscMouseUp(int eventType, const EmscriptenMouseEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    const Mouse::Button btn = self->mapMouseButton(e->button);
-    if (Mouse::InvalidButton != btn) {
-        Mouse::PointerLockMode lockMode = self->Mouse.onButtonUp(btn);
+    const MouseButton::Code btn = self->mapMouseButton(e->button);
+    if (MouseButton::InvalidMouseButton != btn) {
+        PointerLockMode::Code lockMode = self->mouse.onButtonUp(btn);
         self->pointerLockActive = updatePointerLockMode(lockMode);
     }
     return true;
@@ -198,12 +191,12 @@ emscInputMgr::emscMouseMove(int eventType, const EmscriptenMouseEvent* e, void* 
     o_assert_dbg(self);
     // check if pointerlock is active, if yes directly obtain movement
     if (self->pointerLockActive) {
-        const glm::vec2 mov((float32)e->movementX, (float32)e->movementY);
-        self->Mouse.onMov(mov);
+        const glm::vec2 mov((float)e->movementX, (float)e->movementY);
+        self->mouse.onMov(mov);
     }
     else {
-        const glm::vec2 pos((float32)e->canvasX, (float32)e->canvasY);
-        self->Mouse.onPosMov(pos);
+        const glm::vec2 pos((float)e->canvasX, (float)e->canvasY);
+        self->mouse.onPosMov(pos);
     }
     return true;    
 }
@@ -213,8 +206,8 @@ EM_BOOL
 emscInputMgr::emscWheel(int eventType, const EmscriptenWheelEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     o_assert_dbg(self);
-    const glm::vec2 scroll((float32)e->deltaX * 0.5f, -(float32)e->deltaY * 0.5f);
-    self->Mouse.onScroll(scroll);
+    const glm::vec2 scroll((float)e->deltaX * 0.5f, -(float)e->deltaY * 0.5f);
+    self->mouse.onScroll(scroll);
     return true;
 }
 
@@ -243,7 +236,7 @@ emscInputMgr::emscTouch(int eventType, const EmscriptenTouchEvent* e, void* user
     }
     event.time = Oryol::Clock::Now();
     event.numTouches = e->numTouches;
-    for (int32 i = 0; i < event.numTouches; i++) {
+    for (int i = 0; i < event.numTouches; i++) {
         touchEvent::point& curPoint = event.points[i];
         curPoint.identifier = e->touches[i].identifier;
         curPoint.pos.x = e->touches[i].canvasX;
@@ -259,9 +252,9 @@ EM_BOOL
 emscInputMgr::emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
 
-    self->Sensors.Acceleration.x = -e->accelerationIncludingGravityX;
-    self->Sensors.Acceleration.y = -e->accelerationIncludingGravityY;
-    self->Sensors.Acceleration.z = -e->accelerationIncludingGravityZ;
+    self->sensors.acceleration.x = -e->accelerationIncludingGravityX;
+    self->sensors.acceleration.y = -e->accelerationIncludingGravityY;
+    self->sensors.acceleration.z = -e->accelerationIncludingGravityZ;
 
     return true;
 }
@@ -272,9 +265,9 @@ emscInputMgr::emscDeviceOrientation(int eventType, const EmscriptenDeviceOrienta
     emscInputMgr* self = (emscInputMgr*) userData;
 
     // FIXME: the roll angle needs some fixing
-    self->Sensors.Roll  = glm::radians(e->gamma);
-    self->Sensors.Pitch = glm::radians(e->beta);
-    self->Sensors.Yaw   = glm::radians(e->alpha);
+    self->sensors.yawPitchRoll.x = glm::radians(e->gamma);
+    self->sensors.yawPitchRoll.y = glm::radians(e->beta);
+    self->sensors.yawPitchRoll.z = glm::radians(e->alpha);
 
     return true;
 }
@@ -293,7 +286,7 @@ emscInputMgr::mapKey(unsigned long html5KeyCode) const {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setupKeyTable() {
-    for (int32 i = 0; i < MaxNumKeys; i++) {
+    for (int i = 0; i < MaxNumKeys; i++) {
         this->keyTable[i] = Key::InvalidKey;
     }
 
@@ -354,6 +347,7 @@ emscInputMgr::setupKeyTable() {
     this->keyTable[88] = Key::X;
     this->keyTable[89] = Key::Y;
     this->keyTable[90] = Key::Z;
+    this->keyTable[91] = Key::LeftSuper;
     this->keyTable[93] = Key::Menu;
     this->keyTable[96] = Key::Num0;
     this->keyTable[97] = Key::Num1;
@@ -385,7 +379,10 @@ emscInputMgr::setupKeyTable() {
     this->keyTable[144] = Key::NumLock;
     this->keyTable[145] = Key::ScrollLock;
     this->keyTable[173] = Key::Minus;
+    this->keyTable[186] = Key::Semicolon;
+    this->keyTable[187] = Key::Equal;
     this->keyTable[188] = Key::Comma;
+    this->keyTable[189] = Key::Minus;
     this->keyTable[190] = Key::Period;
     this->keyTable[191] = Key::Slash;
     this->keyTable[192] = Key::GraveAccent;

@@ -63,7 +63,7 @@ d3d11TextureFactory::SetupResource(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11TextureFactory::SetupResource(texture& tex, const void* data, int32 size) {
+d3d11TextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
 
@@ -123,12 +123,12 @@ d3d11TextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
 
     // get size of new render target
-    int32 width, height;
+    int width, height;
     texture* sharedDepthProvider = nullptr;
     if (setup.IsRelSizeRenderTarget()) {
         const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width = int32(dispAttrs.FramebufferWidth * setup.RelWidth);
-        height = int32(dispAttrs.FramebufferHeight * setup.RelHeight);
+        width = int(dispAttrs.FramebufferWidth * setup.RelWidth);
+        height = int(dispAttrs.FramebufferHeight * setup.RelHeight);
     }
     else if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
@@ -236,7 +236,7 @@ d3d11TextureFactory::setupTextureAttrs(texture& tex) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 size) {
+d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int size) {
     o_assert_dbg(nullptr != this->d3d11Device);
     o_assert_dbg(nullptr == tex.d3d11Texture2D);
     o_assert_dbg(nullptr == tex.d3d11ShaderResourceView);
@@ -273,9 +273,9 @@ d3d11TextureFactory::createFromPixelData(texture& tex, const void* data, int32 s
     texDesc.CPUAccessFlags = 0;
     texDesc.MiscFlags = setup.Type == TextureType::TextureCube ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
 
-    const int32 maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
+    const int maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
     D3D11_SUBRESOURCE_DATA subResourceData[maxNumSubResourceData] = { 0 };
-    const uint8* srcPtr = (const uint8*) data;
+    const uint8_t* srcPtr = (const uint8_t*) data;
     const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
     const int numMipMaps = setup.NumMipMaps;
     int subResourceDataIndex = 0;

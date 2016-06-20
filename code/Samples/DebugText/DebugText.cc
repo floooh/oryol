@@ -20,9 +20,9 @@ private:
     void moveChars();
     void drawText();
 
-    int32 width;
-    int32 height;
-    uint8* buffer = nullptr;
+    int width;
+    int height;
+    uint8_t* buffer = nullptr;
     StringBuilder strBuilder;
     ClearState clearState;
 };
@@ -53,7 +53,7 @@ DebugTextApp::OnInit() {
     
     this->width = Gfx::DisplayAttrs().FramebufferWidth / 16;
     this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
-    this->buffer = (uint8*) Memory::Alloc(this->width * this->height);
+    this->buffer = (uint8_t*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     

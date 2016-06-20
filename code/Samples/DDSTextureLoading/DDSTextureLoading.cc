@@ -23,9 +23,9 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
-    float32 distVal = 0.0f;
+    float distVal = 0.0f;
     DrawState drawState;
-    static const int32 NumTextures = 16;
+    static const int NumTextures = 16;
     StaticArray<Id, NumTextures> textures;
     Shader::VSParams vsParams;
     glm::mat4 view;
@@ -66,7 +66,7 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+1.65f, -1.1f, 0.0f),
         glm::vec3(+2.75f, -1.1f, 0.0f)
     };
-    for (int32 i = 0; i < NumTextures; i++) {
+    for (int i = 0; i < NumTextures; i++) {
         const auto resState = Gfx::QueryResourceInfo(this->textures[i]).State;
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
@@ -123,7 +123,7 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_rgb565.dds",
         "tex:lok_bgr565.dds",
     };
-    for (int32 i = 0; i < NumTextures; i++) {
+    for (int i = 0; i < NumTextures; i++) {
         this->textures[i] = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint)));
     }
 
@@ -140,8 +140,8 @@ DDSTextureLoadingApp::OnInit() {
     this->drawState.Pipeline = Gfx::CreateResource(ps);
     this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

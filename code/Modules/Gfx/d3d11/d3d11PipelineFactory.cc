@@ -160,7 +160,7 @@ d3d11PipelineFactory::createInputLayout(const pipeline& pip) {
 
     // lookup the vertex shader bytecode
     const void* vsByteCode = nullptr;
-    uint32 vsSize = 0;
+    uint32_t vsSize = 0;
     pip.shd->Setup.VertexShaderByteCode(ShaderLang::HLSL5, vsByteCode, vsSize);
     o_assert_dbg(vsByteCode && (vsSize > 0));
 

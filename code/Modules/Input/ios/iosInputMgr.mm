@@ -5,7 +5,7 @@
 #include "Core/Core.h"
 #include "iosInputMgr.h"
 #include "Core/ios/iosBridge.h"
-#include "Time/Clock.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #import <UIKit/UIKit.h>
 #import <CoreMotion/CoreMotion.h>
@@ -31,7 +31,7 @@ static Oryol::_priv::iosInputMgr* iosInputMgrPtr = nullptr;
         if ((newEvent.numTouches + 1) < touchEvent::MaxNumPoints) {
             CGPoint pos = [curTouch locationInView:curTouch.view];
             touchEvent::point& curPoint = newEvent.points[newEvent.numTouches++];
-            curPoint.identifier = (Oryol::uintptr) curTouch;
+            curPoint.identifier = (uintptr_t) curTouch;
             #if ORYOL_METAL
             const double mouseScale = iosBridge::ptr()->mouseScale;
             pos.x *= mouseScale; pos.y *= mouseScale;
@@ -92,7 +92,7 @@ iosInputMgr::setup(const InputSetup& setup) {
         o_error("iosInputMgr: Gfx::Setup() must be called before Input::Setup()!\n");
         return;
     }
-    this->Touchpad.Attached = true;
+    this->touchpad.attached = true;
 
     // create the input delegate object
     this->inputDelegate = [[iosInputDelegate alloc] init];
@@ -102,7 +102,7 @@ iosInputMgr::setup(const InputSetup& setup) {
         this->motionManager = [[CMMotionManager alloc] init];
         if ([this->motionManager isDeviceMotionAvailable]) {
             [this->motionManager startDeviceMotionUpdates];
-            this->Sensors.Attached = true;
+            this->sensors.attached = true;
             this->motionRunLoopId = Core::PreRunLoop()->Add([this]() { this->sampleMotionData(); });
         }
         else {
@@ -166,16 +166,16 @@ iosInputMgr::sampleMotionData() {
         
         // acceleration
         if (this->inputSetup.AccelerometerEnabled) {
-            static const float32 earthGravity = 9.80665;
+            static const float earthGravity = 9.80665f;
             glm::vec3 accel(cmGravity.x + cmUserAccel.x, cmGravity.y + cmUserAccel.y, cmGravity.z + cmUserAccel.z);
-            this->Sensors.Acceleration = accel * earthGravity;
+            this->sensors.acceleration = accel * earthGravity;
         }
         
         // attitude
         if (this->inputSetup.GyrometerEnabled) {
-            this->Sensors.Yaw   = motionData.attitude.yaw;
-            this->Sensors.Pitch = motionData.attitude.pitch;
-            this->Sensors.Roll  = motionData.attitude.roll;
+            this->sensors.yawPitchRoll.x = motionData.attitude.yaw;
+            this->sensors.yawPitchRoll.y = motionData.attitude.pitch;
+            this->sensors.yawPitchRoll.z = motionData.attitude.roll;
         }
     }
 }

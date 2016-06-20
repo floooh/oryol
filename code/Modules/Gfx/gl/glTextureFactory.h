@@ -32,7 +32,7 @@ public:
     /// setup resource
     ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
-    ResourceState::Code SetupResource(texture& tex, const void* data, int32 size);
+    ResourceState::Code SetupResource(texture& tex, const void* data, int32_t size);
     /// discard the resource
     void DestroyResource(texture& tex);
     
@@ -47,7 +47,7 @@ private:
     /// create a render target
     ResourceState::Code createRenderTarget(texture& tex);
     /// create texture from raw pixel data
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32 size);
+    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32_t size);
     /// create an empty texture (cannot be an immutable texture)
     ResourceState::Code createEmptyTexture(texture& tex);
 

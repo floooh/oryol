@@ -11,14 +11,17 @@ include("${FIPS_ROOT_DIR}/cmake/fips.cmake")
 option(ORYOL_SAMPLES "Build Oryol samples" ON)
 
 fips_setup(PROJECT oryol)
+
+# helper macro to add a sample to the webpage
+file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
+macro(oryol_add_web_sample name desc type image src)
+    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
+endmacro()
+
 fips_include_directories(code)
 fips_include_directories(code/Modules)
-fips_include_directories(code/Ext)
-fips_add_subdirectory(code/Hello)
 fips_ide_group(Modules)
 fips_add_subdirectory(code/Modules)
-fips_ide_group(Ext)
-fips_add_subdirectory(code/Ext)
 if (ORYOL_SAMPLES)
     fips_ide_group(Samples)
     fips_include_directories(code/Samples)

@@ -86,6 +86,7 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     #else
     #error "mtlDisplayMgr: undefined platform!"
     #endif
+    [[bridge->mtkView layer] setMagnificationFilter:kCAFilterNearest];
 
     // get actual rendering size
     #if ORYOL_IOS

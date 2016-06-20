@@ -15,7 +15,7 @@ public:
     union {
         #pragma pack(push,1)
         struct {
-            uint64 BlendEnabled:1;
+            uint64_t BlendEnabled:1;
             BlendFactor::Code SrcFactorRGB:5;
             BlendFactor::Code DstFactorRGB:5;
             BlendOperation::Code OpRGB:3;
@@ -28,7 +28,7 @@ public:
         };
         #pragma pack(pop)
         /// hash code from merged state
-        uint64 Hash;
+        uint64_t Hash;
     };
 
     /// constructor

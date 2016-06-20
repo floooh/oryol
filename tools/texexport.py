@@ -18,7 +18,7 @@ ETCFormats = ['ETC1', 'ETC2']
 
 #-------------------------------------------------------------------------------
 def error(msg) :
-    print "ERROR: {}".format(msg)
+    print("ERROR: {}".format(msg))
     sys.exit(10)
 
 #-------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ def toDDS(srcFilename, dstFilename, linearGamma, fmt, rgbFmt=None) :
     ddsTool = getToolsBinPath() + 'nvcompress'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
-    print '=== toDDS: {} => {}:'.format(srcPath, dstPath)
+    print('=== toDDS: {} => {}:'.format(srcPath, dstPath))
     cmdLine = [ddsTool, '-'+fmt]
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
@@ -82,7 +82,7 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
     srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
     dstPath  = TexDstDirectory + '/' + dstFilename
 
-    print '=== toCubeDDS: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath)
+    print('=== toCubeDDS: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath))
 
     # call nvassemble to generate an uncompressed cube map...
     cmdLine = [nvassemble, '-cube']
@@ -115,7 +115,7 @@ def toPVR(srcFilename, dstFilename, format) :
     pvrTool = getToolsBinPath() + 'PVRTexToolCLI'
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
-    print '=== toPVR: {} => {}:'.format(srcPath, dstPath)
+    print('=== toPVR: {} => {}:'.format(srcPath, dstPath))
     cmdLine = [pvrTool, '-i', srcPath, '-o', dstPath, '-square', '+', '-pot', '+', '-m', '-mfilter', 'cubic', '-f', format ]
     subprocess.call(args=cmdLine)
 
@@ -132,7 +132,7 @@ def toCubePVR(srcDir, srcExt, dstFilename, format) :
     srcFiles = ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']
     dstPath  = TexDstDirectory + '/' + dstFilename
 
-    print '=== toCubePVR: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath)
+    print('=== toCubePVR: {}/{}/[posx,negx,posy,negy,posz,negz].{} => {}'.format(TexSrcDirectory, srcDir, srcExt, dstPath))
 
     cmdLine = [pvrTool, '-i']
     inputFiles = ''
@@ -168,7 +168,7 @@ def toETC(srcFilename, dstFilename, format) :
     srcPath  = TexSrcDirectory + '/' + srcFilename
     dstPath  = TexDstDirectory + '/' + dstFilename
     tmpPath  = tempfile.gettempdir() + '/' + tmpFilename
-    print '=== toETC2: {} => {} => {}:'.format(srcPath, tmpPath, dstPath)
+    print('=== toETC2: {} => {} => {}:'.format(srcPath, tmpPath, dstPath))
 
     # first convert file to PPM format
     subprocess.call(args=[convTool, srcPath, tmpPath])
@@ -181,49 +181,53 @@ def toETC(srcFilename, dstFilename, format) :
     os.unlink(tmpPath)
 
 #-------------------------------------------------------------------------------
-def exportSampleTextures() :
-    # default gamma 2.2
-    toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
-    toDDS('lok256.jpg', 'lok_dxt3.dds', False, 'bc2')
-    toDDS('lok256.jpg', 'lok_dxt5.dds', False, 'bc3')
-    toDDS('lok256.jpg', 'lok_bgra8.dds', False, 'rgb', 'bgra8')
-    toDDS('lok256.jpg', 'lok_rgba8.dds', False, 'rgb', 'rgba8')
-    toDDS('lok256.jpg', 'lok_bgr8.dds', False, 'rgb', 'bgr8')
-    toDDS('lok256.jpg', 'lok_rgb8.dds', False, 'rgb', 'rgb8')
-    toDDS('lok256.jpg', 'lok_argb4.dds', False, 'rgb', 'argb4')
-    toDDS('lok256.jpg', 'lok_abgr4.dds', False, 'rgb', 'abgr4')
-    toDDS('lok256.jpg', 'lok_rgb565.dds', False, 'rgb', 'rgb565')
-    toDDS('lok256.jpg', 'lok_bgr565.dds', False, 'rgb', 'bgr565')
-    toDDS('lok256.jpg', 'lok_argb1555.dds', False, 'rgb', 'argb1555')
-    toDDS('lok256.jpg', 'lok_abgr1555.dds', False, 'rgb', 'abgr1555')
-    toCubeDDS('RomeChurch', 'jpg', 'romechurch_dxt1.dds', False, 'bc1')
+def exportSampleTextures(types = ['dds','pvr','etc']) :
+    # DDS
+    if 'dds' in types :
+        # default gamma 2.2
+        toDDS('lok256.jpg', 'lok_dxt1.dds', False, 'bc1')
+        toDDS('lok256.jpg', 'lok_dxt3.dds', False, 'bc2')
+        toDDS('lok256.jpg', 'lok_dxt5.dds', False, 'bc3')
+        toDDS('lok256.jpg', 'lok_bgra8.dds', False, 'rgb', 'bgra8')
+        toDDS('lok256.jpg', 'lok_rgba8.dds', False, 'rgb', 'rgba8')
+        toDDS('lok256.jpg', 'lok_bgr8.dds', False, 'rgb', 'bgr8')
+        toDDS('lok256.jpg', 'lok_rgb8.dds', False, 'rgb', 'rgb8')
+        toDDS('lok256.jpg', 'lok_argb4.dds', False, 'rgb', 'argb4')
+        toDDS('lok256.jpg', 'lok_abgr4.dds', False, 'rgb', 'abgr4')
+        toDDS('lok256.jpg', 'lok_rgb565.dds', False, 'rgb', 'rgb565')
+        toDDS('lok256.jpg', 'lok_bgr565.dds', False, 'rgb', 'bgr565')
+        toDDS('lok256.jpg', 'lok_argb1555.dds', False, 'rgb', 'argb1555')
+        toDDS('lok256.jpg', 'lok_abgr1555.dds', False, 'rgb', 'abgr1555')
+        toCubeDDS('RomeChurch', 'jpg', 'romechurch_dxt1.dds', False, 'bc1')
 
-    # linear gamma
-    toDDS('lok256.jpg', 'lok_linear_dxt1.dds', True, 'bc1')
-    toDDS('lok256.jpg', 'lok_linear_dxt3.dds', True, 'bc2')
-    toDDS('lok256.jpg', 'lok_linear_dxt5.dds', True, 'bc3')
-    toDDS('lok256.jpg', 'lok_linear_bgra8.dds', True, 'rgb', 'bgra8')
-    toDDS('lok256.jpg', 'lok_linear_rgba8.dds', True, 'rgb', 'rgba8')
-    toDDS('lok256.jpg', 'lok_linear_bgr8.dds', True, 'rgb', 'bgr8')
-    toDDS('lok256.jpg', 'lok_linear_rgb8.dds', True, 'rgb', 'rgb8')
-    toDDS('lok256.jpg', 'lok_linear_argb4.dds', True, 'rgb', 'argb4')
-    toDDS('lok256.jpg', 'lok_linear_abgr4.dds', True, 'rgb', 'abgr4')
-    toDDS('lok256.jpg', 'lok_linear_rgb565.dds', True, 'rgb', 'rgb565')
-    toDDS('lok256.jpg', 'lok_linear_bgr565.dds', True, 'rgb', 'bgr565')
-    toDDS('lok256.jpg', 'lok_linear_argb1555.dds', True, 'rgb', 'argb1555')
-    toDDS('lok256.jpg', 'lok_linear_abgr1555.dds', True, 'rgb', 'abgr1555')
-    toCubeDDS('RomeChurch', 'jpg', 'romechurch_linear_dxt1.dds', True, 'bc1')
+        # linear gamma
+        toDDS('lok256.jpg', 'lok_linear_dxt1.dds', True, 'bc1')
+        toDDS('lok256.jpg', 'lok_linear_dxt3.dds', True, 'bc2')
+        toDDS('lok256.jpg', 'lok_linear_dxt5.dds', True, 'bc3')
+        toDDS('lok256.jpg', 'lok_linear_bgra8.dds', True, 'rgb', 'bgra8')
+        toDDS('lok256.jpg', 'lok_linear_rgba8.dds', True, 'rgb', 'rgba8')
+        toDDS('lok256.jpg', 'lok_linear_bgr8.dds', True, 'rgb', 'bgr8')
+        toDDS('lok256.jpg', 'lok_linear_rgb8.dds', True, 'rgb', 'rgb8')
+        toDDS('lok256.jpg', 'lok_linear_argb4.dds', True, 'rgb', 'argb4')
+        toDDS('lok256.jpg', 'lok_linear_abgr4.dds', True, 'rgb', 'abgr4')
+        toDDS('lok256.jpg', 'lok_linear_rgb565.dds', True, 'rgb', 'rgb565')
+        toDDS('lok256.jpg', 'lok_linear_bgr565.dds', True, 'rgb', 'bgr565')
+        toDDS('lok256.jpg', 'lok_linear_argb1555.dds', True, 'rgb', 'argb1555')
+        toDDS('lok256.jpg', 'lok_linear_abgr1555.dds', True, 'rgb', 'abgr1555')
+        toCubeDDS('RomeChurch', 'jpg', 'romechurch_linear_dxt1.dds', True, 'bc1')
 
-    # PVRTC
-    toPVR('lok256.jpg', 'lok_bpp2.pvr', 'PVRTC1_2')
-    toPVR('lok256.jpg', 'lok_bpp4.pvr', 'PVRTC1_4')
-    toCubePVR('RomeChurch', 'jpg', 'romechurch_bpp2.pvr', 'PVRTC1_2')
+    # PVR
+    if 'pvr' in types :
+        toPVR('lok256.jpg', 'lok_bpp2.pvr', 'PVRTC1_2')
+        toPVR('lok256.jpg', 'lok_bpp4.pvr', 'PVRTC1_4')
+        toCubePVR('RomeChurch', 'jpg', 'romechurch_bpp2.pvr', 'PVRTC1_2')
 
     # ETC1/2
-    toETC('lok256.jpg', 'lok_etc1.ktx', 'ETC1')
-    toETC('lok256.jpg', 'lok_etc2.ktx', 'ETC2')
+    if 'etc' in types :
+        toETC('lok256.jpg', 'lok_etc1.ktx', 'ETC1')
+        toETC('lok256.jpg', 'lok_etc2.ktx', 'ETC2')
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__' :
-    print "{}".format(__file__)
+    print("{}".format(__file__))
     exportSampleTextures()

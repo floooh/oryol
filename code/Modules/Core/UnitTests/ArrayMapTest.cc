@@ -10,7 +10,7 @@ using namespace Oryol;
 
 TEST(ArrayMapTest) {
     // test simple insertion of unique elements
-    ArrayMap<int32, int32> map;
+    ArrayMap<int, int> map;
     CHECK(map.GetMinGrow() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(map.GetMaxGrow() == ORYOL_CONTAINER_DEFAULT_MAX_GROW);
     CHECK(map.Size() == 0);
@@ -58,7 +58,7 @@ TEST(ArrayMapTest) {
     CHECK(map.FindValueIndex(5) == 8);
     
     // copy construct
-    ArrayMap<int32, int32> map1(map);
+    ArrayMap<int, int> map1(map);
     CHECK(map1.Size() == 9);
     CHECK(map1.Capacity() == 9); // copy trims
     CHECK(!map1.Empty());
@@ -69,7 +69,7 @@ TEST(ArrayMapTest) {
     }
     
     // copy-assign
-    ArrayMap<int32, int32> map2;
+    ArrayMap<int, int> map2;
     map2 = map;
     CHECK(map2.Size() == 9);
     CHECK(map2.Capacity() == 9);    // copy trims

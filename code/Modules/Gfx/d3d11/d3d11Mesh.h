@@ -21,8 +21,8 @@ public:
 
     ID3D11Buffer* d3d11VertexBuffer = nullptr;
     ID3D11Buffer* d3d11IndexBuffer = nullptr;
-    int32 vbUpdateFrameIndex = -1;
-    int32 ibUpdateFrameIndex = -1;
+    int vbUpdateFrameIndex = -1;
+    int ibUpdateFrameIndex = -1;
 };
 
 } // namespace _priv

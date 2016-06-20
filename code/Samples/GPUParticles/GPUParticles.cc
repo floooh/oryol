@@ -3,23 +3,23 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "Assets/Gfx/ShapeBuilder.h"
-#include "Time/Clock.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
 
 using namespace Oryol;
 
-const int32 NumParticleBuffers = 2;
-const int32 NumParticlesEmittedPerFrame = 100;
-const int32 NumParticlesX = 1024;
-const int32 NumParticlesY = 1024;
-const int32 MaxNumParticles = NumParticlesX * NumParticlesY;
-const int32 ParticleBufferWidth = 2 * NumParticlesX;
-const int32 ParticleBufferHeight = NumParticlesY;
+const int NumParticleBuffers = 2;
+const int NumParticlesEmittedPerFrame = 100;
+const int NumParticlesX = 1024;
+const int NumParticlesY = 1024;
+const int MaxNumParticles = NumParticlesX * NumParticlesY;
+const int ParticleBufferWidth = 2 * NumParticlesX;
+const int ParticleBufferHeight = NumParticlesY;
 
 class GPUParticlesApp : public App {
 public:
@@ -38,9 +38,9 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    int32 frameCount = 0;
+    int frameCount = 0;
     TimePoint lastFrameTimePoint;
-    int32 curNumParticles = 0;
+    int curNumParticles = 0;
 
     InitShader::FSParams initFSParams;
     UpdateShader::FSParams updFSParams;
@@ -65,17 +65,17 @@ GPUParticlesApp::OnRunning() {
     }
     
     // ping and pong particle state buffer indices
-    const int32 readIndex = (this->frameCount + 1) % NumParticleBuffers;
-    const int32 drawIndex = this->frameCount % NumParticleBuffers;
+    const int readIndex = (this->frameCount + 1) % NumParticleBuffers;
+    const int drawIndex = this->frameCount % NumParticleBuffers;
     
     // update particle state texture by rendering a fullscreen-quad:
     // - the previous and next particle state are stored in separate float textures
     // - the particle update shader reads the previous state and draws the next state
     // - we use a scissor rect around the currently active particles to make this update
     //   a bit more efficient
-    const int32 scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
+    const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
     this->updParticles.FSTexture[UpdateTextures::PrevState] = this->particleBuffer[readIndex];
-    this->updFSParams.NumParticles = (float32) this->curNumParticles;
+    this->updFSParams.NumParticles = (float) this->curNumParticles;
     Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updParticles);
@@ -104,7 +104,7 @@ GPUParticlesApp::OnRunning() {
 //------------------------------------------------------------------------------
 void
 GPUParticlesApp::updateCamera() {
-    float32 angle = this->frameCount * 0.01f;
+    float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->drawVSParams.ModelViewProjection = this->proj * this->view * this->model;
@@ -173,10 +173,10 @@ GPUParticlesApp::OnInit() {
     this->drawParticles.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 
     // a instancing vertex buffer with the particleIds at mesh slot 1
-    const int32 particleIdSize = MaxNumParticles * sizeof(float32);
-    float32* particleIdData = (float32*) Memory::Alloc(particleIdSize);
-    for (int32 i = 0; i < MaxNumParticles; i++) {
-        particleIdData[i] = (float32) i;
+    const int particleIdSize = MaxNumParticles * sizeof(float);
+    float* particleIdData = (float*) Memory::Alloc(particleIdSize);
+    for (int i = 0; i < MaxNumParticles; i++) {
+        particleIdData[i] = (float) i;
     }
     auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
     particleIdSetup.NumVertices = MaxNumParticles;
@@ -195,8 +195,8 @@ GPUParticlesApp::OnInit() {
     this->drawParticles.Pipeline = Gfx::CreateResource(ps);
 
     // the static projection matrix
-    const float32 fbWidth = (const float32) Gfx::DisplayAttrs().FramebufferWidth;
-    const float32 fbHeight = (const float32) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
 
     // setup initial shader params

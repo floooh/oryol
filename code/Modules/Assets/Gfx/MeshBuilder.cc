@@ -29,9 +29,9 @@ MeshBuilder::Begin() {
     }
     
     // compute the required stream size
-    const int32 vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
-    const int32 ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
-    int32 allSize = vbSize + ibSize;
+    const int vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
+    const int ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
+    int allSize = vbSize + ibSize;
     meshSetup.DataVertexOffset = 0;
     if (ibSize > 0) {
         meshSetup.DataIndexOffset = vbSize;

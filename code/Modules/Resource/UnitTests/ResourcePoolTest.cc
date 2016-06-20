@@ -11,20 +11,20 @@ using namespace Oryol;
 class mySetup {
 public:
     mySetup() : bla(0) {};
-    mySetup(int32 bla_) : bla(bla_) {};
-    int32 bla;
+    mySetup(int bla_) : bla(bla_) {};
+    int bla;
 };
 
 class myResource : public resourceBase<mySetup> {
 public:
-    int32 blub = 0;
+    int blub = 0;
 };
 
 class myResourcePool : public ResourcePool<myResource, mySetup> { };
 
 TEST(ResourcePoolTest) {
-    const uint16 myResourceType = 12;
-    const int32 poolSize = 256;
+    const uint16_t myResourceType = 12;
+    const int poolSize = 256;
     myResourcePool resourcePool;
     resourcePool.Setup(myResourceType, poolSize);
     CHECK(resourcePool.IsValid());

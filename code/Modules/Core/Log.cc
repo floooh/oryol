@@ -6,6 +6,7 @@
 #include "Core/Log.h"
 #include "Core/Assertion.h"
 #include "Core/Logger.h"
+#include "Core/StackTrace.h"
 #include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
 #if ORYOL_WINDOWS
@@ -19,7 +20,7 @@
 #endif
 
 #if ORYOL_WINDOWS || ORYOL_PNACL
-const Oryol::int32 LogBufSize = 1024;
+const int LogBufSize = 4 * 1024;
 #endif
 
 namespace Oryol {
@@ -42,14 +43,14 @@ Log::AddLogger(const Ptr<Logger>& l) {
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 Log::GetNumLoggers() {
     return loggers.Size();
 }
 
 //------------------------------------------------------------------------------
 Ptr<Logger>
-Log::GetLogger(int32 index) {
+Log::GetLogger(int index) {
     return loggers[index];
 }
 
@@ -78,12 +79,28 @@ Log::Dbg(const char* msg, ...) {
 
 //------------------------------------------------------------------------------
 void
+Log::VDbg(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Dbg) {
+        Log::vprint(Level::Dbg, msg, args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 Log::Info(const char* msg, ...) {
     if (curLogLevel >= Level::Info) {
         va_list args;
         va_start(args, msg);
         Log::vprint(Level::Info, msg, args);
         va_end(args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Log::VInfo(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Info) {
+        Log::vprint(Level::Info, msg, args);
     }
 }
 
@@ -100,12 +117,28 @@ Log::Warn(const char* msg, ...) {
 
 //------------------------------------------------------------------------------
 void
+Log::VWarn(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Warn) {
+        Log::vprint(Level::Warn, msg, args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 Log::Error(const char* msg, ...) {
     if (curLogLevel >= Level::Error) {
         va_list args;
         va_start(args, msg);
         Log::vprint(Level::Error, msg, args);
         va_end(args);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+Log::VError(const char* msg, va_list args) {
+    if (curLogLevel >= Level::Error) {
+        Log::vprint(Level::Error, msg, args);
     }
 }
 
@@ -167,26 +200,28 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
 
 //------------------------------------------------------------------------------
 void
-Log::AssertMsg(const char* cond, const char* msg, const char* file, int32 line, const char* func) {
+Log::AssertMsg(const char* cond, const char* msg, const char* file, int line, const char* func) {
     lock.LockRead();
     if (loggers.Empty()) {
+        char callstack[4096];
+        StackTrace::Dump(callstack, sizeof(callstack));
         #if ORYOL_ANDROID
-            __android_log_print(ANDROID_LOG_FATAL, "oryol", "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n", 
-                cond, msg ? msg : "none", file, line, func);
+            __android_log_print(ANDROID_LOG_FATAL, "oryol", "\n\n*** ORYOL ASSERT: %s\n  msg: %s\n  file: %s\n  line: %d\n  func: %s\n  callstack:\n%s\n",
+                cond, msg ? msg : "none", file, line, func, callstack);
         #else
-            std::printf("oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
-                        cond, msg ? msg : "none", file, line, func);
+            std::printf("\n\n*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s\n  callstack:\n%s\n",
+                        cond, msg ? msg : "none", file, line, func, callstack);
             #if ORYOL_WINDOWS
                 char buf[LogBufSize];
-                _snprintf_s(buf, sizeof(buf), _TRUNCATE, "oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\n",
-                            cond, msg ? msg : "none", file, line, func);
+                _snprintf_s(buf, sizeof(buf), _TRUNCATE, "*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s\n  callstack:\n%s\n",
+                            cond, msg ? msg : "none", file, line, func, callstack);
                 buf[LogBufSize - 1] = 0;
                 OutputDebugString(buf);
             #elif ORYOL_PNACL
                 if (pnaclInstance::HasInstance()) {
                     char buf[LogBufSize];
-                    std::snprintf(buf, sizeof(buf), "{\"msg\":\"log\",\"val\":\"oryol assert: cond='%s'\nmsg='%s'\nfile='%s'\nline='%d'\nfunc='%s'\"}",
-                                  cond, msg ? msg : "none", file, line, func);
+                    std::snprintf(buf, sizeof(buf), "{\"msg\":\"log\",\"val\":\"\n\n*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s  callstack:\n%s\n\"}",
+                                  cond, msg ? msg : "none", file, line, func, callstack);
                     buf[LogBufSize - 1] = 0;                
                     pnaclInstance::Instance()->putMsg(buf);
                 }

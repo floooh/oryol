@@ -83,7 +83,7 @@ debugTextRenderer::printf(const char* text, std::va_list args) {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::cursorPos(uint8 x, uint8 y) {
+debugTextRenderer::cursorPos(uint8_t x, uint8_t y) {
     this->rwLock.LockWrite();
     this->stringBuilder.Append((char) 0x1B);   // start ESC control sequence
     this->stringBuilder.Append((char) 0x01);   // set cursor
@@ -121,7 +121,7 @@ debugTextRenderer::drawTextBuffer() {
     this->rwLock.UnlockWrite();
     
     // convert string into vertices
-    int32 numVertices = this->convertStringToVertices(str);
+    int numVertices = this->convertStringToVertices(str);
 
     // draw the vertices
     if (numVertices > 0) {
@@ -146,24 +146,24 @@ void
 debugTextRenderer::setupFontTexture() {
 
     // convert the KC85/4 font into 8bpp image data
-    const int32 numChars = 128;
-    const int32 charWidth = 8;
-    const int32 charHeight = 8;
-    const int32 imgWidth = numChars * charWidth;
-    const int32 imgHeight = charHeight;
-    const int32 bytesPerChar = charWidth * charHeight;
-    const int32 imgDataSize = numChars * bytesPerChar;
+    const int numChars = 128;
+    const int charWidth = 8;
+    const int charHeight = 8;
+    const int imgWidth = numChars * charWidth;
+    const int imgHeight = charHeight;
+    const int bytesPerChar = charWidth * charHeight;
+    const int imgDataSize = numChars * bytesPerChar;
     o_assert((imgWidth * imgHeight) == imgDataSize);
     
     // setup a memory buffer and write font image data to it
     Buffer data;
-    uint8* dstPtr = data.Add(imgDataSize);
+    uint8_t* dstPtr = data.Add(imgDataSize);
     const char* srcPtr = kc85_4_Font;
-    for (int32 charIndex = 0; charIndex < numChars; charIndex++) {
-        int32 xOffset = charIndex * charWidth;
-        for (int32 y = 0; y < charHeight; y++) {
-            int32 yOffset = y * imgWidth;
-            for (int32 x = 0; x < charWidth; x++) {
+    for (int charIndex = 0; charIndex < numChars; charIndex++) {
+        int xOffset = charIndex * charWidth;
+        for (int y = 0; y < charHeight; y++) {
+            int yOffset = y * imgWidth;
+            for (int x = 0; x < charWidth; x++) {
                 char c = *srcPtr++;
                 o_assert_dbg(c != 0);
                 dstPtr[x + xOffset + yOffset] = (c == '-') ? 0 : 255;
@@ -190,7 +190,7 @@ debugTextRenderer::setupTextMesh() {
     o_assert(this->vertexLayout.Empty());
     
     // setup an empty mesh, only vertices
-    int32 maxNumVerts = MaxNumChars * 6;
+    int maxNumVerts = MaxNumChars * 6;
     this->vertexLayout
         .Add(VertexAttr::Position, VertexFormat::Float4)
         .Add(VertexAttr::Color0, VertexFormat::UByte4N);
@@ -225,8 +225,8 @@ debugTextRenderer::setupTextPipeline() {
 }
 
 //------------------------------------------------------------------------------
-int32
-debugTextRenderer::writeVertex(int32 index, uint8 x, uint8 y, uint8 u, uint8 v, uint32 rgba) {
+int
+debugTextRenderer::writeVertex(int index, uint8_t x, uint8_t y, uint8_t u, uint8_t v, uint32_t rgba) {
     this->vertexData[index].x = (float) x;
     this->vertexData[index].y = (float) y;
     this->vertexData[index].u = (float) u;
@@ -236,19 +236,19 @@ debugTextRenderer::writeVertex(int32 index, uint8 x, uint8 y, uint8 u, uint8 v, 
 }
 
 //------------------------------------------------------------------------------
-int32
+int
 debugTextRenderer::convertStringToVertices(const String& str) {
 
-    int32 cursorX = 0;
-    int32 cursorY = 0;
-    const int32 cursorMaxX = MaxNumColumns - 1;
-    const int32 cursorMaxY = MaxNumLines - 1;
-    int32 vIndex = 0;
-    uint32 rgba = 0xFF00FFFF;
+    int cursorX = 0;
+    int cursorY = 0;
+    const int cursorMaxX = MaxNumColumns - 1;
+    const int cursorMaxY = MaxNumLines - 1;
+    int vIndex = 0;
+    uint32_t rgba = 0xFF00FFFF;
     
-    const int32 numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
+    const int numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
     const char* ptr = str.AsCStr();
-    for (int32 charIndex = 0; charIndex < numChars; charIndex++) {
+    for (int charIndex = 0; charIndex < numChars; charIndex++) {
         uchar c = (uchar) ptr[charIndex];
         
         // control character?
