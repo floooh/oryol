@@ -202,7 +202,7 @@ vlkContext::setupInstance(const Array<const char*>& reqLayers, const Array<const
     appInfo.applicationVersion = 0;
     appInfo.pEngineName = "ORYOL";
     appInfo.engineVersion = 0;
-    appInfo.apiVersion = VK_API_VERSION;
+    appInfo.apiVersion = VK_API_VERSION_1_0;
     VkInstanceCreateInfo instInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     instInfo.pApplicationInfo = &appInfo;
     instInfo.enabledLayerCount = instanceLayers.Size();
@@ -420,7 +420,7 @@ vlkContext::setupSwapchain(const GfxSetup& setup, const DisplayAttrs& inAttrs) {
     o_assert(this->GPU);
     o_assert(this->Surface);
     o_assert(VK_FORMAT_MAX_ENUM == this->pixelFormat);
-    o_assert(VK_COLORSPACE_MAX_ENUM == this->colorSpace);    
+    o_assert(VK_COLOR_SPACE_MAX_ENUM_KHR == this->colorSpace);
     o_assert(!this->depthBuffer.image);
     o_assert(!this->depthBuffer.mem);
     o_assert(!this->depthBuffer.view);

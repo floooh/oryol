@@ -448,23 +448,13 @@ Array<TYPE>::FindIndexLinear(const TYPE& elm, int startIndex, int endIndex) cons
 //------------------------------------------------------------------------------
 template<class TYPE> TYPE*
 Array<TYPE>::Data() {
-    if (this->Empty()) {
-        return nullptr;
-    }
-    else {
-        return this->buffer.elmStart;
-    }
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------
 template<class TYPE> const TYPE*
 Array<TYPE>::Data() const {
-    if (this->Empty()) {
-        return nullptr;
-    }
-    else {
-        return this->buffer.elmStart;
-    }
+    return this->buffer._begin();
 }
 
 //------------------------------------------------------------------------------

@@ -77,7 +77,7 @@ public:
     int graphicsQueueIndex = InvalidIndex;
     int presentQueueIndex = InvalidIndex;
     VkFormat pixelFormat = VK_FORMAT_MAX_ENUM;
-    VkColorSpaceKHR colorSpace = VK_COLORSPACE_MAX_ENUM;
+    VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_MAX_ENUM_KHR;
     VkCommandPool cmdPool = nullptr;
     struct SwapChainBuffer {
         VkFramebuffer framebuffer = nullptr;
