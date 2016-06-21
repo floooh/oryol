@@ -1,5 +1,6 @@
 '''
-Simple python wrapper for the GLSL reference compiler.
+Simple python wrapper for the GLSL reference compiler, also used
+to generate SPIRV bytecode for Vulkan.
 '''
 
 import subprocess
@@ -7,6 +8,7 @@ import tempfile
 import platform
 import os
 import sys
+import binascii
 import genutil as util
 
 def getToolsBinPath() :
@@ -85,6 +87,22 @@ def parseOutput(output, lines) :
             print(line.content)
         sys.exit(10) 
 
+def writeBinHeader(in_bin, out_hdr, c_name) :
+    '''
+    Write the generated SPIRV bytecode file to C header
+    '''
+    with open(in_bin, 'rb') as in_file :
+        data = in_file.read()
+    hexdata = binascii.hexlify(data)
+    with open(out_hdr, 'w') as out_file :
+        out_file.write('#pragma once\n')
+        out_file.write('static const unsigned char {}[] = {{\n'.format(c_name))
+        for i in range(0, len(data)) :
+            out_file.write('0x{}{},'.format(hexdata[i*2], hexdata[i*2+1]))
+            if (i % 16) == 15 :
+                out_file.write('\n')
+        out_file.write('\n};\n')
+
 def validate(lines, type, glslVersion) :
     '''
     Validate a vertex-/fragment-shader pair for a given glsl version.
@@ -102,5 +120,26 @@ def validate(lines, type, glslVersion) :
     output = callValidator(cmd)
     os.unlink(f.name)
     parseOutput(output, lines)
+
+def validateSPIRV(lines, type, glslVersion, outPath, cName) :
+    '''
+    Validate shader for SPIRV and generate C header with byte code. 
+    '''
+    ext = {
+        'vs': '.vert',
+        'fs': '.frag'
+    }
+
+    rootPath = os.path.splitext(outPath)[0]
+    glsl_src_path = rootPath + '{}'.format(ext[type])
+    spirv_out_path = rootPath + '{}.spirv'.format(ext[type])
+    with open(glsl_src_path, 'w') as f :
+        writeFile(f, lines)
+
+    toolPath = getToolsBinPath() + 'glslangValidator'
+    cmd = [toolPath, f.name, '-V', '-o', spirv_out_path]
+    output = callValidator(cmd)
+    parseOutput(output, lines)
+    writeBinHeader(spirv_out_path, outPath, cName)
 
 

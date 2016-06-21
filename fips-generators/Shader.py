@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 58
+Version = 65
 
 import os
 import sys
@@ -60,6 +60,15 @@ isMetal = {
     'glsl450': False,
     'hlsl5': False,
     'metal': True
+}
+
+isSPIRV = {
+    'glsl100': False,
+    'glsl120': False,
+    'glsl150': False,
+    'glsl450': True,
+    'hlsl5': False,
+    'metal': False
 }
 
 glslVersionNumber = {
@@ -1599,6 +1608,25 @@ class ShaderLibrary :
                     srcLines = fs.generatedSource[slVersion]
                     glslcompiler.validate(srcLines, 'fs', slVersion)
 
+    def validateAndWriteShadersSPIRV(self, absHdrPath) :
+        '''
+        Run the shader sources through the GLSL reference compiler
+        with SPIRV output, and let put the SPIRV byte cde into a header file
+        '''
+        rootPath = os.path.splitext(absHdrPath)[0]
+        for slVersion in slVersions :
+            if isSPIRV[slVersion] :
+                for vs in self.vertexShaders.values() :
+                    srcLines = vs.generatedSource[slVersion]
+                    cName = vs.name + '_' + slVersion + '_spirv_src'
+                    outPath = rootPath + '_' + cName + '.h'
+                    glslcompiler.validateSPIRV(srcLines, 'vs', slVersion, outPath, cName)
+                for fs in self.fragmentShaders.values() :
+                    srcLines = fs.generatedSource[slVersion]
+                    cName = fs.name + '_' + slVersion + '_spirv_src'
+                    outPath = rootPath + '_' + cName + '.h'
+                    glslcompiler.validateSPIRV(srcLines, 'fs', slVersion, outPath, cName);
+
     def validateAndWriteShadersHLSL(self, absHdrPath, args) :
         '''
         Run the shader sources through the HLSL compiler,
@@ -1733,7 +1761,20 @@ def writeSourceBottom(f, shdLib) :
 #-------------------------------------------------------------------------------
 def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
     # note: shd is either a VertexShader or FragmentShader object
-    if isGLSL[slVersion] :
+    if isSPIRV[slVersion] :
+        # for SPIRV, the shader code has been compiled into byte code and
+        # written to a C header file, the source is identical with the
+        # GLSL450 version
+        f.write('#if ORYOL_VULKAN\n')
+        f.write('/*\n')
+        f.write('{}_{}_src:\n'.format(shd.name, slVersion))
+        for line in shd.generatedSource[slVersion] :
+            f.write('"{}\\n"\n'.format(line.content))
+        f.write('*/\n')
+        rootPath = os.path.splitext(absPath)[0]
+        f.write('#include "{}_{}_{}_spirv_src.h"\n'.format(rootPath, shd.name, slVersion))
+        f.write('#endif\n')
+    elif isGLSL[slVersion] :
         # GLSL source code is directly inlined for runtime-compilation
         f.write('#if ORYOL_OPENGL\n')
         f.write('const char* {}_{}_src = \n'.format(shd.name, slVersion))
@@ -1766,8 +1807,6 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         rootPath = os.path.splitext(absPath)[0]
         f.write('#include "{}.metallib.h"\n'.format(rootPath))
         f.write('#endif\n')
-    else :
-        util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
 def writeVertexLayout(f, vs) :
@@ -1818,7 +1857,9 @@ def writeProgramSource(f, shdLib, prog) :
     fsName = fs.name
     for slVersion in slVersions :
         slangType = slSlangTypes[slVersion]
-        if isGLSL[slVersion] :
+        if isSPIRV[slVersion] :
+            f.write('    #if ORYOL_VULKAN\n')
+        elif isGLSL[slVersion] :
             f.write('    #if ORYOL_OPENGL\n')
         elif isHLSL[slVersion] :
             f.write('    #if ORYOL_D3D11 || ORYOL_D3D12\n')
@@ -1827,12 +1868,17 @@ def writeProgramSource(f, shdLib, prog) :
             f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
         vsSource = '{}_{}_src'.format(vsName, slVersion)
         fsSource = '{}_{}_src'.format(fsName, slVersion)
-        if isGLSL[slVersion] :
-            f.write('    setup.SetProgramFromSources({}, {}, {}, {});\n'.format(
-                slangType, vsInputLayout, vsSource, fsSource));
+        if isSPIRV[slVersion] :
+            vscName = vsName + '_' + slVersion + '_spirv_src'
+            fscName = fsName + '_' + slVersion + '_spirv_src'
+            f.write('    setup.SetProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+                slangType, vsInputLayout, vscName, vscName, fscName, fscName))
         elif isHLSL[slVersion] :
             f.write('    setup.SetProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                 slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
+        elif isGLSL[slVersion] :
+            f.write('    setup.SetProgramFromSources({}, {}, {}, {});\n'.format(
+                slangType, vsInputLayout, vsSource, fsSource));
         elif isMetal[slVersion] :
             f.write('    setup.SetProgramFromLibrary({}, {}, "{}", "{}");\n'.format(
                 slangType, vsInputLayout, vsName, fsName))
@@ -1894,10 +1940,13 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.validate()
+        
         shaderLibrary.generateShaderSourcesGLSL()
         shaderLibrary.generateShaderSourcesHLSL()
         shaderLibrary.generateShaderSourcesMetal()
+        
         shaderLibrary.validateShadersGLSL()
+        shaderLibrary.validateAndWriteShadersSPIRV(out_hdr)
         if platform.system() == 'Windows' :
             shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
         if platform.system() == 'Darwin' :
