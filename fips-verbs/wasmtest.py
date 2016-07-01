@@ -5,6 +5,7 @@ import yaml
 import shutil
 import subprocess
 import glob
+from distutils.dir_util import copy_tree
 from string import Template
 
 from mod import log, util, project, emscripten
@@ -13,10 +14,6 @@ BuildWasm = True
 ExportAssets = True
 Samples = [
     'InfiniteSpheres',
-    'Paclone',
-    'ImGuiDemo',
-    'TurboBadgerDemo',
-    'SoloudMOD',
 ]
 
 #-------------------------------------------------------------------------------
@@ -25,9 +22,7 @@ def copy_build_files(fips_dir, proj_dir, webpage_dir) :
     ws_dir = util.get_workspace_dir(fips_dir)
     src_dir = '{}/fips-deploy/oryol/wasmasmjs-make-release'.format(ws_dir)
     dst_dir = webpage_dir
-    if os.path.isdir(dst_dir) :
-        shutil.rmtree(dst_dir)
-    shutil.copytree(src_dir, dst_dir)
+    copy_tree(src_dir, dst_dir)
     shutil.copy('{}/web/wasmsuite-readme.md'.format(proj_dir), '{}/README.md'.format(dst_dir))
     shutil.copy('{}/LICENSE'.format(proj_dir), '{}/LICENSE'.format(dst_dir))
 
@@ -40,19 +35,14 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
     for ext in ['txt', 'dump'] :
         for dataFile in glob.glob('{}/*.{}'.format(data_src_dir, ext)) :
             shutil.copy(dataFile, '{}/'.format(data_dst_dir))
-    tbui_from = '{}/tbui'.format(data_src_dir)
-    tbui_to   = '{}/tbui'.format(data_dst_dir)
-    shutil.copytree(tbui_from, tbui_to)
 
 #-------------------------------------------------------------------------------
 def build_deploy_webpage(fips_dir, proj_dir) :
     # if webpage dir exists, clear it first
     ws_dir = util.get_workspace_dir(fips_dir)
     webpage_dir = '{}/fips-deploy/oryol-wasm-buildsuite'.format(ws_dir)
-    if os.path.isdir(webpage_dir) :
-        shutil.rmtree(webpage_dir)
-    os.makedirs(webpage_dir)
-
+    if not os.path.exists(webpage_dir) :
+        os.makedirs(webpage_dir)
     config = 'wasmasmjs-make-release'
     project.clean(fips_dir, proj_dir, config) 
     project.gen(fips_dir, proj_dir, config)
