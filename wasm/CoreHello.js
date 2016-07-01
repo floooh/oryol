@@ -1072,8 +1072,9 @@ if (Module["buffer"]) {
  buffer = new ArrayBuffer(TOTAL_MEMORY);
 }
 updateGlobalBufferViews();
-HEAP32[0] = 255;
-if (HEAPU8[0] !== 255 || HEAPU8[3] !== 0) throw "Typed arrays 2 must be run on a little-endian system";
+HEAP32[0] = 1668509029;
+HEAP16[1] = 25459;
+if (HEAPU8[2] !== 115 || HEAPU8[3] !== 99) throw "Runtime error: expected the system to be little-endian!";
 Module["HEAP"] = HEAP;
 Module["buffer"] = buffer;
 Module["HEAP8"] = HEAP8;
@@ -1275,10 +1276,10 @@ Module["preloadedAudios"] = {};
 var memoryInitializer = null;
 var ASM_CONSTS = [];
 STATIC_BASE = 1024;
-STATICTOP = STATIC_BASE + 5568;
+STATICTOP = STATIC_BASE + 5584;
 __ATINIT__.push();
 memoryInitializer = "CoreHello.html.mem";
-var STATIC_BUMP = 5568;
+var STATIC_BUMP = 5584;
 var tempDoublePtr = STATICTOP;
 STATICTOP += 16;
 Module["_i64Subtract"] = _i64Subtract;
@@ -1345,7 +1346,7 @@ var Browser = {
    if (Module["postMainLoop"]) Module["postMainLoop"]();
   })
  },
- isFullScreen: false,
+ isFullscreen: false,
  pointerLock: false,
  moduleContextCreatedCallbacks: [],
  workers: [],
@@ -1525,7 +1526,6 @@ var Browser = {
    if (contextHandle) {
     ctx = GL.getContext(contextHandle).GLctx;
    }
-   canvas.style.backgroundColor = "black";
   } else {
    ctx = canvas.getContext("2d");
   }
@@ -1543,10 +1543,10 @@ var Browser = {
   return ctx;
  }),
  destroyContext: (function(canvas, useWebGL, setInModule) {}),
- fullScreenHandlersInstalled: false,
+ fullscreenHandlersInstalled: false,
  lockPointer: undefined,
  resizeCanvas: undefined,
- requestFullScreen: (function(lockPointer, resizeCanvas, vrDevice) {
+ requestFullscreen: (function(lockPointer, resizeCanvas, vrDevice) {
   Browser.lockPointer = lockPointer;
   Browser.resizeCanvas = resizeCanvas;
   Browser.vrDevice = vrDevice;
@@ -1554,45 +1554,53 @@ var Browser = {
   if (typeof Browser.resizeCanvas === "undefined") Browser.resizeCanvas = false;
   if (typeof Browser.vrDevice === "undefined") Browser.vrDevice = null;
   var canvas = Module["canvas"];
-  function fullScreenChange() {
-   Browser.isFullScreen = false;
+  function fullscreenChange() {
+   Browser.isFullscreen = false;
    var canvasContainer = canvas.parentNode;
-   if ((document["webkitFullScreenElement"] || document["webkitFullscreenElement"] || document["mozFullScreenElement"] || document["mozFullscreenElement"] || document["fullScreenElement"] || document["fullscreenElement"] || document["msFullScreenElement"] || document["msFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvasContainer) {
-    canvas.cancelFullScreen = document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["webkitCancelFullScreen"] || document["msExitFullscreen"] || document["exitFullscreen"] || (function() {});
-    canvas.cancelFullScreen = canvas.cancelFullScreen.bind(document);
+   if ((document["fullscreenElement"] || document["mozFullScreenElement"] || document["msFullscreenElement"] || document["webkitFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvasContainer) {
+    canvas.exitFullscreen = document["exitFullscreen"] || document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["msExitFullscreen"] || document["webkitCancelFullScreen"] || (function() {});
+    canvas.exitFullscreen = canvas.exitFullscreen.bind(document);
     if (Browser.lockPointer) canvas.requestPointerLock();
-    Browser.isFullScreen = true;
-    if (Browser.resizeCanvas) Browser.setFullScreenCanvasSize();
+    Browser.isFullscreen = true;
+    if (Browser.resizeCanvas) Browser.setFullscreenCanvasSize();
    } else {
     canvasContainer.parentNode.insertBefore(canvas, canvasContainer);
     canvasContainer.parentNode.removeChild(canvasContainer);
     if (Browser.resizeCanvas) Browser.setWindowedCanvasSize();
    }
-   if (Module["onFullScreen"]) Module["onFullScreen"](Browser.isFullScreen);
+   if (Module["onFullScreen"]) Module["onFullScreen"](Browser.isFullscreen);
+   if (Module["onFullscreen"]) Module["onFullscreen"](Browser.isFullscreen);
    Browser.updateCanvasDimensions(canvas);
   }
-  if (!Browser.fullScreenHandlersInstalled) {
-   Browser.fullScreenHandlersInstalled = true;
-   document.addEventListener("fullscreenchange", fullScreenChange, false);
-   document.addEventListener("mozfullscreenchange", fullScreenChange, false);
-   document.addEventListener("webkitfullscreenchange", fullScreenChange, false);
-   document.addEventListener("MSFullscreenChange", fullScreenChange, false);
+  if (!Browser.fullscreenHandlersInstalled) {
+   Browser.fullscreenHandlersInstalled = true;
+   document.addEventListener("fullscreenchange", fullscreenChange, false);
+   document.addEventListener("mozfullscreenchange", fullscreenChange, false);
+   document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
+   document.addEventListener("MSFullscreenChange", fullscreenChange, false);
   }
   var canvasContainer = document.createElement("div");
   canvas.parentNode.insertBefore(canvasContainer, canvas);
   canvasContainer.appendChild(canvas);
-  canvasContainer.requestFullScreen = canvasContainer["requestFullScreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullScreen"] ? (function() {
-   canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
-  }) : null) || (canvasContainer["webkitRequestFullscreen"] ? (function() {
+  canvasContainer.requestFullscreen = canvasContainer["requestFullscreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullscreen"] ? (function() {
    canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"]);
+  }) : null) || (canvasContainer["webkitRequestFullScreen"] ? (function() {
+   canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
   }) : null);
   if (vrDevice) {
-   canvasContainer.requestFullScreen({
+   canvasContainer.requestFullscreen({
     vrDisplay: vrDevice
    });
   } else {
-   canvasContainer.requestFullScreen();
+   canvasContainer.requestFullscreen();
   }
+ }),
+ requestFullScreen: (function(lockPointer, resizeCanvas, vrDevice) {
+  Module.printErr("Browser.requestFullScreen() is deprecated. Please call Browser.requestFullscreen instead.");
+  Browser.requestFullScreen = (function(lockPointer, resizeCanvas, vrDevice) {
+   return Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
+  });
+  return Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
  }),
  nextRAF: 0,
  fakeRequestAnimationFrame: (function(func) {
@@ -1796,7 +1804,7 @@ var Browser = {
  }),
  windowedWidth: 0,
  windowedHeight: 0,
- setFullScreenCanvasSize: (function() {
+ setFullscreenCanvasSize: (function() {
   if (typeof SDL != "undefined") {
    var flags = HEAPU32[SDL.screen + Runtime.QUANTUM_SIZE * 0 >> 2];
    flags = flags | 8388608;
@@ -1829,7 +1837,7 @@ var Browser = {
     h = Math.round(w / Module["forcedAspectRatio"]);
    }
   }
-  if ((document["webkitFullScreenElement"] || document["webkitFullscreenElement"] || document["mozFullScreenElement"] || document["mozFullscreenElement"] || document["fullScreenElement"] || document["fullscreenElement"] || document["msFullScreenElement"] || document["msFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvas.parentNode && typeof screen != "undefined") {
+  if ((document["fullscreenElement"] || document["mozFullScreenElement"] || document["msFullscreenElement"] || document["webkitFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvas.parentNode && typeof screen != "undefined") {
    var factor = Math.min(screen.width / w, screen.height / h);
    w = Math.round(w * factor);
    h = Math.round(h * factor);
@@ -2141,7 +2149,12 @@ function ___syscall54(which, varargs) {
  }
 }
 Module["requestFullScreen"] = function Module_requestFullScreen(lockPointer, resizeCanvas, vrDevice) {
+ Module.printErr("Module.requestFullScreen is deprecated. Please call Module.requestFullscreen instead.");
+ Module["requestFullScreen"] = Module["requestFullscreen"];
  Browser.requestFullScreen(lockPointer, resizeCanvas, vrDevice);
+};
+Module["requestFullscreen"] = function Module_requestFullscreen(lockPointer, resizeCanvas, vrDevice) {
+ Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
 };
 Module["requestAnimationFrame"] = function Module_requestAnimationFrame(func) {
  Browser.requestAnimationFrame(func);

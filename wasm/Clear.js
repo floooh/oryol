@@ -1072,8 +1072,9 @@ if (Module["buffer"]) {
  buffer = new ArrayBuffer(TOTAL_MEMORY);
 }
 updateGlobalBufferViews();
-HEAP32[0] = 255;
-if (HEAPU8[0] !== 255 || HEAPU8[3] !== 0) throw "Typed arrays 2 must be run on a little-endian system";
+HEAP32[0] = 1668509029;
+HEAP16[1] = 25459;
+if (HEAPU8[2] !== 115 || HEAPU8[3] !== 99) throw "Runtime error: expected the system to be little-endian!";
 Module["HEAP"] = HEAP;
 Module["buffer"] = buffer;
 Module["HEAP8"] = HEAP8;
@@ -1275,10 +1276,10 @@ Module["preloadedAudios"] = {};
 var memoryInitializer = null;
 var ASM_CONSTS = [];
 STATIC_BASE = 1024;
-STATICTOP = STATIC_BASE + 6848;
+STATICTOP = STATIC_BASE + 6528;
 __ATINIT__.push();
 memoryInitializer = "Clear.html.mem";
-var STATIC_BUMP = 6848;
+var STATIC_BUMP = 6528;
 var tempDoublePtr = STATICTOP;
 STATICTOP += 16;
 var GL = {
@@ -1513,80 +1514,9 @@ Module["_memset"] = _memset;
 function _glUseProgram(program) {
  GLctx.useProgram(program ? GL.programs[program] : null);
 }
-function __ZSt18uncaught_exceptionv() {
- return !!__ZSt18uncaught_exceptionv.uncaught_exception;
+function _glDepthFunc(x0) {
+ GLctx.depthFunc(x0);
 }
-var EXCEPTIONS = {
- last: 0,
- caught: [],
- infos: {},
- deAdjust: (function(adjusted) {
-  if (!adjusted || EXCEPTIONS.infos[adjusted]) return adjusted;
-  for (var ptr in EXCEPTIONS.infos) {
-   var info = EXCEPTIONS.infos[ptr];
-   if (info.adjusted === adjusted) {
-    return ptr;
-   }
-  }
-  return adjusted;
- }),
- addRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  info.refcount++;
- }),
- decRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  assert(info.refcount > 0);
-  info.refcount--;
-  if (info.refcount === 0) {
-   if (info.destructor) {
-    Runtime.dynCall("vi", info.destructor, [ ptr ]);
-   }
-   delete EXCEPTIONS.infos[ptr];
-   ___cxa_free_exception(ptr);
-  }
- }),
- clearRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  info.refcount = 0;
- })
-};
-function ___resumeException(ptr) {
- if (!EXCEPTIONS.last) {
-  EXCEPTIONS.last = ptr;
- }
- EXCEPTIONS.clearRef(EXCEPTIONS.deAdjust(ptr));
- throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
-}
-function ___cxa_find_matching_catch() {
- var thrown = EXCEPTIONS.last;
- if (!thrown) {
-  return (asm["setTempRet0"](0), 0) | 0;
- }
- var info = EXCEPTIONS.infos[thrown];
- var throwntype = info.type;
- if (!throwntype) {
-  return (asm["setTempRet0"](0), thrown) | 0;
- }
- var typeArray = Array.prototype.slice.call(arguments);
- var pointer = Module["___cxa_is_pointer_type"](throwntype);
- if (!___cxa_find_matching_catch.buffer) ___cxa_find_matching_catch.buffer = _malloc(4);
- HEAP32[___cxa_find_matching_catch.buffer >> 2] = thrown;
- thrown = ___cxa_find_matching_catch.buffer;
- for (var i = 0; i < typeArray.length; i++) {
-  if (typeArray[i] && Module["___cxa_can_catch"](typeArray[i], throwntype, thrown)) {
-   thrown = HEAP32[thrown >> 2];
-   info.adjusted = thrown;
-   return (asm["setTempRet0"](typeArray[i]), thrown) | 0;
-  }
- }
- thrown = HEAP32[thrown >> 2];
- return (asm["setTempRet0"](throwntype), thrown) | 0;
-}
-function ___gxx_personality_v0() {}
 Module["_bitshift64Shl"] = _bitshift64Shl;
 var JSEvents = {
  keyEvent: 0,
@@ -1831,7 +1761,7 @@ var JSEvents = {
    var e = event || window.event;
    JSEvents.fillMouseEventData(JSEvents.wheelEvent, e, target);
    HEAPF64[JSEvents.wheelEvent + 72 >> 3] = e["wheelDeltaX"];
-   HEAPF64[JSEvents.wheelEvent + 80 >> 3] = -e["wheelDeltaY"];
+   HEAPF64[JSEvents.wheelEvent + 80 >> 3] = -(e["wheelDeltaY"] ? e["wheelDeltaY"] : e["wheelDelta"]);
    HEAPF64[JSEvents.wheelEvent + 88 >> 3] = 0;
    HEAP32[JSEvents.wheelEvent + 96 >> 2] = 0;
    var shouldCancel = Runtime.dynCall("iiii", callbackfunc, [ eventTypeId, JSEvents.wheelEvent, userData ]);
@@ -2034,7 +1964,7 @@ var JSEvents = {
   JSEvents.registerOrRemoveHandler(eventHandler);
  }),
  fullscreenEnabled: (function() {
-  return document.fullscreenEnabled || document.mozFullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled;
+  return document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled;
  }),
  fillFullscreenChangeEventData: (function(eventStruct, e) {
   var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
@@ -2174,6 +2104,29 @@ var JSEvents = {
    var e = event || window.event;
    JSEvents.fillPointerlockChangeEventData(JSEvents.pointerlockChangeEvent, e);
    var shouldCancel = Runtime.dynCall("iiii", callbackfunc, [ eventTypeId, JSEvents.pointerlockChangeEvent, userData ]);
+   if (shouldCancel) {
+    e.preventDefault();
+   }
+  });
+  var eventHandler = {
+   target: target,
+   allowsDeferredCalls: false,
+   eventTypeString: eventTypeString,
+   callbackfunc: callbackfunc,
+   handlerFunc: handlerFunc,
+   useCapture: useCapture
+  };
+  JSEvents.registerOrRemoveHandler(eventHandler);
+ }),
+ registerPointerlockErrorEventCallback: (function(target, userData, useCapture, callbackfunc, eventTypeId, eventTypeString) {
+  if (!target) {
+   target = document;
+  } else {
+   target = JSEvents.findEventTarget(target);
+  }
+  var handlerFunc = (function(event) {
+   var e = event || window.event;
+   var shouldCancel = Runtime.dynCall("iiii", callbackfunc, [ eventTypeId, 0, userData ]);
    if (shouldCancel) {
     e.preventDefault();
    }
@@ -2563,8 +2516,16 @@ function _glGetString(name_) {
  switch (name_) {
  case 7936:
  case 7937:
- case 7938:
+ case 37445:
+ case 37446:
   ret = allocate(intArrayFromString(GLctx.getParameter(name_)), "i8", ALLOC_NORMAL);
+  break;
+ case 7938:
+  var glVersion = GLctx.getParameter(GLctx.VERSION);
+  {
+   glVersion = "OpenGL ES 2.0 (" + glVersion + ")";
+  }
+  ret = allocate(intArrayFromString(glVersion), "i8", ALLOC_NORMAL);
   break;
  case 7939:
   var exts = GLctx.getSupportedExtensions();
@@ -2577,7 +2538,12 @@ function _glGetString(name_) {
   break;
  case 35724:
   var glslVersion = GLctx.getParameter(GLctx.SHADING_LANGUAGE_VERSION);
-  if (glslVersion.indexOf("WebGL GLSL ES 1.0") != -1) glslVersion = "OpenGL ES GLSL ES 1.00 (WebGL)";
+  var ver_re = /^WebGL GLSL ES ([0-9]\.[0-9][0-9]?)(?:$| .*)/;
+  var ver_num = glslVersion.match(ver_re);
+  if (ver_num !== null) {
+   if (ver_num[1].length == 3) ver_num[1] = ver_num[1] + "0";
+   glslVersion = "OpenGL ES GLSL ES " + ver_num[1] + " (" + glslVersion + ")";
+  }
   ret = allocate(intArrayFromString(glslVersion), "i8", ALLOC_NORMAL);
   break;
  default:
@@ -2751,49 +2717,112 @@ function _emscripten_enter_soft_fullscreen(target, fullscreenStrategy) {
  }
  return 0;
 }
-function _malloc(bytes) {
- var ptr = Runtime.dynamicAlloc(bytes + 8);
- return ptr + 8 & 4294967288;
+function _emscripten_set_main_loop_timing(mode, value) {
+ Browser.mainLoop.timingMode = mode;
+ Browser.mainLoop.timingValue = value;
+ if (!Browser.mainLoop.func) {
+  return 1;
+ }
+ if (mode == 0) {
+  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
+   var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
+   setTimeout(Browser.mainLoop.runner, timeUntilNextTick);
+  };
+  Browser.mainLoop.method = "timeout";
+ } else if (mode == 1) {
+  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_rAF() {
+   Browser.requestAnimationFrame(Browser.mainLoop.runner);
+  };
+  Browser.mainLoop.method = "rAF";
+ } else if (mode == 2) {
+  if (!window["setImmediate"]) {
+   var setImmediates = [];
+   var emscriptenMainLoopMessageId = "__emcc";
+   function Browser_setImmediate_messageHandler(event) {
+    if (event.source === window && event.data === emscriptenMainLoopMessageId) {
+     event.stopPropagation();
+     setImmediates.shift()();
+    }
+   }
+   window.addEventListener("message", Browser_setImmediate_messageHandler, true);
+   window["setImmediate"] = function Browser_emulated_setImmediate(func) {
+    setImmediates.push(func);
+    window.postMessage(emscriptenMainLoopMessageId, "*");
+   };
+  }
+  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setImmediate() {
+   window["setImmediate"](Browser.mainLoop.runner);
+  };
+  Browser.mainLoop.method = "immediate";
+ }
+ return 0;
 }
-Module["_malloc"] = _malloc;
-function ___cxa_allocate_exception(size) {
- return _malloc(size);
+function _emscripten_get_now() {
+ abort();
 }
-function ___cxa_throw(ptr, type, destructor) {
- EXCEPTIONS.infos[ptr] = {
-  ptr: ptr,
-  adjusted: ptr,
-  type: type,
-  destructor: destructor,
-  refcount: 0
- };
- EXCEPTIONS.last = ptr;
- if (!("uncaught_exception" in __ZSt18uncaught_exceptionv)) {
-  __ZSt18uncaught_exceptionv.uncaught_exception = 1;
+function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTiming) {
+ Module["noExitRuntime"] = true;
+ assert(!Browser.mainLoop.func, "emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.");
+ Browser.mainLoop.func = func;
+ Browser.mainLoop.arg = arg;
+ var browserIterationFunc;
+ if (typeof arg !== "undefined") {
+  var argArray = [ arg ];
+  browserIterationFunc = (function() {
+   Runtime.dynCall("vi", func, argArray);
+  });
  } else {
-  __ZSt18uncaught_exceptionv.uncaught_exception++;
+  browserIterationFunc = (function() {
+   Runtime.dynCall("v", func);
+  });
  }
- throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
-}
-function _glDepthFunc(x0) {
- GLctx.depthFunc(x0);
-}
-function _glDeleteTextures(n, textures) {
- for (var i = 0; i < n; i++) {
-  var id = HEAP32[textures + i * 4 >> 2];
-  var texture = GL.textures[id];
-  if (!texture) continue;
-  GLctx.deleteTexture(texture);
-  texture.name = 0;
-  GL.textures[id] = null;
+ var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
+ Browser.mainLoop.runner = function Browser_mainLoop_runner() {
+  if (ABORT) return;
+  if (Browser.mainLoop.queue.length > 0) {
+   var start = Date.now();
+   var blocker = Browser.mainLoop.queue.shift();
+   blocker.func(blocker.arg);
+   if (Browser.mainLoop.remainingBlockers) {
+    var remaining = Browser.mainLoop.remainingBlockers;
+    var next = remaining % 1 == 0 ? remaining - 1 : Math.floor(remaining);
+    if (blocker.counted) {
+     Browser.mainLoop.remainingBlockers = next;
+    } else {
+     next = next + .5;
+     Browser.mainLoop.remainingBlockers = (8 * remaining + next) / 9;
+    }
+   }
+   console.log('main loop blocker "' + blocker.name + '" took ' + (Date.now() - start) + " ms");
+   Browser.mainLoop.updateStatus();
+   if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+   setTimeout(Browser.mainLoop.runner, 0);
+   return;
+  }
+  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+  Browser.mainLoop.currentFrameNumber = Browser.mainLoop.currentFrameNumber + 1 | 0;
+  if (Browser.mainLoop.timingMode == 1 && Browser.mainLoop.timingValue > 1 && Browser.mainLoop.currentFrameNumber % Browser.mainLoop.timingValue != 0) {
+   Browser.mainLoop.scheduler();
+   return;
+  } else if (Browser.mainLoop.timingMode == 0) {
+   Browser.mainLoop.tickStartTime = _emscripten_get_now();
+  }
+  if (Browser.mainLoop.method === "timeout" && Module.ctx) {
+   Module.printErr("Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!");
+   Browser.mainLoop.method = "";
+  }
+  Browser.mainLoop.runIter(browserIterationFunc);
+  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+  if (typeof SDL === "object" && SDL.audio && SDL.audio.queueNewAudioData) SDL.audio.queueNewAudioData();
+  Browser.mainLoop.scheduler();
+ };
+ if (!noSetTiming) {
+  if (fps && fps > 0) _emscripten_set_main_loop_timing(0, 1e3 / fps); else _emscripten_set_main_loop_timing(1, 1);
+  Browser.mainLoop.scheduler();
  }
-}
-Module["_bitshift64Lshr"] = _bitshift64Lshr;
-function _llvm_trap() {
- abort("trap!");
-}
-function _glViewport(x0, x1, x2, x3) {
- GLctx.viewport(x0, x1, x2, x3);
+ if (simulateInfiniteLoop) {
+  throw "SimulateInfiniteLoop";
+ }
 }
 var Browser = {
  mainLoop: {
@@ -2857,7 +2886,7 @@ var Browser = {
    if (Module["postMainLoop"]) Module["postMainLoop"]();
   })
  },
- isFullScreen: false,
+ isFullscreen: false,
  pointerLock: false,
  moduleContextCreatedCallbacks: [],
  workers: [],
@@ -3037,7 +3066,6 @@ var Browser = {
    if (contextHandle) {
     ctx = GL.getContext(contextHandle).GLctx;
    }
-   canvas.style.backgroundColor = "black";
   } else {
    ctx = canvas.getContext("2d");
   }
@@ -3055,10 +3083,10 @@ var Browser = {
   return ctx;
  }),
  destroyContext: (function(canvas, useWebGL, setInModule) {}),
- fullScreenHandlersInstalled: false,
+ fullscreenHandlersInstalled: false,
  lockPointer: undefined,
  resizeCanvas: undefined,
- requestFullScreen: (function(lockPointer, resizeCanvas, vrDevice) {
+ requestFullscreen: (function(lockPointer, resizeCanvas, vrDevice) {
   Browser.lockPointer = lockPointer;
   Browser.resizeCanvas = resizeCanvas;
   Browser.vrDevice = vrDevice;
@@ -3066,45 +3094,53 @@ var Browser = {
   if (typeof Browser.resizeCanvas === "undefined") Browser.resizeCanvas = false;
   if (typeof Browser.vrDevice === "undefined") Browser.vrDevice = null;
   var canvas = Module["canvas"];
-  function fullScreenChange() {
-   Browser.isFullScreen = false;
+  function fullscreenChange() {
+   Browser.isFullscreen = false;
    var canvasContainer = canvas.parentNode;
-   if ((document["webkitFullScreenElement"] || document["webkitFullscreenElement"] || document["mozFullScreenElement"] || document["mozFullscreenElement"] || document["fullScreenElement"] || document["fullscreenElement"] || document["msFullScreenElement"] || document["msFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvasContainer) {
-    canvas.cancelFullScreen = document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["webkitCancelFullScreen"] || document["msExitFullscreen"] || document["exitFullscreen"] || (function() {});
-    canvas.cancelFullScreen = canvas.cancelFullScreen.bind(document);
+   if ((document["fullscreenElement"] || document["mozFullScreenElement"] || document["msFullscreenElement"] || document["webkitFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvasContainer) {
+    canvas.exitFullscreen = document["exitFullscreen"] || document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["msExitFullscreen"] || document["webkitCancelFullScreen"] || (function() {});
+    canvas.exitFullscreen = canvas.exitFullscreen.bind(document);
     if (Browser.lockPointer) canvas.requestPointerLock();
-    Browser.isFullScreen = true;
-    if (Browser.resizeCanvas) Browser.setFullScreenCanvasSize();
+    Browser.isFullscreen = true;
+    if (Browser.resizeCanvas) Browser.setFullscreenCanvasSize();
    } else {
     canvasContainer.parentNode.insertBefore(canvas, canvasContainer);
     canvasContainer.parentNode.removeChild(canvasContainer);
     if (Browser.resizeCanvas) Browser.setWindowedCanvasSize();
    }
-   if (Module["onFullScreen"]) Module["onFullScreen"](Browser.isFullScreen);
+   if (Module["onFullScreen"]) Module["onFullScreen"](Browser.isFullscreen);
+   if (Module["onFullscreen"]) Module["onFullscreen"](Browser.isFullscreen);
    Browser.updateCanvasDimensions(canvas);
   }
-  if (!Browser.fullScreenHandlersInstalled) {
-   Browser.fullScreenHandlersInstalled = true;
-   document.addEventListener("fullscreenchange", fullScreenChange, false);
-   document.addEventListener("mozfullscreenchange", fullScreenChange, false);
-   document.addEventListener("webkitfullscreenchange", fullScreenChange, false);
-   document.addEventListener("MSFullscreenChange", fullScreenChange, false);
+  if (!Browser.fullscreenHandlersInstalled) {
+   Browser.fullscreenHandlersInstalled = true;
+   document.addEventListener("fullscreenchange", fullscreenChange, false);
+   document.addEventListener("mozfullscreenchange", fullscreenChange, false);
+   document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
+   document.addEventListener("MSFullscreenChange", fullscreenChange, false);
   }
   var canvasContainer = document.createElement("div");
   canvas.parentNode.insertBefore(canvasContainer, canvas);
   canvasContainer.appendChild(canvas);
-  canvasContainer.requestFullScreen = canvasContainer["requestFullScreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullScreen"] ? (function() {
-   canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
-  }) : null) || (canvasContainer["webkitRequestFullscreen"] ? (function() {
+  canvasContainer.requestFullscreen = canvasContainer["requestFullscreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullscreen"] ? (function() {
    canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"]);
+  }) : null) || (canvasContainer["webkitRequestFullScreen"] ? (function() {
+   canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
   }) : null);
   if (vrDevice) {
-   canvasContainer.requestFullScreen({
+   canvasContainer.requestFullscreen({
     vrDisplay: vrDevice
    });
   } else {
-   canvasContainer.requestFullScreen();
+   canvasContainer.requestFullscreen();
   }
+ }),
+ requestFullScreen: (function(lockPointer, resizeCanvas, vrDevice) {
+  Module.printErr("Browser.requestFullScreen() is deprecated. Please call Browser.requestFullscreen instead.");
+  Browser.requestFullScreen = (function(lockPointer, resizeCanvas, vrDevice) {
+   return Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
+  });
+  return Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
  }),
  nextRAF: 0,
  fakeRequestAnimationFrame: (function(func) {
@@ -3308,7 +3344,7 @@ var Browser = {
  }),
  windowedWidth: 0,
  windowedHeight: 0,
- setFullScreenCanvasSize: (function() {
+ setFullscreenCanvasSize: (function() {
   if (typeof SDL != "undefined") {
    var flags = HEAPU32[SDL.screen + Runtime.QUANTUM_SIZE * 0 >> 2];
    flags = flags | 8388608;
@@ -3341,7 +3377,7 @@ var Browser = {
     h = Math.round(w / Module["forcedAspectRatio"]);
    }
   }
-  if ((document["webkitFullScreenElement"] || document["webkitFullscreenElement"] || document["mozFullScreenElement"] || document["mozFullscreenElement"] || document["fullScreenElement"] || document["fullscreenElement"] || document["msFullScreenElement"] || document["msFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvas.parentNode && typeof screen != "undefined") {
+  if ((document["fullscreenElement"] || document["mozFullScreenElement"] || document["msFullscreenElement"] || document["webkitFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvas.parentNode && typeof screen != "undefined") {
    var factor = Math.min(screen.width / w, screen.height / h);
    w = Math.round(w * factor);
    h = Math.round(h * factor);
@@ -3375,147 +3411,32 @@ var Browser = {
   return handle;
  })
 };
-function _emscripten_set_main_loop_timing(mode, value) {
- Browser.mainLoop.timingMode = mode;
- Browser.mainLoop.timingValue = value;
- if (!Browser.mainLoop.func) {
-  return 1;
- }
- if (mode == 0) {
-  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
-   var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
-   setTimeout(Browser.mainLoop.runner, timeUntilNextTick);
-  };
-  Browser.mainLoop.method = "timeout";
- } else if (mode == 1) {
-  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_rAF() {
-   Browser.requestAnimationFrame(Browser.mainLoop.runner);
-  };
-  Browser.mainLoop.method = "rAF";
- } else if (mode == 2) {
-  if (!window["setImmediate"]) {
-   var setImmediates = [];
-   var emscriptenMainLoopMessageId = "__emcc";
-   function Browser_setImmediate_messageHandler(event) {
-    if (event.source === window && event.data === emscriptenMainLoopMessageId) {
-     event.stopPropagation();
-     setImmediates.shift()();
-    }
-   }
-   window.addEventListener("message", Browser_setImmediate_messageHandler, true);
-   window["setImmediate"] = function Browser_emulated_setImmediate(func) {
-    setImmediates.push(func);
-    window.postMessage(emscriptenMainLoopMessageId, "*");
-   };
-  }
-  Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setImmediate() {
-   window["setImmediate"](Browser.mainLoop.runner);
-  };
-  Browser.mainLoop.method = "immediate";
- }
- return 0;
+function _emscripten_cancel_main_loop() {
+ Browser.mainLoop.pause();
+ Browser.mainLoop.func = null;
 }
-function _emscripten_get_now() {
- abort();
+function _glDeleteTextures(n, textures) {
+ for (var i = 0; i < n; i++) {
+  var id = HEAP32[textures + i * 4 >> 2];
+  var texture = GL.textures[id];
+  if (!texture) continue;
+  GLctx.deleteTexture(texture);
+  texture.name = 0;
+  GL.textures[id] = null;
+ }
 }
-function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTiming) {
- Module["noExitRuntime"] = true;
- assert(!Browser.mainLoop.func, "emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.");
- Browser.mainLoop.func = func;
- Browser.mainLoop.arg = arg;
- var browserIterationFunc;
- if (typeof arg !== "undefined") {
-  var argArray = [ arg ];
-  browserIterationFunc = (function() {
-   Runtime.dynCall("vi", func, argArray);
-  });
- } else {
-  browserIterationFunc = (function() {
-   Runtime.dynCall("v", func);
-  });
- }
- var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
- Browser.mainLoop.runner = function Browser_mainLoop_runner() {
-  if (ABORT) return;
-  if (Browser.mainLoop.queue.length > 0) {
-   var start = Date.now();
-   var blocker = Browser.mainLoop.queue.shift();
-   blocker.func(blocker.arg);
-   if (Browser.mainLoop.remainingBlockers) {
-    var remaining = Browser.mainLoop.remainingBlockers;
-    var next = remaining % 1 == 0 ? remaining - 1 : Math.floor(remaining);
-    if (blocker.counted) {
-     Browser.mainLoop.remainingBlockers = next;
-    } else {
-     next = next + .5;
-     Browser.mainLoop.remainingBlockers = (8 * remaining + next) / 9;
-    }
-   }
-   console.log('main loop blocker "' + blocker.name + '" took ' + (Date.now() - start) + " ms");
-   Browser.mainLoop.updateStatus();
-   if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
-   setTimeout(Browser.mainLoop.runner, 0);
-   return;
-  }
-  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
-  Browser.mainLoop.currentFrameNumber = Browser.mainLoop.currentFrameNumber + 1 | 0;
-  if (Browser.mainLoop.timingMode == 1 && Browser.mainLoop.timingValue > 1 && Browser.mainLoop.currentFrameNumber % Browser.mainLoop.timingValue != 0) {
-   Browser.mainLoop.scheduler();
-   return;
-  } else if (Browser.mainLoop.timingMode == 0) {
-   Browser.mainLoop.tickStartTime = _emscripten_get_now();
-  }
-  if (Browser.mainLoop.method === "timeout" && Module.ctx) {
-   Module.printErr("Looks like you are rendering without using requestAnimationFrame for the main loop. You should use 0 for the frame rate in emscripten_set_main_loop in order to use requestAnimationFrame, as that can greatly improve your frame rates!");
-   Browser.mainLoop.method = "";
-  }
-  Browser.mainLoop.runIter(browserIterationFunc);
-  if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
-  if (typeof SDL === "object" && SDL.audio && SDL.audio.queueNewAudioData) SDL.audio.queueNewAudioData();
-  Browser.mainLoop.scheduler();
- };
- if (!noSetTiming) {
-  if (fps && fps > 0) _emscripten_set_main_loop_timing(0, 1e3 / fps); else _emscripten_set_main_loop_timing(1, 1);
-  Browser.mainLoop.scheduler();
- }
- if (simulateInfiniteLoop) {
-  throw "SimulateInfiniteLoop";
- }
+Module["_bitshift64Lshr"] = _bitshift64Lshr;
+function _llvm_trap() {
+ abort("trap!");
+}
+function _glViewport(x0, x1, x2, x3) {
+ GLctx.viewport(x0, x1, x2, x3);
 }
 function _pthread_cleanup_push(routine, arg) {
  __ATEXIT__.push((function() {
   Runtime.dynCall("vi", routine, [ arg ]);
  }));
  _pthread_cleanup_push.level = __ATEXIT__.length;
-}
-var SYSCALLS = {
- varargs: 0,
- get: (function(varargs) {
-  SYSCALLS.varargs += 4;
-  var ret = HEAP32[SYSCALLS.varargs - 4 >> 2];
-  return ret;
- }),
- getStr: (function() {
-  var ret = Pointer_stringify(SYSCALLS.get());
-  return ret;
- }),
- get64: (function() {
-  var low = SYSCALLS.get(), high = SYSCALLS.get();
-  if (low >= 0) assert(high === 0); else assert(high === -1);
-  return low;
- }),
- getZero: (function() {
-  assert(SYSCALLS.get() === 0);
- })
-};
-function ___syscall54(which, varargs) {
- SYSCALLS.varargs = varargs;
- try {
-  return 0;
- } catch (e) {
-  if (typeof FS === "undefined" || !(e instanceof FS.ErrnoError)) abort(e);
-  return -e.errno;
- }
 }
 function _emscripten_webgl_create_context(target, attributes) {
  var contextAttributes = {};
@@ -3566,6 +3487,26 @@ function _emscripten_memcpy_big(dest, src, num) {
  return dest;
 }
 Module["_memcpy"] = _memcpy;
+var SYSCALLS = {
+ varargs: 0,
+ get: (function(varargs) {
+  SYSCALLS.varargs += 4;
+  var ret = HEAP32[SYSCALLS.varargs - 4 >> 2];
+  return ret;
+ }),
+ getStr: (function() {
+  var ret = Pointer_stringify(SYSCALLS.get());
+  return ret;
+ }),
+ get64: (function() {
+  var low = SYSCALLS.get(), high = SYSCALLS.get();
+  if (low >= 0) assert(high === 0); else assert(high === -1);
+  return low;
+ }),
+ getZero: (function() {
+  assert(SYSCALLS.get() === 0);
+ })
+};
 function ___syscall6(which, varargs) {
  SYSCALLS.varargs = varargs;
  try {
@@ -3715,9 +3656,14 @@ function emscriptenWebGLGet(name_, p, type) {
 function _glGetIntegerv(name_, p) {
  emscriptenWebGLGet(name_, p, "Integer");
 }
-function _emscripten_cancel_main_loop() {
- Browser.mainLoop.pause();
- Browser.mainLoop.func = null;
+function ___syscall54(which, varargs) {
+ SYSCALLS.varargs = varargs;
+ try {
+  return 0;
+ } catch (e) {
+  if (typeof FS === "undefined" || !(e instanceof FS.ErrnoError)) abort(e);
+  return -e.errno;
+ }
 }
 function _emscripten_set_canvas_size(width, height) {
  Browser.setCanvasSize(width, height);
@@ -3729,7 +3675,7 @@ function _emscripten_get_canvas_size(width, height, isFullscreen) {
  var canvas = Module["canvas"];
  HEAP32[width >> 2] = canvas.width;
  HEAP32[height >> 2] = canvas.height;
- HEAP32[isFullscreen >> 2] = Browser.isFullScreen ? 1 : 0;
+ HEAP32[isFullscreen >> 2] = Browser.isFullscreen ? 1 : 0;
 }
 function ___syscall140(which, varargs) {
  SYSCALLS.varargs = varargs;
@@ -3797,7 +3743,12 @@ function _glDeleteBuffers(n, buffers) {
 var GLctx;
 GL.init();
 Module["requestFullScreen"] = function Module_requestFullScreen(lockPointer, resizeCanvas, vrDevice) {
+ Module.printErr("Module.requestFullScreen is deprecated. Please call Module.requestFullscreen instead.");
+ Module["requestFullScreen"] = Module["requestFullscreen"];
  Browser.requestFullScreen(lockPointer, resizeCanvas, vrDevice);
+};
+Module["requestFullscreen"] = function Module_requestFullscreen(lockPointer, resizeCanvas, vrDevice) {
+ Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
 };
 Module["requestAnimationFrame"] = function Module_requestAnimationFrame(func) {
  Browser.requestAnimationFrame(func);
@@ -3856,14 +3807,6 @@ function invoke_iiii(index, a1, a2, a3) {
   asm["setThrew"](1, 0);
  }
 }
-function invoke_viiiii(index, a1, a2, a3, a4, a5) {
- try {
-  Module["dynCall_viiiii"](index, a1, a2, a3, a4, a5);
- } catch (e) {
-  if (typeof e !== "number" && e !== "longjmp") throw e;
-  asm["setThrew"](1, 0);
- }
-}
 function invoke_vi(index, a1) {
  try {
   Module["dynCall_vi"](index, a1);
@@ -3896,14 +3839,6 @@ function invoke_v(index) {
   asm["setThrew"](1, 0);
  }
 }
-function invoke_viiiiii(index, a1, a2, a3, a4, a5, a6) {
- try {
-  Module["dynCall_viiiiii"](index, a1, a2, a3, a4, a5, a6);
- } catch (e) {
-  if (typeof e !== "number" && e !== "longjmp") throw e;
-  asm["setThrew"](1, 0);
- }
-}
 function invoke_viiii(index, a1, a2, a3, a4) {
  try {
   Module["dynCall_viiii"](index, a1, a2, a3, a4);
@@ -3929,66 +3864,58 @@ Module.asmLibraryArg = {
  "abort": abort,
  "assert": assert,
  "invoke_iiii": invoke_iiii,
- "invoke_viiiii": invoke_viiiii,
  "invoke_vi": invoke_vi,
  "invoke_vii": invoke_vii,
  "invoke_ii": invoke_ii,
  "invoke_v": invoke_v,
- "invoke_viiiiii": invoke_viiiiii,
  "invoke_viiii": invoke_viiii,
  "_glUseProgram": _glUseProgram,
  "__softFullscreenResizeWebGLRenderTarget": __softFullscreenResizeWebGLRenderTarget,
  "_glCullFace": _glCullFace,
  "_glDeleteFramebuffers": _glDeleteFramebuffers,
  "___syscall6": ___syscall6,
+ "_emscripten_do_request_fullscreen": _emscripten_do_request_fullscreen,
  "__restoreHiddenElements": __restoreHiddenElements,
- "_emscripten_webgl_create_context": _emscripten_webgl_create_context,
- "___gxx_personality_v0": ___gxx_personality_v0,
+ "_emscripten_set_main_loop_timing": _emscripten_set_main_loop_timing,
  "_glDeleteRenderbuffers": _glDeleteRenderbuffers,
  "_glDeleteProgram": _glDeleteProgram,
  "_usleep": _usleep,
- "__ZSt18uncaught_exceptionv": __ZSt18uncaught_exceptionv,
+ "_glClearStencil": _glClearStencil,
  "_glBlendFuncSeparate": _glBlendFuncSeparate,
  "_glBindBuffer": _glBindBuffer,
  "_glDepthMask": _glDepthMask,
  "_glClearDepthf": _glClearDepthf,
- "_emscripten_set_main_loop": _emscripten_set_main_loop,
+ "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
  "_glViewport": _glViewport,
  "_llvm_cttz_i32": _llvm_cttz_i32,
- "_emscripten_set_main_loop_timing": _emscripten_set_main_loop_timing,
+ "_emscripten_webgl_create_context": _emscripten_webgl_create_context,
  "_glClearColor": _glClearColor,
  "_sbrk": _sbrk,
  "_glDeleteTextures": _glDeleteTextures,
  "_glDepthFunc": _glDepthFunc,
- "_glClearStencil": _glClearStencil,
- "___cxa_allocate_exception": ___cxa_allocate_exception,
- "_emscripten_set_canvas_size": _emscripten_set_canvas_size,
- "___resumeException": ___resumeException,
- "___cxa_find_matching_catch": ___cxa_find_matching_catch,
- "_glStencilFunc": _glStencilFunc,
  "_glClear": _glClear,
+ "_emscripten_set_canvas_size": _emscripten_set_canvas_size,
+ "_glStencilFunc": _glStencilFunc,
  "_glStencilOp": _glStencilOp,
  "_nanosleep": _nanosleep,
  "_emscripten_memcpy_big": _emscripten_memcpy_big,
- "_glStencilMask": _glStencilMask,
  "_emscripten_webgl_destroy_context": _emscripten_webgl_destroy_context,
  "__hideEverythingExceptGivenElement": __hideEverythingExceptGivenElement,
  "_emscripten_enter_soft_fullscreen": _emscripten_enter_soft_fullscreen,
- "_llvm_trap": _llvm_trap,
+ "_emscripten_webgl_init_context_attributes": _emscripten_webgl_init_context_attributes,
  "_glGetIntegerv": _glGetIntegerv,
  "_glEnable": _glEnable,
  "___syscall54": ___syscall54,
  "emscriptenWebGLGet": emscriptenWebGLGet,
  "_pthread_cleanup_pop": _pthread_cleanup_pop,
  "__setLetterbox": __setLetterbox,
- "_emscripten_webgl_make_context_current": _emscripten_webgl_make_context_current,
+ "_emscripten_set_main_loop": _emscripten_set_main_loop,
  "_emscripten_get_canvas_size": _emscripten_get_canvas_size,
  "_emscripten_get_now": _emscripten_get_now,
  "_emscripten_request_fullscreen_strategy": _emscripten_request_fullscreen_strategy,
  "_glFrontFace": _glFrontFace,
  "__registerRestoreOldStyle": __registerRestoreOldStyle,
- "_emscripten_webgl_init_context_attributes": _emscripten_webgl_init_context_attributes,
- "___cxa_throw": ___cxa_throw,
+ "_glStencilMask": _glStencilMask,
  "_glColorMask": _glColorMask,
  "_abort": _abort,
  "_pthread_cleanup_push": _pthread_cleanup_push,
@@ -3998,7 +3925,7 @@ Module.asmLibraryArg = {
  "_glDeleteBuffers": _glDeleteBuffers,
  "_glBlendColor": _glBlendColor,
  "___syscall140": ___syscall140,
- "_emscripten_do_request_fullscreen": _emscripten_do_request_fullscreen,
+ "_llvm_trap": _llvm_trap,
  "_glBlendEquationSeparate": _glBlendEquationSeparate,
  "___syscall146": ___syscall146,
  "_glGetString": _glGetString,
@@ -4029,12 +3956,10 @@ var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
 var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
-var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];
 var dynCall_vi = Module["dynCall_vi"] = asm["dynCall_vi"];
 var dynCall_vii = Module["dynCall_vii"] = asm["dynCall_vii"];
 var dynCall_ii = Module["dynCall_ii"] = asm["dynCall_ii"];
 var dynCall_v = Module["dynCall_v"] = asm["dynCall_v"];
-var dynCall_viiiiii = Module["dynCall_viiiiii"] = asm["dynCall_viiiiii"];
 var dynCall_viiii = Module["dynCall_viiii"] = asm["dynCall_viiii"];
 Runtime.stackAlloc = asm["stackAlloc"];
 Runtime.stackSave = asm["stackSave"];

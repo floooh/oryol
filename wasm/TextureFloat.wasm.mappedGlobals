@@ -1,8 +1,8 @@
 {
-"A": { "address": 152, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
+"$b": { "address": 176, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
+,"A": { "address": 152, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
 ,"B": { "address": 160, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"C": { "address": 168, "type": 1, "import": 0, "module": "(null)", "base": "(null)" }
-,"hc": { "address": 176, "type": 4, "import": 0, "module": "(null)", "base": "(null)" }
 ,"i": { "address": 8, "type": 1, "import": 1, "module": "env", "base": "STACKTOP" }
 ,"j": { "address": 16, "type": 1, "import": 1, "module": "env", "base": "STACK_MAX" }
 ,"k": { "address": 24, "type": 1, "import": 1, "module": "env", "base": "tempDoublePtr" }

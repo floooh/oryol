@@ -1072,8 +1072,9 @@ if (Module["buffer"]) {
  buffer = new ArrayBuffer(TOTAL_MEMORY);
 }
 updateGlobalBufferViews();
-HEAP32[0] = 255;
-if (HEAPU8[0] !== 255 || HEAPU8[3] !== 0) throw "Typed arrays 2 must be run on a little-endian system";
+HEAP32[0] = 1668509029;
+HEAP16[1] = 25459;
+if (HEAPU8[2] !== 115 || HEAPU8[3] !== 99) throw "Runtime error: expected the system to be little-endian!";
 Module["HEAP"] = HEAP;
 Module["buffer"] = buffer;
 Module["HEAP8"] = HEAP8;
@@ -1275,12 +1276,14 @@ Module["preloadedAudios"] = {};
 var memoryInitializer = null;
 var ASM_CONSTS = [];
 STATIC_BASE = 1024;
-STATICTOP = STATIC_BASE + 7488;
+STATICTOP = STATIC_BASE + 7216;
 __ATINIT__.push();
 memoryInitializer = "IOQueueSample.html.mem";
-var STATIC_BUMP = 7488;
+var STATIC_BUMP = 7216;
 var tempDoublePtr = STATICTOP;
 STATICTOP += 16;
+Module["_i64Subtract"] = _i64Subtract;
+Module["_i64Add"] = _i64Add;
 var Browser = {
  mainLoop: {
   scheduler: null,
@@ -1343,7 +1346,7 @@ var Browser = {
    if (Module["postMainLoop"]) Module["postMainLoop"]();
   })
  },
- isFullScreen: false,
+ isFullscreen: false,
  pointerLock: false,
  moduleContextCreatedCallbacks: [],
  workers: [],
@@ -1523,7 +1526,6 @@ var Browser = {
    if (contextHandle) {
     ctx = GL.getContext(contextHandle).GLctx;
    }
-   canvas.style.backgroundColor = "black";
   } else {
    ctx = canvas.getContext("2d");
   }
@@ -1541,10 +1543,10 @@ var Browser = {
   return ctx;
  }),
  destroyContext: (function(canvas, useWebGL, setInModule) {}),
- fullScreenHandlersInstalled: false,
+ fullscreenHandlersInstalled: false,
  lockPointer: undefined,
  resizeCanvas: undefined,
- requestFullScreen: (function(lockPointer, resizeCanvas, vrDevice) {
+ requestFullscreen: (function(lockPointer, resizeCanvas, vrDevice) {
   Browser.lockPointer = lockPointer;
   Browser.resizeCanvas = resizeCanvas;
   Browser.vrDevice = vrDevice;
@@ -1552,45 +1554,53 @@ var Browser = {
   if (typeof Browser.resizeCanvas === "undefined") Browser.resizeCanvas = false;
   if (typeof Browser.vrDevice === "undefined") Browser.vrDevice = null;
   var canvas = Module["canvas"];
-  function fullScreenChange() {
-   Browser.isFullScreen = false;
+  function fullscreenChange() {
+   Browser.isFullscreen = false;
    var canvasContainer = canvas.parentNode;
-   if ((document["webkitFullScreenElement"] || document["webkitFullscreenElement"] || document["mozFullScreenElement"] || document["mozFullscreenElement"] || document["fullScreenElement"] || document["fullscreenElement"] || document["msFullScreenElement"] || document["msFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvasContainer) {
-    canvas.cancelFullScreen = document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["webkitCancelFullScreen"] || document["msExitFullscreen"] || document["exitFullscreen"] || (function() {});
-    canvas.cancelFullScreen = canvas.cancelFullScreen.bind(document);
+   if ((document["fullscreenElement"] || document["mozFullScreenElement"] || document["msFullscreenElement"] || document["webkitFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvasContainer) {
+    canvas.exitFullscreen = document["exitFullscreen"] || document["cancelFullScreen"] || document["mozCancelFullScreen"] || document["msExitFullscreen"] || document["webkitCancelFullScreen"] || (function() {});
+    canvas.exitFullscreen = canvas.exitFullscreen.bind(document);
     if (Browser.lockPointer) canvas.requestPointerLock();
-    Browser.isFullScreen = true;
-    if (Browser.resizeCanvas) Browser.setFullScreenCanvasSize();
+    Browser.isFullscreen = true;
+    if (Browser.resizeCanvas) Browser.setFullscreenCanvasSize();
    } else {
     canvasContainer.parentNode.insertBefore(canvas, canvasContainer);
     canvasContainer.parentNode.removeChild(canvasContainer);
     if (Browser.resizeCanvas) Browser.setWindowedCanvasSize();
    }
-   if (Module["onFullScreen"]) Module["onFullScreen"](Browser.isFullScreen);
+   if (Module["onFullScreen"]) Module["onFullScreen"](Browser.isFullscreen);
+   if (Module["onFullscreen"]) Module["onFullscreen"](Browser.isFullscreen);
    Browser.updateCanvasDimensions(canvas);
   }
-  if (!Browser.fullScreenHandlersInstalled) {
-   Browser.fullScreenHandlersInstalled = true;
-   document.addEventListener("fullscreenchange", fullScreenChange, false);
-   document.addEventListener("mozfullscreenchange", fullScreenChange, false);
-   document.addEventListener("webkitfullscreenchange", fullScreenChange, false);
-   document.addEventListener("MSFullscreenChange", fullScreenChange, false);
+  if (!Browser.fullscreenHandlersInstalled) {
+   Browser.fullscreenHandlersInstalled = true;
+   document.addEventListener("fullscreenchange", fullscreenChange, false);
+   document.addEventListener("mozfullscreenchange", fullscreenChange, false);
+   document.addEventListener("webkitfullscreenchange", fullscreenChange, false);
+   document.addEventListener("MSFullscreenChange", fullscreenChange, false);
   }
   var canvasContainer = document.createElement("div");
   canvas.parentNode.insertBefore(canvasContainer, canvas);
   canvasContainer.appendChild(canvas);
-  canvasContainer.requestFullScreen = canvasContainer["requestFullScreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullScreen"] ? (function() {
-   canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
-  }) : null) || (canvasContainer["webkitRequestFullscreen"] ? (function() {
+  canvasContainer.requestFullscreen = canvasContainer["requestFullscreen"] || canvasContainer["mozRequestFullScreen"] || canvasContainer["msRequestFullscreen"] || (canvasContainer["webkitRequestFullscreen"] ? (function() {
    canvasContainer["webkitRequestFullscreen"](Element["ALLOW_KEYBOARD_INPUT"]);
+  }) : null) || (canvasContainer["webkitRequestFullScreen"] ? (function() {
+   canvasContainer["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
   }) : null);
   if (vrDevice) {
-   canvasContainer.requestFullScreen({
+   canvasContainer.requestFullscreen({
     vrDisplay: vrDevice
    });
   } else {
-   canvasContainer.requestFullScreen();
+   canvasContainer.requestFullscreen();
   }
+ }),
+ requestFullScreen: (function(lockPointer, resizeCanvas, vrDevice) {
+  Module.printErr("Browser.requestFullScreen() is deprecated. Please call Browser.requestFullscreen instead.");
+  Browser.requestFullScreen = (function(lockPointer, resizeCanvas, vrDevice) {
+   return Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
+  });
+  return Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
  }),
  nextRAF: 0,
  fakeRequestAnimationFrame: (function(func) {
@@ -1794,7 +1804,7 @@ var Browser = {
  }),
  windowedWidth: 0,
  windowedHeight: 0,
- setFullScreenCanvasSize: (function() {
+ setFullscreenCanvasSize: (function() {
   if (typeof SDL != "undefined") {
    var flags = HEAPU32[SDL.screen + Runtime.QUANTUM_SIZE * 0 >> 2];
    flags = flags | 8388608;
@@ -1827,7 +1837,7 @@ var Browser = {
     h = Math.round(w / Module["forcedAspectRatio"]);
    }
   }
-  if ((document["webkitFullScreenElement"] || document["webkitFullscreenElement"] || document["mozFullScreenElement"] || document["mozFullscreenElement"] || document["fullScreenElement"] || document["fullscreenElement"] || document["msFullScreenElement"] || document["msFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvas.parentNode && typeof screen != "undefined") {
+  if ((document["fullscreenElement"] || document["mozFullScreenElement"] || document["msFullscreenElement"] || document["webkitFullscreenElement"] || document["webkitCurrentFullScreenElement"]) === canvas.parentNode && typeof screen != "undefined") {
    var factor = Math.min(screen.width / w, screen.height / h);
    w = Math.round(w * factor);
    h = Math.round(h * factor);
@@ -1968,97 +1978,6 @@ function _emscripten_set_main_loop(func, fps, simulateInfiniteLoop, arg, noSetTi
   throw "SimulateInfiniteLoop";
  }
 }
-Module["_i64Subtract"] = _i64Subtract;
-Module["_i64Add"] = _i64Add;
-function __ZSt18uncaught_exceptionv() {
- return !!__ZSt18uncaught_exceptionv.uncaught_exception;
-}
-var EXCEPTIONS = {
- last: 0,
- caught: [],
- infos: {},
- deAdjust: (function(adjusted) {
-  if (!adjusted || EXCEPTIONS.infos[adjusted]) return adjusted;
-  for (var ptr in EXCEPTIONS.infos) {
-   var info = EXCEPTIONS.infos[ptr];
-   if (info.adjusted === adjusted) {
-    return ptr;
-   }
-  }
-  return adjusted;
- }),
- addRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  info.refcount++;
- }),
- decRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  assert(info.refcount > 0);
-  info.refcount--;
-  if (info.refcount === 0) {
-   if (info.destructor) {
-    Runtime.dynCall("vi", info.destructor, [ ptr ]);
-   }
-   delete EXCEPTIONS.infos[ptr];
-   ___cxa_free_exception(ptr);
-  }
- }),
- clearRef: (function(ptr) {
-  if (!ptr) return;
-  var info = EXCEPTIONS.infos[ptr];
-  info.refcount = 0;
- })
-};
-function ___resumeException(ptr) {
- if (!EXCEPTIONS.last) {
-  EXCEPTIONS.last = ptr;
- }
- EXCEPTIONS.clearRef(EXCEPTIONS.deAdjust(ptr));
- throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
-}
-function ___cxa_find_matching_catch() {
- var thrown = EXCEPTIONS.last;
- if (!thrown) {
-  return (asm["setTempRet0"](0), 0) | 0;
- }
- var info = EXCEPTIONS.infos[thrown];
- var throwntype = info.type;
- if (!throwntype) {
-  return (asm["setTempRet0"](0), thrown) | 0;
- }
- var typeArray = Array.prototype.slice.call(arguments);
- var pointer = Module["___cxa_is_pointer_type"](throwntype);
- if (!___cxa_find_matching_catch.buffer) ___cxa_find_matching_catch.buffer = _malloc(4);
- HEAP32[___cxa_find_matching_catch.buffer >> 2] = thrown;
- thrown = ___cxa_find_matching_catch.buffer;
- for (var i = 0; i < typeArray.length; i++) {
-  if (typeArray[i] && Module["___cxa_can_catch"](typeArray[i], throwntype, thrown)) {
-   thrown = HEAP32[thrown >> 2];
-   info.adjusted = thrown;
-   return (asm["setTempRet0"](typeArray[i]), thrown) | 0;
-  }
- }
- thrown = HEAP32[thrown >> 2];
- return (asm["setTempRet0"](throwntype), thrown) | 0;
-}
-function ___cxa_throw(ptr, type, destructor) {
- EXCEPTIONS.infos[ptr] = {
-  ptr: ptr,
-  adjusted: ptr,
-  type: type,
-  destructor: destructor,
-  refcount: 0
- };
- EXCEPTIONS.last = ptr;
- if (!("uncaught_exception" in __ZSt18uncaught_exceptionv)) {
-  __ZSt18uncaught_exceptionv.uncaught_exception = 1;
- } else {
-  __ZSt18uncaught_exceptionv.uncaught_exception++;
- }
- throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
-}
 Module["_memset"] = _memset;
 function _pthread_cleanup_push(routine, arg) {
  __ATEXIT__.push((function() {
@@ -2155,6 +2074,50 @@ function _sbrk(bytes) {
  return ret;
 }
 Module["_memmove"] = _memmove;
+function _usleep(useconds) {
+ var msec = useconds / 1e3;
+ if ((ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) && self["performance"] && self["performance"]["now"]) {
+  var start = self["performance"]["now"]();
+  while (self["performance"]["now"]() - start < msec) {}
+ } else {
+  var start = Date.now();
+  while (Date.now() - start < msec) {}
+ }
+ return 0;
+}
+function _nanosleep(rqtp, rmtp) {
+ var seconds = HEAP32[rqtp >> 2];
+ var nanoseconds = HEAP32[rqtp + 4 >> 2];
+ if (rmtp !== 0) {
+  HEAP32[rmtp >> 2] = 0;
+  HEAP32[rmtp + 4 >> 2] = 0;
+ }
+ return _usleep(seconds * 1e6 + nanoseconds / 1e3);
+}
+Module["___uremdi3"] = ___uremdi3;
+function _emscripten_cancel_main_loop() {
+ Browser.mainLoop.pause();
+ Browser.mainLoop.func = null;
+}
+function _llvm_trap() {
+ abort("trap!");
+}
+Module["_pthread_self"] = _pthread_self;
+function ___syscall140(which, varargs) {
+ SYSCALLS.varargs = varargs;
+ try {
+  var stream = SYSCALLS.getStreamFromFD(), offset_high = SYSCALLS.get(), offset_low = SYSCALLS.get(), result = SYSCALLS.get(), whence = SYSCALLS.get();
+  var offset = offset_low;
+  assert(offset_high === 0);
+  FS.llseek(stream, offset, whence);
+  HEAP32[result >> 2] = stream.position;
+  if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null;
+  return 0;
+ } catch (e) {
+  if (typeof FS === "undefined" || !(e instanceof FS.ErrnoError)) abort(e);
+  return -e.errno;
+ }
+}
 function ___syscall146(which, varargs) {
  SYSCALLS.varargs = varargs;
  try {
@@ -2187,59 +2150,6 @@ function ___syscall146(which, varargs) {
   return -e.errno;
  }
 }
-function _usleep(useconds) {
- var msec = useconds / 1e3;
- if ((ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) && self["performance"] && self["performance"]["now"]) {
-  var start = self["performance"]["now"]();
-  while (self["performance"]["now"]() - start < msec) {}
- } else {
-  var start = Date.now();
-  while (Date.now() - start < msec) {}
- }
- return 0;
-}
-function _nanosleep(rqtp, rmtp) {
- var seconds = HEAP32[rqtp >> 2];
- var nanoseconds = HEAP32[rqtp + 4 >> 2];
- if (rmtp !== 0) {
-  HEAP32[rmtp >> 2] = 0;
-  HEAP32[rmtp + 4 >> 2] = 0;
- }
- return _usleep(seconds * 1e6 + nanoseconds / 1e3);
-}
-function ___gxx_personality_v0() {}
-Module["___uremdi3"] = ___uremdi3;
-function _emscripten_cancel_main_loop() {
- Browser.mainLoop.pause();
- Browser.mainLoop.func = null;
-}
-function _llvm_trap() {
- abort("trap!");
-}
-Module["_pthread_self"] = _pthread_self;
-function ___syscall140(which, varargs) {
- SYSCALLS.varargs = varargs;
- try {
-  var stream = SYSCALLS.getStreamFromFD(), offset_high = SYSCALLS.get(), offset_low = SYSCALLS.get(), result = SYSCALLS.get(), whence = SYSCALLS.get();
-  var offset = offset_low;
-  assert(offset_high === 0);
-  FS.llseek(stream, offset, whence);
-  HEAP32[result >> 2] = stream.position;
-  if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null;
-  return 0;
- } catch (e) {
-  if (typeof FS === "undefined" || !(e instanceof FS.ErrnoError)) abort(e);
-  return -e.errno;
- }
-}
-function _malloc(bytes) {
- var ptr = Runtime.dynamicAlloc(bytes + 8);
- return ptr + 8 & 4294967288;
-}
-Module["_malloc"] = _malloc;
-function ___cxa_allocate_exception(size) {
- return _malloc(size);
-}
 function ___syscall54(which, varargs) {
  SYSCALLS.varargs = varargs;
  try {
@@ -2250,7 +2160,12 @@ function ___syscall54(which, varargs) {
  }
 }
 Module["requestFullScreen"] = function Module_requestFullScreen(lockPointer, resizeCanvas, vrDevice) {
+ Module.printErr("Module.requestFullScreen is deprecated. Please call Module.requestFullscreen instead.");
+ Module["requestFullScreen"] = Module["requestFullscreen"];
  Browser.requestFullScreen(lockPointer, resizeCanvas, vrDevice);
+};
+Module["requestFullscreen"] = function Module_requestFullscreen(lockPointer, resizeCanvas, vrDevice) {
+ Browser.requestFullscreen(lockPointer, resizeCanvas, vrDevice);
 };
 Module["requestAnimationFrame"] = function Module_requestAnimationFrame(func) {
  Browser.requestAnimationFrame(func);
@@ -2309,14 +2224,6 @@ function invoke_iiii(index, a1, a2, a3) {
   asm["setThrew"](1, 0);
  }
 }
-function invoke_viiiii(index, a1, a2, a3, a4, a5) {
- try {
-  Module["dynCall_viiiii"](index, a1, a2, a3, a4, a5);
- } catch (e) {
-  if (typeof e !== "number" && e !== "longjmp") throw e;
-  asm["setThrew"](1, 0);
- }
-}
 function invoke_vi(index, a1) {
  try {
   Module["dynCall_vi"](index, a1);
@@ -2357,14 +2264,6 @@ function invoke_v(index) {
   asm["setThrew"](1, 0);
  }
 }
-function invoke_viiiiii(index, a1, a2, a3, a4, a5, a6) {
- try {
-  Module["dynCall_viiiiii"](index, a1, a2, a3, a4, a5, a6);
- } catch (e) {
-  if (typeof e !== "number" && e !== "longjmp") throw e;
-  asm["setThrew"](1, 0);
- }
-}
 function invoke_iii(index, a1, a2) {
  try {
   return Module["dynCall_iii"](index, a1, a2);
@@ -2398,39 +2297,31 @@ Module.asmLibraryArg = {
  "abort": abort,
  "assert": assert,
  "invoke_iiii": invoke_iiii,
- "invoke_viiiii": invoke_viiiii,
  "invoke_vi": invoke_vi,
  "invoke_vii": invoke_vii,
  "invoke_ii": invoke_ii,
  "invoke_viii": invoke_viii,
  "invoke_v": invoke_v,
- "invoke_viiiiii": invoke_viiiiii,
  "invoke_iii": invoke_iii,
  "invoke_viiii": invoke_viiii,
  "_pthread_cleanup_pop": _pthread_cleanup_pop,
- "_abort": _abort,
- "___gxx_personality_v0": ___gxx_personality_v0,
- "___cxa_allocate_exception": ___cxa_allocate_exception,
- "___cxa_find_matching_catch": ___cxa_find_matching_catch,
  "_llvm_cttz_i32": _llvm_cttz_i32,
- "_emscripten_set_main_loop_timing": _emscripten_set_main_loop_timing,
- "_sbrk": _sbrk,
- "_usleep": _usleep,
- "_emscripten_memcpy_big": _emscripten_memcpy_big,
- "___resumeException": ___resumeException,
- "__ZSt18uncaught_exceptionv": __ZSt18uncaught_exceptionv,
  "_nanosleep": _nanosleep,
- "_llvm_trap": _llvm_trap,
- "___syscall54": ___syscall54,
- "_emscripten_set_main_loop": _emscripten_set_main_loop,
- "_emscripten_get_now": _emscripten_get_now,
- "___cxa_throw": ___cxa_throw,
- "___syscall6": ___syscall6,
- "_pthread_cleanup_push": _pthread_cleanup_push,
- "_emscripten_cancel_main_loop": _emscripten_cancel_main_loop,
  "_emscripten_async_wget_data": _emscripten_async_wget_data,
- "___syscall140": ___syscall140,
+ "___syscall6": ___syscall6,
+ "_emscripten_set_main_loop_timing": _emscripten_set_main_loop_timing,
+ "_abort": _abort,
+ "_sbrk": _sbrk,
+ "_llvm_trap": _llvm_trap,
+ "_emscripten_cancel_main_loop": _emscripten_cancel_main_loop,
  "___syscall146": ___syscall146,
+ "_emscripten_get_now": _emscripten_get_now,
+ "_emscripten_memcpy_big": _emscripten_memcpy_big,
+ "___syscall54": ___syscall54,
+ "___syscall140": ___syscall140,
+ "_pthread_cleanup_push": _pthread_cleanup_push,
+ "_emscripten_set_main_loop": _emscripten_set_main_loop,
+ "_usleep": _usleep,
  "STACKTOP": STACKTOP,
  "STACK_MAX": STACK_MAX,
  "tempDoublePtr": tempDoublePtr,
@@ -2457,13 +2348,11 @@ var ___uremdi3 = Module["___uremdi3"] = asm["___uremdi3"];
 var ___udivmoddi4 = Module["___udivmoddi4"] = asm["___udivmoddi4"];
 var _bitshift64Shl = Module["_bitshift64Shl"] = asm["_bitshift64Shl"];
 var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
-var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];
 var dynCall_vi = Module["dynCall_vi"] = asm["dynCall_vi"];
 var dynCall_vii = Module["dynCall_vii"] = asm["dynCall_vii"];
 var dynCall_ii = Module["dynCall_ii"] = asm["dynCall_ii"];
 var dynCall_viii = Module["dynCall_viii"] = asm["dynCall_viii"];
 var dynCall_v = Module["dynCall_v"] = asm["dynCall_v"];
-var dynCall_viiiiii = Module["dynCall_viiiiii"] = asm["dynCall_viiiiii"];
 var dynCall_iii = Module["dynCall_iii"] = asm["dynCall_iii"];
 var dynCall_viiii = Module["dynCall_viiii"] = asm["dynCall_viiii"];
 Runtime.stackAlloc = asm["stackAlloc"];
