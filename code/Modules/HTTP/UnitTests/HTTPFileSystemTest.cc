@@ -11,7 +11,7 @@
 
 using namespace Oryol;
 
-#if !ORYOL_EMSCRIPTEN
+#if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
 TEST(HTTPFileSystemTest) {
     Core::Setup();
 
