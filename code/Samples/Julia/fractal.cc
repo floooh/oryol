@@ -111,13 +111,13 @@ fractal::update() {
     Gfx::ApplyDrawState(this->fractDrawState);
     Gfx::ApplyUniformBlock(this->fractVSParams);
     Gfx::ApplyUniformBlock(this->fractFSParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
 
     // map current fractal state to color texture
     this->colorDrawState.FSTexture[Textures::Texture] = writeTex;
     Gfx::ApplyRenderTarget(this->colorTexture, ClearState::ClearNone());
     Gfx::ApplyDrawState(this->colorDrawState);
-    Gfx::Draw(0);
+    Gfx::Draw();
 
     if (this->frameIndex >= this->cycleCount) {
         this->frameIndex = 0;

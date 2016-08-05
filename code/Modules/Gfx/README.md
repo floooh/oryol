@@ -1,5 +1,7 @@
 ## Gfx Module
 
+**WORK IN PROGRESS!**
+
 The Oryol Gfx module provides a thin portability wrapper around the 
 native 3D APIs of a target platform, with WebGL/OpenGLES2 on the low-end, and
 D3D12 and (hopefully soon) Vulkan on the 'high-end'.
@@ -37,6 +39,89 @@ information necessary to work with the Gfx module:
 
 The 'manual' documentation in here will focus more on 'filling the gaps',
 background information and explaining design choices.
+
+### The Render Loop
+
+Let's skip all the initialization stuff for now and have a look at what
+rendering code in the Oryol Gfx module looks like.
+
+The minimally required per-frame actions to get something on the screen is:
+
+1. apply a render target which will contain the resulting image
+2. apply a 'draw state' which defines what to render (shader, render state, geometry, textures)
+3. update shader uniforms (if necessary)
+4. issue a draw call
+5. mark the current frame as complete
+
+In code it looks like this:
+
+```cpp
+    // start rendering to the default render target
+    Gfx::ApplyDefaultRenderTarget();
+
+    // apply all the static state required for rendering
+    Gfx::ApplyDrawState(this->drawState);
+    
+    // update shader uniforms (e.g. with a new ModelViewProjection matrix)
+    this->shaderUniforms.ModelViewProj = this->computeMVP();
+    Gfx::ApplyUniformBlock(this->shaderUniforms);
+
+    // issue a draw call
+    Gfx::Draw();
+
+    // and mark the rendering frame as complete
+    Gfx::CommitFrame();
+```
+
+The following sections will look at those steps in more detail.
+
+### Applying Render Targets (where to render to)
+
+(TODO)
+
+### Draw States (what to render)
+
+(TODO)
+
+### Shader Uniform Blocks
+
+(TODO)
+
+### Issuing Drawcalls
+
+(TODO)
+
+### Committing the Frame (done rendering for this frame)
+
+(TODO)
+
+### Initializing the Gfx Module
+
+To initialize the Gfx module, include the header **"Gfx/Gfx.h"** and
+call the **Gfx::Setup()** method. This will create the application window
+and a 3D-API context:
+
+```cpp
+#include "Gfx/Gfx.h"
+...
+    Gfx::Setup(GfxSetup::Window(800, 600, "My Oryol App"));
+```
+This would create a 800x600 window titled "My Oryol App".
+
+The GfxSetup object allows to configure and tweak the rendering system
+for the specific needs of the Oryol application. Have a look at the
+[Gfx/GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+header to see what's possible.
+
+>NOTE: On some platforms (mostly mobile), the actual rendering 
+resolution can be different from what the application requested. To
+get the actual rendering resolution, call the **Gfx::DisplayAttrs()** method after
+the Gfx module has been initialized.
+
+See also:
+- [GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
+- [Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
+
 
 ### Selecting a Rendering Backend
 
@@ -83,32 +168,6 @@ ORYOL_USE_D3D12
 ORYOL_USE_METAL
 ```
 
-### Optional Gfx Features
-
-For some Gfx features, a runtime check must be performed before they can be
-used. Call the method **Gfx::QueryFeature()** with one of the following:
-
-* **GfxFeature::TextureCompressionDXT**: check if DXT texture compression
-support is available, DXT is supported on all desktop GPUs, but not on most 
-mobile GPUs
-* **GfxFeature::TextureCompressionPVRTC**: check if the PowerVR PVRTC 
-texture compression format is supported, this is the most popular 
-texture compression scheme on iOS devices
-* **GfxFeature::TextureCompressionATC**: check if the ATC texture compression
-format is supported (Adreno GPUs)
-* **GfxFeature::TextureCompressionETC2**: check if the ETC2 texture 
-compression format is supported
-* **GfxFeature::TextureFloat**: check if floating point texture are supported for
-sampling and as render target
-* **GfxFeature::TextureHalfFloat**: check if half-float textures are supported
-for sampling
-* **GfxFeature::Instancing**: check if D3D9-style hardware-instanced rendering
-is supported
-* **GfxFeature::OriginBottomLeft**: the image-space origin is 
-bottom-left (GL style)
-* **GfxFeature::OriginTopLeft**: the image-space origin is
-top-left (D3D style)
-
 ### Frame Rendering
 
 Rendering through the Gfx module usually involves the following steps:
@@ -122,33 +181,6 @@ Rendering through the Gfx module usually involves the following steps:
 7. [Draw](#draw-functions)
 8. [Commit](#committing-the-frame)
 9. [Shutdown the Gfx Module](#shutting-down)
-
-### Initialize the Gfx Module
-
-To initialize the Gfx module, include the header **"Gfx/Gfx.h"** and
-call the **Gfx::Setup()** method. This will create the application window
-and a 3D-API context:
-
-```cpp
-#include "Gfx/Gfx.h"
-...
-    Gfx::Setup(GfxSetup::Window(800, 600, "My Oryol App"));
-```
-This would create a 800x600 window titled "My Oryol App".
-
-The GfxSetup object allows to configure and tweak the rendering system
-for the specific needs of the Oryol application. Have a look at the
-[Gfx/GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
-header to see what's possible.
-
->NOTE: On some platforms (mostly mobile), the actual rendering 
-resolution can be different from what the application requested. To
-get the actual rendering resolution, call the **Gfx::DisplayAttrs()** method after
-the Gfx module has been initialized.
-
-See also:
-- [GfxSetup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/GfxSetup.h)
-- [Gfx.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Gfx.h)
 
 ### Resources
 
@@ -853,6 +885,29 @@ TODO
 ### Committing a Frame
 TODO
 
-### Shutting Down
-TODO
+### Optional Gfx Features
+
+For some Gfx features, a runtime check must be performed before they can be
+used. Call the method **Gfx::QueryFeature()** with one of the following:
+
+* **GfxFeature::TextureCompressionDXT**: check if DXT texture compression
+support is available, DXT is supported on all desktop GPUs, but not on most 
+mobile GPUs
+* **GfxFeature::TextureCompressionPVRTC**: check if the PowerVR PVRTC 
+texture compression format is supported, this is the most popular 
+texture compression scheme on iOS devices
+* **GfxFeature::TextureCompressionATC**: check if the ATC texture compression
+format is supported (Adreno GPUs)
+* **GfxFeature::TextureCompressionETC2**: check if the ETC2 texture 
+compression format is supported
+* **GfxFeature::TextureFloat**: check if floating point texture are supported for
+sampling and as render target
+* **GfxFeature::TextureHalfFloat**: check if half-float textures are supported
+for sampling
+* **GfxFeature::Instancing**: check if D3D9-style hardware-instanced rendering
+is supported
+* **GfxFeature::OriginBottomLeft**: the image-space origin is 
+bottom-left (GL style)
+* **GfxFeature::OriginTopLeft**: the image-space origin is
+top-left (D3D style)
 

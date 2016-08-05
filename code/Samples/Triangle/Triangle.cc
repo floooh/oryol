@@ -25,7 +25,7 @@ TriangleApp::OnRunning() {
     
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Draw(0);
+    Gfx::Draw();
     Gfx::CommitFrame();
     
     // continue running or quit?

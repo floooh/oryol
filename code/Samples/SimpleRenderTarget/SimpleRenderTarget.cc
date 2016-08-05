@@ -48,14 +48,14 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     // render sphere to display, with offscreen render target as texture
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyDefaultRenderTarget(this->displayClearState);
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     Gfx::CommitFrame();
     

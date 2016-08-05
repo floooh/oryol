@@ -106,13 +106,9 @@ public:
     static void ReadPixels(void* ptr, int numBytes);
     
     /// submit a draw call with primitive group index in current mesh
-    static void Draw(int primGroupIndex);
+    static void Draw(int primGroupIndex=0, int numInstances=1);
     /// submit a draw call with direct primitive group
-    static void Draw(const PrimitiveGroup& primGroup);
-    /// submit a draw call for instanced rendering
-    static void DrawInstanced(int primGroupIndex, int numInstances);
-    /// submit a draw call for instanced rendering with direct primitive group
-    static void DrawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    static void Draw(const PrimitiveGroup& primGroup, int numInstances=1);
 
     /// commit (and display) the current frame
     static void CommitFrame();

@@ -40,12 +40,12 @@ TextureFloatApp::OnRunning() {
     Gfx::ApplyRenderTarget(this->renderTarget, this->noClearState);
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->offscreenFSParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     // copy fullscreen quad
     Gfx::ApplyDefaultRenderTarget(this->noClearState);
     Gfx::ApplyDrawState(this->copyDrawState);
-    Gfx::Draw(0);
+    Gfx::Draw();
 
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();

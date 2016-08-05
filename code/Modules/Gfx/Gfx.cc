@@ -342,38 +342,30 @@ Gfx::ReadPixels(void* buf, int bufNumBytes) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::Draw(int primGroupIndex) {
+Gfx::Draw(int primGroupIndex, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDraw++;
-    state->renderer.draw(primGroupIndex);
+    if (1 == numInstances) {
+        state->renderer.draw(primGroupIndex);
+    }
+    else {
+        state->renderer.drawInstanced(primGroupIndex, numInstances);
+    }
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::Draw(const PrimitiveGroup& primGroup) {
+Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDraw++;
-    state->renderer.draw(primGroup);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::DrawInstanced(int primGroupIndex, int numInstances) {
-    o_trace_scoped(Gfx_DrawInstanced);
-    o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumDrawInstanced++;
-    state->renderer.drawInstanced(primGroupIndex, numInstances);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::DrawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
-    o_trace_scoped(Gfx_DrawInstanced);
-    o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumDrawInstanced++;
-    state->renderer.drawInstanced(primGroup, numInstances);
+    if (1 == numInstances) {
+        state->renderer.draw(primGroup);
+    }
+    else {
+        state->renderer.drawInstanced(primGroup, numInstances);
+    }
 }
 
 //------------------------------------------------------------------------------

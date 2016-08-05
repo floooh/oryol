@@ -50,7 +50,7 @@ DDSCubeMapApp::OnRunning() {
         this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
         Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::Draw(0);
+        Gfx::Draw();
     }
     Gfx::CommitFrame();
     

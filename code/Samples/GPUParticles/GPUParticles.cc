@@ -80,7 +80,7 @@ GPUParticlesApp::OnRunning() {
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updParticles);
     Gfx::ApplyUniformBlock(this->updFSParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     // now the actual particle shape rendering:
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
@@ -89,7 +89,7 @@ GPUParticlesApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawParticles);
     Gfx::ApplyUniformBlock(this->drawVSParams);
-    Gfx::DrawInstanced(0, this->curNumParticles);
+    Gfx::Draw(0, this->curNumParticles);
     
     Dbg::DrawTextBuffer();
     Gfx::CommitFrame();
@@ -209,11 +209,11 @@ GPUParticlesApp::OnInit() {
     Gfx::ApplyRenderTarget(this->particleBuffer[0], this->noClearState);
     Gfx::ApplyDrawState(this->initParticles);
     Gfx::ApplyUniformBlock(this->initFSParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     Gfx::ApplyRenderTarget(this->particleBuffer[1], this->noClearState);
     Gfx::ApplyDrawState(this->initParticles);
     Gfx::ApplyUniformBlock(this->initFSParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     return App::OnInit();
 }

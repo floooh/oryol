@@ -79,7 +79,7 @@ SensorsApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     this->vsParams.ModelViewProjection = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     if (!Input::SensorsAttached()) {
         Dbg::Print("\n Please run on mobile device!\n\r");
     }
