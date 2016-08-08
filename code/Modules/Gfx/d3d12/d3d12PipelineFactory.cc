@@ -3,8 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Assertion.h"
-#include "Gfx/Resource/pipeline.h"
-#include "Gfx/Resource/shader.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "d3d12PipelineFactory.h"

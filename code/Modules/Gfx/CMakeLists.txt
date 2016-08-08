@@ -124,13 +124,10 @@ fips_begin_module(Gfx)
             d3d12SamplerCache.cc d3d12SamplerCache.h
             d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
-            d3d12Mesh.cc d3d12Mesh.h
+            d3d12Resource.cc d3d12Resource.h
             d3d12MeshFactory.cc d3d12MeshFactory.h
-            d3d12Shader.cc d3d12Shader.h
             d3d12ShaderFactory.cc d3d12ShaderFactory.h
-            d3d12Pipeline.cc d3d12Pipeline.h
             d3d12PipelineFactory.cc d3d12PipelineFactory.h
-            d3d12Texture.cc d3d12Texture.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
             d3d12Renderer.cc d3d12Renderer.h
             fasthash.h

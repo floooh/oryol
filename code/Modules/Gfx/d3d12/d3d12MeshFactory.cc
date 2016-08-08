@@ -5,7 +5,7 @@
 #include "d3d12_impl.h"
 #include "d3d12Types.h"
 #include "d3d12MeshFactory.h"
-#include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 
