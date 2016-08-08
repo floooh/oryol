@@ -6,14 +6,7 @@
     @brief Gfx module resource pool classes
 */
 #include "Resource/Core/ResourcePool.h"
-#include "Gfx/Setup/PipelineSetup.h"
-#include "Gfx/Resource/pipeline.h"
-#include "Gfx/Resource/mesh.h"
-#include "Gfx/Setup/MeshSetup.h"
-#include "Gfx/Setup/ShaderSetup.h"
-#include "Gfx/Resource/shader.h"
-#include "Gfx/Resource/texture.h"
-#include "Gfx/Setup/TextureSetup.h"
+#include "Gfx/Resource/resource.h"
 
 namespace Oryol {
 namespace _priv {

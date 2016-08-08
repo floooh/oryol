@@ -57,18 +57,12 @@ fips_begin_module(Gfx)
     fips_dir(Resource)
     fips_files(
         resourcePools.h
-        pipelineBase.h pipelineBase.cc
-        pipeline.h
+        resourceBase.h resourceBase.cc
+        resource.h
         pipelineFactoryBase.cc pipelineFactoryBase.h
         pipelineFactory.h
-        meshBase.cc meshBase.h
-        mesh.h
         meshFactory.h
-        shaderBase.h
-        shader.h
         shaderFactory.h
-        textureBase.cc textureBase.h
-        texture.h
         textureFactory.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
         gfxResourceContainer.h 
@@ -89,14 +83,11 @@ fips_begin_module(Gfx)
             glDebugOutput.cc glDebugOutput.h
             glExt.cc glExt.h
             glInfo.cc glInfo.h
-            glPipeline.cc glPipeline.h
+            glResource.cc glResource.h
             glPipelineFactory.cc glPipelineFactory.h
-            glMesh.cc glMesh.h
             glMeshFactory.cc glMeshFactory.h
-            glShader.cc glShader.h
             glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
-            glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h
             glVertexAttr.h
@@ -157,13 +148,10 @@ fips_begin_module(Gfx)
             mtl_decl.h mtl_impl.h
             mtlDisplayMgr.h mtlDisplayMgr.mm
             mtlTypes.h mtlTypes.mm
-            mtlMesh.h mtlMesh.mm
+            mtlResource.h mtlResource.mm
             mtlMeshFactory.h mtlMeshFactory.mm
-            mtlShader.h mtlShader.mm
             mtlShaderFactory.h mtlShaderFactory.mm
-            mtlPipeline.h mtlPipeline.mm
             mtlPipelineFactory.h mtlPipelineFactory.mm
-            mtlTexture.h mtlTexture.mm
             mtlTextureFactory.h mtlTextureFactory.mm
             mtlRenderer.h mtlRenderer.mm
             mtlReleaseQueue.h mtlReleaseQueue.mm

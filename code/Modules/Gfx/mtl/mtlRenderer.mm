@@ -7,10 +7,7 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/UniformBlockLayout.h"
-#include "Gfx/Resource/pipeline.h"
-#include "Gfx/Resource/mesh.h"
-#include "Gfx/Resource/shader.h"
-#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/resource.h"
 
 namespace Oryol {
 namespace _priv {

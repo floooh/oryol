@@ -7,10 +7,9 @@
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glExt.h"
 #include "Gfx/gl/glTypes.h"
-#include "Gfx/Resource/pipeline.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/VertexLayout.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/shader.h"
 
 namespace Oryol {
 namespace _priv {

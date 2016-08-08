@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "glMeshFactory.h"
 #include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/gl/glTypes.h"

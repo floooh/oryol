@@ -5,7 +5,7 @@
 #include "mtl_impl.h"
 #include "mtlMeshFactory.h"
 #include "mtlTypes.h"
-#include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/renderer.h"
 
 namespace Oryol {
