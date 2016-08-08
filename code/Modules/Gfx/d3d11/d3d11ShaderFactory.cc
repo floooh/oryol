@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Gfx/Core/renderer.h"
 #include "d3d11ShaderFactory.h"
-#include "Gfx/Resource/shader.h"
+#include "Gfx/Resource/resource.h"
 #include "d3d11_impl.h"
 
 namespace Oryol {
