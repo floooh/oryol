@@ -59,11 +59,8 @@ fips_begin_module(Gfx)
         resourcePools.h
         resourceBase.h resourceBase.cc
         resource.h
+        factory.h
         pipelineFactoryBase.cc pipelineFactoryBase.h
-        pipelineFactory.h
-        meshFactory.h
-        shaderFactory.h
-        textureFactory.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
         gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
