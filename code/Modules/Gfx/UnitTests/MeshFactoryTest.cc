@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/meshFactory.h"
+#include "Gfx/Resource/factory.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/displayMgr.h"

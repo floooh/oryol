@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Resource/textureFactory.h"
+#include "Gfx/Resource/factory.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Core/renderer.h"
