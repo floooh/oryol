@@ -30,6 +30,8 @@ public:
     };
 };
 
+// try to find out which of the IO tests hangs in travis-ci
+#if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
 TEST(IOFacadeTest) {
     Core::Setup();
     IO::Setup(IOSetup());
@@ -68,3 +70,4 @@ TEST(IOFacadeTest) {
     IO::Discard();
     Core::Discard();
 }
+#endif
