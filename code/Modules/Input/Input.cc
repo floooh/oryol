@@ -21,7 +21,7 @@ Input::Setup(const InputSetup& setup) {
 void
 Input::Discard() {
     o_assert_dbg(IsValid());
-    state->inputManager.dispatcher.pointerLockHandler = 0;
+    state->inputManager.dispatcher.pointerLockHandler = nullptr;
     state->inputManager.discard();
     Memory::Delete(state);
     state = nullptr;
@@ -58,7 +58,7 @@ Input::SetPointerLockHandler(PointerLockCallback cb) {
 void
 Input::ClearPointerLockHandler() {
     o_assert_dbg(state);
-    state->inputManager.dispatcher.pointerLockHandler = 0;
+    state->inputManager.dispatcher.pointerLockHandler = nullptr;
 }
 
 //------------------------------------------------------------------------------
