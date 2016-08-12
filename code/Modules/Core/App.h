@@ -40,7 +40,9 @@
 namespace Oryol {
 
 namespace _priv {
-#if ORYOL_ANDROID
+#if ORYOL_UWP
+class uwpBridge;
+#elif ORYOL_ANDROID
 class androidBridge;
 #elif ORYOL_IOS
 class iosBridge;
@@ -97,13 +99,13 @@ protected:
     Set<AppState::Code> blockers;
     bool quitRequested;
     bool suspendRequested;
-    #if ORYOL_IOS
+    #if ORYOL_UWP
+    _priv::uwpBridge* uwpBridge;
+    #elif ORYOL_IOS
     _priv::iosBridge* iosBridge;
-    #endif
-    #if ORYOL_MACOS && ORYOL_METAL
+    #elif ORYOL_MACOS && ORYOL_METAL
     _priv::osxBridge* osxBridge;
-    #endif
-    #if ORYOL_ANDROID
+    #elif ORYOL_ANDROID
     _priv::androidBridge* androidBridge;
     #endif
 };

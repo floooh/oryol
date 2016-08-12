@@ -7,19 +7,17 @@
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Trace.h"
-#if ORYOL_EMSCRIPTEN
+#if ORYOL_UWP
+#include "Core/uwp/uwpBridge.h"
+#elif ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
-#endif
-#if ORYOL_PNACL
+#elif ORYOL_PNACL
 #include "Core/pnacl/pnaclInstance.h"
-#endif
-#if ORYOL_IOS
+#elif ORYOL_IOS
 #include "Core/ios/iosBridge.h"
-#endif
-#if ORYOL_MACOS && ORYOL_METAL
+#elif ORYOL_MACOS && ORYOL_METAL
 #include "Core/osx/osxBridge.h"
-#endif
-#if ORYOL_ANDROID
+#elif ORYOL_ANDROID
 #include "Core/android/androidBridge.h"
 #endif
 
@@ -37,7 +35,10 @@ quitRequested(false),
 suspendRequested(false)
 {
     self = this;
-    #if ORYOL_ANDROID
+    #if ORYOL_UWP
+    this->uwpBridge = Memory::New<_priv::uwpBridge>();
+    this->uwpBridge->setup(this);
+    #elif ORYOL_ANDROID
     this->androidBridge = Memory::New<_priv::androidBridge>();
     this->androidBridge->setup(this);
     #elif ORYOL_IOS
@@ -63,6 +64,10 @@ App::~App() {
     this->iosBridge->discard();
     Memory::Delete(this->iosBridge);
     this->iosBridge = nullptr;
+    #elif ORYOL_UWP
+    this->uwpBridge->discard();
+    Memory::Delete(this->uwpBridge);
+    this->uwpBridge = nullptr;
     #endif
     self = nullptr;
 }
@@ -75,6 +80,8 @@ App::StartMainLoop() {
     Log::Info("=> App::StartMainLoop()\n");
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
+    #elif ORYOL_UWP
+        this->uwpBridge->startMainLoop();
     #elif ORYOL_IOS
         this->iosBridge->startMainLoop();
     #elif ORYOL_MACOS && ORYOL_METAL

@@ -10,22 +10,30 @@
     (like Windows.h), so it is not recommended to include the header anywhere 
     else to not pollute the whole code base with platform-specific headers.
 */
-#if ORYOL_WINDOWS
+#if ORYOL_WINDOWS && !ORYOL_UWP
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
 #define NOUSER (1)
 #include <Windows.h>
-#endif
-#if ORYOL_ANDROID
+#elif ORYOL_ANDROID
 #include "Core/android/android_native_app_glue.h"
-#endif
-#if ORYOL_PNACL
+#elif ORYOL_PNACL
 #include "Core/pnacl/pnaclModule.h"
 #endif
 #include "Core/App.h"
 #include "Core/String/WideString.h"
 
-#if ORYOL_WINDOWS
+#if ORYOL_UWP
+#define OryolMain(clazz) \
+Oryol::Args OryolArgs; \
+[Platform::MTAThread] \
+int main(Platform::Array<Platform::String^>^) { \
+    clazz* app = Memory::New<clazz>(); \
+    app->StartMainLoop(); \
+    Memory::Delete<clazz>(app); \
+    return 0; \
+}
+#elif ORYOL_WINDOWS
 #define OryolMain(clazz) \
 Oryol::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\

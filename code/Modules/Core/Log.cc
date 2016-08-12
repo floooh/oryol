@@ -172,7 +172,7 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
                 std::vsnprintf(buf, sizeof(buf), msg, argsCopy);
                 #if ORYOL_WINDOWS
                     buf[LogBufSize - 1] = 0;
-                    OutputDebugString(buf);
+                    OutputDebugStringA(buf);
                 #elif ORYOL_PNACL
                     // replace non-jsonable characters 
                     char* p = buf;
@@ -216,7 +216,7 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int line, co
                 _snprintf_s(buf, sizeof(buf), _TRUNCATE, "*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s\n  callstack:\n%s\n",
                             cond, msg ? msg : "none", file, line, func, callstack);
                 buf[LogBufSize - 1] = 0;
-                OutputDebugString(buf);
+                OutputDebugStringA(buf);
             #elif ORYOL_PNACL
                 if (pnaclInstance::HasInstance()) {
                     char buf[LogBufSize];
