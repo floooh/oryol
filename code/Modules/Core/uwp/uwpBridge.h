@@ -27,6 +27,8 @@ public:
     void discard();
     /// setup the UWP app and start main loop
     void startMainLoop();
+    /// per-frame callback
+    void onFrame();
 
     static uwpBridge* self;
     App* app;
