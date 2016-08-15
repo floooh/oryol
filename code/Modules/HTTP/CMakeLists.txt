@@ -15,6 +15,8 @@ fips_begin_module(HTTP)
     elseif (FIPS_OSX)
         fips_dir(osx)
         fips_files(osxURLLoader.mm osxURLLoader.h)
+    elseif (FIPS_UWP)
+        # FIXME
     elseif (FIPS_WINDOWS)
         fips_dir(windows)
         fips_files(winURLLoader.cc winURLLoader.h)
