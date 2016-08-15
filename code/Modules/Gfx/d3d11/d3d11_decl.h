@@ -10,7 +10,9 @@
 #include "Gfx/win/win_decl.h"
 
 struct IDXGISwapChain;
+struct IDXGISwapChain1;
 struct DXGI_SWAP_CHAIN_DESC;
+struct DXGI_SWAP_CHAIN_DESC1;
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;

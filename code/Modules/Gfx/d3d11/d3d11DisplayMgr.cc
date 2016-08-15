@@ -5,14 +5,24 @@
 #include "d3d11DisplayMgr.h"
 #include "d3d11Types.h"
 #include "Gfx/Core/renderer.h"
+#if ORYOL_UWP
+#include "Core/uwp/uwpBridge.h"
+#endif
 
+#ifndef UNICODE
 #define UNICODE
+#endif
 #include "d3d11_impl.h"
 
 namespace Oryol {
 namespace _priv {
 
+#if ORYOL_UWP
+using namespace Microsoft::WRL;
+static DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc;
+#else
 static DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
+#endif
 
 //------------------------------------------------------------------------------
 d3d11DisplayMgr::~d3d11DisplayMgr() {
@@ -26,7 +36,11 @@ void
 d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
+    #if ORYOL_UWP
+    displayMgrBase::SetupDisplay(setup, ptrs);
+    #else
     winDisplayMgr::SetupDisplay(setup, ptrs, " (D3D11)");
+    #endif
     this->createDeviceAndSwapChain();
     const DisplayAttrs& attrs = this->displayAttrs;
     this->createDefaultRenderTarget(attrs.FramebufferWidth, attrs.FramebufferHeight);
@@ -38,7 +52,11 @@ d3d11DisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
     this->destroyDefaultRenderTarget();
     this->destroyDeviceAndSwapChain();
+    #if ORYOL_UWP
+    displayMgrBase::DiscardDisplay();
+    #else
     winDisplayMgr::DiscardDisplay();
+    #endif
 }
 
 //------------------------------------------------------------------------------
@@ -54,7 +72,9 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     o_assert_dbg(nullptr == this->d3d11Device);
     o_assert_dbg(nullptr == this->d3d11DeviceContext);
     o_assert_dbg(nullptr == this->dxgiSwapChain);
+    #if !ORYOL_UWP
     o_assert_dbg(0 != this->hwnd);
+    #endif
 
     int createFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
     #if ORYOL_DEBUG
@@ -62,21 +82,72 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     #endif
 
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
-    dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
-    dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
-    dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
-    dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-    dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+    #if ORYOL_UWP
+        // FIXME: HIGH DPI SCALING (see UWP D3D11 sample project)
+        dxgiSwapChainDesc.Width = this->displayAttrs.FramebufferWidth;
+        dxgiSwapChainDesc.Height = this->displayAttrs.FramebufferHeight;
+        dxgiSwapChainDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+        dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+        dxgiSwapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+        dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+        dxgiSwapChainDesc.BufferCount = 2;
+    #else
+        dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
+        dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
+        dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+        dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+        dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+        dxgiSwapChainDesc.OutputWindow = this->hwnd;
+        dxgiSwapChainDesc.Windowed = this->gfxSetup.Windowed;
+        dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+        dxgiSwapChainDesc.BufferCount = 1;
+    #endif
     dxgiSwapChainDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
     dxgiSwapChainDesc.SampleDesc.Quality = this->gfxSetup.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
-    dxgiSwapChainDesc.BufferCount = 1;
     dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    dxgiSwapChainDesc.OutputWindow = this->hwnd;
-    dxgiSwapChainDesc.Windowed = this->gfxSetup.Windowed;
-    dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     dxgiSwapChainDesc.Flags = 0;
 
     D3D_FEATURE_LEVEL d3dFeatureLevel;
+    #if ORYOL_UWP
+    HRESULT hr = ::D3D11CreateDevice(
+        NULL,                           // pAdapter (use default adapter)
+        D3D_DRIVER_TYPE_HARDWARE,       // DriverType
+        NULL,                           // Software
+        createFlags,                    // Flags
+        NULL,                           // pFeatureLevels
+        0,                              // FeatureLevels
+        D3D11_SDK_VERSION,              // SDKVersion
+        &this->d3d11Device,             // ppDevice
+        &d3dFeatureLevel,               // ppFeatureLevel
+        &this->d3d11DeviceContext);     // ppImmediateContext
+    o_assert2(SUCCEEDED(hr), "Failed to create D3D11 device!\n");
+    o_assert(this->d3d11Device);
+    o_assert(this->d3d11DeviceContext);
+
+    // create swap chain
+    // WFT: This sequence obtains the DXGI factory that was used to create the Direct3D device above.
+    IDXGIDevice3* dxgiDevice = nullptr;
+    hr = this->d3d11Device->QueryInterface(__uuidof(IDXGIDevice3), (void**) &dxgiDevice);
+    o_assert(SUCCEEDED(hr) && dxgiDevice);
+    IDXGIAdapter* dxgiAdapter = nullptr;
+    hr = dxgiDevice->GetAdapter(&dxgiAdapter);
+    o_assert(SUCCEEDED(hr) && dxgiAdapter);
+    IDXGIFactory4* dxgiFactory = nullptr;
+    hr = dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
+    o_assert(SUCCEEDED(hr) && dxgiFactory);
+
+    hr = dxgiFactory->CreateSwapChainForCoreWindow(
+        this->d3d11Device,
+        (IUnknown*)Windows::UI::Core::CoreWindow::GetForCurrentThread(),
+        &dxgiSwapChainDesc,
+        nullptr,
+        &this->dxgiSwapChain);
+    o_assert(SUCCEEDED(hr) && this->dxgiSwapChain);
+    dxgiDevice->SetMaximumFrameLatency(1);
+    dxgiFactory->Release(); dxgiFactory = nullptr;
+    dxgiAdapter->Release(); dxgiAdapter = nullptr;
+    dxgiDevice->Release(); dxgiDevice = nullptr;
+#else
     HRESULT hr = ::D3D11CreateDeviceAndSwapChain(
         NULL,                           // pAdapter (use default adapter)
         D3D_DRIVER_TYPE_HARDWARE,       // DriverType
@@ -90,10 +161,11 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
         &this->d3d11Device,             // ppDevice
         &d3dFeatureLevel,               // pFeatureLevel
         &this->d3d11DeviceContext);     // ppImmediateContext
-    o_assert2(SUCCEEDED(hr), "Failed to create D3D11 device and swap chain1\n");
+    o_assert2(SUCCEEDED(hr), "Failed to create D3D11 device and swap chain!\n");
     o_assert(this->d3d11Device);
     o_assert(this->d3d11DeviceContext);
     o_assert(this->dxgiSwapChain);
+    #endif
 }
 
 //------------------------------------------------------------------------------

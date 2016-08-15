@@ -5,13 +5,21 @@
     @ingroup _priv
     @brief display manager implementation for D3D11
 */
+#if ORYOL_UWP
+#include "Gfx/Core/displayMgrBase.h"
+#else
 #include "Gfx/win/winDisplayMgr.h"
+#endif
 #include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {
 
+#if ORYOL_UWP
+class d3d11DisplayMgr : public displayMgrBase {
+#else
 class d3d11DisplayMgr : public winDisplayMgr {
+#endif
 public:
     /// destructor
     ~d3d11DisplayMgr();
@@ -28,7 +36,11 @@ public:
     /// pointer to immediate mode device context
     ID3D11DeviceContext* d3d11DeviceContext = nullptr;
     /// pointer to swap chain
+    #if ORYOL_UWP
+    IDXGISwapChain1* dxgiSwapChain = nullptr;
+    #else
     IDXGISwapChain* dxgiSwapChain = nullptr;
+    #endif
     /// pointer to default render target back buffer texture
     ID3D11Texture2D* d3d11RenderTarget = nullptr;
     /// pointer to default render target view
