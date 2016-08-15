@@ -57,6 +57,7 @@ public:
         Log::Info("uwpApp::Load() called!");  
     }
     virtual void Run() {
+        uwpBridge::ptr()->createApp();
         while (!this->windowClosed) {
             if (this->windowVisible) {
                 CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
@@ -65,7 +66,8 @@ public:
             else {
                 CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
             }
-        }        
+        }
+        uwpBridge::ptr()->destroyApp();
     }
     virtual void Uninitialize() { };
 
@@ -133,7 +135,8 @@ uwpBridge* uwpBridge::self = nullptr;
 
 //------------------------------------------------------------------------------
 uwpBridge::uwpBridge() :
-app(nullptr) {
+app(nullptr),
+create_app(nullptr) {
     o_assert(nullptr == self);
     self = this;
 }
@@ -154,19 +157,20 @@ uwpBridge::ptr() {
 
 //------------------------------------------------------------------------------
 void
-uwpBridge::setup(App* app_) {
-    o_assert(nullptr == this->app);
-    o_assert(nullptr != app_);
-    this->app = app_;
-    Log::Info("uwpBridge::setup() called!\n");
+uwpBridge::start(App*(*app_creator)()) {
+    o_assert(nullptr == this->create_app);
+    this->create_app = app_creator;
+    auto uwp_app = ref new uwpAppSource();
+    Windows::ApplicationModel::Core::CoreApplication::Run(uwp_app);
 }
 
 //------------------------------------------------------------------------------
 void
-uwpBridge::discard() {
-    o_assert(nullptr != this->app);
-    Log::Info("uwpBridge::discard() called!\n");
-    this->app = nullptr;
+uwpBridge::createApp() {
+    o_assert(nullptr != this->create_app);
+    o_assert(nullptr == this->app);
+    this->app = this->create_app();
+    this->app->StartMainLoop();
 }
 
 //------------------------------------------------------------------------------
@@ -178,11 +182,11 @@ uwpBridge::onFrame() {
 
 //------------------------------------------------------------------------------
 void
-uwpBridge::startMainLoop() {
-    Log::Info("uwpBridge::startMainLoop() called!\n");
-    auto app = ref new uwpAppSource();
-    Windows::ApplicationModel::Core::CoreApplication::Run(app);
+uwpBridge::destroyApp() {
+    o_assert(nullptr != this->app);
+    Memory::Delete(this->app);
 }
+
 
 } // namespace _priv
 } // namespace Oryol

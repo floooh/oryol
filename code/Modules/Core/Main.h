@@ -15,6 +15,8 @@
 #define WIN32_LEAN_AND_MEAN (1)
 #define NOUSER (1)
 #include <Windows.h>
+#elif ORYOL_UWP
+#include "Core/uwp/uwpBridge.h"
 #elif ORYOL_ANDROID
 #include "Core/android/android_native_app_glue.h"
 #elif ORYOL_PNACL
@@ -24,13 +26,17 @@
 #include "Core/String/WideString.h"
 
 #if ORYOL_UWP
+// on UWP, the UI event loop is running in it's own thread,
+// need to move creation of the Oryol app object to the
+// UI thread, thus the lambda
 #define OryolMain(clazz) \
 Oryol::Args OryolArgs; \
 [Platform::MTAThread] \
 int main(Platform::Array<Platform::String^>^) { \
-    clazz* app = Memory::New<clazz>(); \
-    app->StartMainLoop(); \
-    Memory::Delete<clazz>(app); \
+    Oryol::_priv::uwpBridge app; \
+    app.start([]() -> App* { \
+        return Memory::New<clazz>(); \
+    }); \
     return 0; \
 }
 #elif ORYOL_WINDOWS

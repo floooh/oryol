@@ -38,11 +38,8 @@
 #include "Core/Containers/Set.h"
 
 namespace Oryol {
-
 namespace _priv {
-#if ORYOL_UWP
-class uwpBridge;
-#elif ORYOL_ANDROID
+#if ORYOL_ANDROID
 class androidBridge;
 #elif ORYOL_IOS
 class iosBridge;
@@ -99,9 +96,7 @@ protected:
     Set<AppState::Code> blockers;
     bool quitRequested;
     bool suspendRequested;
-    #if ORYOL_UWP
-    _priv::uwpBridge* uwpBridge;
-    #elif ORYOL_IOS
+    #if ORYOL_IOS
     _priv::iosBridge* iosBridge;
     #elif ORYOL_MACOS && ORYOL_METAL
     _priv::osxBridge* osxBridge;

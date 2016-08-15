@@ -7,9 +7,7 @@
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Trace.h"
-#if ORYOL_UWP
-#include "Core/uwp/uwpBridge.h"
-#elif ORYOL_EMSCRIPTEN
+#if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #elif ORYOL_PNACL
 #include "Core/pnacl/pnaclInstance.h"
@@ -35,10 +33,7 @@ quitRequested(false),
 suspendRequested(false)
 {
     self = this;
-    #if ORYOL_UWP
-    this->uwpBridge = Memory::New<_priv::uwpBridge>();
-    this->uwpBridge->setup(this);
-    #elif ORYOL_ANDROID
+    #if ORYOL_ANDROID
     this->androidBridge = Memory::New<_priv::androidBridge>();
     this->androidBridge->setup(this);
     #elif ORYOL_IOS
@@ -64,10 +59,6 @@ App::~App() {
     this->iosBridge->discard();
     Memory::Delete(this->iosBridge);
     this->iosBridge = nullptr;
-    #elif ORYOL_UWP
-    this->uwpBridge->discard();
-    Memory::Delete(this->uwpBridge);
-    this->uwpBridge = nullptr;
     #endif
     self = nullptr;
 }
@@ -80,8 +71,6 @@ App::StartMainLoop() {
     Log::Info("=> App::StartMainLoop()\n");
     #if ORYOL_EMSCRIPTEN
         emscripten_set_main_loop(staticOnFrame, 0, 1);
-    #elif ORYOL_UWP
-        this->uwpBridge->startMainLoop();
     #elif ORYOL_IOS
         this->iosBridge->startMainLoop();
     #elif ORYOL_MACOS && ORYOL_METAL
@@ -95,15 +84,17 @@ App::StartMainLoop() {
         this->androidBridge->onStop();
     #elif ORYOL_PNACL
         pnaclInstance::Instance()->startMainLoop(this);
+    #elif ORYOL_UWP
+        // do nothing here
     #else
         while (AppState::InvalidAppState != this->curState) {
             this->onFrame();
         }
     #endif
 
-    // NOTE: PNaCl is the only platform where StartMainLoop
+    // NOTE: PNaCl and UWP are the only platform where StartMainLoop
     // returns while the app continues running!
-    #if !ORYOL_PNACL
+    #if !(ORYOL_PNACL || ORYOL_UWP)
     Log::Info("<= App::StartMainLoop()\n");
     Core::Discard();
     #endif
