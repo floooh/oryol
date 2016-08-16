@@ -19,6 +19,8 @@ namespace _priv {
 
 #if ORYOL_UWP
 using namespace Microsoft::WRL;
+using namespace Windows::UI::Core;
+using namespace Windows::Graphics::Display;
 static DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc;
 #else
 static DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
@@ -83,7 +85,7 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
 
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
     #if ORYOL_UWP
-        // FIXME: HIGH DPI SCALING (see UWP D3D11 sample project)
+        this->updateFramebufferSize();
         dxgiSwapChainDesc.Width = this->displayAttrs.FramebufferWidth;
         dxgiSwapChainDesc.Height = this->displayAttrs.FramebufferHeight;
         dxgiSwapChainDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
@@ -91,7 +93,10 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
         dxgiSwapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
         dxgiSwapChainDesc.BufferCount = 2;
-    #else
+        // FIXME: MSAA not supported on UWP (WTF?)
+        dxgiSwapChainDesc.SampleDesc.Count = 1;
+        dxgiSwapChainDesc.SampleDesc.Quality = 0;
+#else
         dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
         dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
         dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
@@ -101,9 +106,9 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
         dxgiSwapChainDesc.Windowed = this->gfxSetup.Windowed;
         dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
         dxgiSwapChainDesc.BufferCount = 1;
+        dxgiSwapChainDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
+        dxgiSwapChainDesc.SampleDesc.Quality = this->gfxSetup.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
     #endif
-    dxgiSwapChainDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
-    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxSetup.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
     dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     dxgiSwapChainDesc.Flags = 0;
 
@@ -138,7 +143,7 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
 
     hr = dxgiFactory->CreateSwapChainForCoreWindow(
         this->d3d11Device,
-        (IUnknown*)Windows::UI::Core::CoreWindow::GetForCurrentThread(),
+        (IUnknown*)CoreWindow::GetForCurrentThread(),
         &dxgiSwapChainDesc,
         nullptr,
         &this->dxgiSwapChain);
@@ -278,6 +283,32 @@ d3d11DisplayMgr::onWindowDidResize() {
         this->createDefaultRenderTarget(newWidth, newHeight);
     }
 }
+
+//------------------------------------------------------------------------------
+#if ORYOL_UWP
+static float dipsToPixels(float dips, float dpi) {
+    static const float dipsPerInch = 96.0f;
+    return floorf(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
+}
+
+void
+d3d11DisplayMgr::updateFramebufferSize() {
+    DisplayInformation^ dispInfo = DisplayInformation::GetForCurrentView();
+    CoreWindow^ win = CoreWindow::GetForCurrentThread();
+    auto logicalSize = Windows::Foundation::Size(win->Bounds.Width, win->Bounds.Height);
+    auto nativeOrient = dispInfo->NativeOrientation;
+    auto curOrient = dispInfo->CurrentOrientation;
+    auto dpi = dispInfo->LogicalDpi;
+    auto effectiveDpi = dpi;
+    if (!this->gfxSetup.HighDPI && (dpi > 192.0f)) {
+        effectiveDpi *= 0.5f;
+    }
+    this->displayAttrs.WindowWidth = int(logicalSize.Width);
+    this->displayAttrs.WindowHeight = int(logicalSize.Height);
+    this->displayAttrs.FramebufferWidth = int(dipsToPixels(logicalSize.Width, effectiveDpi));
+    this->displayAttrs.FramebufferWidth = int(dipsToPixels(logicalSize.Height, effectiveDpi));
+}
+#endif
 
 } // namespace _priv
 } // namespace Oryol

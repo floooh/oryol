@@ -60,6 +60,11 @@ public:
     void destroyDefaultRenderTarget();
     /// called from windowResize when window did actually resize
     virtual void onWindowDidResize();
+
+    /// UWP: compute and update the effective framebuffer size (in displayAttrs)
+    #if ORYOL_UWP
+    void updateFramebufferSize();
+    #endif
 };
 
 } // namespace _priv
