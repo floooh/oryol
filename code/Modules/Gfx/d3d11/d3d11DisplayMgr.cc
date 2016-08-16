@@ -96,7 +96,7 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
         // FIXME: MSAA not supported on UWP (WTF?)
         dxgiSwapChainDesc.SampleDesc.Count = 1;
         dxgiSwapChainDesc.SampleDesc.Quality = 0;
-#else
+    #else
         dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
         dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
         dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
