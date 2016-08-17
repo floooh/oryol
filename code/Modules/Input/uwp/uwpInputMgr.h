@@ -22,6 +22,9 @@ public:
     /// discard the windows input manager
     void discard();
 
+    /// map UWP virtual keycode to Oryol keycode
+    static Key::Code mapKey(Windows::UI::Core::KeyEventArgs^ args);
+
     static uwpInputMgr* self;
     RunLoop::Id runLoopId;
 };
