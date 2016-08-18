@@ -22,12 +22,14 @@ public:
     /// discard the windows input manager
     void discard();
 
+    /// called with new pointer lock, make mouse pointer visible/invisible here
+    void onPointerLock(PointerLockMode::Code lockMode);
     /// map UWP virtual keycode to Oryol keycode
     static Key::Code mapKey(Windows::UI::Core::KeyEventArgs^ args);
     /// setup the key-translation table
     static void setupKeymap();
 
-    static uwpInputMgr* self;
+    static uwpInputMgr* ptr;
     RunLoop::Id runLoopId;
 };
 

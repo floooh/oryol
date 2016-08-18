@@ -99,24 +99,24 @@ public:
 
     // Window event handlers.
     void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args) {
-        Log::Info("uwpApp::OnWindowSizeChanged\n");
+        Log::Info("FIXME: uwpApp::OnWindowSizeChanged\n");
     }
     void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args) {
-        Log::Info("uwpApp::OnVisibilityChanged\n");
+        Log::Info("FIXME: uwpApp::OnVisibilityChanged\n");
     }
     void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args) {
-        Log::Info("uwpApp::OnWindowClosed\n");
+        Log::Info("FIXME: uwpApp::OnWindowClosed\n");
     }
 
     // DisplayInformation event handlers.
     void OnDpiChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args) {
-        Log::Info("uwpApp::OnDpiChanged\n");
+        Log::Info("FIXME: uwpApp::OnDpiChanged\n");
     }
     void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args) {
-        Log::Info("OnOrientationChanged\n");
+        Log::Info("FIXME: OnOrientationChanged\n");
     }
     void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args) {
-        Log::Info("OnDisplayContentsInvalidate\n");
+        Log::Info("FIXME: OnDisplayContentsInvalidate\n");
     }
 
 private:

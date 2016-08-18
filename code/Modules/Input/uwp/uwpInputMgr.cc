@@ -12,24 +12,76 @@ using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Devices::Input;
 using namespace Windows::UI::Core;
+using namespace Windows::UI::Input;
 
 namespace Oryol {
 namespace _priv {
 
-uwpInputMgr* uwpInputMgr::self = nullptr;
+uwpInputMgr* uwpInputMgr::ptr = nullptr;
 static Key::Code keymap[256];
 
 //------------------------------------------------------------------------------
+// helper C++/CX class with all the UWP input event handlers
 ref class uwpEventBridge sealed {
+private:
+    MouseButton::Code mapButton(PointerPointProperties^ props) {
+        if (props->IsLeftButtonPressed) return MouseButton::Left;
+        else if (props->IsRightButtonPressed) return MouseButton::Right;
+        else if (props->IsMiddleButtonPressed) return MouseButton::Middle;
+        else return MouseButton::InvalidMouseButton;
+    }
 public:
     void onKeyDown(CoreWindow^ sender, KeyEventArgs^ args) {
-        uwpInputMgr::self->keyboard.onKeyDown(uwpInputMgr::mapKey(args));
+        if (uwpInputMgr::ptr) {
+            uwpInputMgr::ptr->keyboard.onKeyDown(uwpInputMgr::mapKey(args));
+        }
     }
     void onKeyUp(CoreWindow^ sender, KeyEventArgs^ args) {
-        uwpInputMgr::self->keyboard.onKeyUp(uwpInputMgr::mapKey(args));
+        if (uwpInputMgr::ptr) {
+            uwpInputMgr::ptr->keyboard.onKeyUp(uwpInputMgr::mapKey(args));
+        }
     }
     void onChar(CoreWindow^ sender, CharacterReceivedEventArgs^ args) {
-        uwpInputMgr::self->keyboard.onChar(args->KeyCode);
+        if (uwpInputMgr::ptr) {
+            uwpInputMgr::ptr->keyboard.onChar(args->KeyCode);
+        }
+    }
+    void onPointerPressed(CoreWindow^ sender, PointerEventArgs^ args) {
+        if (uwpInputMgr::ptr) {
+            MouseButton::Code btn = this->mapButton(args->CurrentPoint->Properties);
+            if (MouseButton::InvalidMouseButton != btn) {
+                PointerLockMode::Code lockMode = uwpInputMgr::ptr->mouse.onButtonDown(btn);
+                uwpInputMgr::ptr->onPointerLock(lockMode);
+            }
+        }
+    }
+    void onPointerReleased(CoreWindow^ sender, PointerEventArgs^ args) {
+        if (uwpInputMgr::ptr) {
+            // we don't get the information *which* button is released,
+            // it's the last one pressed (WTF!), see here for the whole
+            // clusterfuck: https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.uielement.pointerreleased
+            // so what we'll do is simply release all mouse buttons that
+            // are pressed, this should be okay-ish, we simply don't
+            // allow multiple mouse buttons pressed on UWP
+            for (int i = 0; i < MouseButton::NumMouseButtons; i++) {
+                if (uwpInputMgr::ptr->mouse.buttonPressed((MouseButton::Code)i)) {
+                    PointerLockMode::Code lockMode = uwpInputMgr::ptr->mouse.onButtonUp((MouseButton::Code)i);
+                    uwpInputMgr::ptr->onPointerLock(lockMode);
+                }
+            }
+        }
+    }
+    void onPointerMoved(CoreWindow^ sender, PointerEventArgs^ args) {
+        if (uwpInputMgr::ptr) {
+            glm::vec2 pos(args->CurrentPoint->Position.X, args->CurrentPoint->Position.Y);
+            uwpInputMgr::ptr->mouse.onPosMov(pos);
+        }
+    }
+    void onWheel(CoreWindow^ sender, PointerEventArgs^ args) {
+        if (uwpInputMgr::ptr) {
+            int wheelDelta = args->CurrentPoint->Properties->MouseWheelDelta;
+            uwpInputMgr::ptr->mouse.onScroll(glm::vec2(0.0f, float(wheelDelta)));
+        }
     }
 };
 
@@ -38,16 +90,16 @@ static uwpEventBridge^ uwpEventBridgePtr = nullptr;
 //------------------------------------------------------------------------------
 uwpInputMgr::uwpInputMgr() :
 runLoopId(RunLoop::InvalidId) {
-    o_assert(nullptr == self);
-    self = this;
+    o_assert(nullptr == ptr);
+    ptr = this;
     uwpEventBridgePtr = ref new uwpEventBridge();
     setupKeymap();
 }
 
 //------------------------------------------------------------------------------
 uwpInputMgr::~uwpInputMgr() {
-    o_assert(nullptr != self);
-    self = nullptr;
+    o_assert(nullptr != ptr);
+    ptr = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -74,6 +126,18 @@ uwpInputMgr::setup(const InputSetup& setup) {
             ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onChar);
     }
 
+    // register mouse even handlers
+    if (this->mouse.attached) {
+        win->PointerPressed +=
+            ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onPointerPressed);
+        win->PointerReleased +=
+            ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onPointerReleased);
+        win->PointerMoved +=
+            ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onPointerMoved);
+        win->PointerWheelChanged +=
+            ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onWheel);
+    }
+
     // attach our reset callback to the global runloop
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
@@ -84,6 +148,17 @@ uwpInputMgr::discard() {
     Core::PostRunLoop()->Remove(this->runLoopId);
     this->runLoopId = RunLoop::InvalidId;
     inputMgrBase::discard();
+}
+
+//------------------------------------------------------------------------------
+void
+uwpInputMgr::onPointerLock(PointerLockMode::Code lockMode) {
+    if (PointerLockMode::Enable == lockMode) {
+        Log::Info("FIXME: make mouse invisible\n");    
+    }
+    else if (PointerLockMode::Disable == lockMode) {
+        Log::Info("FIXME: make mouse visible\n");
+    }
 }
 
 //------------------------------------------------------------------------------
