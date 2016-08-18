@@ -28,12 +28,74 @@ public:
     void onKeyUp(CoreWindow^ sender, KeyEventArgs^ args) {
         uwpInputMgr::self->keyboard.onKeyUp(uwpInputMgr::mapKey(args));
     }
+    void onChar(CoreWindow^ sender, CharacterReceivedEventArgs^ args) {
+        uwpInputMgr::self->keyboard.onChar(args->KeyCode);
+    }
 };
 
 static uwpEventBridge^ uwpEventBridgePtr = nullptr;
 
 //------------------------------------------------------------------------------
-static void setupKeymap() {
+uwpInputMgr::uwpInputMgr() :
+runLoopId(RunLoop::InvalidId) {
+    o_assert(nullptr == self);
+    self = this;
+    uwpEventBridgePtr = ref new uwpEventBridge();
+    setupKeymap();
+}
+
+//------------------------------------------------------------------------------
+uwpInputMgr::~uwpInputMgr() {
+    o_assert(nullptr != self);
+    self = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void
+uwpInputMgr::setup(const InputSetup& setup) {
+    inputMgrBase::setup(setup);
+    
+    // check if keyboard, mouse and touchpad are present
+    KeyboardCapabilities^ kbdCaps = ref new KeyboardCapabilities();
+    this->keyboard.attached = kbdCaps->KeyboardPresent != 0;
+    MouseCapabilities^ mouseCaps = ref new MouseCapabilities();
+    this->mouse.attached = mouseCaps->MousePresent != 0;
+    // FIXME: ignore multi-touch, I don't have a device to test on
+    this->touchpad.attached = false;
+
+    // register keyboard event handlers
+    CoreWindow^ win = CoreWindow::GetForCurrentThread();
+    if (this->keyboard.attached) {
+        win->KeyDown += 
+            ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onKeyDown);
+        win->KeyUp +=
+            ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onKeyUp);
+        win->CharacterReceived +=
+            ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onChar);
+    }
+
+    // attach our reset callback to the global runloop
+    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
+}
+
+//------------------------------------------------------------------------------
+void
+uwpInputMgr::discard() {
+    Core::PostRunLoop()->Remove(this->runLoopId);
+    this->runLoopId = RunLoop::InvalidId;
+    inputMgrBase::discard();
+}
+
+//------------------------------------------------------------------------------
+Key::Code
+uwpInputMgr::mapKey(KeyEventArgs^ args) {
+    uint8_t vk = (uint8_t)args->VirtualKey;
+    return keymap[vk];
+}
+
+//------------------------------------------------------------------------------
+void 
+uwpInputMgr::setupKeymap() {
     for (int i = 0; i < 256; i++) {
         keymap[i] = Key::InvalidKey;
     }
@@ -155,62 +217,6 @@ static void setupKeymap() {
     keymap[0x11] = Key::LeftControl;    // no left/right control on UWP
     keymap[0x12] = Key::LeftAlt;        // no left/right alt on UWP
     keymap[0xC0] = Key::Apostrophe;     // tilde key
-}
-
-//------------------------------------------------------------------------------
-uwpInputMgr::uwpInputMgr() :
-runLoopId(RunLoop::InvalidId) {
-    o_assert(nullptr == self);
-    self = this;
-    uwpEventBridgePtr = ref new uwpEventBridge();
-    setupKeymap();
-}
-
-//------------------------------------------------------------------------------
-uwpInputMgr::~uwpInputMgr() {
-    o_assert(nullptr != self);
-    self = nullptr;
-}
-
-//------------------------------------------------------------------------------
-void
-uwpInputMgr::setup(const InputSetup& setup) {
-    inputMgrBase::setup(setup);
-    
-    // check if keyboard, mouse and touchpad are present
-    KeyboardCapabilities^ kbdCaps = ref new KeyboardCapabilities();
-    this->keyboard.attached = kbdCaps->KeyboardPresent != 0;
-    MouseCapabilities^ mouseCaps = ref new MouseCapabilities();
-    this->mouse.attached = mouseCaps->MousePresent != 0;
-    TouchCapabilities^ touchCaps = ref new TouchCapabilities();
-    this->touchpad.attached = touchCaps->TouchPresent != 0;
-
-    // register keyboard event handlers
-    CoreWindow^ win = CoreWindow::GetForCurrentThread();
-    if (this->keyboard.attached) {
-        win->KeyDown += 
-            ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onKeyDown);
-        win->KeyUp +=
-            ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(uwpEventBridgePtr, &uwpEventBridge::onKeyUp);
-    }
-
-    // attach our reset callback to the global runloop
-    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
-}
-
-//------------------------------------------------------------------------------
-void
-uwpInputMgr::discard() {
-    Core::PostRunLoop()->Remove(this->runLoopId);
-    this->runLoopId = RunLoop::InvalidId;
-    inputMgrBase::discard();
-}
-
-//------------------------------------------------------------------------------
-Key::Code
-uwpInputMgr::mapKey(KeyEventArgs^ args) {
-    uint8_t vk = (uint8_t)args->VirtualKey;
-    return keymap[vk];
 }
 
 } // namespace _priv

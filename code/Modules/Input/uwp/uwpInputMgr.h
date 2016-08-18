@@ -24,6 +24,8 @@ public:
 
     /// map UWP virtual keycode to Oryol keycode
     static Key::Code mapKey(Windows::UI::Core::KeyEventArgs^ args);
+    /// setup the key-translation table
+    static void setupKeymap();
 
     static uwpInputMgr* self;
     RunLoop::Id runLoopId;
