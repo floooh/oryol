@@ -67,6 +67,7 @@ public:
                 CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
             }
         }
+        // FIXME: this is never reached
         uwpBridge::ptr()->destroyApp();
     }
     virtual void Uninitialize() { };
