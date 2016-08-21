@@ -103,6 +103,7 @@ fips_begin_module(Gfx)
             vlkResource.cc vlkResource.h
             vlkMeshFactory.cc vlkMeshFactory.h
             vlkShaderFactory.cc vlkShaderFactory.h
+            vlkPipelineFactory.cc vlkPipelineFactory.h
             vlkTextureFactory.cc vlkTextureFactory.h
             vlkRenderer.cc vlkRenderer.h
             vlkConfig.h

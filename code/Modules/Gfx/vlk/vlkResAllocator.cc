@@ -38,7 +38,7 @@ vlkResAllocator::discard(VkDevice dev, VkCommandPool cmdPool) {
 
 //------------------------------------------------------------------------------
 int
-vlkResAllocator::findMemoryType(uint32 typeBits, VkFlags reqMask) {
+vlkResAllocator::findMemoryType(uint32_t typeBits, VkFlags reqMask) {
     o_assert_dbg(this->valid);
     for (int i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
         if (typeBits & (1 << i)) {
@@ -60,6 +60,9 @@ vlkResAllocator::destroy(VkDevice dev, VkCommandPool cmdPool, const freeItem& it
         case freeItem::Buffer:
             this->destroyBuffer(dev, (VkBuffer)item.res, item.mem);
             break;
+        case freeItem::Pipeline:
+            vkDestroyPipeline(dev, (VkPipeline)item.res, nullptr);
+            break;
         default:
             o_assert(false);
             break;
@@ -68,14 +71,14 @@ vlkResAllocator::destroy(VkDevice dev, VkCommandPool cmdPool, const freeItem& it
 
 //------------------------------------------------------------------------------
 void
-vlkResAllocator::garbageCollect(VkDevice dev, VkCommandPool cmdPool, uint64 frameIndex) {
+vlkResAllocator::garbageCollect(VkDevice dev, VkCommandPool cmdPool, uint64_t frameIndex) {
     o_assert_dbg(this->valid);
 
     // release all resources from longer then NumFrames befores,
     // these are definitely no longer accessed by the GPU
-    const uint64 safeNumFrames = vlkConfig::NumFrames + 2;
+    const uint64_t safeNumFrames = vlkConfig::NumFrames + 2;
     if (frameIndex > safeNumFrames) {
-        const uint64 minReleaseFrame = frameIndex - safeNumFrames;
+        const uint64_t minReleaseFrame = frameIndex - safeNumFrames;
         freeItem item;
         while (!this->releaseQueue.Empty() && (this->releaseQueue.Front().frameIndex < minReleaseFrame)) {
             this->releaseQueue.Dequeue(item);
@@ -86,7 +89,7 @@ vlkResAllocator::garbageCollect(VkDevice dev, VkCommandPool cmdPool, uint64 fram
 
 //------------------------------------------------------------------------------
 vlkResAllocator::BufferItem
-vlkResAllocator::allocDeviceBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32 size) {
+vlkResAllocator::allocDeviceBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32_t size) {
     o_assert_dbg(this->valid);
     o_assert_dbg(dev);
     o_assert_dbg(size >= 0);
@@ -119,7 +122,7 @@ vlkResAllocator::allocDeviceBuffer(VkDevice dev, VkBufferUsageFlags usage, uint3
 
 //------------------------------------------------------------------------------
 vlkResAllocator::BufferItem
-vlkResAllocator::allocStagingBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32 size) {
+vlkResAllocator::allocStagingBuffer(VkDevice dev, VkBufferUsageFlags usage, uint32_t size) {
     o_assert_dbg(this->valid);
     o_assert_dbg(dev);
     o_assert_dbg(size >= 0);
@@ -152,7 +155,7 @@ vlkResAllocator::allocStagingBuffer(VkDevice dev, VkBufferUsageFlags usage, uint
 
 //------------------------------------------------------------------------------
 vlkResAllocator::BufferItem
-vlkResAllocator::allocStaticBuffer(VkDevice dev, VkCommandBuffer cmdBuf, uint64 frameIndex, VkBufferUsageFlags usage, const void* data, uint32 size) {
+vlkResAllocator::allocStaticBuffer(VkDevice dev, VkCommandBuffer cmdBuf, uint64_t frameIndex, VkBufferUsageFlags usage, const void* data, uint32_t size) {
     o_assert_dbg(this->valid);
     o_assert_dbg(dev && cmdBuf);
     BufferItem deviceBuffer = this->allocDeviceBuffer(dev, usage, size);
@@ -164,10 +167,10 @@ vlkResAllocator::allocStaticBuffer(VkDevice dev, VkCommandBuffer cmdBuf, uint64 
 
 //------------------------------------------------------------------------------
 void
-vlkResAllocator::releaseBuffer(uint64 frameIndex, const BufferItem& item) {
+vlkResAllocator::releaseBuffer(uint64_t frameIndex, const BufferItem& item) {
     o_assert_dbg(this->valid);
     o_assert_dbg(item.buffer && item.memory);
-    this->releaseQueue.Enqueue(freeItem(frameIndex, uint64(item.buffer), item.memory, freeItem::Buffer));
+    this->releaseQueue.Enqueue(freeItem(frameIndex, uint64_t(item.buffer), item.memory, freeItem::Buffer));
 }
 
 //------------------------------------------------------------------------------
@@ -177,6 +180,14 @@ vlkResAllocator::destroyBuffer(VkDevice dev, VkBuffer buf, VkDeviceMemory mem) {
     o_assert_dbg(dev && buf && mem);
     vkFreeMemory(dev, mem, nullptr);
     vkDestroyBuffer(dev, buf, nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkResAllocator::releasePipeline(uint64_t frameIndex, VkPipeline pipeline) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(pipeline);
+    this->releaseQueue.Enqueue(freeItem(frameIndex, uint64_t(pipeline), freeItem::Pipeline));
 }
 
 //------------------------------------------------------------------------------
@@ -199,7 +210,7 @@ vlkResAllocator::bufferUsageToAccess(VkBufferUsageFlags usage) {
 
 //------------------------------------------------------------------------------
 void
-vlkResAllocator::copyBufferData(VkDevice dev, VkCommandBuffer cmdBuf, uint64 frameIndex, VkBufferUsageFlags dstUsage, VkBuffer dstBuf, VkBuffer optStagingBuf, VkDeviceMemory optStagingMem, const void* data, uint32 size) {
+vlkResAllocator::copyBufferData(VkDevice dev, VkCommandBuffer cmdBuf, uint64_t frameIndex, VkBufferUsageFlags dstUsage, VkBuffer dstBuf, VkBuffer optStagingBuf, VkDeviceMemory optStagingMem, const void* data, uint32_t size) {
     o_assert(this->valid);
     o_assert(dev && cmdBuf && dstBuf);
     o_assert(data && (size > 0));

@@ -22,7 +22,7 @@
 #include "Gfx/mtl/mtlTextureFactory.h"
 #elif ORYOL_VULKAN
 #include "Gfx/vlk/vlkMeshFactory.h"
-#include "Gfx/Resource/pipelineFactoryBase.h"
+#include "Gfx/vlk/vlkPipelineFactory.h"
 #include "Gfx/vlk/vlkShaderFactory.h"
 #include "Gfx/vlk/vlkTextureFactory.h"
 #else
@@ -55,7 +55,7 @@ class textureFactory : public mtlTextureFactory { };
 class meshFactory : public vlkMeshFactory { };
 class shaderFactory : public vlkShaderFactory { };
 class textureFactory : public vlkTextureFactory { };
-class pipelineFactory : public pipelineFactoryBase { };
+class pipelineFactory : public vlkPipelineFactory { };
 #endif
 
 } // namespace _priv

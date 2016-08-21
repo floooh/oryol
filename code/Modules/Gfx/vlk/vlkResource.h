@@ -63,7 +63,13 @@ public:
     @brief Vulkan implementation of pipeline
 */
 class vlkPipeline : public pipelineBase {
-    // FIXME
+public:
+    /// destructor
+    ~vlkPipeline();
+    /// clear the object
+    void Clear();
+
+    VkPipeline vkPipeline = nullptr;
 };
 
 //------------------------------------------------------------------------------

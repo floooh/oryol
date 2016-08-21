@@ -23,7 +23,7 @@ vlkMesh::~vlkMesh() {
 
 //------------------------------------------------------------------------------
 void
-    vlkMesh::Clear() {
+vlkMesh::Clear() {
     for (auto& buf : this->buffers) {
         buf = buffer();
     }
@@ -42,6 +42,18 @@ vlkShader::Clear() {
     this->vsModule = nullptr;
     this->fsModule = nullptr;
     shaderBase::Clear();
+}
+
+//==============================================================================
+vlkPipeline::~vlkPipeline() {
+    o_assert_dbg(!this->vkPipeline);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkPipeline::Clear() {
+    this->vkPipeline = nullptr;
+    pipelineBase::Clear();
 }
 
 } // namespace _priv
