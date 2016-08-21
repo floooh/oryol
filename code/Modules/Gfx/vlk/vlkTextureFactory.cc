@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "vlkTextureFactory.h"
 #include "Core/Assertion.h"
-#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/resource.h"
 
 namespace Oryol {
 namespace _priv {

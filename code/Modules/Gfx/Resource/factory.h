@@ -20,6 +20,11 @@
 #include "Gfx/mtl/mtlPipelineFactory.h"
 #include "Gfx/mtl/mtlShaderFactory.h"
 #include "Gfx/mtl/mtlTextureFactory.h"
+#elif ORYOL_VULKAN
+#include "Gfx/vlk/vlkMeshFactory.h"
+#include "Gfx/Resource/pipelineFactoryBase.h"
+#include "Gfx/vlk/vlkShaderFactory.h"
+#include "Gfx/vlk/vlkTextureFactory.h"
 #else
 #error "Platform not yet supported!"
 #endif
@@ -46,6 +51,11 @@ class meshFactory : public mtlMeshFactory { };
 class pipelineFactory : public mtlPipelineFactory { };
 class shaderFactory : public mtlShaderFactory { };
 class textureFactory : public mtlTextureFactory { };
+#elif ORYOL_VULKAN
+class meshFactory : public vlkMeshFactory { };
+class shaderFactory : public vlkShaderFactory { };
+class textureFactory : public vlkTextureFactory { };
+class pipelineFactory : public pipelineFactoryBase { };
 #endif
 
 } // namespace _priv

@@ -100,9 +100,8 @@ fips_begin_module(Gfx)
             vlkSyncPool.cc vlkSyncPool.h
             vlkResAllocator.cc vlkResAllocator.h
             vlkContext.cc vlkContext.h
-            vlkMesh.cc vlkMesh.h
+            vlkResource.cc vlkResource.h
             vlkMeshFactory.cc vlkMeshFactory.h
-            vlkShader.cc vlkShader.h
             vlkShaderFactory.cc vlkShaderFactory.h
             vlkTextureFactory.cc vlkTextureFactory.h
             vlkRenderer.cc vlkRenderer.h

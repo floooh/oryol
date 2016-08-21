@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "vlk_impl.h"
 #include "vlkMeshFactory.h"
-#include "Gfx/Resource/mesh.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Core/Assertion.h"
@@ -124,11 +124,11 @@ vlkMeshFactory::createBuffers(mesh& msh, int bufType, Usage::Code usage, const v
     const uint64 frameIndex = context.CurFrameIndex;
     VkDevice device = context.Device;
     VkCommandBuffer cmdBuf = context.curCommandBuffer();
+    const VkBufferUsageFlags vlkUsageFlags = bufType == mesh::vb ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
     auto& buf = msh.buffers[bufType];
     buf.numSlots = Usage::Immutable == usage ? 1 : vlkConfig::NumFrames;
     for (uint8 slotIndex = 0; slotIndex < buf.numSlots; slotIndex++) {
-        const VkBufferUsageFlags vlkUsageFlags = slotIndex == 0 ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
         auto& slot = buf.slots[slotIndex];
         if (Usage::Stream == usage) {
             // Stream usage means the buffer is updated every frame, only

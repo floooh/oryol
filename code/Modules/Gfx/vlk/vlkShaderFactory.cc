@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "vlkShaderFactory.h"
-#include "Gfx/Resource/shader.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/displayMgr.h"
 
 namespace Oryol {
@@ -63,7 +63,7 @@ vlkShaderFactory::SetupResource(shader& shd) {
     err = vkCreateShaderModule(device, &shdInfo, nullptr, &shd.fsModule);
     o_assert(!err && shd.fsModule);
 
-    return ResourceState::InvalidState;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------

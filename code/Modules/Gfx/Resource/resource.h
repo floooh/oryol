@@ -8,6 +8,8 @@
 #include "Gfx/d3d12/d3d12Resource.h"
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlResource.h"
+#elif ORYOL_VULKAN
+#include "Gfx/vlk/vlkResource.h"
 #else
 #error "Target platform not yet supported!"
 #endif
@@ -33,6 +35,8 @@ class mesh : public d3d11Mesh { };
 class mesh : public d3d12Mesh { };
 #elif ORYOL_METAL
 class mesh : public mtlMesh { };
+#elif ORYOL_VULKAN
+class mesh : public vlkMesh { };
 #endif
 
 //------------------------------------------------------------------------------
@@ -49,6 +53,8 @@ class pipeline : public d3d11Pipeline { };
 class pipeline : public d3d12Pipeline { };
 #elif ORYOL_METAL
 class pipeline : public mtlPipeline { };
+#elif ORYOL_VULKAN
+class pipeline : public vlkPipeline { };
 #endif
 
 //------------------------------------------------------------------------------
@@ -71,6 +77,8 @@ class shader : public d3d11Shader { };
 class shader : public d3d12Shader { };
 #elif ORYOL_METAL
 class shader : public mtlShader { };
+#elif ORYOL_VULKAN
+class shader : public vlkShader { };
 #else
 #error "Target platform not yet supported!"
 #endif
@@ -92,6 +100,8 @@ class texture : public d3d11Texture { };
 class texture : public d3d12Texture { };
 #elif ORYOL_METAL
 class texture : public mtlTexture { };
+#elif ORYOL_VULKAN
+class texture : public vlkTexture { };
 #endif
 
 } // namespace _priv
