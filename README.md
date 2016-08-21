@@ -52,6 +52,7 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 ### Extension Modules:
 
 - Dear Imgui integration: https://github.com/floooh/oryol-imgui
+- Nuklear UI integration: https://github.com/floooh/oryol-nuklear
 - TurboBadger UI integration: https://github.com/floooh/oryol-tbui
 - OpenAL based sound module: https://github.com/floooh/oryol-sound
 - SoLoud portable audio library: https://github.com/floooh/fips-soloud

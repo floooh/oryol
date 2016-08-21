@@ -1,32 +1,34 @@
 //------------------------------------------------------------------------------
-//  mtlPipeline.mm
+//  resourceBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "mtlPipeline.h"
-#include "mtl_impl.h"
+#include "resourceBase.h"
 
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-mtlPipeline::mtlPipeline() :
-mtlRenderPipelineState(nil),
-mtlDepthStencilState(nil) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-mtlPipeline::~mtlPipeline() {
-    o_assert_dbg(nil == this->mtlRenderPipelineState);
-    o_assert_dbg(nil == this->mtlDepthStencilState);
+void
+textureBase::Clear() {
+    this->textureAttrs = TextureAttrs();
+    resourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 void
-mtlPipeline::Clear() {
-    this->mtlRenderPipelineState = nil;
-    this->mtlDepthStencilState = nil;
-    pipelineBase::Clear();
+meshBase::Clear() {
+    this->vertexBufferAttrs = VertexBufferAttrs();
+    this->indexBufferAttrs = IndexBufferAttrs();
+    this->primGroups.Fill(PrimitiveGroup());
+    this->numPrimGroups = 0;
+    resourceBase::Clear();
+}
+
+//------------------------------------------------------------------------------
+void
+pipelineBase::Clear() {
+    this->shd = nullptr;
+    resourceBase::Clear();
 }
 
 } // namespace _priv

@@ -71,7 +71,7 @@ InstancingApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::DrawInstanced(0, this->curNumParticles);
+    Gfx::Draw(0, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
     
     Dbg::DrawTextBuffer();

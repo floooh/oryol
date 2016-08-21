@@ -5,8 +5,7 @@
 #include "mtlPipelineFactory.h"
 #include "mtl_impl.h"
 #include "mtlTypes.h"
-#include "Gfx/Resource/pipeline.h"
-#include "Gfx/Resource/shader.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/renderer.h"
 
 namespace Oryol {

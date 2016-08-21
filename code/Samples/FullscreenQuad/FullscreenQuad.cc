@@ -28,7 +28,7 @@ FullscreenQuadApp::OnRunning() {
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->params);
-    Gfx::Draw(0);
+    Gfx::Draw();
     Gfx::CommitFrame();
     
     // continue running or quit?

@@ -38,7 +38,6 @@
 #include "Core/Containers/Set.h"
 
 namespace Oryol {
-
 namespace _priv {
 #if ORYOL_ANDROID
 class androidBridge;
@@ -99,11 +98,9 @@ protected:
     bool suspendRequested;
     #if ORYOL_IOS
     _priv::iosBridge* iosBridge;
-    #endif
-    #if ORYOL_MACOS && ORYOL_METAL
+    #elif ORYOL_MACOS && ORYOL_METAL
     _priv::osxBridge* osxBridge;
-    #endif
-    #if ORYOL_ANDROID
+    #elif ORYOL_ANDROID
     _priv::androidBridge* androidBridge;
     #endif
 };

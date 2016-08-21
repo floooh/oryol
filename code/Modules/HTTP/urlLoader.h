@@ -18,6 +18,13 @@ namespace Oryol {
 namespace _priv {
 class urlLoader : public osxURLLoader {};
 } }
+#elif ORYOL_UWP
+// FIXME
+#include "HTTP/base/baseURLLoader.h"
+namespace Oryol {
+namespace _priv {
+class urlLoader : public baseURLLoader {};
+} }
 #elif ORYOL_WINDOWS
 #include "HTTP/windows/winURLLoader.h"
 namespace Oryol {

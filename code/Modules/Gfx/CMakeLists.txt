@@ -57,19 +57,10 @@ fips_begin_module(Gfx)
     fips_dir(Resource)
     fips_files(
         resourcePools.h
-        pipelineBase.h pipelineBase.cc
-        pipeline.h
+        resourceBase.h resourceBase.cc
+        resource.h
+        factory.h
         pipelineFactoryBase.cc pipelineFactoryBase.h
-        pipelineFactory.h
-        meshBase.cc meshBase.h
-        mesh.h
-        meshFactory.h
-        shaderBase.h
-        shader.h
-        shaderFactory.h
-        textureBase.cc textureBase.h
-        texture.h
-        textureFactory.h
         gfxResourceContainerBase.cc gfxResourceContainerBase.h
         gfxResourceContainer.h 
         MeshLoaderBase.cc MeshLoaderBase.h
@@ -89,14 +80,11 @@ fips_begin_module(Gfx)
             glDebugOutput.cc glDebugOutput.h
             glExt.cc glExt.h
             glInfo.cc glInfo.h
-            glPipeline.cc glPipeline.h
+            glResource.cc glResource.h
             glPipelineFactory.cc glPipelineFactory.h
-            glMesh.cc glMesh.h
             glMeshFactory.cc glMeshFactory.h
-            glShader.cc glShader.h
             glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
-            glTexture.cc glTexture.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h
             glVertexAttr.h
@@ -126,7 +114,7 @@ fips_begin_module(Gfx)
         fips_deps(glfw3)
         fips_libs(${VULKAN_LIBRARY})
     endif()
-    if (ORYOL_D3D11 OR ORYOL_D3D12)
+    if (NOT FIPS_UWP AND (ORYOL_D3D11 OR ORYOL_D3D12))
         fips_dir(win)
         fips_files(
             win_decl.h
@@ -140,13 +128,10 @@ fips_begin_module(Gfx)
             d3d11_impl.h d3d11_decl.h
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
             d3d11Types.cc d3d11Types.h
-            d3d11Mesh.cc d3d11Mesh.h
+            d3d11Resource.cc d3d11Resource.h
             d3d11MeshFactory.cc d3d11MeshFactory.h
-            d3d11Shader.cc d3d11Shader.h
             d3d11ShaderFactory.cc d3d11ShaderFactory.h
-            d3d11Texture.cc d3d11Texture.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
-            d3d11Pipeline.h d3d11Pipeline.cc
             d3d11PipelineFactory.h d3d11PipelineFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
         )
@@ -161,13 +146,10 @@ fips_begin_module(Gfx)
             d3d12SamplerCache.cc d3d12SamplerCache.h
             d3d12Types.cc d3d12Types.h
             d3d12DisplayMgr.cc d3d12DisplayMgr.h
-            d3d12Mesh.cc d3d12Mesh.h
+            d3d12Resource.cc d3d12Resource.h
             d3d12MeshFactory.cc d3d12MeshFactory.h
-            d3d12Shader.cc d3d12Shader.h
             d3d12ShaderFactory.cc d3d12ShaderFactory.h
-            d3d12Pipeline.cc d3d12Pipeline.h
             d3d12PipelineFactory.cc d3d12PipelineFactory.h
-            d3d12Texture.cc d3d12Texture.h
             d3d12TextureFactory.cc d3d12TextureFactory.h
             d3d12Renderer.cc d3d12Renderer.h
             fasthash.h
@@ -179,13 +161,10 @@ fips_begin_module(Gfx)
             mtl_decl.h mtl_impl.h
             mtlDisplayMgr.h mtlDisplayMgr.mm
             mtlTypes.h mtlTypes.mm
-            mtlMesh.h mtlMesh.mm
+            mtlResource.h mtlResource.mm
             mtlMeshFactory.h mtlMeshFactory.mm
-            mtlShader.h mtlShader.mm
             mtlShaderFactory.h mtlShaderFactory.mm
-            mtlPipeline.h mtlPipeline.mm
             mtlPipelineFactory.h mtlPipelineFactory.mm
-            mtlTexture.h mtlTexture.mm
             mtlTextureFactory.h mtlTextureFactory.mm
             mtlRenderer.h mtlRenderer.mm
             mtlReleaseQueue.h mtlReleaseQueue.mm

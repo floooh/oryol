@@ -10,8 +10,9 @@ fips_begin_module(LocalFS)
         LocalFileSystem.cc LocalFileSystem.h
     )
     fips_dir(whereami)
-    fips_files(whereami_oryol.cc whereami.h)
-
+    if (NOT FIPS_UWP)
+        fips_files(whereami_oryol.cc whereami.h)
+    endif()
     # web-platforms don't have a LocalFS implementation
     if (FIPS_EMSCRIPTEN OR FIPS_PNACL)
         fips_dir(dummy)

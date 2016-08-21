@@ -5,7 +5,7 @@
 #include "mtlShaderFactory.h"
 #include "Core/Assertion.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/shader.h"
+#include "Gfx/Resource/resource.h"
 
 namespace Oryol {
 namespace _priv {

@@ -16,7 +16,7 @@ static Key::Code keyTable[ORYOL_WIN_KEY_LAST + 1];
 
 //------------------------------------------------------------------------------
 winInputMgr::winInputMgr() :
-    runLoopId(RunLoop::InvalidId) {
+runLoopId(RunLoop::InvalidId) {
     o_assert(nullptr == self);
     self = this;
 }

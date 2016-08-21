@@ -10,22 +10,36 @@
     (like Windows.h), so it is not recommended to include the header anywhere 
     else to not pollute the whole code base with platform-specific headers.
 */
-#if ORYOL_WINDOWS
+#if ORYOL_WINDOWS && !ORYOL_UWP
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
 #define NOUSER (1)
 #include <Windows.h>
-#endif
-#if ORYOL_ANDROID
+#elif ORYOL_UWP
+#include "Core/uwp/uwpBridge.h"
+#elif ORYOL_ANDROID
 #include "Core/android/android_native_app_glue.h"
-#endif
-#if ORYOL_PNACL
+#elif ORYOL_PNACL
 #include "Core/pnacl/pnaclModule.h"
 #endif
 #include "Core/App.h"
 #include "Core/String/WideString.h"
 
-#if ORYOL_WINDOWS
+#if ORYOL_UWP
+// on UWP, the UI event loop is running in it's own thread,
+// need to move creation of the Oryol app object to the
+// UI thread, thus the lambda
+#define OryolMain(clazz) \
+Oryol::Args OryolArgs; \
+[Platform::MTAThread] \
+int main(Platform::Array<Platform::String^>^) { \
+    Oryol::_priv::uwpBridge app; \
+    app.start([]() -> App* { \
+        return Memory::New<clazz>(); \
+    }); \
+    return 0; \
+}
+#elif ORYOL_WINDOWS
 #define OryolMain(clazz) \
 Oryol::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\

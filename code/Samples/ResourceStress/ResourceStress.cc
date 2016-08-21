@@ -63,7 +63,7 @@ ResourceStressApp::OnRunning() {
             vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
             Gfx::ApplyDrawState(obj.drawState);
             Gfx::ApplyUniformBlock(vsParams);
-            Gfx::Draw(0);
+            Gfx::Draw();
         }
     }
     Dbg::DrawTextBuffer();

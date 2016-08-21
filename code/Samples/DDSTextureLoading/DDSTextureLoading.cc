@@ -74,7 +74,7 @@ DDSTextureLoadingApp::OnRunning() {
             this->drawState.FSTexture[Textures::Texture] = this->textures[i];
             Gfx::ApplyDrawState(this->drawState);
             Gfx::ApplyUniformBlock(this->vsParams);
-            Gfx::Draw(0);
+            Gfx::Draw();
         }
     }
     Gfx::CommitFrame();

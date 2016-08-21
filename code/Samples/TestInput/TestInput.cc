@@ -383,7 +383,7 @@ TestInputApp::drawCube() {
     vsParams.ModelViewProjection = this->proj * this->view;
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
 }
 
 //------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ InfiniteSpheresApp::OnRunning() {
     this->offscreenDrawState.FSTexture[Textures::Texture] = rt1;
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     // ...and again to display
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
@@ -66,7 +66,7 @@ InfiniteSpheresApp::OnRunning() {
     this->displayDrawState.FSTexture[Textures::Texture] = rt0;
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     
     Gfx::CommitFrame();
     

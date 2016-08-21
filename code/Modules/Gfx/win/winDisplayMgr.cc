@@ -7,7 +7,9 @@
 #include "Core/String/StringBuilder.h"
 #include "Core/String/StringConverter.h"
 
+#ifndef UNICODE
 #define UNICODE
+#endif
 #include <windows.h>
 #include <windowsx.h>
 

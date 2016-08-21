@@ -71,7 +71,7 @@ DrawCallPerfApp::OnRunning() {
     for (int i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.Translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
-        Gfx::Draw(0);
+        Gfx::Draw();
     }
     drawTime = Clock::Since(drawStart);
     

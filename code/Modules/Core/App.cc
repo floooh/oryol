@@ -9,17 +9,13 @@
 #include "Core/Trace.h"
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
-#endif
-#if ORYOL_PNACL
+#elif ORYOL_PNACL
 #include "Core/pnacl/pnaclInstance.h"
-#endif
-#if ORYOL_IOS
+#elif ORYOL_IOS
 #include "Core/ios/iosBridge.h"
-#endif
-#if ORYOL_MACOS && ORYOL_METAL
+#elif ORYOL_MACOS && ORYOL_METAL
 #include "Core/osx/osxBridge.h"
-#endif
-#if ORYOL_ANDROID
+#elif ORYOL_ANDROID
 #include "Core/android/androidBridge.h"
 #endif
 
@@ -88,15 +84,17 @@ App::StartMainLoop() {
         this->androidBridge->onStop();
     #elif ORYOL_PNACL
         pnaclInstance::Instance()->startMainLoop(this);
+    #elif ORYOL_UWP
+        // do nothing here
     #else
         while (AppState::InvalidAppState != this->curState) {
             this->onFrame();
         }
     #endif
 
-    // NOTE: PNaCl is the only platform where StartMainLoop
+    // NOTE: PNaCl and UWP are the only platform where StartMainLoop
     // returns while the app continues running!
-    #if !ORYOL_PNACL
+    #if !(ORYOL_PNACL || ORYOL_UWP)
     Log::Info("<= App::StartMainLoop()\n");
     Core::Discard();
     #endif

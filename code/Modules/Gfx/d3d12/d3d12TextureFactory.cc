@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "d3d12TextureFactory.h"
 #include "Core/Assertion.h"
-#include "Gfx/Resource/texture.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"

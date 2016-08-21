@@ -93,7 +93,7 @@ JuliaApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::ApplyUniformBlock(this->fsParams);
-    Gfx::Draw(0);
+    Gfx::Draw();
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }

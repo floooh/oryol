@@ -29,7 +29,7 @@ BlendTestApp::OnRunning() {
     // draw checkboard background
     Gfx::ApplyDefaultRenderTarget();
     Gfx::ApplyDrawState(this->bgDrawState);
-    Gfx::Draw(0);
+    Gfx::Draw();
 
     // draw blended triangles
     DrawState triDrawState;
@@ -42,7 +42,7 @@ BlendTestApp::OnRunning() {
             triDrawState.Pipeline = this->pipelines[y][x];
             Gfx::ApplyDrawState(triDrawState);
             Gfx::ApplyUniformBlock(this->params);
-            Gfx::Draw(0);
+            Gfx::Draw();
         }
     }
     Gfx::CommitFrame();

@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "pipelineFactoryBase.h"
-#include "Gfx/Resource/pipeline.h"
+#include "Gfx/Resource/resource.h"
 #include "Gfx/Resource/resourcePools.h"
 
 namespace Oryol {

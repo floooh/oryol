@@ -59,13 +59,13 @@ public:
     static void PushResourceLabel(ResourceLabel label);
     /// pop resource label from label stack
     static ResourceLabel PopResourceLabel();
-    /// create a resource object
+    /// create a resource object without associated data
     template<class SETUP> static Id CreateResource(const SETUP& setup);
-    /// create a resource object with data in buffer object
+    /// create a resource object with associated data
     template<class SETUP> static Id CreateResource(const SetupAndData<SETUP>& setupAndData);
-    /// create a resource object with data in buffer object
+    /// create a resource object with associated data
     template<class SETUP> static Id CreateResource(const SETUP& setup, const Buffer& data);
-    /// create a resource object with pointer to non-owned data
+    /// create a resource object with raw pointer to associated data
     template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int size);
     /// asynchronously load resource object
     static Id LoadResource(const Ptr<ResourceLoader>& loader);
@@ -83,36 +83,32 @@ public:
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
 
-    /// make the default render target current and optionally clear
+    /// apply the default render target and perform clear-actions
     static void ApplyDefaultRenderTarget(const ClearState& clearState=ClearState());
-    /// apply an offscreen render target
+    /// apply an offscreen render target and perform clear-actions
     static void ApplyRenderTarget(const Id& id, const ClearState& clearState=ClearState());
     /// apply view port
     static void ApplyViewPort(int x, int y, int width, int height, bool originTopLeft=false);
-    /// apply scissor rect (must also be enabled in DrawState.RasterizerState)
+    /// apply scissor rect (must also be enabled in Pipeline object)
     static void ApplyScissorRect(int x, int y, int width, int height, bool originTopLeft=false);
-    /// apply draw state and meshes to use for rendering without texture blocks
+    /// apply draw state (Pipeline, Meshes and Textures)
     static void ApplyDrawState(const DrawState& drawState);
-    /// apply a uniform block
+    /// apply a uniform block (call between ApplyDrawState and Draw)
     template<class T> static void ApplyUniformBlock(const T& ub);
 
-    /// update dynamic vertex data (only complete replace possible at the moment)
+    /// update dynamic vertex data (complete replace)
     static void UpdateVertices(const Id& id, const void* data, int numBytes);
-    /// update dynamic index data (only complete replace possible at the moment)
+    /// update dynamic index data (complete replace)
     static void UpdateIndices(const Id& id, const void* data, int numBytes);
-    /// update dynamic texture image data (only complete replace possible at the moment)
+    /// update dynamic texture image data (complete replace)
     static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read current framebuffer pixels into client memory, this means a PIPELINE STALL!!
+    /// read current framebuffer pixels into client memory, SLOW!!! (not supported on all platforms)
     static void ReadPixels(void* ptr, int numBytes);
     
-    /// submit a draw call with primitive group index in current mesh
-    static void Draw(int primGroupIndex);
-    /// submit a draw call with direct primitive group
-    static void Draw(const PrimitiveGroup& primGroup);
-    /// submit a draw call for instanced rendering
-    static void DrawInstanced(int primGroupIndex, int numInstances);
-    /// submit a draw call for instanced rendering with direct primitive group
-    static void DrawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    /// submit a draw call with primitive group index
+    static void Draw(int primGroupIndex=0, int numInstances=1);
+    /// submit a draw call with explicit primitve range
+    static void Draw(const PrimitiveGroup& primGroup, int numInstances=1);
 
     /// commit (and display) the current frame
     static void CommitFrame();
