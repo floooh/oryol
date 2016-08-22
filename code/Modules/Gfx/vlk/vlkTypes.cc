@@ -124,5 +124,54 @@ vlkTypes::asStencilOp(StencilOp::Code op) {
     }
 }
 
+//------------------------------------------------------------------------------
+VkBlendFactor
+vlkTypes::asBlendFactor(BlendFactor::Code bf) {
+    switch (bf) {
+        case BlendFactor::Zero:                 return VK_BLEND_FACTOR_ZERO;
+        case BlendFactor::One:                  return VK_BLEND_FACTOR_ONE;
+        case BlendFactor::SrcColor:             return VK_BLEND_FACTOR_SRC_COLOR;
+        case BlendFactor::OneMinusSrcColor:     return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        case BlendFactor::SrcAlpha:             return VK_BLEND_FACTOR_SRC_ALPHA;
+        case BlendFactor::OneMinusSrcAlpha:     return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        case BlendFactor::DstColor:             return VK_BLEND_FACTOR_DST_COLOR;
+        case BlendFactor::OneMinusDstColor:     return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        case BlendFactor::DstAlpha:             return VK_BLEND_FACTOR_DST_ALPHA;
+        case BlendFactor::OneMinusDstAlpha:     return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        case BlendFactor::SrcAlphaSaturated:    return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+        case BlendFactor::BlendColor:           return VK_BLEND_FACTOR_CONSTANT_COLOR;
+        case BlendFactor::OneMinusBlendColor:   return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+        case BlendFactor::BlendAlpha:           return VK_BLEND_FACTOR_CONSTANT_ALPHA;
+        case BlendFactor::OneMinusBlendAlpha:   return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA;
+        default:
+            o_error("vlkTypes::asBlendFactor: invalid blend factor!\n");
+            return VK_BLEND_FACTOR_MAX_ENUM;
+    }
+}
+
+//------------------------------------------------------------------------------
+VkBlendOp
+vlkTypes::asBlendOp(BlendOperation::Code bo) {
+    switch (bo) {
+        case BlendOperation::Add:               return VK_BLEND_OP_ADD;
+        case BlendOperation::Subtract:          return VK_BLEND_OP_SUBTRACT;
+        case BlendOperation::ReverseSubtract:   return VK_BLEND_OP_REVERSE_SUBTRACT;
+        default:
+            o_error("vlkTypes::asBlendOp: invalid blend factor!\n");
+            return VK_BLEND_OP_MAX_ENUM;
+    }
+}
+
+//------------------------------------------------------------------------------
+VkColorComponentFlags
+vlkTypes::asColorWriteMask(PixelChannel::Mask mask) {
+    VkColorComponentFlags res = 0;
+    if (mask & PixelChannel::Red)   res |= VK_COLOR_COMPONENT_R_BIT;
+    if (mask & PixelChannel::Green) res |= VK_COLOR_COMPONENT_G_BIT;
+    if (mask & PixelChannel::Blue)  res |= VK_COLOR_COMPONENT_B_BIT;
+    if (mask & PixelChannel::Alpha) res |= VK_COLOR_COMPONENT_A_BIT;
+    return res;
+}
+
 } // namespace _priv
 } // namespace Oryol

@@ -12,14 +12,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-vlkRenderer::vlkRenderer() :
-valid(false),
-context(nullptr),
-cmdBuf(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 vlkRenderer::~vlkRenderer() {
     o_assert_dbg(!this->valid);
 }
@@ -31,7 +23,7 @@ vlkRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     this->valid = true;
     this->pointers = ptrs;
-    this->context = &ptrs.displayMgr->vlkContext;
+    this->context = &ptrs.displayMgr->vlkContext;    
 }
 
 //------------------------------------------------------------------------------

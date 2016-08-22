@@ -27,6 +27,12 @@ public:
     static VkCompareOp asCompareOp(CompareFunc::Code cmp);
     /// convert StencilOp to VkStencilOp
     static VkStencilOp asStencilOp(StencilOp::Code op);
+    /// convert BlendFactor to VkBlendFactor
+    static VkBlendFactor asBlendFactor(BlendFactor::Code bf);
+    /// convert BlendOperation to VkBlendOp
+    static VkBlendOp asBlendOp(BlendOperation::Code bo);
+    /// convert color write mask
+    static VkColorComponentFlags asColorWriteMask(PixelChannel::Mask mask);
 };
 
 } // namespace _priv

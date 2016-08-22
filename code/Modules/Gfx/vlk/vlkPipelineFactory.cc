@@ -89,6 +89,7 @@ asStencilOpState(const DepthStencilState& depthStencilState, const StencilState&
     out.compareMask = depthStencilState.StencilReadMask;
     out.writeMask = depthStencilState.StencilWriteMask;
     out.reference = depthStencilState.StencilRef;
+    return out;
 }
 
 //------------------------------------------------------------------------------
@@ -116,8 +117,8 @@ vlkPipelineFactory::SetupResource(pipeline& pip) {
     stageInfo[1].module = pip.shd->fsModule;
     stageInfo[1].pName = "main";
 
-    VkVertexInputBindingDescription vibDesc[VertexAttr::NumVertexAttrs];
-    VkVertexInputAttributeDescription viaDesc[VertexAttr::NumVertexAttrs];
+    VkVertexInputBindingDescription vibDesc[VertexAttr::NumVertexAttrs] = { };
+    VkVertexInputAttributeDescription viaDesc[VertexAttr::NumVertexAttrs] = { };
     int numBindings = describeVertexBinding(pip, vibDesc);
     int numAttrs = describeVertexAttrs(pip, viaDesc);
     VkPipelineVertexInputStateCreateInfo visInfo = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
@@ -165,8 +166,26 @@ vlkPipelineFactory::SetupResource(pipeline& pip) {
     pdsInfo.minDepthBounds = 0.0f;
     pdsInfo.maxDepthBounds = 0.0f;
 
+    const auto& bs = pip.Setup.BlendState;
+    VkPipelineColorBlendAttachmentState att = { };
+    att.blendEnable = bs.BlendEnabled;
+    att.srcColorBlendFactor = vlkTypes::asBlendFactor(bs.SrcFactorRGB);
+    att.dstColorBlendFactor = vlkTypes::asBlendFactor(bs.DstFactorRGB);
+    att.colorBlendOp = vlkTypes::asBlendOp(bs.OpRGB);
+    att.srcAlphaBlendFactor = vlkTypes::asBlendFactor(bs.SrcFactorAlpha);
+    att.dstAlphaBlendFactor = vlkTypes::asBlendFactor(bs.DstFactorAlpha);
+    att.alphaBlendOp = vlkTypes::asBlendOp(bs.OpAlpha);
+    att.colorWriteMask = vlkTypes::vlkTypes::asColorWriteMask(bs.ColorWriteMask);
+
+    const auto& blendColor = pip.Setup.BlendColor;
     VkPipelineColorBlendStateCreateInfo pcbInfo = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
-FIXME
+    pcbInfo.logicOpEnable = VK_FALSE;
+    pcbInfo.attachmentCount = 1;
+    pcbInfo.pAttachments = &att;
+    pcbInfo.blendConstants[0] = blendColor.x;
+    pcbInfo.blendConstants[1] = blendColor.y;
+    pcbInfo.blendConstants[2] = blendColor.z;
+    pcbInfo.blendConstants[3] = blendColor.w;
 
     VkGraphicsPipelineCreateInfo pipInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
     pipInfo.stageCount = 2;
@@ -179,6 +198,9 @@ FIXME
     pipInfo.pRasterizationState = &prsInfo;
     pipInfo.pMultisampleState = &pmsInfo;
     pipInfo.pDepthStencilState = &pdsInfo;
+    pipInfo.pColorBlendState = &pcbInfo;
+    pipInfo.layout = this->pointers.displayMgr->vlkContext.PipelineLayout;
+    pipInfo.renderPass = nullptr;   // FIXME: setup a cache of dummy render passes
 
     VkResult err = vkCreateGraphicsPipelines(
         device, 

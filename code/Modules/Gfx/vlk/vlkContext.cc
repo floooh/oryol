@@ -5,6 +5,7 @@
 #include "vlk_impl.h"
 #include "vlkContext.h"
 #include "vlkTypes.h"
+#include "Core/Containers/StaticArray.h"
 
 static PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR = nullptr;
 static PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
@@ -47,6 +48,7 @@ vlkContext::setupAfterWindow(const GfxSetup& setup, const DisplayAttrs& attrs, c
 
     this->Surface = surf;
     this->setupDevice(layers, exts);
+    this->setupPipelineLayout();
     DisplayAttrs outAttrs = this->setupSwapchain(setup, attrs);
 
     return outAttrs;
@@ -59,6 +61,7 @@ vlkContext::discard() {
     vkDeviceWaitIdle(this->Device);
     this->discardSwapchain(false);
     this->ResAllocator.discard(this->Device, this->cmdPool);
+    this->discardPipelineLayout();
     this->discardDevice();
     this->discardGPU();
     this->discardInstance();
@@ -728,6 +731,72 @@ vlkContext::discardSwapchain(bool forResize) {
         fpDestroySwapchainKHR(this->Device, this->SwapChain, nullptr);
         this->SwapChain = nullptr;
     }
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::setupPipelineLayout() {
+    o_assert(nullptr != this->Device);
+    o_assert(nullptr == this->PipelineLayout);
+    o_assert(nullptr == this->descriptorSetLayout);
+
+    StaticArray<VkDescriptorSetLayoutBinding, NumPipelineBindings> bind;
+    bind.Fill({ });
+
+    // PSConstantBuffer0
+    bind[PSConstantBuffer0].binding = 0;
+    bind[PSConstantBuffer0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bind[PSConstantBuffer0].descriptorCount = 1;
+    bind[PSConstantBuffer0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    bind[PSConstantBuffer1].binding = 1;
+    bind[PSConstantBuffer1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bind[PSConstantBuffer1].descriptorCount = 1;
+    bind[PSConstantBuffer0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    bind[VSConstantBuffer0].binding = 0;
+    bind[VSConstantBuffer0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bind[VSConstantBuffer0].descriptorCount = 1;
+    bind[VSConstantBuffer0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    bind[VSConstantBuffer1].binding = 1;
+    bind[VSConstantBuffer1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bind[VSConstantBuffer1].descriptorCount = 1;
+    bind[VSConstantBuffer1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    bind[PSTexturesAndSamplers].binding = 0;
+    bind[PSTexturesAndSamplers].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    bind[PSTexturesAndSamplers].descriptorCount = GfxConfig::MaxNumVertexTextures;
+    bind[PSTexturesAndSamplers].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    bind[VSTexturesAndSamplers].binding = 0;
+    bind[VSTexturesAndSamplers].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    bind[VSTexturesAndSamplers].descriptorCount = GfxConfig::MaxNumFragmentTextures;
+    
+    VkDescriptorSetLayoutCreateInfo bindInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+    bindInfo.bindingCount = NumPipelineBindings;
+    bindInfo.pBindings = &(bind[0]);
+    VkResult err = vkCreateDescriptorSetLayout(this->Device, &bindInfo, nullptr, &this->descriptorSetLayout);
+    o_assert(!err && this->descriptorSetLayout);
+
+    VkPipelineLayoutCreateInfo plInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+    plInfo.setLayoutCount = 1;
+    plInfo.pSetLayouts = &this->descriptorSetLayout;
+    err = vkCreatePipelineLayout(this->Device, &plInfo, nullptr, &this->PipelineLayout);
+    o_assert(!err && this->PipelineLayout);
+}
+
+//------------------------------------------------------------------------------
+void
+vlkContext::discardPipelineLayout() {
+    o_assert(this->Device);
+    o_assert(this->descriptorSetLayout);
+    o_assert(this->PipelineLayout);
+
+    vkDestroyPipelineLayout(this->Device, this->PipelineLayout, nullptr);
+    this->PipelineLayout = 0;
+    vkDestroyDescriptorSetLayout(this->Device, this->descriptorSetLayout, nullptr);
+    this->descriptorSetLayout = 0;
 }
 
 } // namespace _priv

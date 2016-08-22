@@ -50,6 +50,7 @@ public:
     VkRenderPass RenderPass = nullptr;
     uint64 CurFrameIndex = 0;
     uint64 CurFrameRotateIndex = 0;
+    VkPipelineLayout PipelineLayout = nullptr;
 
     /// setup the Vulkan instance
     void setupInstance(const Array<const char*>& layers, const Array<const char*>& exts);
@@ -67,6 +68,21 @@ public:
     DisplayAttrs setupSwapchain(const GfxSetup& setup, const DisplayAttrs& attrs);
     /// discard swapchain and default framebuffer
     void discardSwapchain(bool forResize);
+    /// setup the global pipeline layout object
+    void setupPipelineLayout();
+    /// discard the global pipeline layout object
+    void discardPipelineLayout();
+    /// pipeline layout bindings, from high to low change frequency
+    enum pipelineBinding {
+        PSConstantBuffer0 = 0,
+        PSConstantBuffer1,
+        VSConstantBuffer0,
+        VSConstantBuffer1,
+        PSTexturesAndSamplers,
+        VSTexturesAndSamplers,
+
+        NumPipelineBindings,
+    };
 
     /// allocate a new command buffer and begin recording
     void beginCmdBuffer();
@@ -104,6 +120,8 @@ public:
         VkCommandBuffer cmdBuf = nullptr;
     };
     FrameData frameDatas[vlkConfig::NumFrames];
+
+    VkDescriptorSetLayout descriptorSetLayout = nullptr;
 };
 
 //------------------------------------------------------------------------------

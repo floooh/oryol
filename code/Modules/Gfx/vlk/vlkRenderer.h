@@ -20,8 +20,6 @@ class vlkContext;
 
 class vlkRenderer {
 public:
-    /// constructor
-    vlkRenderer();
     /// destructor
     ~vlkRenderer();
 
@@ -80,11 +78,11 @@ public:
     void invalidateTextureState();
 
 private:
-    bool valid;
+    bool valid = false;
     gfxPointers pointers;
     DisplayAttrs rtAttrs;
-    vlkContext* context;
-    VkCommandBuffer cmdBuf;
+    vlkContext* context = nullptr;
+    VkCommandBuffer cmdBuf = nullptr;
 };
 
 } // namespace _priv
