@@ -130,9 +130,7 @@ glCaps::HasTextureFormat(PixelFormat::Code fmt) {
 void
 glCaps::VertexAttribDivisor(GLuint index, GLuint divisor) {
     if (state.features[InstancedArrays]) {
-        #if ORYOL_EMSCRIPTEN
-        ::glVertexAttribDivisor(index, divisor);
-        #elif ORYOL_IOS
+        #if ORYOL_IOS
         ::glVertexAttribDivisorEXT(index, divisor);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::VertexAttribDivisor() called!\n");
@@ -148,9 +146,7 @@ glCaps::VertexAttribDivisor(GLuint index, GLuint divisor) {
 void
 glCaps::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
     if (state.features[InstancedArrays]) {
-        #if ORYOL_EMSCRIPTEN
-        ::glDrawArraysInstanced(mode, first, count, primcount);
-        #elif ORYOL_IOS
+        #if ORYOL_IOS
         ::glDrawArraysInstancedEXT(mode, first, count, primcount);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::DrawArraysInstanced() called!\n");
@@ -166,9 +162,7 @@ glCaps::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei pri
 void
 glCaps::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount) {
     if (state.features[InstancedArrays]) {
-        #if ORYOL_EMSCRIPTEN
-        ::glDrawElementsInstanced(mode, count, type, indices, primcount);
-        #elif ORYOL_IOS
+        #if ORYOL_IOS
         ::glDrawElementsInstancedEXT(mode, count, type, indices, primcount);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::DrawElementsInstanced() called!\n");
