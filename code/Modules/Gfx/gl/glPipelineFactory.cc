@@ -5,7 +5,6 @@
 #include "glPipelineFactory.h"
 #include "Core/Assertion.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glExt.h"
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/Resource/resource.h"
 #include "Gfx/Core/VertexLayout.h"

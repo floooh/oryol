@@ -3,9 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "emscDisplayMgr.h"
-#include "Gfx/gl/glInfo.h"
-#include "Gfx/gl/glExt.h"
 #include "Gfx/gl/gl_impl.h"
+#include "Gfx/gl/glCaps.h"
 #include <emscripten/emscripten.h>
 
 namespace Oryol {
@@ -51,8 +50,7 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     o_assert2(this->ctx > 0, "Failed to create WebGL context");
     emscripten_webgl_make_context_current(this->ctx);
 
-    glInfo::Setup();
-    glExt::Setup();
+    glCaps::Setup();
 }
 
 //------------------------------------------------------------------------------
@@ -61,8 +59,7 @@ emscDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
     o_assert(0 != this->ctx);
 
-    glExt::Discard();
-    glInfo::Discard();
+    glCaps::Discard();
     emscripten_webgl_destroy_context(this->ctx);
     this->ctx = 0;
 

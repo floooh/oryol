@@ -4,14 +4,14 @@
 #include "Pre.h"
 #include "Core/Core.h"
 #include "glTextureFactory.h"
-#include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glTypes.h"
-#include "Gfx/gl/glExt.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/resource.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
+#include "gl_impl.h"
+#include "glTypes.h"
+#include "glCaps.h"
 
 namespace Oryol {
 namespace _priv {
@@ -317,7 +317,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) 
     o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     
     // test if the texture format is actually supported
-    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
+    if (!glCaps::HasTextureFormat(setup.ColorFormat)) {
         o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
         return ResourceState::Failed;
     }
@@ -418,7 +418,7 @@ glTextureFactory::createEmptyTexture(texture& tex) {
     const GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
 
     // test if the texture format is actually supported
-    if (!glExt::IsTextureFormatSupported(setup.ColorFormat)) {
+    if (!glCaps::HasTextureFormat(setup.ColorFormat)) {
         o_warn("glTextureFactory: unsupported texture format for resource '%s'\n", setup.Locator.Location().AsCStr());
         return ResourceState::Failed;
     }

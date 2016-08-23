@@ -4,8 +4,7 @@
 #include "Pre.h"
 #include "iosDisplayMgr.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glInfo.h"
-#include "Gfx/gl/glExt.h"
+#include "Gfx/gl/glCaps.h"
 #include <GLKit/GLKit.h>
 
 namespace Oryol {
@@ -93,10 +92,7 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         glkView.drawableMultisample = GLKViewDrawableMultisampleNone;
     }
     */
-    
-    // setup platform constants and extensions
-    glInfo::Setup();
-    glExt::Setup();
+    glCaps::Setup(); 
     
     // update the displayAttrs with the actual frame buffer size
     this->glFramebufferWidth = (int) glkView.drawableWidth;
@@ -115,8 +111,7 @@ iosDisplayMgr::DiscardDisplay() {
     this->glDefaultFramebuffer = 0;
     this->glFramebufferWidth = 0;
     this->glFramebufferHeight = 0;
-    glExt::Discard();
-    glInfo::Discard();
+    glCaps::Discard();
     displayMgrBase::DiscardDisplay();
 }
 

@@ -4,9 +4,7 @@
 #include "Pre.h"
 #include "Core/Core.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glInfo.h"
-#include "Gfx/gl/glExt.h"
-#include "Gfx/gl/glDebugOutput.h"
+#include "Gfx/gl/glCaps.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"
@@ -66,10 +64,9 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     ORYOL_GL_CHECK_ERROR();
     flextInit(glfwWindow);
     ORYOL_GL_CHECK_ERROR();
-    glInfo::Setup();
-    glExt::Setup();
+    glCaps::Setup();
     #if ORYOL_DEBUG
-    glDebugOutput::Enable(glDebugOutput::Medium);
+    glCaps::EnableDebugOutput(glCaps::SeverityMedium);
     #endif
     
     // now set the actual display attributes
@@ -98,9 +95,7 @@ glfwDisplayMgr::DiscardDisplay() {
     
     this->destroyMainWindow();
     glfwTerminate();
-    glExt::Discard();
-    glInfo::Discard();
-    
+    glCaps::Discard();
     displayMgrBase::DiscardDisplay();
 }
 

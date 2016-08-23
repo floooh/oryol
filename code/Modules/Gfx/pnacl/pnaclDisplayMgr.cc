@@ -3,9 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "pnaclDisplayMgr.h"
-#include "Gfx/gl/glInfo.h"
-#include "Gfx/gl/glExt.h"
 #include "Gfx/gl/gl_impl.h"
+#include "Gfx/gl/glCaps.h"
 #include "Core/String/StringBuilder.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
@@ -62,10 +61,8 @@ pnaclDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs)
     if ((reqWidth != canvasWidth) || (reqHeight != canvasHeight)) {
         this->requestCanvasResize(reqWidth, reqHeight);
     }
-
-    // setup platform constants and extensions
-    glInfo::Setup();
-    glExt::Setup();
+   
+    glCaps::Setup();
     
     // NOTE: we put in the requested framebuffer size regardless of the
     // actual size, the framebuffer will be resized in the next frame
@@ -90,8 +87,7 @@ pnaclDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
     this->glFramebufferWidth = 0;
     this->glFramebufferHeight = 0;
-    glExt::Discard();
-    glInfo::Discard();
+    glCaps::Discard();
     displayMgrBase::DiscardDisplay();
 }
 

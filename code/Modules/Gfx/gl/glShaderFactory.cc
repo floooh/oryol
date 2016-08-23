@@ -6,7 +6,7 @@
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glInfo.h"
+#include "Gfx/gl/glCaps.h"
 #include "Gfx/gl/glTypes.h"
 #include "Core/Memory/Memory.h"
 
@@ -79,7 +79,7 @@ glShaderFactory::SetupResource(shader& shd) {
     /// @todo: would be good to optimize this to only bind
     /// attributes which exist in the shader (may be with more shader source generation)
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
-    o_assert_dbg(VertexAttr::NumVertexAttrs <= glInfo::Int(glInfo::MaxVertexAttribs));
+    o_assert_dbg(VertexAttr::NumVertexAttrs <= glCaps::IntLimit(glCaps::MaxVertexAttribs));
     for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
         ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
     }

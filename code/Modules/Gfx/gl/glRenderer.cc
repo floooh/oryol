@@ -3,14 +3,13 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "Gfx/gl/gl_impl.h"
-#include "glRenderer.h"
-#include "Gfx/gl/glInfo.h"
-#include "Gfx/gl/glExt.h"
-#include "Gfx/gl/glTypes.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/resource.h"
+#include "gl_impl.h"
+#include "glRenderer.h"
+#include "glTypes.h"
+#include "glCaps.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
@@ -182,23 +181,19 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
 
     switch (feat) {
         case GfxFeature::TextureCompressionDXT:
-            return glExt::HasExtension(glExt::TextureCompressionDXT);
+            return glCaps::HasFeature(glCaps::TextureCompressionDXT);
         case GfxFeature::TextureCompressionPVRTC:
-            return glExt::HasExtension(glExt::TextureCompressionPVRTC);
+            return glCaps::HasFeature(glCaps::TextureCompressionPVRTC);
         case GfxFeature::TextureCompressionATC:
-            return glExt::HasExtension(glExt::TextureCompressionATC);
+            return glCaps::HasFeature(glCaps::TextureCompressionATC);
         case GfxFeature::TextureCompressionETC2:
-            #if ORYOL_OPENGLES3
-            return true;
-            #else
-            return false;
-            #endif
+            return glCaps::HasFeature(glCaps::TextureCompressionETC2);
         case GfxFeature::TextureFloat:
-            return glExt::HasExtension(glExt::TextureFloat);
+            return glCaps::HasFeature(glCaps::TextureFloat);
         case GfxFeature::TextureHalfFloat:
-            return glExt::HasExtension(glExt::TextureHalfFloat);
+            return glCaps::HasFeature(glCaps::TextureHalfFloat);
         case GfxFeature::Instancing:
-            return glExt::HasExtension(glExt::InstancedArrays);
+            return glCaps::HasFeature(glCaps::InstancedArrays);
         case GfxFeature::OriginBottomLeft:
             return true;
         default:
@@ -391,7 +386,7 @@ glRenderer::applyMeshes(pipeline* pip, mesh** meshes, int numMeshes) {
                 }
             }
             if (curAttr.divisor != attr.divisor) {
-                glExt::VertexAttribDivisor(attr.index, attr.divisor);
+                glCaps::VertexAttribDivisor(attr.index, attr.divisor);
                 ORYOL_GL_CHECK_ERROR();
             }
             curAttr = attr;
@@ -417,12 +412,12 @@ glRenderer::applyMeshes(pipeline* pip, mesh** meshes, int numMeshes) {
             ORYOL_GL_CHECK_ERROR();
             ::glEnableVertexAttribArray(glAttribIndex);
             ORYOL_GL_CHECK_ERROR();
-            glExt::VertexAttribDivisor(glAttribIndex, attr.divisor);
+            glCaps::VertexAttribDivisor(glAttribIndex, attr.divisor);
             ORYOL_GL_CHECK_ERROR();
             maxUsedAttrib++;
         }
     }
-    int maxNumAttribs = glInfo::Int(glInfo::MaxVertexAttribs);
+    int maxNumAttribs = glCaps::IntLimit(glCaps::MaxVertexAttribs);
     if (VertexAttr::NumVertexAttrs < maxNumAttribs) {
         maxNumAttribs = VertexAttr::NumVertexAttrs;
     }
@@ -539,11 +534,11 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
         const int indexByteSize = IndexType::ByteSize(indexType);
         const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
         const GLenum glIndexType = glTypes::asGLIndexType(indexType);
-        glExt::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
+        glCaps::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
     }
     else {
         // non-indexed geometry
-        glExt::DrawArraysInstanced(glPrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
+        glCaps::DrawArraysInstanced(glPrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
     }
     ORYOL_GL_CHECK_ERROR();
 }

@@ -77,9 +77,7 @@ fips_begin_module(Gfx)
     if (ORYOL_OPENGL)
         fips_dir(gl)
         fips_files(
-            glDebugOutput.cc glDebugOutput.h
-            glExt.cc glExt.h
-            glInfo.cc glInfo.h
+            glCaps.cc glCaps.h
             glResource.cc glResource.h
             glPipelineFactory.cc glPipelineFactory.h
             glMeshFactory.cc glMeshFactory.h

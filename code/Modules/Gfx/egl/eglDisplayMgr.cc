@@ -11,8 +11,7 @@
 #include "bcm_host.h"
 #endif
 #include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glInfo.h"
-#include "Gfx/gl/glExt.h"
+#include "Gfx/gl/glCaps.h"
 
 #if ORYOL_ANDROID
 // this is in the app's main file (see App.h -> OryolApp)
@@ -157,16 +156,12 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     this->eglSurface = eglCreateWindowSurface(this->eglDisplay, this->eglConfig, window, NULL);
     o_assert(eglGetError() == EGL_SUCCESS);
     o_assert(nullptr != this->eglSurface);
-
     if (!eglMakeCurrent(this->eglDisplay, this->eglSurface, this->eglSurface, this->eglContext)) {
         o_error("eglDisplayMgr: eglMakeCurrent failed!\n");
         return;
     }
-
-    // setup platform constants and extensions
-    glInfo::Setup();
-    glExt::Setup();
-
+    glCaps::Setup();
+    
     // query actual display size and set in DisplayAttrs
     EGLint actualWidth = 0, actualHeight = 0;
     eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_WIDTH, &actualWidth);
@@ -190,8 +185,7 @@ eglDisplayMgr::DiscardDisplay() {
     eglTerminate(this->eglDisplay);
     this->eglConfig = nullptr;
     this->eglDisplay = nullptr;
-    glExt::Discard();
-    glInfo::Discard();
+    glCaps::Discard();
 
     displayMgrBase::DiscardDisplay();
 }
