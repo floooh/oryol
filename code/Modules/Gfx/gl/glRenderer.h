@@ -19,6 +19,11 @@
 #include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"
 
+#define ORYOL_GL_USE_CMDBUFFER (1)
+#if ORYOL_GL_USE_CMDBUFFER
+#include "Gfx/gl/glCmdBuffer.h"
+#endif
+
 namespace Oryol {
 namespace _priv {
 
@@ -42,8 +47,6 @@ public:
     /// return true if renderer has been setup
     bool isValid() const;
     
-    /// reset the internal state cache
-    void resetStateCache();
     /// test if a feature is supported
     bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame
@@ -54,31 +57,31 @@ public:
     /// apply a render target (default or offscreen)
     void applyRenderTarget(texture* rt, const ClearState& clearState);
     /// apply viewport
-    void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
+    void applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record=true);
     /// apply scissor rect
-    void applyScissorRect(int x, int y, int width, int height, bool originTopLeft);
+    void applyScissorRect(int x, int y, int width, int height, bool originTopLeft, bool record=true);
     /// apply draw state
-    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
+    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool record=true);
     /// apply a shader uniform block (called after applyDrawState)
-    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize, bool record=true);
     /// apply a group of textures
-    void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
+    void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures, bool record=true);
+
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex);
+    void draw(int primGroupIndex, bool record=true);
     /// submit a draw call with direct primitive group
-    void draw(const PrimitiveGroup& primGroup);
+    void draw(const PrimitiveGroup& primGroup, bool record=true);
     /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int primGroupIndex, int numInstances);
+    void drawInstanced(int primGroupIndex, int numInstances, bool record=true);
     /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances, bool record=true);
+
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);
     /// update index data
     void updateIndices(mesh* msh, const void* data, int numBytes);
     /// update texture pixel data
     void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(void* buf, int bufNumBytes);
     
     /// invalidate bound mesh state
     void invalidateMeshState();
@@ -104,21 +107,17 @@ private:
     void setupBlendState();
     /// setup rasterizer state
     void setupRasterizerState();
-    /// apply depth-stencil state to use for rendering
-    void applyDepthStencilState(const DepthStencilState& dss);
     /// apply front/back side stencil state
     void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
-    /// apply blend state to use for rendering
-    void applyBlendState(const BlendState& bs);
-    /// apply fixed function state
-    void applyRasterizerState(const RasterizerState& rs);
-    /// apply meshes
-    void applyMeshes(pipeline* pip, mesh** meshes, int numMeshes);
 
     bool valid;
     gfxPointers pointers;
     #if !ORYOL_OPENGLES2
     GLuint globalVAO;
+    #endif
+
+    #if ORYOL_GL_USE_CMDBUFFER
+    glCmdBuffer cmdBuffer;
     #endif
 
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];

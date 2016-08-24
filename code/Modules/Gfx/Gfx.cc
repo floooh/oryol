@@ -296,14 +296,6 @@ Gfx::CommitFrame() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ResetStateCache() {
-    o_trace_scoped(Gfx_ResetStateCache);
-    o_assert_dbg(IsValid());
-    state->renderer.resetStateCache();
-}
-
-//------------------------------------------------------------------------------
-void
 Gfx::UpdateVertices(const Id& id, const void* data, int numBytes) {
     o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());
@@ -330,14 +322,6 @@ Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsets
     state->gfxFrameInfo.NumUpdateTextures++;
     texture* tex = state->resourceContainer.lookupTexture(id);
     state->renderer.updateTexture(tex, data, offsetsAndSizes);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::ReadPixels(void* buf, int bufNumBytes) {
-    o_trace_scoped(Gfx_ReadPixels);
-    o_assert_dbg(IsValid());
-    state->renderer.readPixels(buf, bufNumBytes);
 }
 
 //------------------------------------------------------------------------------

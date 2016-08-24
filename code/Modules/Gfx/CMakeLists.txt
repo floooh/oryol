@@ -85,6 +85,7 @@ fips_begin_module(Gfx)
             glRenderer.cc glRenderer.h
             glTextureFactory.cc glTextureFactory.h
             glTypes.cc glTypes.h
+            glCmdBuffer.cc glCmdBuffer.h
             glVertexAttr.h
             gl_decl.h
             gl_impl.h

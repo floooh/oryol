@@ -118,6 +118,9 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
     this->gfxSetup = setup;
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.setup(setup);
+    #endif
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
@@ -146,6 +149,10 @@ glRenderer::discard() {
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
 
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.discard();
+    #endif
+
     #if !ORYOL_OPENGLES2
     ::glDeleteVertexArrays(1, &this->globalVAO);
     this->globalVAO = 0;
@@ -159,19 +166,6 @@ glRenderer::discard() {
 bool
 glRenderer::isValid() const {
     return this->valid;
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::resetStateCache() {
-    o_assert_dbg(this->valid);
-
-    this->setupDepthStencilState();
-    this->setupBlendState();
-    this->setupRasterizerState();
-    this->invalidateMeshState();
-    this->invalidateShaderState();
-    this->invalidateTextureState();
 }
 
 //------------------------------------------------------------------------------
@@ -204,7 +198,10 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
 //------------------------------------------------------------------------------
 void
 glRenderer::commitFrame() {
-    o_assert_dbg(this->valid);    
+    o_assert_dbg(this->valid);
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.flush(this);
+    #endif
     this->rtValid = false;
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
@@ -214,55 +211,71 @@ glRenderer::commitFrame() {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
+glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record) {
     o_assert_dbg(this->valid);
 
-    // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
-    y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.viewport(x, y, width, height, originTopLeft);
+    }
+    else
+    #endif
+    {
+        // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
+        y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
 
-    if ((x != this->viewPortX) ||
-        (y != this->viewPortY) ||
-        (width != this->viewPortWidth) ||
-        (height != this->viewPortHeight)) {
-        
-        this->viewPortX = x;
-        this->viewPortY = y;
-        this->viewPortWidth = width;
-        this->viewPortHeight = height;
-        #if ORYOL_IOS
-        // fix iOS high-dpi coordinates (only for default rendertarget)
-        if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
-            x*=2; y*=2; width*=2; height*=2;
+        if ((x != this->viewPortX) ||
+            (y != this->viewPortY) ||
+            (width != this->viewPortWidth) ||
+            (height != this->viewPortHeight)) {
+            
+            this->viewPortX = x;
+            this->viewPortY = y;
+            this->viewPortWidth = width;
+            this->viewPortHeight = height;
+            #if ORYOL_IOS
+            // fix iOS high-dpi coordinates (only for default rendertarget)
+            if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
+                x*=2; y*=2; width*=2; height*=2;
+            }
+            #endif
+            ::glViewport(x, y, width, height);
         }
-        #endif
-        ::glViewport(x, y, width, height);
     }
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
+glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft, bool record) {
     o_assert_dbg(this->valid);
 
-    // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
-    y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.scissor(x, y, width, height, originTopLeft);
+    }
+    else
+    #endif
+    {
+        // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
+        y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
 
-    if ((x != this->scissorX) ||
-        (y != this->scissorY) ||
-        (width != this->scissorWidth) ||
-        (height != this->scissorHeight)) {
+        if ((x != this->scissorX) ||
+            (y != this->scissorY) ||
+            (width != this->scissorWidth) ||
+            (height != this->scissorHeight)) {
 
-        this->scissorX = x;
-        this->scissorY = y;
-        this->scissorWidth = width;
-        this->scissorHeight = height;
-        #if ORYOL_IOS
-        // fix iOS high-dpi coordinates (only for default rendertarget)
-        if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
-            x*=2; y*=2; width*=2; height*=2;
+            this->scissorX = x;
+            this->scissorY = y;
+            this->scissorWidth = width;
+            this->scissorHeight = height;
+            #if ORYOL_IOS
+            // fix iOS high-dpi coordinates (only for default rendertarget)
+            if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
+                x*=2; y*=2; width*=2; height*=2;
+            }
+            #endif
+            ::glScissor(x, y, width, height);
         }
-        #endif
-        ::glScissor(x, y, width, height);
     }
 }
 
@@ -270,6 +283,10 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
 void
 glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
+
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.flush(this);
+    #endif
     
     if (nullptr == rt) {
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
@@ -293,7 +310,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     this->rtValid = true;
     
     // set viewport to cover whole screen
-    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false);
+    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false, false);
     
     // reset scissor test
     if (this->rasterizerState.ScissorTestEnabled) {
@@ -343,224 +360,377 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyMeshes(pipeline* pip, mesh** meshes, int numMeshes) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != pip);
-    o_assert_dbg(nullptr != pip->shd);
-    o_assert_dbg(meshes && meshes[0] && (numMeshes > 0));
-    ORYOL_GL_CHECK_ERROR();
-
-    // need to store primary mesh with primitive group defs for later draw call
-    this->curPrimaryMesh = meshes[0];
-
-    #if !ORYOL_GL_USE_GETATTRIBLOCATION
-    // this is the default vertex attribute code path for most desktop and mobile platforms
-    const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
-    this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
-    for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        const glVertexAttr& attr = pip->glAttrs[attrIndex];
-        o_assert_dbg(attr.vbIndex < numMeshes);
-        glVertexAttr& curAttr = this->glAttrs[attrIndex];
-        const mesh* msh = meshes[attr.vbIndex];
-        o_assert_dbg(msh);
-        const auto& vb = msh->buffers[mesh::vb];
-        const GLuint glVB = vb.glBuffers[vb.activeSlot];
-
-        bool vbChanged = (glVB != this->glAttrVBs[attrIndex]);
-        bool attrChanged = (attr != curAttr);
-        if (vbChanged || attrChanged) {
-            if (attr.enabled) {
-                this->glAttrVBs[attrIndex] = glVB;
-                this->bindVertexBuffer(glVB);
-                ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
-                ORYOL_GL_CHECK_ERROR();
-                if (!curAttr.enabled) {
-                    ::glEnableVertexAttribArray(attr.index);
-                    ORYOL_GL_CHECK_ERROR();
-                }
-            }
-            else {
-                if (curAttr.enabled) {
-                    ::glDisableVertexAttribArray(attr.index);
-                    ORYOL_GL_CHECK_ERROR();
-                }
-            }
-            if (curAttr.divisor != attr.divisor) {
-                glCaps::VertexAttribDivisor(attr.index, attr.divisor);
-                ORYOL_GL_CHECK_ERROR();
-            }
-            curAttr = attr;
-        }
-    }
-    #else
-    // this uses glGetAttribLocation for platforms which don't support
-    // glBindAttribLocation (e.g. RaspberryPi)
-    // FIXME: currently this doesn't use state-caching
-    const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
-    this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
-    int maxUsedAttrib = 0;
-    for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        const glVertexAttr& attr = pip->glAttrs[attrIndex];
-        const GLint glAttribIndex = pip->shd->getAttribLocation((VertexAttr::Code)attrIndex);
-        if (glAttribIndex >= 0) {
-            o_assert_dbg(attr.enabled);
-            const mesh* msh = meshes[attr.vbIndex];
-            const auto& vb = msh->buffers[mesh::vb];
-            const GLuint glVB = vb.glBuffers[vb.activeSlot];
-            this->bindVertexBuffer(glVB);
-            ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
-            ORYOL_GL_CHECK_ERROR();
-            ::glEnableVertexAttribArray(glAttribIndex);
-            ORYOL_GL_CHECK_ERROR();
-            glCaps::VertexAttribDivisor(glAttribIndex, attr.divisor);
-            ORYOL_GL_CHECK_ERROR();
-            maxUsedAttrib++;
-        }
-    }
-    int maxNumAttribs = glCaps::IntLimit(glCaps::MaxVertexAttribs);
-    if (VertexAttr::NumVertexAttrs < maxNumAttribs) {
-        maxNumAttribs = VertexAttr::NumVertexAttrs;
-    }
-    for (int i = maxUsedAttrib; i < maxNumAttribs; i++) {
-        ::glDisableVertexAttribArray(i);
-        ORYOL_GL_CHECK_ERROR();
-    }
-    #endif
-    ORYOL_GL_CHECK_ERROR();
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
+glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool record) {
     o_assert_dbg(this->valid);
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
-    // if any of the meshes is still loading, cancel the next draw state
-    for (int i = 0; i < numMeshes; i++) {
-        if (nullptr == meshes[i]) {
-            this->curPipeline = nullptr;
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.drawState(pip, meshes, numMeshes);
+    }
+    else
+    #endif
+    {
+        // if any of the meshes is still loading, cancel the next draw state
+        for (int i = 0; i < numMeshes; i++) {
+            if (nullptr == meshes[i]) {
+                this->curPipeline = nullptr;
+                return;
+            }
+        }
+
+        // draw state is valid, ready for rendering
+        this->curPipeline = pip;
+        o_assert_dbg(pip->shd);
+
+        const PipelineSetup& setup = pip->Setup;
+        o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+        o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+        o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+
+        // apply DepthStencilState changes
+        if (setup.DepthStencilState != this->depthStencilState) {
+        
+            const DepthStencilState& curState = this->depthStencilState;
+            const DepthStencilState& newState = setup.DepthStencilState;
+        
+            // apply common depth-stencil state if changed
+            bool depthStencilChanged = false;
+            if (curState.Hash != newState.Hash) {
+                const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
+                if (depthCmpFunc != curState.DepthCmpFunc) {
+                    o_assert_range_dbg(int(depthCmpFunc), CompareFunc::NumCompareFuncs);
+                    ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
+                }
+                const bool depthWriteEnabled = newState.DepthWriteEnabled;
+                if (depthWriteEnabled != curState.DepthWriteEnabled) {
+                    ::glDepthMask(depthWriteEnabled);
+                }
+                const bool stencilEnabled = newState.StencilEnabled;
+                if (stencilEnabled != curState.StencilEnabled) {
+                    if (stencilEnabled) ::glEnable(GL_STENCIL_TEST);
+                    else                ::glDisable(GL_STENCIL_TEST);
+                }
+                depthStencilChanged = true;
+            }
+        
+            // apply front and back stencil state
+            bool frontChanged = false;
+            const StencilState& newFront = newState.StencilFront;
+            const StencilState& curFront = curState.StencilFront;
+            if (curFront.Hash != newFront.Hash) {
+                frontChanged = true;
+                this->applyStencilState(newState, curState, GL_FRONT);
+            }
+            bool backChanged = false;
+            const StencilState& newBack = newState.StencilBack;
+            const StencilState& curBack = curState.StencilBack;
+            if (curBack.Hash != newBack.Hash) {
+                backChanged = true;
+                this->applyStencilState(newState, curState, GL_BACK);
+            }
+        
+            // update state cache
+            if (depthStencilChanged || frontChanged || backChanged) {
+                this->depthStencilState = newState;
+            }
+        }
+        if (setup.BlendState != this->blendState) {
+
+            const BlendState& curState = this->blendState;
+            const BlendState& newState = setup.BlendState;
+
+            if (newState.BlendEnabled != curState.BlendEnabled) {
+                if (newState.BlendEnabled) ::glEnable(GL_BLEND);
+                else                       ::glDisable(GL_BLEND);
+            }
+        
+            if ((newState.SrcFactorRGB != curState.SrcFactorRGB) ||
+                (newState.DstFactorRGB != curState.DstFactorRGB) ||
+                (newState.SrcFactorAlpha != curState.SrcFactorAlpha) ||
+                (newState.DstFactorAlpha != curState.DstFactorAlpha)) {
+                
+                o_assert_dbg(newState.SrcFactorRGB < BlendFactor::NumBlendFactors);
+                o_assert_dbg(newState.DstFactorRGB < BlendFactor::NumBlendFactors);
+                o_assert_dbg(newState.SrcFactorAlpha < BlendFactor::NumBlendFactors);
+                o_assert_dbg(newState.DstFactorAlpha < BlendFactor::NumBlendFactors);
+                
+                ::glBlendFuncSeparate(mapBlendFactor[newState.SrcFactorRGB],
+                                      mapBlendFactor[newState.DstFactorRGB],
+                                      mapBlendFactor[newState.SrcFactorAlpha],
+                                      mapBlendFactor[newState.DstFactorAlpha]);
+            }
+            if ((newState.OpRGB != curState.OpRGB) ||
+                (newState.OpAlpha != curState.OpAlpha)) {
+                
+                o_assert_dbg(curState.OpRGB < BlendOperation::NumBlendOperations);
+                o_assert_dbg(curState.OpAlpha < BlendOperation::NumBlendOperations);
+                
+                ::glBlendEquationSeparate(mapBlendOp[newState.OpRGB], mapBlendOp[newState.OpAlpha]);
+            }
+            
+            if (newState.ColorWriteMask != curState.ColorWriteMask) {
+                ::glColorMask((newState.ColorWriteMask & PixelChannel::R) != 0,
+                              (newState.ColorWriteMask & PixelChannel::G) != 0,
+                              (newState.ColorWriteMask & PixelChannel::B) != 0,
+                              (newState.ColorWriteMask & PixelChannel::A) != 0);
+            }
+            
+            this->blendState = newState;
+            ORYOL_GL_CHECK_ERROR();
+        }
+        if (setup.BlendColor != this->blendColor) {
+            this->blendColor = setup.BlendColor;
+            ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
+        }
+        if (setup.RasterizerState != this->rasterizerState) {
+
+            const RasterizerState& curState = this->rasterizerState;
+            const RasterizerState& newState = setup.RasterizerState;
+
+            const bool cullFaceEnabled = newState.CullFaceEnabled;
+            if (cullFaceEnabled != curState.CullFaceEnabled) {
+                if (cullFaceEnabled) ::glEnable(GL_CULL_FACE);
+                else                 ::glDisable(GL_CULL_FACE);
+            }
+            const Face::Code cullFace = newState.CullFace;
+            if (cullFace != curState.CullFace) {
+                o_assert_range_dbg(cullFace, Face::NumFaceCodes);
+                ::glCullFace(mapCullFace[cullFace]);
+            }
+            const bool depthOffsetEnabled = newState.DepthOffsetEnabled;
+            if (depthOffsetEnabled != curState.DepthOffsetEnabled) {
+                if (depthOffsetEnabled) ::glEnable(GL_POLYGON_OFFSET_FILL);
+                else                    ::glDisable(GL_POLYGON_OFFSET_FILL);
+            }
+            const bool scissorTestEnabled = newState.ScissorTestEnabled;
+            if (scissorTestEnabled != curState.ScissorTestEnabled) {
+                if (scissorTestEnabled) ::glEnable(GL_SCISSOR_TEST);
+                else                    ::glDisable(GL_SCISSOR_TEST);
+            }
+            const bool ditherEnabled = newState.DitherEnabled;
+            if (ditherEnabled != curState.DitherEnabled) {
+                if (ditherEnabled) ::glEnable(GL_DITHER);
+                else               ::glDisable(GL_DITHER);
+            }
+            #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+            const uint16_t sampleCount = newState.SampleCount;
+            if (sampleCount != curState.SampleCount) {
+                if (sampleCount > 1) ::glEnable(GL_MULTISAMPLE);
+                else                 ::glDisable(GL_MULTISAMPLE);
+            }
+            #endif
+            this->rasterizerState = newState;
+            ORYOL_GL_CHECK_ERROR();
+        }
+        this->useProgram(pip->shd->glProgram);
+
+        // need to store primary mesh with primitive group defs for later draw call
+        this->curPrimaryMesh = meshes[0];
+
+        // apply meshes
+        #if !ORYOL_GL_USE_GETATTRIBLOCATION
+        // this is the default vertex attribute code path for most desktop and mobile platforms
+        const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
+        this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
+        for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+            const glVertexAttr& attr = pip->glAttrs[attrIndex];
+            o_assert_dbg(attr.vbIndex < numMeshes);
+            glVertexAttr& curAttr = this->glAttrs[attrIndex];
+            const mesh* msh = meshes[attr.vbIndex];
+            o_assert_dbg(msh);
+            const auto& vb = msh->buffers[mesh::vb];
+            const GLuint glVB = vb.glBuffers[vb.activeSlot];
+
+            bool vbChanged = (glVB != this->glAttrVBs[attrIndex]);
+            bool attrChanged = (attr != curAttr);
+            if (vbChanged || attrChanged) {
+                if (attr.enabled) {
+                    this->glAttrVBs[attrIndex] = glVB;
+                    this->bindVertexBuffer(glVB);
+                    ::glVertexAttribPointer(attr.index, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
+                    ORYOL_GL_CHECK_ERROR();
+                    if (!curAttr.enabled) {
+                        ::glEnableVertexAttribArray(attr.index);
+                        ORYOL_GL_CHECK_ERROR();
+                    }
+                }
+                else {
+                    if (curAttr.enabled) {
+                        ::glDisableVertexAttribArray(attr.index);
+                        ORYOL_GL_CHECK_ERROR();
+                    }
+                }
+                if (curAttr.divisor != attr.divisor) {
+                    glCaps::VertexAttribDivisor(attr.index, attr.divisor);
+                    ORYOL_GL_CHECK_ERROR();
+                }
+                curAttr = attr;
+            }
+        }
+        #else
+        // this uses glGetAttribLocation for platforms which don't support
+        // glBindAttribLocation (e.g. RaspberryPi)
+        // FIXME: currently this doesn't use state-caching
+        const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
+        this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
+        int maxUsedAttrib = 0;
+        for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
+            const glVertexAttr& attr = pip->glAttrs[attrIndex];
+            const GLint glAttribIndex = pip->shd->getAttribLocation((VertexAttr::Code)attrIndex);
+            if (glAttribIndex >= 0) {
+                o_assert_dbg(attr.enabled);
+                const mesh* msh = meshes[attr.vbIndex];
+                const auto& vb = msh->buffers[mesh::vb];
+                const GLuint glVB = vb.glBuffers[vb.activeSlot];
+                this->bindVertexBuffer(glVB);
+                ::glVertexAttribPointer(glAttribIndex, attr.size, attr.type, attr.normalized, attr.stride, (const GLvoid*)(GLintptr)attr.offset);
+                ORYOL_GL_CHECK_ERROR();
+                ::glEnableVertexAttribArray(glAttribIndex);
+                ORYOL_GL_CHECK_ERROR();
+                glCaps::VertexAttribDivisor(glAttribIndex, attr.divisor);
+                ORYOL_GL_CHECK_ERROR();
+                maxUsedAttrib++;
+            }
+        }
+        int maxNumAttribs = glCaps::IntLimit(glCaps::MaxVertexAttribs);
+        if (VertexAttr::NumVertexAttrs < maxNumAttribs) {
+            maxNumAttribs = VertexAttr::NumVertexAttrs;
+        }
+        for (int i = maxUsedAttrib; i < maxNumAttribs; i++) {
+            ::glDisableVertexAttribArray(i);
+            ORYOL_GL_CHECK_ERROR();
+        }
+        #endif
+        ORYOL_GL_CHECK_ERROR();
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::draw(const PrimitiveGroup& primGroup, bool record) {
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.draw(primGroup.BaseElement, primGroup.NumElements);
+    }
+    else
+    #endif
+    {
+        o_assert_dbg(this->valid);
+        o_assert2_dbg(this->rtValid, "No render target set!");
+        if (nullptr == this->curPipeline) {
             return;
         }
+        ORYOL_GL_CHECK_ERROR();
+        const mesh* msh = this->curPrimaryMesh;
+        o_assert_dbg(msh);
+        const IndexType::Code indexType = msh->indexBufferAttrs.Type;
+        const GLenum glPrimType = this->curPipeline->glPrimType;
+        if (IndexType::None != indexType) {
+            // indexed geometry
+            const int indexByteSize = IndexType::ByteSize(indexType);
+            const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+            const GLenum glIndexType = glTypes::asGLIndexType(indexType);
+            ::glDrawElements(glPrimType, primGroup.NumElements, glIndexType, indices);
+        }
+        else {
+            // non-indexed geometry
+            ::glDrawArrays(glPrimType, primGroup.BaseElement, primGroup.NumElements);
+        }
+        ORYOL_GL_CHECK_ERROR();
     }
-
-    // draw state is valid, ready for rendering
-    this->curPipeline = pip;
-    o_assert_dbg(pip->shd);
-
-    const PipelineSetup& setup = pip->Setup;
-    o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-    o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
-    if (setup.DepthStencilState != this->depthStencilState) {
-        this->applyDepthStencilState(setup.DepthStencilState);
-    }
-    if (setup.BlendState != this->blendState) {
-        this->applyBlendState(setup.BlendState);
-    }
-    if (setup.BlendColor != this->blendColor) {
-        this->blendColor = setup.BlendColor;
-        ::glBlendColor(this->blendColor.x, this->blendColor.y, this->blendColor.z, this->blendColor.w);
-    }
-    if (setup.RasterizerState != this->rasterizerState) {
-        this->applyRasterizerState(setup.RasterizerState);
-    }
-    this->useProgram(pip->shd->glProgram);
-    this->applyMeshes(pip, meshes, numMeshes);
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(const PrimitiveGroup& primGroup) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
+glRenderer::draw(int primGroupIndex, bool record) {
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.drawPrimGroupIndex(primGroupIndex);
     }
-    ORYOL_GL_CHECK_ERROR();
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = this->curPipeline->glPrimType;
-    if (IndexType::None != indexType) {
-        // indexed geometry
-        const int indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        const GLenum glIndexType = glTypes::asGLIndexType(indexType);
-        ::glDrawElements(glPrimType, primGroup.NumElements, glIndexType, indices);
+    else
+    #endif
+    {
+        o_assert_dbg(this->valid);
+        o_assert2_dbg(this->rtValid, "No render target set!");
+        if (nullptr == this->curPipeline) {
+            return;
+        }
+        const mesh* msh = this->curPrimaryMesh;
+        o_assert_dbg(msh);
+        if (primGroupIndex >= msh->numPrimGroups) {
+            // this may happen if trying to render a placeholder which doesn't
+            // have as many materials as the original mesh, anyway, this isn't
+            // a serious error
+            return;
+        }
+        const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
+        this->draw(primGroup, false);
     }
-    else {
-        // non-indexed geometry
-        ::glDrawArrays(glPrimType, primGroup.BaseElement, primGroup.NumElements);
-    }
-    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(int primGroupIndex) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
+glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances, bool record) {
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.drawInstanced(primGroup.BaseElement, primGroup.NumElements, numInstances);
     }
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    if (primGroupIndex >= msh->numPrimGroups) {
-        // this may happen if trying to render a placeholder which doesn't
-        // have as many materials as the original mesh, anyway, this isn't
-        // a serious error
-        return;
+    else
+    #endif
+    {
+        o_assert_dbg(this->valid);
+        o_assert2_dbg(this->rtValid, "No render target set!");
+        if (nullptr == this->curPipeline) {
+            return;
+        }
+        ORYOL_GL_CHECK_ERROR();
+        const mesh* msh = this->curPrimaryMesh;
+        o_assert_dbg(msh);
+        const IndexType::Code indexType = msh->indexBufferAttrs.Type;
+        const GLenum glPrimType = this->curPipeline->glPrimType;
+        if (IndexType::None != indexType) {
+            // indexed geometry
+            const int indexByteSize = IndexType::ByteSize(indexType);
+            const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+            const GLenum glIndexType = glTypes::asGLIndexType(indexType);
+            glCaps::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
+        }
+        else {
+            // non-indexed geometry
+            glCaps::DrawArraysInstanced(glPrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
+        }
+        ORYOL_GL_CHECK_ERROR();
     }
-    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->draw(primGroup);
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
-    }
-    ORYOL_GL_CHECK_ERROR();
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = this->curPipeline->glPrimType;
-    if (IndexType::None != indexType) {
-        // indexed geometry
-        const int indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        const GLenum glIndexType = glTypes::asGLIndexType(indexType);
-        glCaps::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
-    }
-    else {
-        // non-indexed geometry
-        glCaps::DrawArraysInstanced(glPrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
-    }
-    ORYOL_GL_CHECK_ERROR();
 }
     
 //------------------------------------------------------------------------------
 void
-glRenderer::drawInstanced(int primGroupIndex, int numInstances) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
+glRenderer::drawInstanced(int primGroupIndex, int numInstances, bool record) {
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.drawInstancedPrimGroupIndex(primGroupIndex, numInstances);
     }
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    if (primGroupIndex >= msh->numPrimGroups) {
-        // this may happen if trying to render a placeholder which doesn't
-        // have as many materials as the original mesh, anyway, this isn't
-        // a serious error
-        return;
+    else
+    #endif
+    {
+        o_assert_dbg(this->valid);
+        o_assert2_dbg(this->rtValid, "No render target set!");
+        if (nullptr == this->curPipeline) {
+            return;
+        }
+        const mesh* msh = this->curPrimaryMesh;
+        o_assert_dbg(msh);
+        if (primGroupIndex >= msh->numPrimGroups) {
+            // this may happen if trying to render a placeholder which doesn't
+            // have as many materials as the original mesh, anyway, this isn't
+            // a serious error
+            return;
+        }
+        const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
+        this->drawInstanced(primGroup, numInstances);
     }
-    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->drawInstanced(primGroup, numInstances);
 }
 
 //------------------------------------------------------------------------------
@@ -594,6 +764,10 @@ glRenderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
     o_assert_dbg(Usage::Immutable != msh->vertexBufferAttrs.BufferUsage);
 
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.flush(this);
+    #endif
+
     auto& vb = msh->buffers[mesh::vb];
     GLuint glBuffer = obtainUpdateBuffer(vb, this->frameIndex);
     o_assert_dbg(0 != glBuffer);
@@ -612,6 +786,10 @@ glRenderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(IndexType::None != msh->indexBufferAttrs.Type);
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
     o_assert_dbg(Usage::Immutable != msh->indexBufferAttrs.BufferUsage);
+
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.flush(this);
+    #endif
 
     auto& ib = msh->buffers[mesh::ib];
     GLuint glBuffer = obtainUpdateBuffer(ib, this->frameIndex);
@@ -650,6 +828,10 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
     o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
+    #if ORYOL_GL_USE_CMDBUFFER
+    this->cmdBuffer.flush(this);
+    #endif
+
     GLuint glTex = obtainUpdateTexture(tex, this->frameIndex);
     this->bindTexture(0, tex->glTarget, glTex);
     uint8_t* srcPtr = (uint8_t*)data;
@@ -672,37 +854,6 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
                           srcPtr + offsetsAndSizes.Offsets[0][mipIndex]);
         ORYOL_GL_CHECK_ERROR();
     }
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::readPixels(void* buf, int bufNumBytes) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(this->pointers.displayMgr);
-    o_assert_dbg((nullptr != buf) && (bufNumBytes > 0));
-    
-    GLsizei width, height;
-    GLenum format, type;
-    if (nullptr == this->curRenderTarget) {
-        const DisplayAttrs& attrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width  = attrs.FramebufferWidth;
-        height = attrs.FramebufferHeight;
-        format = glTypes::asGLTexImageFormat(attrs.ColorPixelFormat);
-        type   = glTypes::asGLTexImageType(attrs.ColorPixelFormat);
-        o_assert((width & 3) == 0);
-        o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorPixelFormat)));
-    }
-    else {
-        const TextureAttrs& attrs = this->curRenderTarget->textureAttrs;
-        width  = attrs.Width;
-        height = attrs.Height;
-        format = glTypes::asGLTexImageFormat(attrs.ColorFormat);
-        type   = glTypes::asGLTexImageType(attrs.ColorFormat);
-        o_assert((width & 3) == 0);
-        o_assert(bufNumBytes >= (width * height * PixelFormat::ByteSize(attrs.ColorFormat)));
-    }
-    ::glReadPixels(0, 0, width, height, format, type, buf);
-    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
@@ -844,59 +995,6 @@ glRenderer::applyStencilState(const DepthStencilState& newState, const DepthSten
     
 //------------------------------------------------------------------------------
 void
-glRenderer::applyDepthStencilState(const DepthStencilState& newState) {
-    o_assert_dbg(this->valid);
-    
-    const DepthStencilState& curState = this->depthStencilState;
-    
-    // apply common depth-stencil state if changed
-    bool depthStencilChanged = false;
-    if (curState.Hash != newState.Hash) {
-        const CompareFunc::Code depthCmpFunc = newState.DepthCmpFunc;
-        if (depthCmpFunc != curState.DepthCmpFunc) {
-            o_assert_range_dbg(int(depthCmpFunc), CompareFunc::NumCompareFuncs);
-            ::glDepthFunc(mapCompareFunc[depthCmpFunc]);
-        }
-        const bool depthWriteEnabled = newState.DepthWriteEnabled;
-        if (depthWriteEnabled != curState.DepthWriteEnabled) {
-            ::glDepthMask(depthWriteEnabled);
-        }
-        const bool stencilEnabled = newState.StencilEnabled;
-        if (stencilEnabled != curState.StencilEnabled) {
-            if (stencilEnabled) {
-                ::glEnable(GL_STENCIL_TEST);
-            }
-            else {
-                ::glDisable(GL_STENCIL_TEST);
-            }
-        }
-        depthStencilChanged = true;
-    }
-    
-    // apply front and back stencil state
-    bool frontChanged = false;
-    const StencilState& newFront = newState.StencilFront;
-    const StencilState& curFront = curState.StencilFront;
-    if (curFront.Hash != newFront.Hash) {
-        frontChanged = true;
-        this->applyStencilState(newState, curState, GL_FRONT);
-    }
-    bool backChanged = false;
-    const StencilState& newBack = newState.StencilBack;
-    const StencilState& curBack = curState.StencilBack;
-    if (curBack.Hash != newBack.Hash) {
-        backChanged = true;
-        this->applyStencilState(newState, curState, GL_BACK);
-    }
-    
-    // update state cache
-    if (depthStencilChanged || frontChanged || backChanged) {
-        this->depthStencilState = newState;
-    }
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderer::setupBlendState() {
     o_assert_dbg(this->valid);
 
@@ -910,55 +1008,6 @@ glRenderer::setupBlendState() {
     ORYOL_GL_CHECK_ERROR();
 }
     
-//------------------------------------------------------------------------------
-void
-glRenderer::applyBlendState(const BlendState& bs) {
-    o_assert_dbg(this->valid);
-    
-    if (bs.BlendEnabled != this->blendState.BlendEnabled) {
-        if (bs.BlendEnabled) {
-            ::glEnable(GL_BLEND);
-        }
-        else {
-            ::glDisable(GL_BLEND);
-        }
-    }
-    
-    if ((bs.SrcFactorRGB != this->blendState.SrcFactorRGB) ||
-        (bs.DstFactorRGB != this->blendState.DstFactorRGB) ||
-        (bs.SrcFactorAlpha != this->blendState.SrcFactorAlpha) ||
-        (bs.DstFactorAlpha != this->blendState.DstFactorAlpha)) {
-        
-        o_assert_dbg(bs.SrcFactorRGB < BlendFactor::NumBlendFactors);
-        o_assert_dbg(bs.DstFactorRGB < BlendFactor::NumBlendFactors);
-        o_assert_dbg(bs.SrcFactorAlpha < BlendFactor::NumBlendFactors);
-        o_assert_dbg(bs.DstFactorAlpha < BlendFactor::NumBlendFactors);
-        
-        ::glBlendFuncSeparate(mapBlendFactor[bs.SrcFactorRGB],
-                              mapBlendFactor[bs.DstFactorRGB],
-                              mapBlendFactor[bs.SrcFactorAlpha],
-                              mapBlendFactor[bs.DstFactorAlpha]);
-    }
-    if ((bs.OpRGB != this->blendState.OpRGB) ||
-        (bs.OpAlpha != this->blendState.OpAlpha)) {
-        
-        o_assert_dbg(bs.OpRGB < BlendOperation::NumBlendOperations);
-        o_assert_dbg(bs.OpAlpha < BlendOperation::NumBlendOperations);
-        
-        ::glBlendEquationSeparate(mapBlendOp[bs.OpRGB], mapBlendOp[bs.OpAlpha]);
-    }
-    
-    if (bs.ColorWriteMask != this->blendState.ColorWriteMask) {
-        ::glColorMask((bs.ColorWriteMask & PixelChannel::R) != 0,
-                      (bs.ColorWriteMask & PixelChannel::G) != 0,
-                      (bs.ColorWriteMask & PixelChannel::B) != 0,
-                      (bs.ColorWriteMask & PixelChannel::A) != 0);
-    }
-    
-    this->blendState = bs;
-    ORYOL_GL_CHECK_ERROR();
-}
-
 //------------------------------------------------------------------------------
 void
 glRenderer::setupRasterizerState() {
@@ -980,170 +1029,116 @@ glRenderer::setupRasterizerState() {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::applyRasterizerState(const RasterizerState& newState) {
-    o_assert_dbg(this->valid);
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize, bool record) {
 
-    const RasterizerState& curState = this->rasterizerState;
-
-    const bool cullFaceEnabled = newState.CullFaceEnabled;
-    if (cullFaceEnabled != curState.CullFaceEnabled) {
-        if (cullFaceEnabled) {
-            ::glEnable(GL_CULL_FACE);
-        }
-        else {
-            ::glDisable(GL_CULL_FACE);
-        }
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.uniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize);
     }
-    const Face::Code cullFace = newState.CullFace;
-    if (cullFace != curState.CullFace) {
-        o_assert_range_dbg(cullFace, Face::NumFaceCodes);
-        ::glCullFace(mapCullFace[cullFace]);
-    }
-    const bool depthOffsetEnabled = newState.DepthOffsetEnabled;
-    if (depthOffsetEnabled != curState.DepthOffsetEnabled) {
-        if (depthOffsetEnabled) {
-            ::glEnable(GL_POLYGON_OFFSET_FILL);
-        }
-        else {
-            ::glDisable(GL_POLYGON_OFFSET_FILL);
-        }
-    }
-    const bool scissorTestEnabled = newState.ScissorTestEnabled;
-    if (scissorTestEnabled != curState.ScissorTestEnabled) {
-        if (scissorTestEnabled) {
-            ::glEnable(GL_SCISSOR_TEST);
-        }
-        else {
-            ::glDisable(GL_SCISSOR_TEST);
-        }
-    }
-    const bool ditherEnabled = newState.DitherEnabled;
-    if (ditherEnabled != curState.DitherEnabled) {
-        if (ditherEnabled) {
-            ::glEnable(GL_DITHER);
-        }
-        else {
-            ::glDisable(GL_DITHER);
-        }
-    }
-    #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    const uint16_t sampleCount = newState.SampleCount;
-    if (sampleCount != curState.SampleCount) {
-        if (sampleCount > 1) {
-            ::glEnable(GL_MULTISAMPLE);
-        }
-        else {
-            ::glDisable(GL_MULTISAMPLE);
-        }
-    }
+    else
     #endif
-    this->rasterizerState = newState;
-    ORYOL_GL_CHECK_ERROR();
-}
+    {
+        o_assert_dbg(this->valid);
+        o_assert_dbg(0 != layoutHash);
+        if (!this->curPipeline) {
+            // currently no valid draw state set
+            return;
+        }
 
-//------------------------------------------------------------------------------
-void
-glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(0 != layoutHash);
-    if (!this->curPipeline) {
-        // currently no valid draw state set
-        return;
-    }
+        // get the uniform layout object for this uniform block
+        const shader* shd = this->curPipeline->shd;
+        o_assert_dbg(shd);
+        int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+        o_assert_dbg(InvalidIndex != ubIndex);
+        const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
-    // get the uniform layout object for this uniform block
-    const shader* shd = this->curPipeline->shd;
-    o_assert_dbg(shd);
-    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
-    o_assert_dbg(InvalidIndex != ubIndex);
-    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
+        // check whether the provided struct is type-compatible with the
+        // expected uniform-block-layout, the size-check shouldn't be necessary
+        // since the hash should already bail out, but it doesn't hurt either
+        o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+        #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
+        o_assert_dbg(layout.ByteSize() == byteSize);
+        #endif
 
-    // check whether the provided struct is type-compatible with the
-    // expected uniform-block-layout, the size-check shouldn't be necessary
-    // since the hash should already bail out, but it doesn't hurt either
-    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
-    o_assert_dbg(layout.ByteSize() == byteSize);
-    #endif
-
-    // for each uniform in the uniform block:
-    const int numUniforms = layout.NumComponents();
-    for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-        const auto& comp = layout.ComponentAt(uniformIndex);
-        const uint8_t* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
-        GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
-        if (-1 != glLoc) {
-            switch (comp.Type) {
-                case UniformType::Float:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const float val = *(const float*)valuePtr;
-                        ::glUniform1f(glLoc, val);
-                    }
-                    break;
-
-                case UniformType::Vec2:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::vec2& val = *(const glm::vec2*) valuePtr;
-                        ::glUniform2f(glLoc, val.x, val.y);
-                    }
-                    break;
-
-                case UniformType::Vec3:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::vec3& val = *(const glm::vec3*)valuePtr;
-                        ::glUniform3f(glLoc, val.x, val.y, val.z);
-                    }
-                    break;
-
-                case UniformType::Vec4:
-                    {
-                        const glm::vec4& val = *(const glm::vec4*)valuePtr;
-                        if (comp.Num > 1) {
-                            ::glUniform4fv(glLoc, comp.Num, glm::value_ptr(val));
+        // for each uniform in the uniform block:
+        const int numUniforms = layout.NumComponents();
+        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+            const auto& comp = layout.ComponentAt(uniformIndex);
+            const uint8_t* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
+            GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
+            if (-1 != glLoc) {
+                switch (comp.Type) {
+                    case UniformType::Float:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const float val = *(const float*)valuePtr;
+                            ::glUniform1f(glLoc, val);
                         }
-                        else {
-                            ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                        break;
+
+                    case UniformType::Vec2:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::vec2& val = *(const glm::vec2*) valuePtr;
+                            ::glUniform2f(glLoc, val.x, val.y);
                         }
-                    }
-                    break;
+                        break;
 
-                case UniformType::Mat2:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::mat2& val = *(const glm::mat2*)valuePtr;
-                        ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                    }
-                    break;
+                    case UniformType::Vec3:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::vec3& val = *(const glm::vec3*)valuePtr;
+                            ::glUniform3f(glLoc, val.x, val.y, val.z);
+                        }
+                        break;
 
-                case UniformType::Mat3:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::mat3& val = *(const glm::mat3*)valuePtr;
-                        ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                    }
-                    break;
+                    case UniformType::Vec4:
+                        {
+                            const glm::vec4& val = *(const glm::vec4*)valuePtr;
+                            if (comp.Num > 1) {
+                                ::glUniform4fv(glLoc, comp.Num, glm::value_ptr(val));
+                            }
+                            else {
+                                ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                            }
+                        }
+                        break;
 
-                case UniformType::Mat4:
-                    {
-                        const glm::mat4& val = *(const glm::mat4*)valuePtr;
-                        ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
-                    }
-                    break;
+                    case UniformType::Mat2:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::mat2& val = *(const glm::mat2*)valuePtr;
+                            ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                        }
+                        break;
 
-                case UniformType::Bool:
-                    {
-                        // NOTE: bools are actually stored as int32 in the uniform block struct
-                        const int val = *(const int*)valuePtr;
-                        ::glUniform1i(glLoc, val);
-                    }
-                    break;
+                    case UniformType::Mat3:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::mat3& val = *(const glm::mat3*)valuePtr;
+                            ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                        }
+                        break;
 
-                default:
-                    o_error("FIXME: invalid uniform type!\n");
-                    break;
+                    case UniformType::Mat4:
+                        {
+                            const glm::mat4& val = *(const glm::mat4*)valuePtr;
+                            ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
+                        }
+                        break;
+
+                    case UniformType::Bool:
+                        {
+                            // NOTE: bools are actually stored as int32 in the uniform block struct
+                            const int val = *(const int*)valuePtr;
+                            ::glUniform1i(glLoc, val);
+                        }
+                        break;
+
+                    default:
+                        o_error("FIXME: invalid uniform type!\n");
+                        break;
+                }
             }
         }
     }
@@ -1151,32 +1146,40 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int numTextures) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
-                 ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
-    if (nullptr == this->curPipeline) {
-        return;
+glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int numTextures, bool record) {
+    #if ORYOL_GL_USE_CMDBUFFER
+    if (record) {
+        this->cmdBuffer.textures(bindStage, textures, numTextures);
     }
-
-    // if any of the provided texture pointers are not valid, this means
-    // that a texture hasn't been loaded yet (or has failed loading), in this
-    // case, disable rendering for next draw call
-    for (int i = 0; i < numTextures; i++) {
-        if (nullptr == textures[i]) {
-            this->curPipeline = nullptr;
+    else
+    #endif
+    {
+        o_assert_dbg(this->valid);
+        o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
+                     ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
+        if (nullptr == this->curPipeline) {
             return;
         }
-    }
 
-    // apply textures and samplers
-    const shader* shd = this->curPipeline->shd;
-    o_assert_dbg(shd);
-    for (int i = 0; i < numTextures; i++) {
-        const texture* tex = textures[i];
-        const int samplerIndex = shd->getSamplerIndex(bindStage, i);
-        if (-1 != samplerIndex) {
-            this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
+        // if any of the provided texture pointers are not valid, this means
+        // that a texture hasn't been loaded yet (or has failed loading), in this
+        // case, disable rendering for next draw call
+        for (int i = 0; i < numTextures; i++) {
+            if (nullptr == textures[i]) {
+                this->curPipeline = nullptr;
+                return;
+            }
+        }
+
+        // apply textures and samplers
+        const shader* shd = this->curPipeline->shd;
+        o_assert_dbg(shd);
+        for (int i = 0; i < numTextures; i++) {
+            const texture* tex = textures[i];
+            const int samplerIndex = shd->getSamplerIndex(bindStage, i);
+            if (-1 != samplerIndex) {
+                this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
+            }
         }
     }
 }

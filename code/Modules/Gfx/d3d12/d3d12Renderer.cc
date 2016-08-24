@@ -496,12 +496,6 @@ d3d12Renderer::resetRootSignatureAndDescriptorHeaps() {
 }
 
 //------------------------------------------------------------------------------
-void
-d3d12Renderer::resetStateCache() {
-    o_warn("d3d12Renderer::resetStateCache()\n");
-}
-
-//------------------------------------------------------------------------------
 bool
 d3d12Renderer::queryFeature(GfxFeature::Code feat) const {
     switch (feat) {

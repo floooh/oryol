@@ -44,8 +44,6 @@ public:
     /// return true if renderer has been setup
     bool isValid() const;
     
-    /// reset the internal state cache
-    void resetStateCache();
     /// test if a feature is supported
     bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame

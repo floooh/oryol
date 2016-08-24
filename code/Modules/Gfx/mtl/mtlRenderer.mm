@@ -91,13 +91,6 @@ mtlRenderer::isValid() const {
 }
 
 //------------------------------------------------------------------------------
-void
-mtlRenderer::resetStateCache() {
-    o_assert_dbg(this->valid);
-    o_warn("mtlRenderer::resetStateCache()\n");
-}
-
-//------------------------------------------------------------------------------
 bool
 mtlRenderer::queryFeature(GfxFeature::Code feat) const {
     switch(feat) {

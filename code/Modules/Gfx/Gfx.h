@@ -102,8 +102,6 @@ public:
     static void UpdateIndices(const Id& id, const void* data, int numBytes);
     /// update dynamic texture image data (complete replace)
     static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read current framebuffer pixels into client memory, SLOW!!! (not supported on all platforms)
-    static void ReadPixels(void* ptr, int numBytes);
     
     /// submit a draw call with primitive group index
     static void Draw(int primGroupIndex=0, int numInstances=1);
@@ -112,8 +110,6 @@ public:
 
     /// commit (and display) the current frame
     static void CommitFrame();
-    /// reset internal state (must be called when directly rendering through the native 3D API)
-    static void ResetStateCache();
 
     /// direct access to resource container (private interface for resource loaders)
     static _priv::gfxResourceContainer& resource();
