@@ -39,7 +39,7 @@ public:
     /// bind textures
     void textures(ShaderStage::Code bindStage, texture** textures, int numTextures);
     /// bind uniform block
-    void uniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize);
+    void uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
     /// draw command
     void draw(int baseElement, int numElements);
     /// draw-instanced command

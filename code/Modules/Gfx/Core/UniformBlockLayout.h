@@ -46,7 +46,7 @@ public:
     bool Empty() const;
 
     /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
-    int64_t TypeHash;
+    uint32_t TypeHash;
 
     /// add a uniform component to the layout
     UniformBlockLayout& Add(const Component& comp);

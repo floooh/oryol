@@ -1029,7 +1029,7 @@ glRenderer::setupRasterizerState() {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize, bool record) {
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize, bool record) {
 
     #if ORYOL_GL_USE_CMDBUFFER
     if (record) {

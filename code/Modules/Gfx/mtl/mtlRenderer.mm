@@ -374,7 +374,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;

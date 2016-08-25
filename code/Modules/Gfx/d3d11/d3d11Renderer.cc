@@ -376,7 +376,7 @@ d3d11Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int ubBindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
+d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int ubBindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->d3d11DeviceContext);
     o_assert_dbg(0 != layoutHash);
     if (nullptr == this->curPipeline) {

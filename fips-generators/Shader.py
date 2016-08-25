@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 58
+Version = 60
 
 import os
 import sys
@@ -12,6 +12,7 @@ from pprint import pprint
 from collections import OrderedDict
 import genutil as util
 from util import glslcompiler
+import zlib # only for crc32
 
 if platform.system() == 'Windows' :
     from util import hlslcompiler
@@ -355,7 +356,7 @@ class UniformBlock :
             for uniform in self.uniformsByType[type] :
                 hashString += type
                 hashString += str(uniform.num)
-        return hash(hashString)
+        return zlib.crc32(hashString) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
 class Texture :
@@ -1622,7 +1623,7 @@ def writeProgramHeader(f, shdLib, program) :
         f.write('        struct {} {{\n'.format(ub.bindName))
         f.write('            static const int _bindSlotIndex = {};\n'.format(ub.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const int64_t _layoutHash = {};\n'.format(ub.getHash()))
+        f.write('            static const uint32_t _layoutHash = {};\n'.format(ub.getHash()))
         for type in ub.uniformsByType :
             for uniform in ub.uniformsByType[type] :
                 if uniform.num == 1 :

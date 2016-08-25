@@ -91,7 +91,7 @@ glCmdBuffer::textures(ShaderStage::Code bindStage, texture** textures, int numTe
 
 //------------------------------------------------------------------------------
 void
-glCmdBuffer::uniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
+glCmdBuffer::uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     if (this->cmdCheckRoom(6) && this->ubCheckRoom(byteSize)) {
         this->cmdPut(cmdUniformBlock);
         this->cmdPut(bindStage);
@@ -193,7 +193,7 @@ glCmdBuffer::flush(glRenderer* r) {
                 {
                     ShaderStage::Code bindStage = this->cmdGet<ShaderStage::Code>(i++);
                     int bindSlot = this->cmdGet<int>(i++);
-                    int64_t layoutHash = this->cmdGet<int64_t>(i++);
+                    uint32_t layoutHash = this->cmdGet<int64_t>(i++);
                     int offset = this->cmdGet<int>(i++);
                     int byteSize = this->cmdGet<int>(i++);
                     const uint8_t* ptr = &(this->uniformBuffer[offset]);
