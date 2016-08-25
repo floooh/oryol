@@ -54,6 +54,8 @@ public:
         GL_3_3_CORE,
         GLES2,
         GLES3,
+
+        InvalidFlavour,
     };
 
     /// setup the info values
@@ -69,6 +71,8 @@ public:
     static bool HasFeature(Feature f);
     /// test if a texture format is supported
     static bool HasTextureFormat(PixelFormat::Code fmt);
+    /// return true if GL version matches 'flavour'
+    static bool IsFlavour(Flavour flav);
 
     /// enable debug output (GL_ARB_debug_output)
     static void EnableDebugOutput(Severity s);
@@ -99,6 +103,7 @@ private:
     static struct state_t {
         bool isValid = false;
         bool isDebugOutputEnabled = false;
+        Flavour flavour = InvalidFlavour;
         int intLimits[NumLimits] = { };
         bool features[NumFeatures] = { };
     } state;
@@ -118,6 +123,13 @@ glCaps::HasFeature(Feature f) {
     o_assert_dbg(state.isValid);
     o_assert_dbg(f < NumFeatures);
     return state.features[f];
+}
+
+//------------------------------------------------------------------------------
+inline bool
+glCaps::IsFlavour(Flavour flav) {
+    o_assert_dbg(state.isValid);
+    return flav == state.flavour;
 }
 
 } // namespace _priv
