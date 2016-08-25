@@ -131,8 +131,10 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     // in case we are on a Core Profile, create a global Vertex Array Object
     #if !ORYOL_OPENGLES2
-    ::glGenVertexArrays(1, &this->globalVAO);
-    ::glBindVertexArray(this->globalVAO);
+    if (glCaps::IsFlavour(glCaps::GL_3_3_CORE)) {
+        ::glGenVertexArrays(1, &this->globalVAO);
+        ::glBindVertexArray(this->globalVAO);
+    }
     #endif
     
     this->setupDepthStencilState();
@@ -157,8 +159,10 @@ glRenderer::discard() {
     }
 
     #if !ORYOL_OPENGLES2
-    ::glDeleteVertexArrays(1, &this->globalVAO);
-    this->globalVAO = 0;
+    if (glCaps::IsFlavour(glCaps::GL_3_3_CORE)) {
+        ::glDeleteVertexArrays(1, &this->globalVAO);
+        this->globalVAO = 0;
+    }
     #endif
 
     this->pointers = gfxPointers();
