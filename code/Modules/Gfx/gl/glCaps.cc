@@ -52,6 +52,7 @@ glCaps::setupLimits(Flavour flav) {
         ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &state.intLimits[MaxVertexUniformComponents]);
         ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &state.intLimits[MaxFragmentUniformComponents]);
     }
+    #if !ORYOL_OPENGLES2
     else {
         ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &state.intLimits[MaxVertexUniformComponents]);
         ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &state.intLimits[MaxFragmentUniformComponents]);
@@ -59,6 +60,7 @@ glCaps::setupLimits(Flavour flav) {
     if (HasFeature(UniformBlocks)) {
         ::glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &state.intLimits[UniformBufferOffsetAlignment]);
     }
+    #endif
     ORYOL_GL_CHECK_ERROR();
 }
 
@@ -198,6 +200,7 @@ glCaps::printInfo(Flavour flav) {
         printInt(GL_MAX_VERTEX_UNIFORM_VECTORS, "GL_MAX_VERTEX_UNIFORM_VECTORS", 1);
         printInt(GL_MAX_FRAGMENT_UNIFORM_VECTORS, "GL_MAX_FRAGMENT_UNIFORM_VECTORS", 1);
     }
+    #if !ORYOL_OPENGLES2
     else {
         printInt(GL_MAX_VERTEX_UNIFORM_COMPONENTS, "GL_MAX_VERTEX_UNIFORM_COMPONENTS", 1);
         printInt(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS", 1);
@@ -208,6 +211,7 @@ glCaps::printInfo(Flavour flav) {
         printInt(GL_MAX_UNIFORM_BLOCK_SIZE, "GL_MAX_UNIFORM_BLOCK_SIZE", 1);
         printInt(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT", 1);
     }
+    #endif
     if (flav != GL_3_3_CORE) {
         printString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
     }

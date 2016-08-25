@@ -160,7 +160,11 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         o_error("eglDisplayMgr: eglMakeCurrent failed!\n");
         return;
     }
-    glCaps::Setup();
+    #if ORYOL_OPENGLES3
+        glCaps::Setup(glCaps::GLES3);
+    #else
+        glCaps::Setup(glCaps::GLES2);
+    #endif
     
     // query actual display size and set in DisplayAttrs
     EGLint actualWidth = 0, actualHeight = 0;

@@ -12,6 +12,7 @@
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
+#include <cstring>
 
 namespace Oryol {
 namespace _priv {
