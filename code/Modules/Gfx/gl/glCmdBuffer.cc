@@ -13,7 +13,9 @@ namespace _priv {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::setup(const GfxSetup& gfxSetup) {
+    o_assert_dbg(!this->isValid);
     o_assert_dbg(!this->cmdBuffer && !this->uniformBuffer);
+    this->isValid = true;
 
     // compute size of cmd buffer and allocate
     this->cmdCurIndex = 0;
@@ -30,16 +32,19 @@ glCmdBuffer::setup(const GfxSetup& gfxSetup) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::discard() {
+    o_assert_dbg(this->isValid);
     o_assert_dbg(this->cmdBuffer && this->uniformBuffer);
     Memory::Free(this->cmdBuffer);
     this->cmdBuffer = nullptr;
     Memory::Free(this->uniformBuffer);
     this->uniformBuffer = nullptr;
+    this->isValid = false;
 }
 
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::viewport(int x, int y, int w, int h, bool originTopLeft) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(6)) {
         this->cmdPut(cmdViewport);
         this->cmdPut(x);
@@ -53,6 +58,7 @@ glCmdBuffer::viewport(int x, int y, int w, int h, bool originTopLeft) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::scissor(int x, int y, int w, int h, bool originTopLeft) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(5)) {
         this->cmdPut(cmdScissor);
         this->cmdPut(x);
@@ -66,6 +72,7 @@ glCmdBuffer::scissor(int x, int y, int w, int h, bool originTopLeft) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::drawState(pipeline* pip, mesh** meshes, int numMeshes) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(3 + numMeshes)) {
         this->cmdPut(cmdDrawState);
         this->cmdPut(pip);
@@ -79,6 +86,7 @@ glCmdBuffer::drawState(pipeline* pip, mesh** meshes, int numMeshes) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::textures(ShaderStage::Code bindStage, texture** textures, int numTextures) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(3 + numTextures)) {
         this->cmdPut(cmdTextures);
         this->cmdPut(bindStage);
@@ -92,6 +100,7 @@ glCmdBuffer::textures(ShaderStage::Code bindStage, texture** textures, int numTe
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(6) && this->ubCheckRoom(byteSize)) {
         this->cmdPut(cmdUniformBlock);
         this->cmdPut(bindStage);
@@ -106,6 +115,7 @@ glCmdBuffer::uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t la
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::draw(int baseElement, int numElements) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(3)) {
         this->cmdPut(cmdDraw);
         this->cmdPut(baseElement);
@@ -116,6 +126,7 @@ glCmdBuffer::draw(int baseElement, int numElements) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::drawInstanced(int baseElement, int numElements, int numInstances) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(4)) {
         this->cmdPut(cmdDrawInstanced);
         this->cmdPut(baseElement);
@@ -127,6 +138,7 @@ glCmdBuffer::drawInstanced(int baseElement, int numElements, int numInstances) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::drawPrimGroupIndex(int primGroupIndex) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(2)) {
         this->cmdPut(cmdDrawPrimGroupIndex);
         this->cmdPut(primGroupIndex);
@@ -136,6 +148,7 @@ glCmdBuffer::drawPrimGroupIndex(int primGroupIndex) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::drawInstancedPrimGroupIndex(int primGroupIndex, int numInstances) {
+    o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(3)) {
         this->cmdPut(cmdDrawInstancedPrimGroupIndex);
         this->cmdPut(primGroupIndex);
@@ -146,6 +159,7 @@ glCmdBuffer::drawInstancedPrimGroupIndex(int primGroupIndex, int numInstances) {
 //------------------------------------------------------------------------------
 void
 glCmdBuffer::flush(glRenderer* r) {
+    o_assert_dbg(this->isValid);
     int i = 0;
     while (i < this->cmdCurIndex) {
         switch (this->cmdGet<cmd>(i++)) {

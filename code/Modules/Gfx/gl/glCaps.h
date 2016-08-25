@@ -25,6 +25,7 @@ public:
         MaxCombinedTextureImageUnits,
         MaxVertexTextureImageUnits,
         MaxFragmentUniformComponents,
+        UniformBufferOffsetAlignment,
         
         NumLimits,
     };
@@ -38,6 +39,7 @@ public:
         TextureHalfFloat,
         InstancedArrays,
         DebugOutput,
+        UniformBlocks,
 
         NumFeatures,
     };
@@ -48,8 +50,14 @@ public:
         SeverityLow,
     };
 
+    enum Flavour {
+        GL_3_3_CORE,
+        GLES2,
+        GLES3,
+    };
+
     /// setup the info values
-    static void Setup();
+    static void Setup(Flavour flav);
     /// discard the info values
     static void Discard();
     /// check if object has been setup
@@ -78,11 +86,11 @@ public:
 
 private:
     /// setup the limit values
-    static void setupLimits();
+    static void setupLimits(Flavour flav);
     /// setup the feature flags
-    static void setupFeatures();
+    static void setupFeatures(Flavour flav);
     /// dump general GL info (extensions, constants, ...)
-    static void printInfo();
+    static void printInfo(Flavour flav);
     /// print a GL string, optionally replace spaces with newlines
     static void printString(GLenum glEnum, const char* name, bool replaceSpaceWithNewLine);
     /// print a 1..4 dimensional integer value
@@ -99,6 +107,7 @@ private:
 //------------------------------------------------------------------------------
 inline int
 glCaps::IntLimit(Limit l) {
+    o_assert_dbg(state.isValid);
     o_assert_range_dbg(l, NumLimits);
     return state.intLimits[l];
 }
@@ -106,6 +115,7 @@ glCaps::IntLimit(Limit l) {
 //------------------------------------------------------------------------------
 inline bool
 glCaps::HasFeature(Feature f) {
+    o_assert_dbg(state.isValid);
     o_assert_dbg(f < NumFeatures);
     return state.features[f];
 }

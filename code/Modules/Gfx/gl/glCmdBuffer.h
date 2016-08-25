@@ -92,6 +92,8 @@ public:
         cmdDrawInstancedPrimGroupIndex,
     };
 
+    bool isValid = false;
+
     int cmdEndIndex = 0;
     int cmdCurIndex = 0;
     uintptr_t* cmdBuffer = nullptr;

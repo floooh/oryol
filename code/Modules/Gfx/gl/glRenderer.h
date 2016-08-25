@@ -18,11 +18,7 @@
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"
-
-#define ORYOL_GL_USE_CMDBUFFER (1)
-#if ORYOL_GL_USE_CMDBUFFER
 #include "Gfx/gl/glCmdBuffer.h"
-#endif
 
 namespace Oryol {
 namespace _priv {
@@ -111,14 +107,13 @@ private:
     void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
 
     bool valid;
+    bool useCmdBuffer;
     gfxPointers pointers;
     #if !ORYOL_OPENGLES2
     GLuint globalVAO;
     #endif
 
-    #if ORYOL_GL_USE_CMDBUFFER
     glCmdBuffer cmdBuffer;
-    #endif
 
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];

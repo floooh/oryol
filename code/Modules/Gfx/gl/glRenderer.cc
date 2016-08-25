@@ -76,6 +76,7 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glRenderer::glRenderer() :
 valid(false),
+useCmdBuffer(false),
 #if !ORYOL_OPENGLES2
 globalVAO(0),
 #endif
@@ -118,12 +119,14 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
     this->gfxSetup = setup;
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.setup(setup);
-    #endif
+    this->useCmdBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.setup(setup);
+        Log::Info("glRenderer: using cmdbuffer and global uniform block\n");
+    }
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
-    o_warn("glStateWrapper: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
+    o_warn("glRenderer: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
     #endif
 
     // in case we are on a Core Profile, create a global Vertex Array Object
@@ -149,9 +152,9 @@ glRenderer::discard() {
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.discard();
-    #endif
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.discard();
+    }
 
     #if !ORYOL_OPENGLES2
     ::glDeleteVertexArrays(1, &this->globalVAO);
@@ -199,9 +202,9 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 glRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.flush(this);
-    #endif
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.flush(this);
+    }
     this->rtValid = false;
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
@@ -214,13 +217,10 @@ void
 glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record) {
     o_assert_dbg(this->valid);
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.viewport(x, y, width, height, originTopLeft);
     }
-    else
-    #endif
-    {
+    else {
         // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
         y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
 
@@ -249,13 +249,10 @@ void
 glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft, bool record) {
     o_assert_dbg(this->valid);
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.scissor(x, y, width, height, originTopLeft);
     }
-    else
-    #endif
-    {
+    else {
         // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
         y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
 
@@ -284,10 +281,10 @@ void
 glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.flush(this);
-    #endif
-    
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.flush(this);
+    }
+
     if (nullptr == rt) {
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
@@ -365,13 +362,10 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool rec
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.drawState(pip, meshes, numMeshes);
     }
-    else
-    #endif
-    {
+    else {
         // if any of the meshes is still loading, cancel the next draw state
         for (int i = 0; i < numMeshes; i++) {
             if (nullptr == meshes[i]) {
@@ -610,13 +604,10 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool rec
 //------------------------------------------------------------------------------
 void
 glRenderer::draw(const PrimitiveGroup& primGroup, bool record) {
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.draw(primGroup.BaseElement, primGroup.NumElements);
     }
-    else
-    #endif
-    {
+    else {
         o_assert_dbg(this->valid);
         o_assert2_dbg(this->rtValid, "No render target set!");
         if (nullptr == this->curPipeline) {
@@ -645,13 +636,10 @@ glRenderer::draw(const PrimitiveGroup& primGroup, bool record) {
 //------------------------------------------------------------------------------
 void
 glRenderer::draw(int primGroupIndex, bool record) {
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.drawPrimGroupIndex(primGroupIndex);
     }
-    else
-    #endif
-    {
+    else {
         o_assert_dbg(this->valid);
         o_assert2_dbg(this->rtValid, "No render target set!");
         if (nullptr == this->curPipeline) {
@@ -673,13 +661,10 @@ glRenderer::draw(int primGroupIndex, bool record) {
 //------------------------------------------------------------------------------
 void
 glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances, bool record) {
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.drawInstanced(primGroup.BaseElement, primGroup.NumElements, numInstances);
     }
-    else
-    #endif
-    {
+    else {
         o_assert_dbg(this->valid);
         o_assert2_dbg(this->rtValid, "No render target set!");
         if (nullptr == this->curPipeline) {
@@ -708,13 +693,10 @@ glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances, boo
 //------------------------------------------------------------------------------
 void
 glRenderer::drawInstanced(int primGroupIndex, int numInstances, bool record) {
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.drawInstancedPrimGroupIndex(primGroupIndex, numInstances);
     }
-    else
-    #endif
-    {
+    else {
         o_assert_dbg(this->valid);
         o_assert2_dbg(this->rtValid, "No render target set!");
         if (nullptr == this->curPipeline) {
@@ -764,9 +746,9 @@ glRenderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->vertexBufferAttrs.ByteSize()));
     o_assert_dbg(Usage::Immutable != msh->vertexBufferAttrs.BufferUsage);
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.flush(this);
-    #endif
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.flush(this);
+    }
 
     auto& vb = msh->buffers[mesh::vb];
     GLuint glBuffer = obtainUpdateBuffer(vb, this->frameIndex);
@@ -787,9 +769,9 @@ glRenderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg((numBytes > 0) && (numBytes <= msh->indexBufferAttrs.ByteSize()));
     o_assert_dbg(Usage::Immutable != msh->indexBufferAttrs.BufferUsage);
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.flush(this);
-    #endif
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.flush(this);
+    }
 
     auto& ib = msh->buffers[mesh::ib];
     GLuint glBuffer = obtainUpdateBuffer(ib, this->frameIndex);
@@ -828,9 +810,9 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
     o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    this->cmdBuffer.flush(this);
-    #endif
+    if (this->useCmdBuffer) {
+        this->cmdBuffer.flush(this);
+    }
 
     GLuint glTex = obtainUpdateTexture(tex, this->frameIndex);
     this->bindTexture(0, tex->glTarget, glTex);
@@ -1031,13 +1013,10 @@ glRenderer::setupRasterizerState() {
 void
 glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize, bool record) {
 
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.uniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize);
     }
-    else
-    #endif
-    {
+    else {
         o_assert_dbg(this->valid);
         o_assert_dbg(0 != layoutHash);
         if (!this->curPipeline) {
@@ -1147,13 +1126,10 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
 //------------------------------------------------------------------------------
 void
 glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int numTextures, bool record) {
-    #if ORYOL_GL_USE_CMDBUFFER
-    if (record) {
+    if (this->useCmdBuffer && record) {
         this->cmdBuffer.textures(bindStage, textures, numTextures);
     }
-    else
-    #endif
-    {
+    else {
         o_assert_dbg(this->valid);
         o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                      ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));

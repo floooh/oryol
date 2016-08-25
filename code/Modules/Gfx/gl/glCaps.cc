@@ -14,14 +14,14 @@ glCaps::state_t glCaps::state;
 
 //------------------------------------------------------------------------------
 void
-glCaps::Setup() {
+glCaps::Setup(Flavour flav) {
     o_assert_dbg(!state.isValid);
     state = state_t();
     state.isValid = true;
     
-    setupLimits();
-    setupFeatures();
-    printInfo();
+    setupLimits(flav);
+    setupFeatures(flav);
+    printInfo(flav);
 }
 
 //------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ glCaps::IsValid() {
 
 //------------------------------------------------------------------------------
 void
-glCaps::setupLimits() {
+glCaps::setupLimits(Flavour flav) {
     ORYOL_GL_CHECK_ERROR();
     ::glGetIntegerv(GL_MAX_TEXTURE_SIZE, &state.intLimits[MaxTextureSize]);
     ::glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &state.intLimits[MaxCubeMapTextureSize]);
@@ -47,30 +47,29 @@ glCaps::setupLimits() {
     ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &state.intLimits[MaxVertexAttribs]);
     ::glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &state.intLimits[MaxCombinedTextureImageUnits]);
     ::glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &state.intLimits[MaxVertexTextureImageUnits]);
-    #if ORYOL_OPENGLES2
+    ORYOL_GL_CHECK_ERROR();
+    if (flav == GLES2) {
         ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &state.intLimits[MaxVertexUniformComponents]);
         ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &state.intLimits[MaxFragmentUniformComponents]);
-    #else
+    }
+    else {
         ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &state.intLimits[MaxVertexUniformComponents]);
         ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &state.intLimits[MaxFragmentUniformComponents]);
-    #endif
+    }
+    if (HasFeature(UniformBlocks)) {
+        ::glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &state.intLimits[UniformBufferOffsetAlignment]);
+    }
     ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
 void
-glCaps::setupFeatures() {
+glCaps::setupFeatures(Flavour flav) {
     ORYOL_GL_CHECK_ERROR();
-    #if !ORYOL_OPENGL_CORE_PROFILE
+    if (flav != GL_3_3_CORE) {
+        // non-core GL, check extensions
         StringBuilder strBuilder((const char*)::glGetString(GL_EXTENSIONS));
         ORYOL_GL_CHECK_ERROR();
-    #endif
-    
-    #if ORYOL_OPENGL_CORE_PROFILE
-        state.features[TextureCompressionDXT] = true;
-        state.features[InstancedArrays] = true;
-        state.features[TextureFloat] = true;
-    #else
         state.features[TextureCompressionDXT] = strBuilder.Contains("_texture_compression_s3tc") ||
                                                 strBuilder.Contains("_compressed_texture_s3tc") ||
                                                 strBuilder.Contains("_texture_compression_dxt1");
@@ -81,20 +80,27 @@ glCaps::setupFeatures() {
         state.features[TextureFloat] = strBuilder.Contains("_texture_float");
         state.features[InstancedArrays] = strBuilder.Contains("_instanced_arrays");
         state.features[DebugOutput] = strBuilder.Contains("_debug_output");
-    #endif
-    
-    #if ORYOL_OPENGLES2
-        state.features[TextureHalfFloat] = strBuilder.Contains("_texture_half_float");
-    #else
-        state.features[TextureHalfFloat] = state.features[TextureFloat];
-    #endif
+        if (flav == GLES2) {
+            state.features[TextureHalfFloat] = strBuilder.Contains("_texture_half_float");
+        }
+        else {
+            state.features[TextureHalfFloat] = state.features[TextureFloat];
+        }
+        state.features[UniformBlocks] = strBuilder.Contains("_uniform_buffer_object");
+    }
+    else {
+        // GL 3.3 Core
+        state.features[TextureCompressionDXT] = true;
+        state.features[InstancedArrays] = true;
+        state.features[TextureFloat] = true;
+        state.features[UniformBlocks] = true;
+    }
 
-    #if ORYOL_OPENGLES3
+    // GLES3 core functionality
+    if (flav == GLES3) {
         state.features[InstancedArrays] = true;
         state.features[TextureCompressionETC2] = true;
-    #endif
-    if (!state.features[InstancedArrays]) {
-        o_warn("glCaps::Setup(): instanced_arrays extension not found!\n");
+        state.features[UniformBlocks] = true;
     }
     ORYOL_GL_CHECK_ERROR();
 }
@@ -107,7 +113,7 @@ glCaps::HasTextureFormat(PixelFormat::Code fmt) {
             case PixelFormat::DXT1:
             case PixelFormat::DXT3:
             case PixelFormat::DXT5:
-                return glCaps::HasFeature(TextureCompressionDXT);
+                return HasFeature(TextureCompressionDXT);
             case PixelFormat::PVRTC2_RGB:
             case PixelFormat::PVRTC4_RGB:
             case PixelFormat::PVRTC2_RGBA:
@@ -176,7 +182,7 @@ glCaps::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const voi
 
 //------------------------------------------------------------------------------
 void
-glCaps::printInfo() {
+glCaps::printInfo(Flavour flav) {
     ORYOL_GL_CHECK_ERROR();
     printString(GL_VERSION, "GL_VERSION", false);
     printString(GL_VENDOR, "GL_VENDOR", false);
@@ -188,17 +194,23 @@ glCaps::printInfo() {
     printInt(GL_MAX_VERTEX_ATTRIBS, "GL_MAX_VERTEX_ATTRIBS", 1);
     printInt(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS", 1);
     printInt(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS", 1);
-    #if ORYOL_OPENGLES2
-    printInt(GL_MAX_VERTEX_UNIFORM_VECTORS, "GL_MAX_VERTEX_UNIFORM_VECTORS", 1);
-    printInt(GL_MAX_FRAGMENT_UNIFORM_VECTORS, "GL_MAX_FRAGMENT_UNIFORM_VECTORS", 1);
-    #else
-    printInt(GL_MAX_VERTEX_UNIFORM_COMPONENTS, "GL_MAX_VERTEX_UNIFORM_COMPONENTS", 1);
-    printInt(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS", 1);
-    #endif
-
-    #if !ORYOL_OPENGL_CORE_PROFILE
-    printString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
-    #endif
+    if (flav == GLES2) {
+        printInt(GL_MAX_VERTEX_UNIFORM_VECTORS, "GL_MAX_VERTEX_UNIFORM_VECTORS", 1);
+        printInt(GL_MAX_FRAGMENT_UNIFORM_VECTORS, "GL_MAX_FRAGMENT_UNIFORM_VECTORS", 1);
+    }
+    else {
+        printInt(GL_MAX_VERTEX_UNIFORM_COMPONENTS, "GL_MAX_VERTEX_UNIFORM_COMPONENTS", 1);
+        printInt(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS", 1);
+    }
+    if (HasFeature(UniformBlocks)) {
+        printInt(GL_MAX_VERTEX_UNIFORM_BLOCKS, "GL_MAX_VERTEX_UNIFORM_BLOCKS", 1);
+        printInt(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, "GL_MAX_FRAGMENT_UNIFORM_BLOCKS", 1);
+        printInt(GL_MAX_UNIFORM_BLOCK_SIZE, "GL_MAX_UNIFORM_BLOCK_SIZE", 1);
+        printInt(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT", 1);
+    }
+    if (flav != GL_3_3_CORE) {
+        printString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
+    }
     ORYOL_GL_CHECK_ERROR();
 }
 
@@ -317,3 +329,4 @@ glCaps::IsDebugOutputEnabled() {
 
 } // namespace _priv
 } // namespace Oryol
+
