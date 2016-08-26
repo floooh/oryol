@@ -77,6 +77,7 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 glRenderer::glRenderer() :
 valid(false),
 useCmdBuffer(false),
+useUniformBuffer(false),
 #if !ORYOL_OPENGLES2
 globalVAO(0),
 #endif
@@ -97,13 +98,10 @@ viewPortHeight(0),
 vertexBuffer(0),
 indexBuffer(0),
 program(0) {
-    for (int i = 0; i < MaxTextureSamplers; i++) {
-        this->samplers2D[i] = 0;
-        this->samplersCube[i] = 0;
-    }
-    for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        this->glAttrVBs[i] = 0;
-    }
+    this->samplers2D.Fill(0);
+    this->samplersCube.Fill(0);
+    this->glAttrVBs.Fill(0);
+    this->uniformBuffers.Fill(0);
 }
 
 //------------------------------------------------------------------------------
@@ -120,6 +118,7 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->pointers = ptrs;
     this->gfxSetup = setup;
     this->useCmdBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
+    this->useUniformBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
     if (this->useCmdBuffer) {
         this->cmdBuffer.setup(setup);
         Log::Info("glRenderer: using cmdbuffer and global uniform block\n");
@@ -136,7 +135,10 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
         ::glBindVertexArray(this->globalVAO);
     }
     #endif
-    
+
+    if (this->useUniformBuffer) {
+        this->setupUniformBuffers(gfxSetup);
+    }
     this->setupDepthStencilState();
     this->setupBlendState();
     this->setupRasterizerState();
@@ -154,6 +156,9 @@ glRenderer::discard() {
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
 
+    if (this->useUniformBuffer) {
+        this->discardUniformBuffers();
+    }
     if (this->useCmdBuffer) {
         this->cmdBuffer.discard();
     }
@@ -920,7 +925,7 @@ glRenderer::bindTexture(int samplerIndex, GLenum target, GLuint tex) {
     o_assert_range_dbg(samplerIndex, MaxTextureSamplers);
     o_assert_dbg((target == GL_TEXTURE_2D) || (target == GL_TEXTURE_CUBE_MAP));
     
-    GLuint* samplers = (GL_TEXTURE_2D == target) ? this->samplers2D : this->samplersCube;
+    GLuint* samplers = (GL_TEXTURE_2D == target) ? this->samplers2D.begin() : this->samplersCube.begin();
     if (tex != samplers[samplerIndex]) {
         samplers[samplerIndex] = tex;
         ::glActiveTexture(GL_TEXTURE0 + samplerIndex);
@@ -1162,6 +1167,31 @@ glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **t
             }
         }
     }
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::setupUniformBuffers(const GfxSetup& gfxSetup) {
+    o_assert_dbg(this->useUniformBuffer);
+    ORYOL_GL_CHECK_ERROR();
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        GLuint ubo = 0;
+        glGenBuffers(1, &ubo);
+        o_assert_dbg(ubo);
+        glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+        glBufferData(GL_UNIFORM_BUFFER, gfxSetup.GlobalUniformBufferSize, nullptr, GL_STREAM_DRAW);
+    }
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::discardUniformBuffers() {
+    o_assert_dbg(this->useUniformBuffer);
+    ORYOL_GL_CHECK_ERROR();
+    glDeleteBuffers(GfxConfig::MaxInflightFrames, this->uniformBuffers.begin());
+    this->uniformBuffers.Fill(0);
+    ORYOL_GL_CHECK_ERROR();
 }
 
 } // namespace _priv

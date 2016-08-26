@@ -103,11 +103,16 @@ private:
     void setupBlendState();
     /// setup rasterizer state
     void setupRasterizerState();
+    /// setup the big per-frame uniform buffers
+    void setupUniformBuffers(const GfxSetup& gfxSetup);
+    /// discard the per-frame uniform buffers
+    void discardUniformBuffers();
     /// apply front/back side stencil state
     void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
 
     bool valid;
     bool useCmdBuffer;
+    bool useUniformBuffer;
     gfxPointers pointers;
     #if !ORYOL_OPENGLES2
     GLuint globalVAO;
@@ -153,10 +158,11 @@ private:
     GLuint program;
     
     static const int MaxTextureSamplers = 16;
-    GLuint samplers2D[MaxTextureSamplers];
-    GLuint samplersCube[MaxTextureSamplers];
-    glVertexAttr glAttrs[VertexAttr::NumVertexAttrs];
-    GLuint glAttrVBs[VertexAttr::NumVertexAttrs];
+    StaticArray<GLuint, MaxTextureSamplers> samplers2D;
+    StaticArray<GLuint, MaxTextureSamplers> samplersCube;
+    StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
+    StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
+    StaticArray<GLuint, GfxConfig::MaxInflightFrames> uniformBuffers;
 };
 
 //------------------------------------------------------------------------------
