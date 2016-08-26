@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "glCmdBuffer.h"
 #include "glRenderer.h"
+#include "glCaps.h"
 #include "Core/Memory/Memory.h"
 #include "Gfx/Core/DrawState.h"
 
@@ -25,8 +26,10 @@ glCmdBuffer::setup(const GfxSetup& gfxSetup) {
 
     // allocate the global uniform buffer
     this->ubCurIndex = 0;
+    this->ubStartIndex = 0;
     this->ubEndIndex = gfxSetup.GlobalUniformBufferSize;
     this->uniformBuffer = (uint8_t*) Memory::Alloc(this->ubEndIndex);
+    this->ubAlign = glCaps::IntLimit(glCaps::UniformBufferOffsetAlignment);
 }
 
 //------------------------------------------------------------------------------
@@ -158,8 +161,17 @@ glCmdBuffer::drawInstancedPrimGroupIndex(int primGroupIndex, int numInstances) {
 
 //------------------------------------------------------------------------------
 void
-glCmdBuffer::flush(glRenderer* r) {
+glCmdBuffer::flush(glRenderer* r, bool rewindUniformBuffer) {
     o_assert_dbg(this->isValid);
+
+    // flush uniforms
+    const int ubSize = this->ubCurIndex - this->ubStartIndex;
+    if (ubSize > 0) {
+        r->updateUniforms(this->uniformBuffer, this->ubStartIndex, ubSize);
+        this->ubStartIndex = this->ubCurIndex;
+    }
+
+    // replay commands
     int i = 0;
     while (i < this->cmdCurIndex) {
         switch (this->cmdGet<cmd>(i++)) {
@@ -249,7 +261,10 @@ glCmdBuffer::flush(glRenderer* r) {
         }
     }
     this->cmdCurIndex = 0;
-    this->ubCurIndex = 0;
+    if (rewindUniformBuffer) {
+        this->ubCurIndex = 0;
+        this->ubStartIndex = 0;
+    }
 }
 
 } // namespace _priv

@@ -95,6 +95,9 @@ public:
     void invalidateTextureState();
     /// bind a texture to a sampler index
     void bindTexture(int samplerIndex, GLenum target, GLuint tex);
+
+    /// update data in per-frame uniform-buffer (called from glCmdBuffer)
+    void updateUniforms(const uint8_t* basePtr, int startOffset, int size);
     
 private:
     /// setup the initial depth-stencil-state
@@ -117,6 +120,7 @@ private:
     #if !ORYOL_OPENGLES2
     GLuint globalVAO;
     #endif
+    uint64_t frameIndex;
 
     glCmdBuffer cmdBuffer;
 
@@ -129,7 +133,6 @@ private:
     bool rtValid;
     DisplayAttrs rtAttrs;
     GfxSetup gfxSetup;
-    int frameIndex;
     
     // high-level state cache
     texture* curRenderTarget;
@@ -163,6 +166,7 @@ private:
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
     StaticArray<GLuint, GfxConfig::MaxInflightFrames> uniformBuffers;
+    GLuint curUniformBuffer;
 };
 
 //------------------------------------------------------------------------------

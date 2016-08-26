@@ -28,8 +28,8 @@ public:
     void setup(const GfxSetup& gfxSetup);
     /// discard the cmd buffer object
     void discard();
-    /// flush the command buffer
-    void flush(glRenderer* renderer);
+    /// flush the uniform- and command-buffer (play back recorded commands)
+    void flush(glRenderer* renderer, bool rewindUniformBuffer);
 
     /// set viewport
     void viewport(int x, int y, int w, int h, bool originTopLeft);
@@ -78,7 +78,7 @@ public:
     void ubCopy(const uint8_t* ptr, int byteSize) {
         o_assert_dbg((this->ubCurIndex+byteSize) < this->ubEndIndex);
         std::memcpy(&(this->uniformBuffer[this->ubCurIndex]), ptr, byteSize);
-        this->ubCurIndex += byteSize;
+        this->ubCurIndex = Memory::RoundUp(this->ubCurIndex + byteSize, this->ubAlign);
     };
 
     enum cmd {
@@ -101,6 +101,8 @@ public:
 
     int ubEndIndex = 0;
     int ubCurIndex = 0;
+    int ubStartIndex = 0;
+    int ubAlign = 0;
     uint8_t* uniformBuffer = nullptr;
 };
 

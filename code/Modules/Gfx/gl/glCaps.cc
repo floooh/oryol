@@ -20,8 +20,8 @@ glCaps::Setup(Flavour flav) {
     state.isValid = true;
     state.flavour = flav;
     
-    setupLimits(flav);
     setupFeatures(flav);
+    setupLimits(flav);
     printInfo(flav);
 }
 

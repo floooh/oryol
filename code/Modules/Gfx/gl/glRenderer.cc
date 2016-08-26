@@ -81,8 +81,8 @@ useUniformBuffer(false),
 #if !ORYOL_OPENGLES2
 globalVAO(0),
 #endif
-rtValid(false),
 frameIndex(0),
+rtValid(false),
 curRenderTarget(nullptr),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
@@ -117,6 +117,7 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
     this->gfxSetup = setup;
+    this->frameIndex = 0;
     this->useCmdBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
     this->useUniformBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
     if (this->useCmdBuffer) {
@@ -212,13 +213,17 @@ void
 glRenderer::commitFrame() {
     o_assert_dbg(this->valid);
     if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this);
+        this->cmdBuffer.flush(this, true);
     }
     this->rtValid = false;
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
+    if (this->useUniformBuffer) {
+        this->curUniformBuffer = this->uniformBuffers[this->frameIndex % GfxConfig::MaxInflightFrames];
+        glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -291,7 +296,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->valid);
 
     if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this);
+        this->cmdBuffer.flush(this, false);
     }
 
     if (nullptr == rt) {
@@ -756,7 +761,7 @@ glRenderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(Usage::Immutable != msh->vertexBufferAttrs.BufferUsage);
 
     if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this);
+        this->cmdBuffer.flush(this, false);
     }
 
     auto& vb = msh->buffers[mesh::vb];
@@ -779,7 +784,7 @@ glRenderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     o_assert_dbg(Usage::Immutable != msh->indexBufferAttrs.BufferUsage);
 
     if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this);
+        this->cmdBuffer.flush(this, false);
     }
 
     auto& ib = msh->buffers[mesh::ib];
@@ -820,7 +825,7 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
     if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this);
+        this->cmdBuffer.flush(this, false);
     }
 
     GLuint glTex = obtainUpdateTexture(tex, this->frameIndex);
@@ -1173,6 +1178,7 @@ glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **t
 void
 glRenderer::setupUniformBuffers(const GfxSetup& gfxSetup) {
     o_assert_dbg(this->useUniformBuffer);
+
     ORYOL_GL_CHECK_ERROR();
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         GLuint ubo = 0;
@@ -1180,17 +1186,34 @@ glRenderer::setupUniformBuffers(const GfxSetup& gfxSetup) {
         o_assert_dbg(ubo);
         glBindBuffer(GL_UNIFORM_BUFFER, ubo);
         glBufferData(GL_UNIFORM_BUFFER, gfxSetup.GlobalUniformBufferSize, nullptr, GL_STREAM_DRAW);
+        o_assert_dbg(0 != ubo);
+        this->uniformBuffers[i] = ubo;
     }
     ORYOL_GL_CHECK_ERROR();
+    this->curUniformBuffer = this->uniformBuffers[0];
+    glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
 }
 
 //------------------------------------------------------------------------------
 void
 glRenderer::discardUniformBuffers() {
     o_assert_dbg(this->useUniformBuffer);
+
     ORYOL_GL_CHECK_ERROR();
     glDeleteBuffers(GfxConfig::MaxInflightFrames, this->uniformBuffers.begin());
     this->uniformBuffers.Fill(0);
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
+    o_assert_dbg(this->useUniformBuffer);
+    o_assert_dbg(basePtr && (startOffset >= 0) && (size > 0));
+    o_assert_dbg(0 != this->curUniformBuffer);
+
+    ORYOL_GL_CHECK_ERROR();
+    ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
     ORYOL_GL_CHECK_ERROR();
 }
 
