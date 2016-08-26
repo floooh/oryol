@@ -69,9 +69,9 @@ mtlReleaseQueue::isValid() const {
 void
 mtlReleaseQueue::garbageCollect(int frameIndex) {
     o_assert_dbg(this->isValid());
-    const int safeNumFrames = GfxConfig::MtlMaxInflightFrames + 1;
+    const int safeNumFrames = GfxConfig::MaxInflightFrames + 1;
     if (frameIndex > safeNumFrames) {
-        const int minReleaseFrame = frameIndex - GfxConfig::MtlMaxInflightFrames;
+        const int minReleaseFrame = frameIndex - GfxConfig::MaxInflightFrames;
         while (!this->releaseQueue.Empty() && (this->releaseQueue.Front().frameIndex < minReleaseFrame)) {
             this->releaseQueue.Dequeue();
             o_dbg("mtlReleaseQueue: defer-released resource!\n");

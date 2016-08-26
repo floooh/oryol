@@ -49,14 +49,14 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->releaseQueue.setup();
 
     // frame-sync semaphore
-    mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MtlMaxInflightFrames);
+    mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MaxInflightFrames);
 
     // setup central metal objects
     this->mtlDevice = osBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
 
     // create global rotated uniform buffers
-    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         this->uniformBuffers[i] = [this->mtlDevice
             newBufferWithLength:setup.GlobalUniformBufferSize
             options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
@@ -71,10 +71,10 @@ mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
     // wait for the final frame to finish
-    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
     }
-    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
     this->releaseQueue.discard();
@@ -132,7 +132,7 @@ mtlRenderer::commitFrame() {
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
-    if (++this->curFrameRotateIndex >= GfxConfig::MtlMaxInflightFrames) {
+    if (++this->curFrameRotateIndex >= GfxConfig::MaxInflightFrames) {
         this->curFrameRotateIndex = 0;
     }
 

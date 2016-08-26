@@ -22,7 +22,7 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    static const int NumSlots = GfxConfig::MtlMaxInflightFrames;
+    static const int NumSlots = GfxConfig::MaxInflightFrames;
     struct buffer {
         buffer();
         int updateFrameIndex;
@@ -95,7 +95,7 @@ public:
     /// clear the object
     void Clear();
 
-    static const int NumSlots = GfxConfig::MtlMaxInflightFrames;
+    static const int NumSlots = GfxConfig::MaxInflightFrames;
     int updateFrameIndex;
     uint8_t numSlots;
     uint8_t activeSlot;

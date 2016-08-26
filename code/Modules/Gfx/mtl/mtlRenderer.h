@@ -112,7 +112,7 @@ public:
     // rotated global uniform buffers
     uint8_t* curUniformBufferPtr;
     int curUniformBufferOffset;
-    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MtlMaxInflightFrames> uniformBuffers;
+    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MaxInflightFrames> uniformBuffers;
 
     // deferred-release-queue, release gfx resources when no longer in use by GPU
     mtlReleaseQueue releaseQueue;

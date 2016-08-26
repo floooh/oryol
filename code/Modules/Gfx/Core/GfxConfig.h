@@ -40,8 +40,8 @@ public:
     static const int MaxNumTextureBlockLayoutComponents = 16;
     /// maximum number of components in vertex layout
     static const int MaxNumVertexLayoutComponents = 16;
-    /// maximum number of in-flight frames for Metal
-    static const int MtlMaxInflightFrames = 2;
+    /// maximum number of in-flight frames (not used by all platforms)
+    static const int MaxInflightFrames = 2;
 };
 
 } // namespace Oryol
