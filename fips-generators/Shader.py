@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 60
+Version = 63
 
 import os
 import sys
@@ -21,12 +21,13 @@ if platform.system() == 'Darwin' :
     from util import metalcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'hlsl5', 'metal' ]
+slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'glsles3', 'hlsl5', 'metal' ]
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
     'glsl120': 'ShaderLang::GLSL120',
     'glsl150': 'ShaderLang::GLSL150',
+    'glsles3': 'ShaderLang::GLSLES3',
     'hlsl5':   'ShaderLang::HLSL5',
     'metal':   'ShaderLang::Metal'
 }
@@ -35,6 +36,7 @@ isGLSL = {
     'glsl100': True,
     'glsl120': True,
     'glsl150': True,
+    'glsles3': True,
     'hlsl5': False,
     'metal': False
 }
@@ -43,6 +45,7 @@ isHLSL = {
     'glsl100': False,
     'glsl120': False,
     'glsl150': False,
+    'glsles3': False,
     'hlsl5': True,
     'metal': False
 }
@@ -51,6 +54,7 @@ isMetal = {
     'glsl100': False,
     'glsl120': False,
     'glsl150': False,
+    'glsles3': False,
     'hlsl5': False,
     'metal': True
 }
@@ -59,6 +63,7 @@ glslVersionNumber = {
     'glsl100': 100,
     'glsl120': 120,
     'glsl150': 150,
+    'glsles3': 300,
     'hlsl5': None,
     'metal': None
 }
@@ -94,6 +99,20 @@ slMacros = {
         'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
     'glsl150': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
+        '_position': 'gl_Position',
+        '_color': '_FragColor',
+        '_fragcoord': 'gl_FragCoord',
+        '_const': 'const',
+        '_func': '',
+        'mul(m,v)': '(m*v)',
+        'tex2D(s, t)': 'texture(s,t)',
+        'texCUBE(s, t)': 'texture(s,t)',
+        'tex2Dvs(s, t)': 'texture(s,t)'
+    },
+    'glsles3': {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
@@ -853,18 +872,42 @@ class GLSLGenerator :
 
     #---------------------------------------------------------------------------
     def genUniforms(self, shd, slVersion, lines) :
-        for ub in shd.uniformBlocks :
-            for type in ub.uniformsByType :
-                for uniform in ub.uniformsByType[type] :
-                    if uniform.num == 1 :
-                        lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), 
-                            uniform.filePath, uniform.lineNumber))
-                    else :
-                        lines.append(Line('uniform {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
-                            uniform.filePath, uniform.lineNumber))
-        for tb in shd.textureBlocks :
-            for tex in tb.textures :
-                lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
+        if glslVersionNumber[slVersion] < 300 :
+            # no GLSL uniform blocks
+            for ub in shd.uniformBlocks :
+                for type in ub.uniformsByType :
+                    for uniform in ub.uniformsByType[type] :
+                        if uniform.num == 1 :
+                            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), 
+                                uniform.filePath, uniform.lineNumber))
+                        else :
+                            lines.append(Line('uniform {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
+                                uniform.filePath, uniform.lineNumber))
+            for tb in shd.textureBlocks :
+                for tex in tb.textures :
+                    lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
+        else :
+            # GLSL uniform blocks
+            for ub in shd.uniformBlocks:
+                lines.append(Line('layout (std140) uniform {} {{'.format(
+                    ub.bindName), ub.filePath, ub.lineNumber))
+                for type in ub.uniformsByType :
+                    for uniform in ub.uniformsByType[type] :
+                        if uniform.num == 1 :
+                            lines.append(Line('  {} {};'.format(uniform.type, uniform.name), 
+                                uniform.filePath, uniform.lineNumber))
+                        else :
+                            lines.append(Line('  {} {}[{}];'.format(uniform.type, uniform.name, uniform.num),
+                                uniform.filePath, uniform.lineNumber))
+                        # pad vec3's to 16 bytes
+                        if type == 'vec3':
+                            lines.append(Line('  float _pad_{};'.format(uniform.name)))
+                lines.append(Line('};', ub.filePath, ub.lineNumber))
+            for tb in shd.textureBlocks :
+                for tex in tb.textures :
+                    lines.append(Line('uniform {} {};'.format(
+                        tex.type, tex.name), 
+                        tex.filePath, tex.lineNumber))
         return lines 
 
     #---------------------------------------------------------------------------
@@ -872,7 +915,9 @@ class GLSLGenerator :
         lines = []
 
         # version tag
-        if glslVersionNumber[slVersion] > 100 :
+        if slVersion == 'glsles3' :
+            lines.append(Line('#version 300 es'))
+        elif glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
         # write compatibility macros
@@ -920,11 +965,13 @@ class GLSLGenerator :
         lines = []
 
         # version tag
-        if glslVersionNumber[slVersion] > 100 :
+        if slVersion == 'glsles3' :
+            lines.append(Line('#version 300 es'))
+        elif glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
         # precision modifiers
-        if slVersion == 'glsl100' :
+        if slVersion == 'glsl100' or slVersion == 'glsles3' :
             lines.append(Line('precision mediump float;'))
             if fs.highPrecision :
                 lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
