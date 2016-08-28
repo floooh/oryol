@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 63
+Version = 65
 
 import os
 import sys
@@ -872,7 +872,7 @@ class GLSLGenerator :
 
     #---------------------------------------------------------------------------
     def genUniforms(self, shd, slVersion, lines) :
-        if glslVersionNumber[slVersion] < 300 :
+        if glslVersionNumber[slVersion] < 150 :
             # no GLSL uniform blocks
             for ub in shd.uniformBlocks :
                 for type in ub.uniformsByType :
@@ -890,7 +890,7 @@ class GLSLGenerator :
             # GLSL uniform blocks
             for ub in shd.uniformBlocks:
                 lines.append(Line('layout (std140) uniform {} {{'.format(
-                    ub.bindName), ub.filePath, ub.lineNumber))
+                    ub.name), ub.filePath, ub.lineNumber))
                 for type in ub.uniformsByType :
                     for uniform in ub.uniformsByType[type] :
                         if uniform.num == 1 :
@@ -926,14 +926,14 @@ class GLSLGenerator :
 
         # precision modifiers 
         # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
-        if slVersion == 'glsl100' :
+        if slVersion == 'glsl100' or slVersion == 'glsles3' :
             if vs.highPrecision :
                 lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
                 for type in vs.highPrecision :
                     lines.append(Line('precision highp {};'.format(type)))
                 lines.append(Line('#endif'))
 
-        # write uniform blocks 
+        # write uniform definition 
         lines = self.genUniforms(vs, slVersion, lines)
 
         # write vertex shader inputs
@@ -983,7 +983,7 @@ class GLSLGenerator :
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
-        # write uniform blocks (only in glsl150)
+        # write uniform definition
         lines = self.genUniforms(fs, slVersion, lines)
 
         # write fragment shader inputs

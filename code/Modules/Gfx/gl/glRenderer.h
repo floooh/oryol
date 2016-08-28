@@ -60,6 +60,8 @@ public:
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool record=true);
     /// apply a shader uniform block (called after applyDrawState)
     void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize, bool record=true);
+    /// internal version of applyUniformBlock with offset into global uniform buffer
+    void applyUniformBlockOffset(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, int startOffset, int byteSize);
     /// apply a group of textures
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures, bool record=true);
 

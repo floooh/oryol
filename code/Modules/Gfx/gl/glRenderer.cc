@@ -222,7 +222,6 @@ glRenderer::commitFrame() {
     this->frameIndex++;
     if (this->useUniformBuffer) {
         this->curUniformBuffer = this->uniformBuffers[this->frameIndex % GfxConfig::MaxInflightFrames];
-        glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
     }
 }
 
@@ -1037,6 +1036,9 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
             // currently no valid draw state set
             return;
         }
+        // this code should never be reached if GL uniform blocks are used
+        // (instead the applyUniformBlockBasePtr function will be called
+        o_assert_dbg(!glCaps::HasFeature(glCaps::UniformBlocks));
 
         // get the uniform layout object for this uniform block
         const shader* shd = this->curPipeline->shd;
@@ -1213,7 +1215,47 @@ glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
     o_assert_dbg(0 != this->curUniformBuffer);
 
     ORYOL_GL_CHECK_ERROR();
+    ::glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
     ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
+    ORYOL_GL_CHECK_ERROR();
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::applyUniformBlockOffset(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, int startOffset, int byteSize) {
+
+    // this method will be called by glCmdBuffer instead of applyUniformBlock if
+    // GL uniform buffers are used
+    o_assert_dbg(this->valid);
+    o_assert_dbg(0 != layoutHash);
+    if (!this->curPipeline) {
+        // currently no valid draw state set
+        return;
+    }
+    // this code should never be reached if GL uniform blocks are NOT used
+    o_assert_dbg(glCaps::HasFeature(glCaps::UniformBlocks));
+
+    // get the uniform layout object for this uniform block
+    const shader* shd = this->curPipeline->shd;
+    o_assert_dbg(shd);
+
+    // check whether the provided struct is type-compatible with the
+    // expected uniform-block-layout, the size-check shouldn't be necessary
+    // since the hash should already bail out, but it doesn't hurt either
+    #if ORYOL_DEBUG
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert_dbg(InvalidIndex != ubIndex);
+    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
+    o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
+    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
+    o_assert_dbg(layout.ByteSize() == byteSize);
+    #endif
+    #endif
+
+    // bind GL uniform buffer range
+    ORYOL_GL_CHECK_ERROR();
+    GLuint glUBIndex = shd->getUniformBlockLocation(bindStage, bindSlot);
+    ::glBindBufferRange(GL_UNIFORM_BUFFER, glUBIndex, this->curUniformBuffer, startOffset, byteSize);
     ORYOL_GL_CHECK_ERROR();
 }
 

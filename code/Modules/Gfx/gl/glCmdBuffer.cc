@@ -222,8 +222,13 @@ glCmdBuffer::flush(glRenderer* r, bool rewindUniformBuffer) {
                     uint32_t layoutHash = this->cmdGet<int64_t>(i++);
                     int offset = this->cmdGet<int>(i++);
                     int byteSize = this->cmdGet<int>(i++);
-                    const uint8_t* ptr = &(this->uniformBuffer[offset]);
-                    r->applyUniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize, false);
+                    if (glCaps::HasFeature(glCaps::UniformBlocks)) {
+                        r->applyUniformBlockOffset(bindStage, bindSlot, layoutHash, offset, byteSize);
+                    }
+                    else {
+                        const uint8_t* ptr = &(this->uniformBuffer[offset]);
+                        r->applyUniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize, false);
+                    }
                 }
                 break;
 

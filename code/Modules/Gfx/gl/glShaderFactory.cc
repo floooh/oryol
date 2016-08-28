@@ -54,6 +54,7 @@ glShaderFactory::SetupResource(shader& shd) {
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif
     const ShaderSetup& setup = shd.Setup;
+    const bool useUniformBlocks = glCaps::HasFeature(glCaps::UniformBlocks);
 
     o_assert_dbg(setup.VertexShaderSource(slang).IsValid());
     o_assert_dbg(setup.FragmentShaderSource(slang).IsValid());
@@ -124,11 +125,18 @@ glShaderFactory::SetupResource(shader& shd) {
         const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
         ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
         int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-        const int numUniforms = layout.NumComponents();
-        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-            const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
-            const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-            shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
+        if (useUniformBlocks) {
+            const char* ubName = setup.UniformBlockName(ubIndex).AsCStr();
+            const GLuint glUBIndex = glGetUniformBlockIndex(glProg, ubName);
+            shd.bindUniformBlock(ubBindStage, ubBindSlot, glUBIndex);
+        }
+        else {
+            const int numUniforms = layout.NumComponents();
+            for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+                const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
+                const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
+                shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
+            }
         }
     }
 
