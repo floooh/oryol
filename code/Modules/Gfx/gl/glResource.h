@@ -74,7 +74,7 @@ public:
     /// bind a uniform location to a slot index
     void bindUniform(ShaderStage::Code bindStage, int bindSlot, int uniformIndex, GLint glUniformLocation);
     /// bind a uniform block location to a slot index
-    void bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLuint glUBIndex);
+    void bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLuint glUBBindPoint);
     /// bind a sampler uniform location to a slot index
     void bindSampler(ShaderStage::Code bindStage, int textureIndex, int samplerIndex);
     #if ORYOL_GL_USE_GETATTRIBLOCATION

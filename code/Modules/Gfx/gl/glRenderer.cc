@@ -724,7 +724,7 @@ glRenderer::drawInstanced(int primGroupIndex, int numInstances, bool record) {
             return;
         }
         const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-        this->drawInstanced(primGroup, numInstances);
+        this->drawInstanced(primGroup, numInstances, false);
     }
 }
 
@@ -1254,8 +1254,8 @@ glRenderer::applyUniformBlockOffset(ShaderStage::Code bindStage, int bindSlot, u
 
     // bind GL uniform buffer range
     ORYOL_GL_CHECK_ERROR();
-    GLuint glUBIndex = shd->getUniformBlockLocation(bindStage, bindSlot);
-    ::glBindBufferRange(GL_UNIFORM_BUFFER, glUBIndex, this->curUniformBuffer, startOffset, byteSize);
+    GLuint glUBLocation = shd->getUniformBlockLocation(bindStage, bindSlot);
+    ::glBindBufferRange(GL_UNIFORM_BUFFER, glUBLocation, this->curUniformBuffer, startOffset, byteSize);
     ORYOL_GL_CHECK_ERROR();
 }
 

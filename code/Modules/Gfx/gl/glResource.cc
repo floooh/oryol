@@ -72,8 +72,8 @@ glShader::bindUniform(ShaderStage::Code bindStage, int bindSlot, int uniformInde
 
 //------------------------------------------------------------------------------
 void
-glShader::bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLuint glUBIndex) {
-    this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)] = glUBIndex;
+glShader::bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLuint glUBBindPoint) {
+    this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)] = glUBBindPoint;
 }
 
 //------------------------------------------------------------------------------

@@ -119,6 +119,7 @@ glShaderFactory::SetupResource(shader& shd) {
     shd.glProgram = glProg;
 
     // resolve uniform locations
+    GLuint glUniformBlockBindPoint = 0;
     this->pointers.renderer->useProgram(glProg);
     const int numUniformBlocks = setup.NumUniformBlocks();
     for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
@@ -128,9 +129,9 @@ glShaderFactory::SetupResource(shader& shd) {
         if (useUniformBlocks) {
             const char* ubName = setup.UniformBlockName(ubIndex).AsCStr();
             const GLuint glUBIndex = ::glGetUniformBlockIndex(glProg, ubName);
-            const GLuint bindPoint = ubBindSlot + ubBindStage*GfxConfig::MaxNumUniformBlocksPerStage;
-            ::glUniformBlockBinding(glProg, glUBIndex, bindPoint);
-            shd.bindUniformBlock(ubBindStage, ubBindSlot, bindPoint);
+            ::glUniformBlockBinding(glProg, glUBIndex, glUniformBlockBindPoint);
+            shd.bindUniformBlock(ubBindStage, ubBindSlot, glUniformBlockBindPoint);
+            glUniformBlockBindPoint++;
         }
         else {
             const int numUniforms = layout.NumComponents();
