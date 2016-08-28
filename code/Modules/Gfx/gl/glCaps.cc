@@ -61,6 +61,7 @@ glCaps::setupLimits(Flavour flav) {
         ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &state.intLimits[MaxFragmentUniformComponents]);
     }
     if (HasFeature(UniformBlocks)) {
+        ::glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &state.intLimits[MaxUniformBufferBindings]);
         ::glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &state.intLimits[UniformBufferOffsetAlignment]);
     }
     #endif
@@ -214,6 +215,7 @@ glCaps::printInfo(Flavour flav) {
         printInt(GL_MAX_VERTEX_UNIFORM_BLOCKS, "GL_MAX_VERTEX_UNIFORM_BLOCKS", 1);
         printInt(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, "GL_MAX_FRAGMENT_UNIFORM_BLOCKS", 1);
         printInt(GL_MAX_UNIFORM_BLOCK_SIZE, "GL_MAX_UNIFORM_BLOCK_SIZE", 1);
+        printInt(GL_MAX_UNIFORM_BUFFER_BINDINGS, "GL_MAX_UNIFORM_BUFFER_BINDINGS", 1);
         printInt(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT", 1);
     }
     #endif

@@ -25,6 +25,7 @@ public:
         MaxCombinedTextureImageUnits,
         MaxVertexTextureImageUnits,
         MaxFragmentUniformComponents,
+        MaxUniformBufferBindings,
         UniformBufferOffsetAlignment,
         
         NumLimits,

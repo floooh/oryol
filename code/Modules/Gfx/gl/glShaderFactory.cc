@@ -46,15 +46,15 @@ glShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
     this->pointers.renderer->invalidateShaderState();
 
+    const bool useUniformBlocks = glCaps::HasFeature(glCaps::UniformBlocks);
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    const ShaderLang::Code slang = ShaderLang::GLSL100;
+    const ShaderLang::Code slang = useUniformBlocks ? ShaderLang::GLSLES3 : ShaderLang::GLSL100;
     #elif ORYOL_OPENGL_CORE_PROFILE
     const ShaderLang::Code slang = ShaderLang::GLSL150;
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif
     const ShaderSetup& setup = shd.Setup;
-    const bool useUniformBlocks = glCaps::HasFeature(glCaps::UniformBlocks);
 
     o_assert_dbg(setup.VertexShaderSource(slang).IsValid());
     o_assert_dbg(setup.FragmentShaderSource(slang).IsValid());
@@ -127,8 +127,10 @@ glShaderFactory::SetupResource(shader& shd) {
         int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
         if (useUniformBlocks) {
             const char* ubName = setup.UniformBlockName(ubIndex).AsCStr();
-            const GLuint glUBIndex = glGetUniformBlockIndex(glProg, ubName);
-            shd.bindUniformBlock(ubBindStage, ubBindSlot, glUBIndex);
+            const GLuint glUBIndex = ::glGetUniformBlockIndex(glProg, ubName);
+            const GLuint bindPoint = ubBindSlot + ubBindStage*GfxConfig::MaxNumUniformBlocksPerStage;
+            ::glUniformBlockBinding(glProg, glUBIndex, bindPoint);
+            shd.bindUniformBlock(ubBindStage, ubBindSlot, bindPoint);
         }
         else {
             const int numUniforms = layout.NumComponents();
