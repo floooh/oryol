@@ -764,7 +764,7 @@ glRenderer::updateVertices(mesh* msh, const void* data, int numBytes) {
     }
 
     auto& vb = msh->buffers[mesh::vb];
-    GLuint glBuffer = obtainUpdateBuffer(vb, this->frameIndex);
+    GLuint glBuffer = obtainUpdateBuffer(vb, (int)this->frameIndex);
     o_assert_dbg(0 != glBuffer);
     this->bindVertexBuffer(glBuffer);
     ::glBufferSubData(GL_ARRAY_BUFFER, 0, numBytes, data);
@@ -787,7 +787,7 @@ glRenderer::updateIndices(mesh* msh, const void* data, int numBytes) {
     }
 
     auto& ib = msh->buffers[mesh::ib];
-    GLuint glBuffer = obtainUpdateBuffer(ib, this->frameIndex);
+    GLuint glBuffer = obtainUpdateBuffer(ib, (int)this->frameIndex);
     o_assert_dbg(0 != glBuffer);
     this->bindIndexBuffer(glBuffer);
     ::glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numBytes, data);
@@ -827,7 +827,7 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
         this->cmdBuffer.flush(this, false);
     }
 
-    GLuint glTex = obtainUpdateTexture(tex, this->frameIndex);
+    GLuint glTex = obtainUpdateTexture(tex, (int)this->frameIndex);
     this->bindTexture(0, tex->glTarget, glTex);
     uint8_t* srcPtr = (uint8_t*)data;
     GLenum glTexImageFormat = glTypes::asGLTexImageFormat(attrs.ColorFormat);

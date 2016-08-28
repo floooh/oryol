@@ -219,7 +219,7 @@ glCmdBuffer::flush(glRenderer* r, bool rewindUniformBuffer) {
                 {
                     ShaderStage::Code bindStage = this->cmdGet<ShaderStage::Code>(i++);
                     int bindSlot = this->cmdGet<int>(i++);
-                    uint32_t layoutHash = this->cmdGet<int64_t>(i++);
+                    uint32_t layoutHash = this->cmdGet<int32_t>(i++);
                     int offset = this->cmdGet<int>(i++);
                     int byteSize = this->cmdGet<int>(i++);
                     if (glCaps::HasFeature(glCaps::UniformBlocks)) {

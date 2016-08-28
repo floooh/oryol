@@ -189,6 +189,10 @@ fips_begin_module(Gfx)
     endif()
     fips_deps(Resource Core)
 fips_end_module()
+if (FIPS_MSVC)
+    # forcing value to bool
+    target_compile_options(Gfx PRIVATE "/wd4800")
+endif()
 
 fips_begin_unittest(Gfx)
     fips_vs_warning_level(3)
