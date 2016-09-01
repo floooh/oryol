@@ -231,7 +231,7 @@ iosBridge::onDidFinishLaunching() {
     #else
     // create GL context and GLKView
     // NOTE: the drawable properties will be overridden later in iosDisplayMgr!
-    this->eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    this->eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
     oryolGLKView* _glkView = [[oryolGLKView alloc] initWithFrame:mainScreenBounds];
     _glkView.drawableColorFormat   = GLKViewDrawableColorFormatRGBA8888;
     _glkView.drawableDepthFormat   = GLKViewDrawableDepthFormat24;

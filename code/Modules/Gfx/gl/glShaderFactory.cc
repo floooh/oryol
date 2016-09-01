@@ -108,7 +108,8 @@ glShaderFactory::SetupResource(shader& shd) {
         Memory::Free(logBuffer);
     }
     #endif
-        
+    ORYOL_GL_CHECK_ERROR();
+
     // if linking failed, stop the app
     if (!linkStatus) {
         o_warn("Failed to link program '%s'\n", setup.Locator.Location().AsCStr());
@@ -126,22 +127,28 @@ glShaderFactory::SetupResource(shader& shd) {
         const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
         ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
         int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
+        #if !ORYOL_OPENGLES2
         if (useUniformBlocks) {
             const char* ubName = setup.UniformBlockName(ubIndex).AsCStr();
             const GLuint glUBIndex = ::glGetUniformBlockIndex(glProg, ubName);
             ::glUniformBlockBinding(glProg, glUBIndex, glUniformBlockBindPoint);
             shd.bindUniformBlock(ubBindStage, ubBindSlot, glUniformBlockBindPoint);
             glUniformBlockBindPoint++;
+            ORYOL_GL_CHECK_ERROR();
         }
-        else {
+        else
+        #endif
+        {
             const int numUniforms = layout.NumComponents();
             for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
                 const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
                 const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
                 shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
             }
+
         }
     }
+    ORYOL_GL_CHECK_ERROR();
 
     // resolve texture locations
     int glTextureLocation = 0;
@@ -164,6 +171,8 @@ glShaderFactory::SetupResource(shader& shd) {
             }
         }
     }
+    ORYOL_GL_CHECK_ERROR();
+
         
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     // resolve attrib locations

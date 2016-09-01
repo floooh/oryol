@@ -51,7 +51,7 @@ public:
     const DisplayAttrs& renderTargetAttrs() const;
 
     /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt, const ClearState& clearState);
+    void applyRenderTarget(texture* rt, const ClearState& clearState, bool record=true);
     /// apply viewport
     void applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record=true);
     /// apply scissor rect

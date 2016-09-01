@@ -31,6 +31,8 @@ public:
     /// flush the uniform- and command-buffer (play back recorded commands)
     void flush(glRenderer* renderer, bool rewindUniformBuffer);
 
+    /// apply render target
+    void rendertarget(texture* rt, const ClearState& clearState);
     /// set viewport
     void viewport(int x, int y, int w, int h, bool originTopLeft);
     /// set scissor rect
@@ -82,6 +84,7 @@ public:
     };
 
     enum cmd {
+        cmdRenderTarget,
         cmdViewport,
         cmdScissor,
         cmdDrawState,

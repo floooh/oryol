@@ -46,6 +46,20 @@ glCmdBuffer::discard() {
 
 //------------------------------------------------------------------------------
 void
+glCmdBuffer::rendertarget(texture* rt, const ClearState& clearState) {
+    o_assert_dbg(this->isValid);
+    const int csSize = 1 + (sizeof(ClearState) / sizeof(uintptr_t));
+    if (this->cmdCheckRoom(2 + csSize)) {
+        this->cmdPut(cmdRenderTarget);
+        this->cmdPut(rt);
+        ClearState* csPtr = (ClearState*)&(this->cmdBuffer[this->cmdCurIndex]);
+        *csPtr = clearState;
+        this->cmdCurIndex += csSize;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 glCmdBuffer::viewport(int x, int y, int w, int h, bool originTopLeft) {
     o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(6)) {
@@ -175,6 +189,15 @@ glCmdBuffer::flush(glRenderer* r, bool rewindUniformBuffer) {
     int i = 0;
     while (i < this->cmdCurIndex) {
         switch (this->cmdGet<cmd>(i++)) {
+            case cmdRenderTarget:
+                {
+                    texture* rt = this->cmdGet<texture*>(i++);
+                    ClearState* csPtr = (ClearState*)&(this->cmdBuffer[i]);
+                    i += 1 + (sizeof(ClearState) / sizeof(uintptr_t));
+                    r->applyRenderTarget(rt, *csPtr, false);
+                }
+                break;
+
             case cmdViewport:
                 {
                     int x = this->cmdGet<int>(i++);

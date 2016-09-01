@@ -69,7 +69,7 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
 //------------------------------------------------------------------------------
 GLenum
 glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
-    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+    #if ORYOL_OPENGLES2
     return glTypes::asGLTexImageFormat(c);
     #else
     switch (c) {
@@ -92,7 +92,11 @@ glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
         case PixelFormat::DEPTHSTENCIL:
             return GL_DEPTH24_STENCIL8;
         case PixelFormat::R5G6B5:
-            return GL_RGB5;
+            #if ORYOL_OPENGLES3
+                return GL_RGB565;
+            #else
+                return GL_RGB5;
+            #endif
         case PixelFormat::DXT1:
             return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
         case PixelFormat::DXT3:

@@ -11,8 +11,8 @@
 #elif ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
 #include "Gfx/flextgl/flextGL.h"
 #elif ORYOL_IOS
-#include <OpenGLES/ES2/gl.h>
-#include <OpenGLES/ES2/glext.h>
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
 #elif ORYOL_PNACL
 #define GL_GLEXT_PROTOTYPES
 #include "GLES2/gl2.h"
