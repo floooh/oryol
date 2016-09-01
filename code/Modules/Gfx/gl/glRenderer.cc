@@ -1251,6 +1251,7 @@ glRenderer::applyUniformBlockOffset(ShaderStage::Code bindStage, int bindSlot, u
     #endif
 
     // bind GL uniform buffer range
+    byteSize = Memory::RoundUp(byteSize, 16);
     ORYOL_GL_CHECK_ERROR();
     GLuint glUBLocation = shd->getUniformBlockLocation(bindStage, bindSlot);
     ::glBindBufferRange(GL_UNIFORM_BUFFER, glUBLocation, this->curUniformBuffer, startOffset, byteSize);
