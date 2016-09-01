@@ -20,6 +20,8 @@ numTextureBlocks(0) {
 //------------------------------------------------------------------------------
 ShaderSetup::ShaderSetup(const class Locator& locator) :
 Locator(locator),
+libraryByteCodeSize(0),
+libraryByteCode(nullptr),
 numUniformBlocks(0),
 numTextureBlocks(0) {
     // empty
