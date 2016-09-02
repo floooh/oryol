@@ -73,9 +73,7 @@ public:
     }
 
     /// check if uniform buffer has room
-    bool ubCheckRoom(int n) const {
-        return (this->ubCurIndex + n) < this->ubEndIndex;
-    };
+    bool ubCheckRoom(int n) const;
     /// copy to uniform buffer
     void ubCopy(const uint8_t* ptr, int byteSize) {
         o_assert_dbg((this->ubCurIndex+byteSize) < this->ubEndIndex);

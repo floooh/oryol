@@ -131,8 +131,11 @@ glShaderFactory::SetupResource(shader& shd) {
         if (useUniformBlocks) {
             const char* ubName = setup.UniformBlockName(ubIndex).AsCStr();
             const GLuint glUBIndex = ::glGetUniformBlockIndex(glProg, ubName);
+            int glUBDataSize = 0;
+            ::glGetActiveUniformBlockiv(glProg, glUBIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &glUBDataSize);
             ::glUniformBlockBinding(glProg, glUBIndex, glUniformBlockBindPoint);
-            shd.bindUniformBlock(ubBindStage, ubBindSlot, glUniformBlockBindPoint);
+            o_assert_dbg(glUBDataSize > 0);
+            shd.bindUniformBlock(ubBindStage, ubBindSlot, glUniformBlockBindPoint, glUBDataSize);
             glUniformBlockBindPoint++;
             ORYOL_GL_CHECK_ERROR();
         }

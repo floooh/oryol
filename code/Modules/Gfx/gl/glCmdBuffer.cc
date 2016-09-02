@@ -115,6 +115,12 @@ glCmdBuffer::textures(ShaderStage::Code bindStage, texture** textures, int numTe
 }
 
 //------------------------------------------------------------------------------
+bool
+glCmdBuffer::ubCheckRoom(int n) const {
+    return this->ubCurIndex + Memory::RoundUp(n, this->ubAlign) < this->ubEndIndex;
+}
+
+//------------------------------------------------------------------------------
 void
 glCmdBuffer::uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->isValid);
