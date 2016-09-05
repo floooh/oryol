@@ -131,10 +131,8 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     // in case we are on a Core Profile, create a global Vertex Array Object
     #if !ORYOL_OPENGLES2
-    if (glCaps::IsFlavour(glCaps::GL_3_3_CORE)) {
-        ::glGenVertexArrays(1, &this->globalVAO);
-        ::glBindVertexArray(this->globalVAO);
-    }
+    ::glGenVertexArrays(1, &this->globalVAO);
+    ::glBindVertexArray(this->globalVAO);
     #endif
 
     if (this->useUniformBuffer) {
