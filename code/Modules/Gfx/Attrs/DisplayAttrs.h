@@ -52,7 +52,7 @@ struct DisplayAttrs {
         dispAttrs.FramebufferHeight = texAttrs.Height;
         dispAttrs.ColorPixelFormat = texAttrs.ColorFormat;
         dispAttrs.DepthPixelFormat = texAttrs.DepthFormat;
-        dispAttrs.SampleCount = 1;
+        dispAttrs.SampleCount = texAttrs.SampleCount;
         dispAttrs.Windowed = false;
         dispAttrs.SwapInterval = 1;
         return dispAttrs;

@@ -101,12 +101,13 @@ glCaps::setupFeatures(Flavour flav) {
         state.features[TextureFloat] = true;
         state.features[UniformBlocks] = true;
     }
-
-    // GLES3 core functionality
     if (flav == GLES3) {
         state.features[InstancedArrays] = true;
         state.features[TextureCompressionETC2] = true;
         state.features[UniformBlocks] = true;
+    }
+    if (flav != GLES2) {
+        state.features[MSAARenderTargets] = true;
     }
     ORYOL_GL_CHECK_ERROR();
 }

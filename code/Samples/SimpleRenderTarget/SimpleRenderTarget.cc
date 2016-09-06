@@ -81,6 +81,10 @@ SimpleRenderTargetApp::OnInit() {
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     rtSetup.ClearHint = this->offscreenClearState;
+    // if supported, use an anti-aliased offscreen render target
+    if (Gfx::QueryFeature(GfxFeature::MSAARenderTargets)) {
+        rtSetup.SampleCount = 4;
+    }
     this->renderTarget = Gfx::CreateResource(rtSetup);
 
     // create a donut mesh, shader and pipeline object
@@ -99,6 +103,7 @@ SimpleRenderTargetApp::OnInit() {
     offpsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     offpsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
     offpsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
+    offpsSetup.RasterizerState.SampleCount = rtSetup.SampleCount;
     this->offscreenDrawState.Pipeline = Gfx::CreateResource(offpsSetup);
 
     // create a sphere mesh, shader and pipeline object for rendering to display
@@ -114,7 +119,7 @@ SimpleRenderTargetApp::OnInit() {
     auto disppsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, dispShader);
     disppsSetup.DepthStencilState.DepthWriteEnabled = true;
     disppsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    disppsSetup.RasterizerState.SampleCount = 4;
+    disppsSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->displayDrawState.Pipeline = Gfx::CreateResource(disppsSetup);
     this->displayDrawState.FSTexture[Textures::Texture] = this->renderTarget;
 

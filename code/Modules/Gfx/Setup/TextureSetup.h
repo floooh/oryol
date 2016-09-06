@@ -27,13 +27,9 @@ public:
     static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code Usage);
     /// setup as absolute-size render target
     static TextureSetup RenderTarget(int w, int h);
-    /// setup as render target with size relative to current display size
-    static TextureSetup RelSizeRenderTarget(float relWidth, float relHeight);
     /// create render target with shared depth buffer
     static TextureSetup SharedDepthRenderTarget(const Id& depthRenderTarget);
 
-    /// default constructor
-    TextureSetup();
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
     /// return true if texture should be setup from raw pixel data
@@ -42,31 +38,27 @@ public:
     bool ShouldSetupEmpty() const;
     /// return true if texture should be setup as render target
     bool ShouldSetupAsRenderTarget() const;
-    /// return true if rel-size render target
-    bool IsRelSizeRenderTarget() const;
     /// return true if render target has depth (shared or non-shared)
     bool HasDepth() const;
     /// return true if render target with shared depth buffer
     bool HasSharedDepth() const;
 
     /// intended usage
-    Usage::Code TextureUsage;
-    /// texture type (default is Texture2D)
-    TextureType::Code Type;
-    /// the width in pixels (only if absolute-size render target)
-    int Width;
-    /// the height in pixels (only if absolute-size render target)
-    int Height;
-    /// display-relative width (only if screen render target)
-    float RelWidth;
-    /// display-relative height (only if screen render target)
-    float RelHeight;
+    Usage::Code TextureUsage = Usage::Immutable;
+    /// texture type
+    TextureType::Code Type = TextureType::Texture2D;
+    /// the width in pixels
+    int Width = 0;
+    /// the height in pixels
+    int Height = 0;
     /// number of mipmaps (default is 1, only for FromPixelData)
-    int NumMipMaps;
-    /// the color pixel format (only if render target)
-    PixelFormat::Code ColorFormat;
-    /// the depth pixel format (only if render target, InvalidPixelFormat if render target should not have depth buffer)
-    PixelFormat::Code DepthFormat;
+    int NumMipMaps = 1;
+    /// the color pixel format
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
+    /// the depth pixel format (only if render target, PixelFormat::None if render target should not have depth buffer)
+    PixelFormat::Code DepthFormat = PixelFormat::None;
+    /// MSAA samples (2, 4, 8... no MSAA: 1), check MSAARenderTargets feature availability!
+    int SampleCount = 1;
     /// resource id of render target which owns the depth buffer (only if render target with shared depth buffer)
     Id DepthRenderTarget;
 
@@ -84,13 +76,12 @@ public:
     ImageDataAttrs ImageData;
 
 private:
-    bool setupFromFile : 1;
-    bool setupFromPixelData : 1;
-    bool setupEmpty : 1;
-    bool setupAsRenderTarget : 1;
-    bool isRelSizeRenderTarget : 1;
-    bool hasSharedDepth : 1;
-    bool hasMipMaps : 1;
+    bool setupFromFile = false;
+    bool setupFromPixelData = false;
+    bool setupEmpty = false;
+    bool setupAsRenderTarget = false;
+    bool hasSharedDepth = false;
+    bool hasMipMaps = false;
 };
     
 } // namespace Oryol

@@ -27,7 +27,7 @@ public:
         MaxFragmentUniformComponents,
         MaxUniformBufferBindings,
         UniformBufferOffsetAlignment,
-        
+
         NumLimits,
     };
 
@@ -41,6 +41,7 @@ public:
         InstancedArrays,
         DebugOutput,
         UniformBlocks,
+        MSAARenderTargets,
 
         NumFeatures,
     };

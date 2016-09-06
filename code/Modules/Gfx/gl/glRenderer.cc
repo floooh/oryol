@@ -201,6 +201,8 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
             return glCaps::HasFeature(glCaps::InstancedArrays);
         case GfxFeature::OriginBottomLeft:
             return true;
+        case GfxFeature::MSAARenderTargets:
+            return glCaps::HasFeature(glCaps::MSAARenderTargets);
         default:
             return false;
     }
@@ -291,6 +293,20 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
 void
 glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState, bool record) {
     o_assert_dbg(this->valid);
+
+    // check if previously assigned render target is MSAA and needs to be resolved
+    #if !ORYOL_GLES2
+    if (this->curRenderTarget && (this->curRenderTarget->Setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets)) {
+        ::glBindFramebuffer(GL_READ_FRAMEBUFFER, this->curRenderTarget->glFramebuffer);
+        ::glReadBuffer(GL_COLOR_ATTACHMENT0);
+        ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->curRenderTarget->glMSAAResolveFramebuffer);
+        ORYOL_GL_CHECK_ERROR();
+        const int w = this->curRenderTarget->textureAttrs.Width;
+        const int h = this->curRenderTarget->textureAttrs.Height;
+        ::glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        ORYOL_GL_CHECK_ERROR();
+    }
+    #endif
 
     if (nullptr == rt) {
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();

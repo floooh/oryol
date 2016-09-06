@@ -17,13 +17,15 @@ struct TextureAttrs {
     /// texture locator (usually the URL of the texture file)
     class Locator Locator;
     /// the texture type (2D, 3D, cube...)
-    TextureType::Code Type{TextureType::InvalidTextureType};
+    TextureType::Code Type = TextureType::InvalidTextureType;
     /// the RGBA pixel format of texture data
-    PixelFormat::Code ColorFormat{PixelFormat::InvalidPixelFormat};
+    PixelFormat::Code ColorFormat = PixelFormat::InvalidPixelFormat;
     /// optional depth format (only used for render target textures)
-    PixelFormat::Code DepthFormat{PixelFormat::InvalidPixelFormat};
+    PixelFormat::Code DepthFormat = PixelFormat::InvalidPixelFormat;
+    /// optional sample count (only used for MSAA render target textures)
+    int SampleCount = 1;
     /// texture usage hint
-    Usage::Code TextureUsage{Usage::InvalidUsage};
+    Usage::Code TextureUsage = Usage::InvalidUsage;
     /// width of top-level mipmap in pixels
     int Width = 0;
     /// height of top-level mipmap in pixels

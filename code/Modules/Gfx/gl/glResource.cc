@@ -96,6 +96,8 @@ glTexture::glTexture() :
 glTarget(0),
 glFramebuffer(0),
 glDepthRenderbuffer(0),
+glMSAAResolveFramebuffer(0),
+glMSAARenderbuffer(0),
 updateFrameIndex(-1),
 numSlots(1),
 activeSlot(0) {
@@ -107,6 +109,8 @@ glTexture::~glTexture() {
     o_assert_dbg(0 == this->glTarget);
     o_assert_dbg(0 == this->glFramebuffer);
     o_assert_dbg(0 == this->glDepthRenderbuffer);
+    o_assert_dbg(0 == this->glMSAAResolveFramebuffer);
+    o_assert_dbg(0 == this->glMSAARenderbuffer);
     #if ORYOL_DEBUG
     for (const auto& glTex : this->glTextures) {
         o_assert_dbg(0 == glTex);
@@ -121,6 +125,8 @@ glTexture::Clear() {
     this->glTarget = 0;
     this->glFramebuffer = 0;
     this->glDepthRenderbuffer = 0;
+    this->glMSAAResolveFramebuffer = 0;
+    this->glMSAARenderbuffer = 0;
     this->updateFrameIndex = -1;
     this->numSlots = 1;
     this->activeSlot = 0;

@@ -672,6 +672,7 @@ public:
         Instancing,                 ///< supports hardware-instanced rendering
         OriginBottomLeft,           ///< image space origin is bottom-left (GL-style)
         OriginTopLeft,              ///< image space origin is top-left (D3D-style)
+        MSAARenderTargets,          ///< MSAA support in offscreen-render-targets
 
         NumFeatures,
         InvalidFeature

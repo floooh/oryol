@@ -7,8 +7,6 @@
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/resource.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
 #include "gl_impl.h"
 #include "glTypes.h"
 #include "glCaps.h"
@@ -95,6 +93,16 @@ glTextureFactory::DestroyResource(texture& tex) {
         ORYOL_GL_CHECK_ERROR();
     }
 
+    if (0 != tex.glMSAAResolveFramebuffer) {
+        ::glDeleteFramebuffers(1, &tex.glMSAAResolveFramebuffer);
+        ORYOL_GL_CHECK_ERROR();
+    }
+
+    if (0 != tex.glMSAARenderbuffer) {
+        ::glDeleteRenderbuffers(1, &tex.glMSAARenderbuffer);
+        ORYOL_GL_CHECK_ERROR();
+    }
+
     for (auto& glTex : tex.glTextures) {
         if (0 != glTex) {
             ::glDeleteTextures(1, &glTex);
@@ -136,14 +144,10 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
 
     // get size of new render target
-    int width, height;
+    int width = setup.Width;
+    int height = setup.Height;
     texture* sharedDepthProvider = nullptr;
-    if (setup.IsRelSizeRenderTarget()) {
-        const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width = int(dispAttrs.FramebufferWidth * setup.RelWidth);
-        height = int(dispAttrs.FramebufferHeight * setup.RelHeight);
-    }
-    else if (setup.HasSharedDepth()) {
+    if (setup.HasSharedDepth()) {
         // a shared-depth-buffer render target, obtain width and height
         // from the original render target
         texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);
@@ -151,23 +155,19 @@ glTextureFactory::createRenderTarget(texture& tex) {
         width = sharedDepthProvider->textureAttrs.Width;
         height = sharedDepthProvider->textureAttrs.Height;
     }
-    else {
-        width = setup.Width;
-        height = setup.Height;
-    }
     o_assert_dbg((width > 0) && (height > 0));
     
     // create new framebuffer object
     GLuint glFramebuffer = 0;
     ::glGenFramebuffers(1, &glFramebuffer);
     o_assert_dbg(0 != glFramebuffer);
-    ORYOL_GL_CHECK_ERROR();
     ::glBindFramebuffer(GL_FRAMEBUFFER, glFramebuffer);
     ORYOL_GL_CHECK_ERROR();
-    
-    // create render target texture
-    const GLint glColorInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
-    const GLuint glColorRenderTexture = this->glGenAndBindTexture(GL_TEXTURE_2D);
+
+    // create a backing texture, for non-MSAA render targets this is also the actual render target,
+    // for MSAA render targets, the MSAA image will be resolved into this backing texture
+    const GLenum glColorInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
+    const GLuint glColorTexture = this->glGenAndBindTexture(GL_TEXTURE_2D);
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::asGLTexFilterMode(setup.Sampler.MinFilter));
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::asGLTexFilterMode(setup.Sampler.MagFilter));
     ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
@@ -184,9 +184,30 @@ glTextureFactory::createRenderTarget(texture& tex) {
         ::glTexImage2D(GL_TEXTURE_2D, 0, glColorInternalFormat, width, height, 0, glColorFormat, glColorType, NULL);
     #endif
     ORYOL_GL_CHECK_ERROR();
-    
-    // attach color render texture to framebuffer
-    ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glColorRenderTexture, 0);
+
+    // create MSAA render target if requested and possible
+    const bool msaa = (setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets);
+    #if !ORYOL_OPENGLES2
+    if (msaa) {
+        // create a framebuffer 
+        ::glGenRenderbuffers(1, &tex.glMSAARenderbuffer);
+        o_assert_dbg(0 != tex.glMSAARenderbuffer);
+        ::glBindRenderbuffer(GL_RENDERBUFFER, tex.glMSAARenderbuffer);
+        ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glColorInternalFormat, width, height);
+        ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, tex.glMSAARenderbuffer);
+
+        // create an extra framebuffer for the MSAA resolve operation
+        ::glGenFramebuffers(1, &tex.glMSAAResolveFramebuffer);
+        ::glBindFramebuffer(GL_FRAMEBUFFER, tex.glMSAAResolveFramebuffer);
+        ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glColorTexture, 0);
+        ::glBindFramebuffer(GL_FRAMEBUFFER, glFramebuffer);
+    }
+    else
+    #endif
+    {
+        // non-MSAA: directly attach the backing texture to frame buffer
+        ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glColorTexture, 0);
+    }
     ORYOL_GL_CHECK_ERROR();
     
     // create depth buffer
@@ -199,32 +220,35 @@ glTextureFactory::createRenderTarget(texture& tex) {
             o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
             
             ::glGenRenderbuffers(1, &glDepthRenderBuffer);
-            ORYOL_GL_CHECK_ERROR();
             o_assert_dbg(0 != glDepthRenderBuffer);
             ::glBindRenderbuffer(GL_RENDERBUFFER, glDepthRenderBuffer);
-            ORYOL_GL_CHECK_ERROR();
             GLint glDepthFormat = glTypes::asGLDepthAttachmentFormat(setup.DepthFormat);
-            ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, width, height);
-            ORYOL_GL_CHECK_ERROR();
+            #if !ORYOL_OPENGLES2
+            if (msaa) {
+                ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glDepthFormat, width, height);
+            }
+            else
+            #endif
+            {
+                ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, width, height);
+            }
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
-            ORYOL_GL_CHECK_ERROR();
             if (PixelFormat::IsDepthStencilFormat(setup.DepthFormat)) {
                 ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
-                ORYOL_GL_CHECK_ERROR();
             }
         }
         else {
             // use shared depth buffer
             o_assert_dbg(nullptr != sharedDepthProvider);
+            o_assert(setup.SampleCount == sharedDepthProvider->Setup.SampleCount);
             GLuint glSharedDepthBuffer = sharedDepthProvider->glDepthRenderbuffer;
             o_assert_dbg(0 != glSharedDepthBuffer);
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
-            ORYOL_GL_CHECK_ERROR();
             if (PixelFormat::IsDepthStencilFormat(sharedDepthProvider->Setup.DepthFormat)) {
                 ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glSharedDepthBuffer);
-                ORYOL_GL_CHECK_ERROR();
             }
         }
+        ORYOL_GL_CHECK_ERROR();
     }
     
     // check framebuffer completeness
@@ -239,6 +263,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     attrs.Type = TextureType::Texture2D;
     attrs.ColorFormat = setup.ColorFormat;
     attrs.DepthFormat = setup.DepthFormat;
+    attrs.SampleCount = setup.SampleCount;
     attrs.TextureUsage = Usage::Immutable;
     attrs.Width = width;
     attrs.Height = height;
@@ -249,7 +274,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     
     // setup the texture object
     tex.textureAttrs = attrs;
-    tex.glTextures[0] = glColorRenderTexture;
+    tex.glTextures[0] = glColorTexture;
     tex.glFramebuffer = glFramebuffer;
     tex.glDepthRenderbuffer = glDepthRenderBuffer;
     tex.glTarget = GL_TEXTURE_2D;

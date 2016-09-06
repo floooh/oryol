@@ -190,12 +190,11 @@ public:
     /// clear the object
     void Clear();
 
-    /// GL texture target
     GLenum glTarget;
-    /// GL frame buffer object
     GLuint glFramebuffer;
-    /// GL depth render buffer
     GLuint glDepthRenderbuffer;
+    GLuint glMSAAResolveFramebuffer;
+    GLuint glMSAARenderbuffer;
 
     static const int MaxNumSlots = 2;
     int updateFrameIndex;
