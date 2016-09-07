@@ -61,7 +61,8 @@ TextureFloatApp::OnRunning() {
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(512, 512, "Oryol Float Texture Sample"));
+    auto gfxSetup = GfxSetup::Window(512, 512, "Oryol Float Texture Sample");
+    Gfx::Setup(gfxSetup);
     Dbg::Setup();
 
     // check required extensions
@@ -71,7 +72,7 @@ TextureFloatApp::OnInit() {
     
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
-    auto rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
+    auto rtSetup = TextureSetup::RenderTarget(gfxSetup.Width, gfxSetup.Height);
     rtSetup.ColorFormat = PixelFormat::RGBA32F;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;

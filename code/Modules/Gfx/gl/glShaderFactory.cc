@@ -120,7 +120,9 @@ glShaderFactory::SetupResource(shader& shd) {
     shd.glProgram = glProg;
 
     // resolve uniform locations
+    #if !ORYOL_OPENGLES2
     GLuint glUniformBlockBindPoint = 0;
+    #endif
     this->pointers.renderer->useProgram(glProg);
     const int numUniformBlocks = setup.NumUniformBlocks();
     for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {

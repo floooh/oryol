@@ -105,8 +105,12 @@ public:
         RGBA4,          ///< 16-bit wide, 4 channels @ 4-bit
         R5G6B5,         ///< 16-bit wide, 3 channels @ 5/6/5 bits
         R5G5B5A1,       ///< 16-bit wide, 4 channels @ 1-bit alpha, 5-bit rgb
+        R10G10B10A2,    ///< 32-bit wide, 4 channels @ 10/10/10/2 bits
         RGBA32F,        ///< 128-bit wide, 4 channel @ 32-bit float
         RGBA16F,        ///< 64-bit wide, 4 channel @ 16-bit float
+        R32F,           ///< 32-bit wide, 1 channel @ 32-bit float
+        R16F,           ///< 16-bit wide, 1 channel @ 16-bit float
+
         L8,             ///< 8-bit wide, single channel
         DXT1,           ///< DXT1 compressed format
         DXT3,           ///< DXT3 compressed format
@@ -126,9 +130,12 @@ public:
     };
 
     /// return true for valid render target color formats
+    /// FIXME: hmm according to GLES3 spec, the float formats
+    /// are not renderable... does this need a separate extension?
     static bool IsValidRenderTargetColorFormat(Code c) {
         switch (c) {
             case RGBA8:
+            case R10G10B10A2:
             case RGBA32F:
             case RGBA16F:
                 return true;
@@ -232,12 +239,15 @@ public:
             case RGBA16F:
                 return 8;
             case RGBA8:
+            case R10G10B10A2:
+            case R32F:
                 return 4;
             case RGB8:
                 return 3;
             case R5G6B5:
             case R5G5B5A1:
             case RGBA4:
+            case R16F:
                 return 2;
             case L8:
                 return 1;
@@ -262,6 +272,24 @@ public:
             case RGBA16F:
                 if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
                     return 16;
+                }
+                break;
+            case R32F:
+                if (PixelChannel::Red == channel) {
+                    return 32;
+                }
+                break;
+            case R16F:
+                if (PixelChannel::Red == channel) {
+                    return 16;
+                }
+                break;
+            case R10G10B10A2:
+                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel)) {
+                    return 10;
+                }
+                else if (PixelChannel::Alpha == channel) {
+                    return 2;
                 }
                 break;
             case RGBA8:

@@ -18,13 +18,16 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
         case PixelFormat::RGBA4:
         case PixelFormat::RGBA32F:
         case PixelFormat::RGBA16F:
+        case PixelFormat::R10G10B10A2:
             return GL_RGBA;
             
         case PixelFormat::RGB8:
         case PixelFormat::R5G6B5:
             return GL_RGB;
-            
+
         case PixelFormat::L8:
+        case PixelFormat::R32F:
+        case PixelFormat::R16F:
             #if ORYOL_OPENGLES2 || ORYOL_EMSCRIPTEN
                 return GL_LUMINANCE;
             #else
@@ -79,10 +82,16 @@ glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
             return GL_RGB5_A1;
         case PixelFormat::RGBA4:
             return GL_RGBA4;
+        case PixelFormat::R10G10B10A2:
+            return GL_RGB10_A2;
         case PixelFormat::RGBA32F:
             return GL_RGBA32F;
         case PixelFormat::RGBA16F:
             return GL_RGBA16F;
+        case PixelFormat::R32F:
+            return GL_R32F;
+        case PixelFormat::R16F:
+            return GL_R16F;
         case PixelFormat::RGB8:
             return GL_RGB8;
         case PixelFormat::L8:
@@ -128,9 +137,11 @@ GLenum
 glTypes::asGLTexImageType(PixelFormat::Code c) {
     switch (c) {
         case PixelFormat::RGBA32F:
+        case PixelFormat::R32F:
             return GL_FLOAT;
         
         case PixelFormat::RGBA16F:
+        case PixelFormat::R16F:
             #if ORYOL_OPENGLES2
             return GL_HALF_FLOAT_OES;
             #else
@@ -141,7 +152,12 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
         case PixelFormat::RGB8:
         case PixelFormat::L8:
             return GL_UNSIGNED_BYTE;
-            
+
+        #if !ORYOL_OPENGLES2
+        case PixelFormat::R10G10B10A2:
+            return GL_UNSIGNED_INT_2_10_10_10_REV;
+        #endif
+
         case PixelFormat::R5G5B5A1:
             return GL_UNSIGNED_SHORT_5_5_5_1;
             
