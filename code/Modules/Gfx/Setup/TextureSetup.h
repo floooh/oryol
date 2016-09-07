@@ -68,7 +68,7 @@ public:
     ClearState ClearHint;
 
     /// resource locator
-    class Locator Locator;
+    class Locator Locator = Locator::NonShared();
     /// resource placeholder
     Id Placeholder;
 
