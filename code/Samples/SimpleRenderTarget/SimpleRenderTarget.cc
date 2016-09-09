@@ -101,8 +101,8 @@ SimpleRenderTargetApp::OnInit() {
     auto offpsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, offScreenShader);
     offpsSetup.DepthStencilState.DepthWriteEnabled = true;
     offpsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    offpsSetup.BlendState.ColorFormat = PixelFormat::RGBA8;
-    offpsSetup.BlendState.DepthFormat = PixelFormat::DEPTH;
+    offpsSetup.BlendState.ColorFormat = rtSetup.ColorFormat;
+    offpsSetup.BlendState.DepthFormat = rtSetup.DepthFormat;
     offpsSetup.RasterizerState.SampleCount = rtSetup.SampleCount;
     this->offscreenDrawState.Pipeline = Gfx::CreateResource(offpsSetup);
 
