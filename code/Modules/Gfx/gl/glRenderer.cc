@@ -390,6 +390,12 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool rec
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
+    // do debug validation before record/playback, simplifies debugging
+    const PipelineSetup& setup = pip->Setup;
+    o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");    
+
     if (this->useCmdBuffer && record) {
         this->cmdBuffer.drawState(pip, meshes, numMeshes);
         return;
@@ -406,11 +412,6 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool rec
     // draw state is valid, ready for rendering
     this->curPipeline = pip;
     o_assert_dbg(pip->shd);
-
-    const PipelineSetup& setup = pip->Setup;
-    o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-    o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
     // apply DepthStencilState changes
     if (setup.DepthStencilState != this->depthStencilState) {
