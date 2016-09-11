@@ -41,7 +41,7 @@ public:
 
 private:
     /// helper method to setup texture params on GL texture
-    void setupTextureParams(const TextureSetup& setup, GLuint glTex);
+    void setupTextureParams(const TextureSetup& setup, GLenum glTexTarget, GLuint glTex);
     /// helper method to setup texture params on GL texture
     void setupTextureAttrs(texture& tex);
     /// create a render target

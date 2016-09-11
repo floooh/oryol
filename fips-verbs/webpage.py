@@ -13,7 +13,7 @@ from tools import texexport
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
 BuildEmscripten = True
-BuildPNaCl = True 
+BuildPNaCl = False 
 BuildWasm = False
 ExportAssets = True
 
@@ -80,7 +80,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
 
     # generate emscripten HTML pages
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
-        emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-ninja-release'.format(ws_dir)
+        emsc_deploy_dir = '{}/fips-deploy/oryol/webgl2-emsc-make-release'.format(ws_dir)
         for sample in samples :
             name = sample['name']
             if name != '__end__' and 'emscripten' in sample['type'] :
@@ -170,8 +170,8 @@ def build_deploy_webpage(fips_dir, proj_dir) :
         project.gen(fips_dir, proj_dir, 'pnacl-ninja-release')
         project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'emsc-ninja-release')
-        project.build(fips_dir, proj_dir, 'emsc-ninja-release')
+        project.gen(fips_dir, proj_dir, 'webgl2-emsc-make-release')
+        project.build(fips_dir, proj_dir, 'webgl2-emsc-make-release')
     if BuildWasm and emscripten.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, 'wasm-ninja-release')
         project.build(fips_dir, proj_dir, 'wasm-ninja-release')

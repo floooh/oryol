@@ -178,18 +178,17 @@ glTextureFactory::createRenderTarget(texture& tex) {
     }
     #endif
     ORYOL_GL_CHECK_ERROR();
-    #if ORYOL_OPENGLES3
+    #if ORYOL_OPENGLES3    
     if (!glCaps::IsFlavour(glCaps::GLES2)) {
         ::glTexStorage2D(GL_TEXTURE_2D, 1, glColorInternalFormat, width, height);
     }
     else
-    #else
+    #endif
     {
         GLenum glColorFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
         GLenum glColorType = glTypes::asGLTexImageType(setup.ColorFormat);
         ::glTexImage2D(GL_TEXTURE_2D, 0, glColorInternalFormat, width, height, 0, glColorFormat, glColorType, NULL);
     }
-    #endif
     ORYOL_GL_CHECK_ERROR();
 
     // create MSAA render target if requested and possible
@@ -295,13 +294,13 @@ glTextureFactory::createRenderTarget(texture& tex) {
 
 //------------------------------------------------------------------------------
 void
-glTextureFactory::setupTextureParams(const TextureSetup& setup, GLuint glTex) {
+glTextureFactory::setupTextureParams(const TextureSetup& setup, GLenum glTexTarget, GLuint glTex) {
     GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.Sampler.MinFilter);
     GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.Sampler.MagFilter);
     if (1 == setup.NumMipMaps) {
         #if !ORYOL_OPENGLES2
         if (!glCaps::IsFlavour(glCaps::GLES2)) {
-            ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
+            ::glTexParameteri(glTexTarget, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
         }
         #endif
         if ((glMinFilter == GL_NEAREST_MIPMAP_NEAREST) || (glMinFilter == GL_NEAREST_MIPMAP_LINEAR)) {
@@ -311,15 +310,15 @@ glTextureFactory::setupTextureParams(const TextureSetup& setup, GLuint glTex) {
             glMinFilter = GL_LINEAR;
         }
     }
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
+    ::glTexParameteri(glTexTarget, GL_TEXTURE_MIN_FILTER, glMinFilter);
+    ::glTexParameteri(glTexTarget, GL_TEXTURE_MAG_FILTER, glMagFilter);
     if (setup.Type == TextureType::TextureCube) {
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
     else {
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
     }
     ORYOL_GL_CHECK_ERROR();
 }
@@ -361,7 +360,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) 
     const GLuint glTex = this->glGenAndBindTexture(glTextureTarget);
     
     // setup texture params
-    this->setupTextureParams(setup, glTex);
+    this->setupTextureParams(setup, glTextureTarget, glTex);
 
     // define texture storage (only if available)
     const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
@@ -417,7 +416,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) 
                                                 mipDataSize, mipDataPtr);
                 }
                 else
-                #else
+                #endif
                 {
                     ::glCompressedTexImage2D(glImgTarget,
                                              mipIndex,
@@ -427,7 +426,6 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) 
                                              0,
                                              mipDataSize, mipDataPtr);
                 }
-                #endif
                 ORYOL_GL_CHECK_ERROR();
             }
             else {
@@ -441,7 +439,7 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) 
                                       glTexImageType, mipDataPtr);
                 }
                 else
-                #else
+                #endif
                 {
                     ::glTexImage2D(glImgTarget,
                                    mipIndex,
@@ -453,7 +451,6 @@ glTextureFactory::createFromPixelData(texture& tex, const void* data, int size) 
                                    glTexImageType,
                                    mipDataPtr);
                 }
-                #endif
                 ORYOL_GL_CHECK_ERROR();
             }
         }
@@ -482,10 +479,8 @@ glTextureFactory::createEmptyTexture(texture& tex) {
     const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
     const GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
     const int numMipMaps = setup.NumMipMaps;
-    #if !ORYOL_OPENGLES3
-        const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
-        const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-    #endif
+    const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
+    const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
 
     // test if the texture format is actually supported
     if (!glCaps::HasTextureFormat(setup.ColorFormat)) {
@@ -498,7 +493,7 @@ glTextureFactory::createEmptyTexture(texture& tex) {
     for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
 
         tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
-        this->setupTextureParams(setup, tex.glTextures[slotIndex]);
+        this->setupTextureParams(setup, glTextureTarget, tex.glTextures[slotIndex]);
 
         // initialize texture storage
         #if ORYOL_OPENGLES3
@@ -506,7 +501,7 @@ glTextureFactory::createEmptyTexture(texture& tex) {
             ::glTexStorage2D(glTextureTarget, numMipMaps, glTexImageInternalFormat, width, height);
         }
         else
-        #else
+        #endif
         {
             for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
                 int mipWidth = width >> mipIndex;
@@ -528,7 +523,6 @@ glTextureFactory::createEmptyTexture(texture& tex) {
                                nullptr);
             }
         }
-        #endif
         ORYOL_GL_CHECK_ERROR();
     }
 

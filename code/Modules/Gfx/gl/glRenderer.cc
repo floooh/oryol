@@ -541,7 +541,7 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool rec
             if (ditherEnabled) ::glEnable(GL_DITHER);
             else               ::glDisable(GL_DITHER);
         }
-        #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+        #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3) 
         const uint16_t sampleCount = newState.SampleCount;
         if (sampleCount != curState.SampleCount) {
             if (sampleCount > 1) ::glEnable(GL_MULTISAMPLE);
@@ -1028,7 +1028,7 @@ glRenderer::setupRasterizerState() {
     ::glDisable(GL_SCISSOR_TEST);
     ::glEnable(GL_DITHER);
     #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    ::glEnable(GL_MULTISAMPLE);
+        ::glEnable(GL_MULTISAMPLE);
     #endif
     ORYOL_GL_CHECK_ERROR();
 }
