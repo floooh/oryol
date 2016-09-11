@@ -114,6 +114,8 @@ private:
     void discardUniformBuffers();
     /// apply front/back side stencil state
     void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
+    /// set the current uniform buffer for the current frame
+    void setCurrentUniformBuffer();
 
     bool valid;
     bool useCmdBuffer;
@@ -167,8 +169,11 @@ private:
     StaticArray<GLuint, MaxTextureSamplers> samplersCube;
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
-    StaticArray<GLuint, GfxConfig::MaxInflightFrames> uniformBuffers;
+    StaticArray<GLuint, GfxConfig::MaxInflightFrames> glUniformBuffers;
+    StaticArray<uint8_t*, GfxConfig::MaxInflightFrames> rawUniformBuffers;
+    #if !ORYOL_OPENGLES2
     GLuint curUniformBuffer;
+    #endif
 };
 
 //------------------------------------------------------------------------------

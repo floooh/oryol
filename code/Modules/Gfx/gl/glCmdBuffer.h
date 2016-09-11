@@ -28,8 +28,10 @@ public:
     void setup(const GfxSetup& gfxSetup);
     /// discard the cmd buffer object
     void discard();
+    /// set uniform buffer base pointer for current frame
+    void setCurrentUniformBuffer(uint8_t* ptr, int size);
     /// flush the uniform- and command-buffer (play back recorded commands)
-    void flush(glRenderer* renderer, bool rewindUniformBuffer);
+    void flush(glRenderer* renderer);
 
     /// apply render target
     void rendertarget(texture* rt, const ClearState& clearState);

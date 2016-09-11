@@ -42,6 +42,7 @@ public:
         DebugOutput,
         UniformBlocks,
         MSAARenderTargets,
+        MapBuffer,
 
         NumFeatures,
     };

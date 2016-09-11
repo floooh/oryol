@@ -18,17 +18,14 @@ glCmdBuffer::setup(const GfxSetup& gfxSetup) {
     o_assert_dbg(!this->cmdBuffer && !this->uniformBuffer);
     this->isValid = true;
 
-    // compute size of cmd buffer and allocate
     this->cmdCurIndex = 0;
     this->cmdEndIndex = ((gfxSetup.MaxApplyDrawStatesPerFrame * sizeof(DrawState)) / sizeof(uintptr_t)) +
                         gfxSetup.MaxDrawCallsPerFrame * 6;
     this->cmdBuffer = (uintptr_t*) Memory::Alloc(this->cmdEndIndex * sizeof(uintptr_t));
 
-    // allocate the global uniform buffer
     this->ubCurIndex = 0;
     this->ubStartIndex = 0;
-    this->ubEndIndex = gfxSetup.GlobalUniformBufferSize;
-    this->uniformBuffer = (uint8_t*) Memory::Alloc(this->ubEndIndex);
+    this->ubEndIndex = 0;
     this->ubAlign = glCaps::IntLimit(glCaps::UniformBufferOffsetAlignment);
 }
 
@@ -39,9 +36,16 @@ glCmdBuffer::discard() {
     o_assert_dbg(this->cmdBuffer && this->uniformBuffer);
     Memory::Free(this->cmdBuffer);
     this->cmdBuffer = nullptr;
-    Memory::Free(this->uniformBuffer);
     this->uniformBuffer = nullptr;
     this->isValid = false;
+}
+
+//------------------------------------------------------------------------------
+void
+glCmdBuffer::setCurrentUniformBuffer(uint8_t* ptr, int size) {
+    o_assert_dbg(this->isValid);
+    this->uniformBuffer = ptr;
+    this->ubEndIndex = size;
 }
 
 //------------------------------------------------------------------------------
@@ -181,7 +185,7 @@ glCmdBuffer::drawInstancedPrimGroupIndex(int primGroupIndex, int numInstances) {
 
 //------------------------------------------------------------------------------
 void
-glCmdBuffer::flush(glRenderer* r, bool rewindUniformBuffer) {
+glCmdBuffer::flush(glRenderer* r) {
     o_assert_dbg(this->isValid);
 
     // flush uniforms
@@ -295,10 +299,8 @@ glCmdBuffer::flush(glRenderer* r, bool rewindUniformBuffer) {
         }
     }
     this->cmdCurIndex = 0;
-    if (rewindUniformBuffer) {
-        this->ubCurIndex = 0;
-        this->ubStartIndex = 0;
-    }
+    this->ubCurIndex = 0;
+    this->ubStartIndex = 0;
 }
 
 } // namespace _priv

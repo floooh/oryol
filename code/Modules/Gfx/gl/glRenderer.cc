@@ -97,11 +97,16 @@ viewPortWidth(0),
 viewPortHeight(0),
 vertexBuffer(0),
 indexBuffer(0),
-program(0) {
+program(0)
+#if !ORYOL_OPENGLES2
+,curUniformBuffer(0)
+#endif
+{
     this->samplers2D.Fill(0);
     this->samplersCube.Fill(0);
     this->glAttrVBs.Fill(0);
-    this->uniformBuffers.Fill(0);
+    this->glUniformBuffers.Fill(0);
+    this->rawUniformBuffers.Fill(nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -213,16 +218,14 @@ void
 glRenderer::commitFrame() {
     o_assert_dbg(this->valid);
     if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this, true);
+        this->cmdBuffer.flush(this);
     }
     this->rtValid = false;
     this->curRenderTarget = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
-    if (this->useUniformBuffer) {
-        this->curUniformBuffer = this->uniformBuffers[this->frameIndex % GfxConfig::MaxInflightFrames];
-    }
+    this->setCurrentUniformBuffer();
 }
 
 //------------------------------------------------------------------------------
@@ -1187,7 +1190,7 @@ glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **t
 
 //------------------------------------------------------------------------------
 void
-glRenderer::setupUniformBuffers(const GfxSetup& gfxSetup) {
+glRenderer::setupUniformBuffers(const GfxSetup& setup) {
 #if !ORYOL_OPENGLES2
     o_assert_dbg(this->useUniformBuffer);
 
@@ -1199,23 +1202,35 @@ glRenderer::setupUniformBuffers(const GfxSetup& gfxSetup) {
         glBindBuffer(GL_UNIFORM_BUFFER, ubo);
         glBufferData(GL_UNIFORM_BUFFER, gfxSetup.GlobalUniformBufferSize, nullptr, GL_STREAM_DRAW);
         o_assert_dbg(0 != ubo);
-        this->uniformBuffers[i] = ubo;
+        this->glUniformBuffers[i] = ubo;
+        if (!glCaps::HasFeature(glCaps::MapBuffer)) {
+            o_assert_dbg(nullptr == this->rawUniformBuffers[i]);
+            this->rawUniformBuffers[i] = (uint8_t*) Memory::Alloc(setup.GlobalUniformBufferSize);
+            o_assert_dbg(nullptr != this->rawUniformBuffers[i]);
+        }
     }
     ORYOL_GL_CHECK_ERROR();
-    this->curUniformBuffer = this->uniformBuffers[0];
-    glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
+    this->setCurrentUniformBuffer();
 #endif
 }
 
 //------------------------------------------------------------------------------
 void
 glRenderer::discardUniformBuffers() {
+#if !ORYOL_OPENGLES2
     o_assert_dbg(this->useUniformBuffer);
 
     ORYOL_GL_CHECK_ERROR();
-    glDeleteBuffers(GfxConfig::MaxInflightFrames, this->uniformBuffers.begin());
-    this->uniformBuffers.Fill(0);
+    glDeleteBuffers(GfxConfig::MaxInflightFrames, this->glUniformBuffers.begin());
+    this->glUniformBuffers.Fill(0);
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        if (this->rawUniformBuffers[i]) {
+            Memory::Free(this->rawUniformBuffers[i]);
+            this->rawUniformBuffers[i] = nullptr;
+        }
+    }
     ORYOL_GL_CHECK_ERROR();
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1227,9 +1242,36 @@ glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
     o_assert_dbg(0 != this->curUniformBuffer);
 
     ORYOL_GL_CHECK_ERROR();
-    ::glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
-    ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
+    if (glCaps::HasFeature(glCaps::MapBuffer)) {
+        ::glUnmapBuffer(GL_UNIFORM_BUFFER);
+    }
+    else {
+        ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
+    }
     ORYOL_GL_CHECK_ERROR();
+#endif
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::setCurrentUniformBuffer() {
+#if !ORYOL_OPENGLES2
+    int ubIndex = int(this->frameIndex % GfxConfig::MaxInflightFrames);
+    if (this->useUniformBuffer) {
+        this->curUniformBuffer = this->glUniformBuffers[ubIndex];
+        ::glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
+        if (glCaps::HasFeature(glCaps::MapBuffer)) {
+            uint8_t* ptr = (uint8_t*) ::glMapBufferRange(GL_UNIFORM_BUFFER,
+                0, this->gfxSetup.GlobalUniformBufferSize,
+                GL_MAP_WRITE_BIT|GL_MAP_INVALIDATE_BUFFER_BIT|GL_MAP_UNSYNCHRONIZED_BIT);
+            ORYOL_GL_CHECK_ERROR();
+            o_assert_dbg(ptr);
+            this->cmdBuffer.setCurrentUniformBuffer(ptr, this->gfxSetup.GlobalUniformBufferSize);
+        }
+        else {
+            this->cmdBuffer.setCurrentUniformBuffer(this->rawUniformBuffers[ubIndex], this->gfxSetup.GlobalUniformBufferSize);
+        }
+    }
 #endif
 }
 

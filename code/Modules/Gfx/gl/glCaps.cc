@@ -108,6 +108,9 @@ glCaps::setupFeatures(Flavour flav) {
     }
     if (flav != GLES2) {
         state.features[MSAARenderTargets] = true;
+        #if !ORYOL_EMSCRIPTEN
+        state.features[MapBuffer] = true;
+        #endif
     }
     ORYOL_GL_CHECK_ERROR();
 }
@@ -147,7 +150,7 @@ glCaps::VertexAttribDivisor(GLuint index, GLuint divisor) {
         ::glVertexAttribDivisorEXT(index, divisor);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::VertexAttribDivisor() called!\n");
-        #elif ORYOL_OPENGLES2
+        #elif ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
         ::glVertexAttribDivisorANGLE(index, divisor);
         #else
         ::glVertexAttribDivisor(index, divisor);
@@ -163,7 +166,7 @@ glCaps::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei pri
         ::glDrawArraysInstancedEXT(mode, first, count, primcount);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::DrawArraysInstanced() called!\n");
-        #elif ORYOL_OPENGLES2
+        #elif ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
         ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
         #else
         ::glDrawArraysInstanced(mode, first, count, primcount);
@@ -179,7 +182,7 @@ glCaps::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const voi
         ::glDrawElementsInstancedEXT(mode, count, type, indices, primcount);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::DrawElementsInstanced() called!\n");
-        #elif ORYOL_OPENGLES2
+        #elif ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
         ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
         #else
         ::glDrawElementsInstanced(mode, count, type, indices, primcount);
