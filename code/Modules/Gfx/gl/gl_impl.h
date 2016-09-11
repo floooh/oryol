@@ -34,14 +34,22 @@
 #error "Missing platform for GL header include!"
 #endif
 
-#if ORYOL_GLES2
-#define GL_UNSIGNED_INT_24_8 GL_UNSIGNED_INT_24_8_OES
-#define GL_TEXTURE_3D GL_TEXTURE_3D_OES
-#define GL_DEPTH_STENCIL GL_DEPTH_STENCIL_OES
-#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
-#if !ORYOL_EMSCRIPTEN
-#define GL_HALF_FLOAT GL_HALF_FLOAT_OES
-#endif
+#if ORYOL_OPENGLES2
+    #ifndef GL_UNSIGNED_INT_24_8
+        #define GL_UNSIGNED_INT_24_8 GL_UNSIGNED_INT_24_8_OES
+    #endif
+    #ifndef GL_TEXTURE_3D
+        #define GL_TEXTURE_3D GL_TEXTURE_3D_OES
+    #endif
+    #ifndef GL_DEPTH_STENCIL
+        #define GL_DEPTH_STENCIL GL_DEPTH_STENCIL_OES
+    #endif
+    #ifndef GL_DEPTH24_STENCIL8
+        #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+    #endif
+    #ifndef GL_HALF_FLOAT
+        #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
+    #endif
 #endif
 
 // Oryol GL error checking macro

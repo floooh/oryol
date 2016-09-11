@@ -69,66 +69,70 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
 //------------------------------------------------------------------------------
 GLenum
 glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
-    if (glCaps::IsFlavour(glCaps::GLES2)) {
+    #if ORYOL_OPENGLES2
         return glTypes::asGLTexImageFormat(c);
-    }
-    else
-    {
-        switch (c) {
-            case PixelFormat::RGBA8:
-                return GL_RGBA8;
-            case PixelFormat::R5G5B5A1:
-                return GL_RGB5_A1;
-            case PixelFormat::RGBA4:
-                return GL_RGBA4;
-            case PixelFormat::R10G10B10A2:
-                return GL_RGB10_A2;
-            case PixelFormat::RGBA32F:
-                return GL_RGBA32F;
-            case PixelFormat::RGBA16F:
-                return GL_RGBA16F;
-            case PixelFormat::R32F:
-                return GL_R32F;
-            case PixelFormat::R16F:
-                return GL_R16F;
-            case PixelFormat::RGB8:
-                return GL_RGB8;
-            case PixelFormat::L8:
-                return GL_R8;
-            case PixelFormat::DEPTH:
-                return GL_DEPTH_COMPONENT16;
-            case PixelFormat::DEPTHSTENCIL:
-                return GL_DEPTH24_STENCIL8;
-            case PixelFormat::R5G6B5:
-                #if ORYOL_OPENGLES3
-                    return GL_RGB565;
-                #else
-                    return GL_RGB5;
-                #endif
-            case PixelFormat::DXT1:
-                return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
-            case PixelFormat::DXT3:
-                return 0x83F2;      // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-            case PixelFormat::DXT5:
-                return 0x83F3;      // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-            case PixelFormat::PVRTC2_RGB:
-                return 0x8C01;      // GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
-            case PixelFormat::PVRTC4_RGB:
-                return 0x8C00;      // GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
-            case PixelFormat::PVRTC2_RGBA:
-                return 0x8C03;      // GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
-            case PixelFormat::PVRTC4_RGBA:
-                return 0x8C02;      // GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
-            case PixelFormat::ETC2_RGB8:
-                return 0x9274;      // GL_COMPRESSED_RGB8_ETC2
-            case PixelFormat::ETC2_SRGB8:
-                return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
-                
-            default:
-                o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
-                return 0;
+    #else
+        if (glCaps::IsFlavour(glCaps::GLES2)) {
+            return glTypes::asGLTexImageFormat(c);
         }
-    }
+        else
+        {
+            switch (c) {
+                case PixelFormat::RGBA8:
+                    return GL_RGBA8;
+                case PixelFormat::R5G5B5A1:
+                    return GL_RGB5_A1;
+                case PixelFormat::RGBA4:
+                    return GL_RGBA4;
+                case PixelFormat::R10G10B10A2:
+                    return GL_RGB10_A2;
+                case PixelFormat::RGBA32F:
+                    return GL_RGBA32F;
+                case PixelFormat::RGBA16F:
+                    return GL_RGBA16F;
+                case PixelFormat::R32F:
+                    return GL_R32F;
+                case PixelFormat::R16F:
+                    return GL_R16F;
+                case PixelFormat::RGB8:
+                    return GL_RGB8;
+                case PixelFormat::L8:
+                    return GL_R8;
+                case PixelFormat::DEPTH:
+                    return GL_DEPTH_COMPONENT16;
+                case PixelFormat::DEPTHSTENCIL:
+                    return GL_DEPTH24_STENCIL8;
+                case PixelFormat::R5G6B5:
+                    #if ORYOL_OPENGLES3
+                        return GL_RGB565;
+                    #else
+                        return GL_RGB5;
+                    #endif
+                case PixelFormat::DXT1:
+                    return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+                case PixelFormat::DXT3:
+                    return 0x83F2;      // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+                case PixelFormat::DXT5:
+                    return 0x83F3;      // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+                case PixelFormat::PVRTC2_RGB:
+                    return 0x8C01;      // GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+                case PixelFormat::PVRTC4_RGB:
+                    return 0x8C00;      // GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+                case PixelFormat::PVRTC2_RGBA:
+                    return 0x8C03;      // GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+                case PixelFormat::PVRTC4_RGBA:
+                    return 0x8C02;      // GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+                case PixelFormat::ETC2_RGB8:
+                    return 0x9274;      // GL_COMPRESSED_RGB8_ETC2
+                case PixelFormat::ETC2_SRGB8:
+                    return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
+                    
+                default:
+                    o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
+                    return 0;
+            }
+        }
+    #endif
 }
 
 //------------------------------------------------------------------------------
