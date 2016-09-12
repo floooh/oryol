@@ -29,12 +29,10 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
         case PixelFormat::L8:
         case PixelFormat::R32F:
         case PixelFormat::R16F:
-            #if ORYOL_OPENGLES2
             if (glCaps::IsFlavour(glCaps::GLES2)) {
                 return GL_LUMINANCE;
             }
             else
-            #endif
             {
                 return GL_RED;
             }
