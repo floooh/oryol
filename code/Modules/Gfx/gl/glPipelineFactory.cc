@@ -14,18 +14,22 @@ namespace Oryol {
 namespace _priv {
 
 const glPipelineFactory::VertexFormatTable glPipelineFactory::vertexFormatTable[VertexFormat::NumVertexFormats] = {
-    { 1, GL_FLOAT, GL_FALSE },          // VetrexFormat::Float
-    { 2, GL_FLOAT, GL_FALSE },          // VertexFormat::Float2
-    { 3, GL_FLOAT, GL_FALSE },          // VertexFormat::Float3
-    { 4, GL_FLOAT, GL_FALSE },          // VertexFormat::Float4
-    { 4, GL_BYTE, GL_FALSE },           // VertexFormat::Byte4
-    { 4, GL_BYTE, GL_TRUE },            // VertexFormat::Byte4N
-    { 4, GL_UNSIGNED_BYTE, GL_FALSE },  // VertexFormat::UByte4
-    { 4, GL_UNSIGNED_BYTE, GL_TRUE },   // VertexFormat::UByte4N
-    { 2, GL_SHORT, GL_FALSE },          // VertexFormat::Short2
-    { 2, GL_SHORT, GL_TRUE },           // VertexFormat::Short2N
-    { 4, GL_SHORT, GL_FALSE },          // VertexFormat::Short4
-    { 4, GL_SHORT, GL_TRUE },           // VertexFormat::Short4N
+    { 1, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float
+    { 2, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float2
+    { 3, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float3
+    { 4, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float4
+    { 4, GL_BYTE, GL_FALSE },                   // VertexFormat::Byte4
+    { 4, GL_BYTE, GL_TRUE },                    // VertexFormat::Byte4N
+    { 4, GL_UNSIGNED_BYTE, GL_FALSE },          // VertexFormat::UByte4
+    { 4, GL_UNSIGNED_BYTE, GL_TRUE },           // VertexFormat::UByte4N
+    { 2, GL_SHORT, GL_FALSE },                  // VertexFormat::Short2
+    { 2, GL_SHORT, GL_TRUE },                   // VertexFormat::Short2N
+    { 4, GL_SHORT, GL_FALSE },                  // VertexFormat::Short4
+    { 4, GL_SHORT, GL_TRUE },                   // VertexFormat::Short4N
+    { 4, GL_INT_2_10_10_10_REV, GL_FALSE },             // VertexFormat::Int10_2
+    { 4, GL_INT_2_10_10_10_REV, GL_TRUE },              // VertexFormat::Int10_2N
+    { 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_FALSE },    // VertexFormat::UInt10_2
+    { 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE },     // VertexFormat::UInt10_2N
 };
 
 //------------------------------------------------------------------------------

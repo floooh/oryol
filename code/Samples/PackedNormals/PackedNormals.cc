@@ -62,9 +62,16 @@ PackedNormalsApp::OnInit() {
     Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    // prefer higher-quality 10-bit components if supported
+    if (Gfx::QueryFeature(GfxFeature::PackedVertexFormat_10_2)) {
+        Log::Info("using 10-bit packed normals\n");
+        shapeBuilder.Layout.Add(VertexAttr::Normal, VertexFormat::Int10_2N);
+    }
+    else {
+        Log::Info("using 8-bit packed normals\n");
+        shapeBuilder.Layout.Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    }
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)

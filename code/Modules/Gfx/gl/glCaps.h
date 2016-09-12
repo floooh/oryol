@@ -43,6 +43,7 @@ public:
         UniformBlocks,
         MSAARenderTargets,
         MapBuffer,
+        PackedVertexFormat_10_2,
 
         NumFeatures,
     };

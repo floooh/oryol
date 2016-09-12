@@ -50,6 +50,15 @@
     #ifndef GL_HALF_FLOAT
         #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
     #endif
+    #ifndef GL_INT_2_10_10_10_REV
+        #define GL_INT_2_10_10_10_REV 0x8D9F
+    #endif
+    #ifndef GL_UNSIGNED_INT_2_10_10_10_REV
+        #define GL_UNSIGNED_INT_2_10_10_10_REV 0x8368
+    #endif
+    #ifndef GL_RED
+        #define GL_RED 0x1903
+    #endif
 #endif
 
 // Oryol GL error checking macro

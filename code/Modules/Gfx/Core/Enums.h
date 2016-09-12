@@ -624,10 +624,14 @@ public:
         Byte4N,         ///< 4-component float (-1.0f..+1.0f) mapped to byte (-128..+127)
         UByte4,         ///< 4-component float (0.0f..255.0f) mapped to byte (0..255)
         UByte4N,        ///< 4-component float (0.0f..+1.0) mapped to byte (-128..+127)
-        Short2,         ///< 2-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32768)
-        Short2N,        ///< 2-component float (-1.0f..+1.0f) mapped to short (-32768..+32768)
-        Short4,         ///< 4-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32768)
-        Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32768)
+        Short2,         ///< 2-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32767)
+        Short2N,        ///< 2-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
+        Short4,         ///< 4-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32767)
+        Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
+        Int10_2,        ///< 4-component packed signed 10-bit XYZ, 2-bit W (-512..+511)
+        Int10_2N,       ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (-1.0 .. +1.0)
+        UInt10_2,       ///< 4-component packed unsigned 10-bit XYZ, 2-bit W (0..1024)
+        UInt10_2N,      ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (0.0 .. 1.0)
 
         NumVertexFormats,       ///< number of vertex formats
         InvalidVertexFormat,    ///< the invalid vertex format value
@@ -650,6 +654,10 @@ public:
             case UByte4N:
             case Short2:
             case Short2N:
+            case Int10_2:
+            case Int10_2N:
+            case UInt10_2:
+            case UInt10_2N:
                 return 4;
             case Short4:
             case Short4N:
@@ -701,6 +709,7 @@ public:
         OriginBottomLeft,           ///< image space origin is bottom-left (GL-style)
         OriginTopLeft,              ///< image space origin is top-left (D3D-style)
         MSAARenderTargets,          ///< MSAA support in offscreen-render-targets
+        PackedVertexFormat_10_2,    ///< support for VertexFormat Int10_2, Int10_2N, UInt10_2, UInt10_2N
 
         NumFeatures,
         InvalidFeature
