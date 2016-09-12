@@ -30,15 +30,14 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
         case PixelFormat::R32F:
         case PixelFormat::R16F:
             #if ORYOL_OPENGLES2
+            if (glCaps::IsFlavour(glCaps::GLES2)) {
                 return GL_LUMINANCE;
-            #else
-                if (glCaps::IsFlavour(glCaps::GLES2)) {
-                    return GL_LUMINANCE;
-                }
-                else {
-                    return GL_RED;
-                }
+            }
+            else
             #endif
+            {
+                return GL_RED;
+            }
             
         case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT;

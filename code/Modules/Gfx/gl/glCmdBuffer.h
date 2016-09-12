@@ -46,13 +46,9 @@ public:
     /// bind uniform block
     void uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
     /// draw command
-    void draw(int baseElement, int numElements);
-    /// draw-instanced command
-    void drawInstanced(int baseElement, int numElements, int numInstances);
+    void draw(int baseElement, int numElements, int numInstances);
     /// draw command with primGroupIndex
-    void drawPrimGroupIndex(int primGroupIndex);
-    /// draw-instanced with primGroupIndex
-    void drawInstancedPrimGroupIndex(int primGroupIndex, int numInstances);
+    void drawPrimGroupIndex(int primGroupIndex, int numInstances);
 
     /// check if cmd buffer has room for n elements
     bool cmdCheckRoom(int n) const {
@@ -91,9 +87,7 @@ public:
         cmdTextures,
         cmdUniformBlock,
         cmdDraw,
-        cmdDrawInstanced,
         cmdDrawPrimGroupIndex,
-        cmdDrawInstancedPrimGroupIndex,
     };
 
     bool isValid = false;

@@ -141,21 +141,10 @@ glCmdBuffer::uniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t la
 
 //------------------------------------------------------------------------------
 void
-glCmdBuffer::draw(int baseElement, int numElements) {
-    o_assert_dbg(this->isValid);
-    if (this->cmdCheckRoom(3)) {
-        this->cmdPut(cmdDraw);
-        this->cmdPut(baseElement);
-        this->cmdPut(numElements);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glCmdBuffer::drawInstanced(int baseElement, int numElements, int numInstances) {
+glCmdBuffer::draw(int baseElement, int numElements, int numInstances) {
     o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(4)) {
-        this->cmdPut(cmdDrawInstanced);
+        this->cmdPut(cmdDraw);
         this->cmdPut(baseElement);
         this->cmdPut(numElements);
         this->cmdPut(numInstances);
@@ -164,20 +153,10 @@ glCmdBuffer::drawInstanced(int baseElement, int numElements, int numInstances) {
 
 //------------------------------------------------------------------------------
 void
-glCmdBuffer::drawPrimGroupIndex(int primGroupIndex) {
-    o_assert_dbg(this->isValid);
-    if (this->cmdCheckRoom(2)) {
-        this->cmdPut(cmdDrawPrimGroupIndex);
-        this->cmdPut(primGroupIndex);
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-glCmdBuffer::drawInstancedPrimGroupIndex(int primGroupIndex, int numInstances) {
+glCmdBuffer::drawPrimGroupIndex(int primGroupIndex, int numInstances) {
     o_assert_dbg(this->isValid);
     if (this->cmdCheckRoom(3)) {
-        this->cmdPut(cmdDrawInstancedPrimGroupIndex);
+        this->cmdPut(cmdDrawPrimGroupIndex);
         this->cmdPut(primGroupIndex);
         this->cmdPut(numInstances);
     }
@@ -190,10 +169,8 @@ glCmdBuffer::flush(glRenderer* r) {
 
     // flush uniforms
     const int ubSize = this->ubCurIndex - this->ubStartIndex;
-    if (ubSize > 0) {
-        r->updateUniforms(this->uniformBuffer, this->ubStartIndex, ubSize);
-        this->ubStartIndex = this->ubCurIndex;
-    }
+    r->updateUniforms(this->uniformBuffer, this->ubStartIndex, ubSize);
+    this->ubStartIndex = this->ubCurIndex;
 
     // replay commands
     int i = 0;
@@ -269,31 +246,16 @@ glCmdBuffer::flush(glRenderer* r) {
                 {
                     int baseElement = this->cmdGet<int>(i++);
                     int numElements = this->cmdGet<int>(i++);
-                    r->draw(PrimitiveGroup(baseElement, numElements), false);
-                }
-                break;
-
-            case cmdDrawInstanced:
-                {
-                    int baseElement = this->cmdGet<int>(i++);
-                    int numElements = this->cmdGet<int>(i++);
                     int numInstances = this->cmdGet<int>(i++);
-                    r->drawInstanced(PrimitiveGroup(baseElement, numElements), numInstances, false);
+                    r->draw(baseElement, numElements, numInstances, false);
                 }
                 break;
 
             case cmdDrawPrimGroupIndex:
                 {
                     int primGroupIndex = this->cmdGet<int>(i++);
-                    r->draw(primGroupIndex, false);
-                }
-                break;
-
-            case cmdDrawInstancedPrimGroupIndex:
-                {
-                    int primGroupIndex = this->cmdGet<int>(i++);
                     int numInstances = this->cmdGet<int>(i++);
-                    r->drawInstanced(primGroupIndex, numInstances, false);
+                    r->draw(primGroupIndex, numInstances, false);
                 }
                 break;
         }

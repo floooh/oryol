@@ -635,11 +635,12 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, bool rec
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(const PrimitiveGroup& primGroup, bool record) {
+glRenderer::draw(int baseElementIndex, int numElements, int numInstances, bool record) {
     o_assert_dbg(this->valid);
+    o_assert_dbg(numInstances >= 1);
 
     if (this->useCmdBuffer && record) {
-        this->cmdBuffer.draw(primGroup.BaseElement, primGroup.NumElements);
+        this->cmdBuffer.draw(baseElementIndex, numElements, numInstances);
         return;
     }
 
@@ -655,24 +656,34 @@ glRenderer::draw(const PrimitiveGroup& primGroup, bool record) {
     if (IndexType::None != indexType) {
         // indexed geometry
         const int indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
+        const GLvoid* indices = (const GLvoid*) (GLintptr) (baseElementIndex * indexByteSize);
         const GLenum glIndexType = glTypes::asGLIndexType(indexType);
-        ::glDrawElements(glPrimType, primGroup.NumElements, glIndexType, indices);
+        if (numInstances == 1) {
+            ::glDrawElements(glPrimType, numElements, glIndexType, indices);
+        }
+        else {
+            glCaps::DrawElementsInstanced(glPrimType, numElements, glIndexType, indices, numInstances);
+        }
     }
     else {
         // non-indexed geometry
-        ::glDrawArrays(glPrimType, primGroup.BaseElement, primGroup.NumElements);
+        if (numInstances == 1) {
+            ::glDrawArrays(glPrimType, baseElementIndex, numElements);
+        }
+        else {
+            glCaps::DrawArraysInstanced(glPrimType, baseElementIndex, numElements, numInstances);
+        }
     }
     ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(int primGroupIndex, bool record) {
+glRenderer::draw(int primGroupIndex, int numInstances, bool record) {
     o_assert_dbg(this->valid);
 
     if (this->useCmdBuffer && record) {
-        this->cmdBuffer.drawPrimGroupIndex(primGroupIndex);
+        this->cmdBuffer.drawPrimGroupIndex(primGroupIndex, numInstances);
         return;
     }
 
@@ -689,65 +700,7 @@ glRenderer::draw(int primGroupIndex, bool record) {
         return;
     }
     const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->draw(primGroup, false);
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances, bool record) {
-    o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.drawInstanced(primGroup.BaseElement, primGroup.NumElements, numInstances);
-        return;
-    }
-
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
-    }
-    ORYOL_GL_CHECK_ERROR();
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    const GLenum glPrimType = this->curPipeline->glPrimType;
-    if (IndexType::None != indexType) {
-        // indexed geometry
-        const int indexByteSize = IndexType::ByteSize(indexType);
-        const GLvoid* indices = (const GLvoid*) (GLintptr) (primGroup.BaseElement * indexByteSize);
-        const GLenum glIndexType = glTypes::asGLIndexType(indexType);
-        glCaps::DrawElementsInstanced(glPrimType, primGroup.NumElements, glIndexType, indices, numInstances);
-    }
-    else {
-        // non-indexed geometry
-        glCaps::DrawArraysInstanced(glPrimType, primGroup.BaseElement, primGroup.NumElements, numInstances);
-    }
-    ORYOL_GL_CHECK_ERROR();
-}
-    
-//------------------------------------------------------------------------------
-void
-glRenderer::drawInstanced(int primGroupIndex, int numInstances, bool record) {
-    o_assert_dbg(this->valid);
-    
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.drawInstancedPrimGroupIndex(primGroupIndex, numInstances);
-        return;
-    }
-    o_assert2_dbg(this->rtValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
-    }
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    if (primGroupIndex >= msh->numPrimGroups) {
-        // this may happen if trying to render a placeholder which doesn't
-        // have as many materials as the original mesh, anyway, this isn't
-        // a serious error
-        return;
-    }
-    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->drawInstanced(primGroup, numInstances, false);
+    this->draw(primGroup.BaseElement, primGroup.NumElements, numInstances, false);
 }
 
 //------------------------------------------------------------------------------
@@ -1238,7 +1191,7 @@ void
 glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
 #if !ORYOL_OPENGLES2
     o_assert_dbg(this->useUniformBuffer);
-    o_assert_dbg(basePtr && (startOffset >= 0) && (size > 0));
+    o_assert_dbg(basePtr && (startOffset >= 0));
     o_assert_dbg(0 != this->curUniformBuffer);
 
     ORYOL_GL_CHECK_ERROR();
@@ -1246,7 +1199,9 @@ glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
         ::glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
     else {
-        ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
+        if (size > 0) {
+            ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
+        }
     }
     ORYOL_GL_CHECK_ERROR();
 #endif
@@ -1256,6 +1211,7 @@ glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
 void
 glRenderer::setCurrentUniformBuffer() {
 #if !ORYOL_OPENGLES2
+    ORYOL_GL_CHECK_ERROR();
     int ubIndex = int(this->frameIndex % GfxConfig::MaxInflightFrames);
     if (this->useUniformBuffer) {
         this->curUniformBuffer = this->glUniformBuffers[ubIndex];
@@ -1264,7 +1220,6 @@ glRenderer::setCurrentUniformBuffer() {
             uint8_t* ptr = (uint8_t*) ::glMapBufferRange(GL_UNIFORM_BUFFER,
                 0, this->gfxSetup.GlobalUniformBufferSize,
                 GL_MAP_WRITE_BIT|GL_MAP_INVALIDATE_BUFFER_BIT|GL_MAP_UNSYNCHRONIZED_BIT);
-            ORYOL_GL_CHECK_ERROR();
             o_assert_dbg(ptr);
             this->cmdBuffer.setCurrentUniformBuffer(ptr, this->gfxSetup.GlobalUniformBufferSize);
         }
@@ -1272,6 +1227,7 @@ glRenderer::setCurrentUniformBuffer() {
             this->cmdBuffer.setCurrentUniformBuffer(this->rawUniformBuffers[ubIndex], this->gfxSetup.GlobalUniformBufferSize);
         }
     }
+    ORYOL_GL_CHECK_ERROR();
 #endif
 }
 

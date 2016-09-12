@@ -66,13 +66,9 @@ public:
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures, bool record=true);
 
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex, bool record=true);
+    void draw(int primGroupIndex, int numInstances, bool record=true);
     /// submit a draw call with direct primitive group
-    void draw(const PrimitiveGroup& primGroup, bool record=true);
-    /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int primGroupIndex, int numInstances, bool record=true);
-    /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances, bool record=true);
+    void draw(int baseElementIndex, int numElements, int numInstances, bool record=true);
 
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);

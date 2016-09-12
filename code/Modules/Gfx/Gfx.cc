@@ -330,12 +330,7 @@ Gfx::Draw(int primGroupIndex, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDraw++;
-    if (1 == numInstances) {
-        state->renderer.draw(primGroupIndex);
-    }
-    else {
-        state->renderer.drawInstanced(primGroupIndex, numInstances);
-    }
+    state->renderer.draw(primGroupIndex, numInstances);
 }
 
 //------------------------------------------------------------------------------
@@ -344,12 +339,7 @@ Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumDraw++;
-    if (1 == numInstances) {
-        state->renderer.draw(primGroup);
-    }
-    else {
-        state->renderer.drawInstanced(primGroup, numInstances);
-    }
+    state->renderer.draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
 }
 
 //------------------------------------------------------------------------------
