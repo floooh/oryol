@@ -21,9 +21,13 @@ platform_roots = {
 }
 rel_sys_root = {
     'osx': [
+        'Developer/SDKs/MacOSX.sdk',
+        'Developer/SDKs/MacOSX10.12.sdk',
         'Developer/SDKs/MacOSX10.11.sdk'
     ],
     'ios': [
+        'Developer/SDKs/iPhoneOS.sdk',
+        'Developer/SDKs/iPhoneOS10.0.sdk',
         'Developer/SDKs/iPhoneOS9.3.sdk',
         'Developer/SDKs/iPhoneOS9.2.sdk',
         'Developer/SDKs/iPhoneOS9.1.sdk',
