@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 65
+Version = 67
 
 import os
 import sys
@@ -213,6 +213,32 @@ uniformOryolType = {
     'mat2':         'UniformType::Mat2',
     'mat3':         'UniformType::Mat3',
     'mat4':         'UniformType::Mat4',
+}
+
+attrOryolType = {
+    'float':    'VertexFormat::Float',
+    'vec2':     'VertexFormat::Float2',
+    'vec3':     'VertexFormat::Float3',
+    'vec4':     'VertexFormat::Float4'
+}
+
+attrOryolName = {
+    'position':     'VertexAttr::Position',
+    'normal':       'VertexAttr::Normal',
+    'texcoord0':    'VertexAttr::TexCoord0',
+    'texcoord1':    'VertexAttr::TexCoord1',
+    'texcoord2':    'VertexAttr::TexCoord2',
+    'texcoord3':    'VertexAttr::TexCoord3',
+    'tangent':      'VertexAttr::Tangent',
+    'binormal':     'VertexAttr::Binormal',
+    'weights':      'VertexAttr::Weights',
+    'indices':      'VertexAttr::Indices',
+    'color0':       'VertexAttr::Color0',
+    'color1':       'VertexAttr::Color1',
+    'instance0':    'VertexAttr::Instance0',
+    'instance1':    'VertexAttr::Instance1',
+    'instance2':    'VertexAttr::Instance2',
+    'instance3':    'VertexAttr::Instance3'
 }
 
 validTextureTypes = [
@@ -437,16 +463,19 @@ class Attr :
     '''
     A shader input or output attribute.
     '''         
-    def __init__(self, type, name, filePath, lineNumber) :
+    def __init__(self, type, name, capture, filePath, lineNumber) :
         self.type = type
         self.name = name
+        self.capture = capture
         self.filePath = filePath
         self.lineNumber = lineNumber
 
     def __eq__(self, other) :
-        return (self.type == other.type) and (self.name == other.name)
+        # NOTE: capture does NOT influence equality check!
+        return (self.type == other.type) and (self.name == other.name) 
 
     def __ne__(self, other) :
+        # NOTE: capture does NOT influence equality check!
         return (self.type != other.type) or (self.name != other.name)
 
     def dump(self) :
@@ -698,21 +727,26 @@ class Parser :
                 util.fmtError("invalid input attribute name '{}', must be one of '{}'!".format(name, ','.join(validVsInNames)))
         if checkListDup(name, self.current.inputs) :
             util.fmtError("@in '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.inputs.append(Attr(type, name, self.fileName, self.lineNumber))
+        self.current.inputs.append(Attr(type, name, None, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onOut(self, args) :
         if not self.current or not self.current.getTag() in ['vs'] :
             util.fmtError("@out must come after @vs!")
-        if len(args) != 2:
-            util.fmtError("@out must have 2 args (type name)")
+        if len(args) != 2 and len(args) != 4:
+            util.fmtError("@out must have 2 args (type name) or (type name => capture)")
+        if len(args) == 4 and args[2] != '=>':
+            util.fmtError("@out with capture must have form 'type name => capture'")
         type = args[0]
         name = args[1]
+        capture = None
+        if len(args) == 4 :
+            capture = args[3]
         if type not in validInOutTypes :
             util.fmtError("invalid 'out' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes))) 
         if checkListDup(name, self.current.outputs) :
             util.fmtError("@out '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
+        self.current.outputs.append(Attr(type, name, capture, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onPrecision(self, args) :
@@ -1766,39 +1800,15 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
-def writeVertexLayout(f, vs) :
+def writeInputVertexLayout(f, vs) :
     # writes a C++ VertexLayout definition into the generated source
     # code, this is used to match mesh vertex layouts with 
     # vertex shader input signatures (e.g. required in D3D11),
     # return the C++ name of the vertex layout
-    mapAttrName = {
-        'position':     'VertexAttr::Position',
-        'normal':       'VertexAttr::Normal',
-        'texcoord0':    'VertexAttr::TexCoord0',
-        'texcoord1':    'VertexAttr::TexCoord1',
-        'texcoord2':    'VertexAttr::TexCoord2',
-        'texcoord3':    'VertexAttr::TexCoord3',
-        'tangent':      'VertexAttr::Tangent',
-        'binormal':     'VertexAttr::Binormal',
-        'weights':      'VertexAttr::Weights',
-        'indices':      'VertexAttr::Indices',
-        'color0':       'VertexAttr::Color0',
-        'color1':       'VertexAttr::Color1',
-        'instance0':    'VertexAttr::Instance0',
-        'instance1':    'VertexAttr::Instance1',
-        'instance2':    'VertexAttr::Instance2',
-        'instance3':    'VertexAttr::Instance3'
-    }
-    mapAttrType = {
-        'float':    'VertexFormat::Float',
-        'vec2':     'VertexFormat::Float2',
-        'vec3':     'VertexFormat::Float3',
-        'vec4':     'VertexFormat::Float4'
-    }
-    layoutName = '{}_layout'.format(vs.name)
+    layoutName = '{}_input'.format(vs.name)
     f.write('    VertexLayout {};\n'.format(layoutName))
     for attr in vs.inputs :
-        f.write('    {}.Add({}, {});\n'.format(layoutName, mapAttrName[attr.name], mapAttrType[attr.type]))
+        f.write('    {}.Add({}, {});\n'.format(layoutName, attrOryolName[attr.name], attrOryolType[attr.type]))
     return layoutName
 
 #-------------------------------------------------------------------------------
@@ -1809,7 +1819,7 @@ def writeProgramSource(f, shdLib, prog) :
     f.write('    ShaderSetup setup("' + prog.name + '");\n')
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
-    vsInputLayout = writeVertexLayout(f, vs)
+    vsInputLayout = writeInputVertexLayout(f, vs)
     vsName = vs.name
     fsName = fs.name
     for slVersion in slVersions :
@@ -1824,14 +1834,20 @@ def writeProgramSource(f, shdLib, prog) :
         vsSource = '{}_{}_src'.format(vsName, slVersion)
         fsSource = '{}_{}_src'.format(fsName, slVersion)
         if isGLSL[slVersion] :
-            f.write('    setup.SetProgramFromSources({}, {}, {}, {});\n'.format(
-                slangType, vsInputLayout, vsSource, fsSource));
+            f.write('    setup.SetProgramFromSources({}, {}, {});\n'.format(
+                slangType, vsSource, fsSource));
         elif isHLSL[slVersion] :
-            f.write('    setup.SetProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
-                slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
+            f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+                slangType, vsSource, vsSource, fsSource, fsSource))
         elif isMetal[slVersion] :
-            f.write('    setup.SetProgramFromLibrary({}, {}, "{}", "{}");\n'.format(
-                slangType, vsInputLayout, vsName, fsName))
+            f.write('    setup.SetProgramFromLibrary({}, "{}", "{}");\n'.format(
+                slangType, vsName, fsName))
+        f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
+
+        for attr in vs.outputs :
+            if attr.capture :
+                f.write('    setup.AddVertexShaderCapture("{}", {}, {});\n'.format(
+                    attr.name, attrOryolType[attr.type], attrOryolName[attr.capture]))
         f.write('    #endif\n');
 
     # add uniform layouts to setup object

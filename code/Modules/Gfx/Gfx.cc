@@ -150,7 +150,12 @@ Gfx::ApplyDrawState(const DrawState& drawState) {
     #if ORYOL_DEBUG
     validateMeshes(pip, meshes, numMeshes);
     #endif
-    state->renderer.applyDrawState(pip, meshes, numMeshes);
+    mesh* output = nullptr;
+    if (drawState.OutputMesh.IsValid()) {
+        output = state->resourceContainer.lookupMesh(drawState.OutputMesh);
+        // FIXME: validate output mesh!
+    }
+    state->renderer.applyDrawState(pip, meshes, numMeshes, output);
 
     // apply vertex textures if any
     texture* vsTextures[GfxConfig::MaxNumVertexTextures] = { };

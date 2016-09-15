@@ -92,11 +92,12 @@ glCmdBuffer::scissor(int x, int y, int w, int h, bool originTopLeft) {
 
 //------------------------------------------------------------------------------
 void
-glCmdBuffer::drawState(pipeline* pip, mesh** meshes, int numMeshes) {
+glCmdBuffer::drawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* output) {
     o_assert_dbg(this->isValid);
-    if (this->cmdCheckRoom(3 + numMeshes)) {
+    if (this->cmdCheckRoom(4 + numMeshes)) {
         this->cmdPut(cmdDrawState);
         this->cmdPut(pip);
+        this->cmdPut(output);
         this->cmdPut(numMeshes);
         for (int i = 0; i < numMeshes; i++) {
             this->cmdPut(meshes[i]);
@@ -208,9 +209,10 @@ glCmdBuffer::flush(glRenderer* r) {
             case cmdDrawState:
                 {
                     pipeline* pip = this->cmdGet<pipeline*>(i++);
+                    mesh* output  = this->cmdGet<mesh*>(i++);
                     int numMeshes = this->cmdGet<int>(i++);
                     mesh** meshes = this->cmdPtr<mesh*>(i);
-                    r->applyDrawState(pip, meshes, numMeshes, false);
+                    r->applyDrawState(pip, meshes, numMeshes, output, false);
                     i += numMeshes;
                 }
                 break;

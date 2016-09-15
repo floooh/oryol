@@ -30,11 +30,15 @@ public:
     class Locator Locator;
 
     /// set shader program from vertex- and fragment-shader sources
-    void SetProgramFromSources(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const String& vsSource, const String& fsSource);
+    void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// set shader program from precompiled shader byte code
-    void SetProgramFromByteCode(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes);
+    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes);
     /// set shader program from a metal-style shader library
-    void SetProgramFromLibrary(ShaderLang::Code slang, const VertexLayout& vsInputLayout, const char* vsFunc, const char* fsFunc);
+    void SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc);
+    /// set vertex shader input layout
+    void SetInputLayout(const VertexLayout& vsInputLayout);
+    /// add a vertex shader output capture (for transform-feedback / stream-output)
+    void AddVertexShaderCapture(const StringAtom& name, const VertexFormat::Code fmt, const VertexAttr::Code attr);
     /// add a uniform block
     void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture block
@@ -46,7 +50,9 @@ public:
     void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
 
     /// get the vertex shader input layout
-    const VertexLayout& VertexShaderInputLayout() const;
+    const VertexLayout& InputLayout() const;
+    /// get vertex shader output capture information for a specific vertex attribute
+    bool VertexShaderCapture(VertexAttr::Code attr, StringAtom& outName, VertexFormat::Code& outFmt);
     /// get program vertex shader source (only valid if setup from sources)
     const String& VertexShaderSource(ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
@@ -94,9 +100,14 @@ private:
             const void* ptr = nullptr;
             uint32_t size = 0;
         };
+        struct capture {
+            StringAtom name;
+            VertexFormat::Code format = VertexFormat::InvalidVertexFormat;
+        };
         StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> vsByteCode;
         StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> fsByteCode;
         VertexLayout vsInputLayout;
+        StaticArray<capture, VertexAttr::NumVertexAttrs> vsCaptures;
     };
     struct uniformBlockEntry {
         StringAtom name;

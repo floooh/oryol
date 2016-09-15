@@ -43,6 +43,8 @@ public:
     PrimitiveType::Code PrimType;
     /// shader 
     Id Shader;
+    /// optional transform-feedback vertex layout
+    VertexLayout OutputLayout;
 };
 
 } // namespace Oryol
