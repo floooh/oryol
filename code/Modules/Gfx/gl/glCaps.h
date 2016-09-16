@@ -44,6 +44,7 @@ public:
         MSAARenderTargets,
         MapBuffer,
         PackedVertexFormat_10_2,
+        VertexCapture,
 
         NumFeatures,
     };

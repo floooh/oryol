@@ -210,6 +210,8 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
             return glCaps::HasFeature(glCaps::MSAARenderTargets);
         case GfxFeature::PackedVertexFormat_10_2:
             return glCaps::HasFeature(glCaps::PackedVertexFormat_10_2);
+        case GfxFeature::VertexCapture:
+            return glCaps::HasFeature(glCaps::VertexCapture);
         default:
             return false;
     }

@@ -109,6 +109,7 @@ glCaps::setupFeatures(Flavour flav) {
     if (flav != GLES2) {
         state.features[MSAARenderTargets] = true;
         state.features[PackedVertexFormat_10_2] = true;
+        state.features[VertexCapture] = true;
         #if !ORYOL_EMSCRIPTEN
         state.features[MapBuffer] = true;
         #endif
