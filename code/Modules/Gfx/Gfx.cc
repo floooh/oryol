@@ -154,6 +154,8 @@ Gfx::ApplyDrawState(const DrawState& drawState) {
     if (drawState.OutputMesh.IsValid()) {
         output = state->resourceContainer.lookupMesh(drawState.OutputMesh);
         // FIXME: validate output mesh!
+        // - check if order and types of output mesh layout
+        //   match the shader vertex capture definition
     }
     state->renderer.applyDrawState(pip, meshes, numMeshes, output);
 

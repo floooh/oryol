@@ -38,7 +38,7 @@ public:
     /// set vertex shader input layout
     void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a vertex shader output capture (for transform-feedback / stream-output)
-    void AddVertexShaderCapture(const StringAtom& name, const VertexFormat::Code fmt, const VertexAttr::Code attr);
+    void AddVertexCapture(const StringAtom& name, const VertexFormat::Code fmt, const VertexAttr::Code attr);
     /// add a uniform block
     void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture block
@@ -52,7 +52,7 @@ public:
     /// get the vertex shader input layout
     const VertexLayout& InputLayout() const;
     /// get vertex shader output capture information for a specific vertex attribute
-    bool VertexShaderCapture(VertexAttr::Code attr, StringAtom& outName, VertexFormat::Code& outFmt);
+    bool VertexCapture(VertexAttr::Code attr, StringAtom& outName, VertexFormat::Code& outFmt) const;
     /// get program vertex shader source (only valid if setup from sources)
     const String& VertexShaderSource(ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)

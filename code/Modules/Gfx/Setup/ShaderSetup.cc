@@ -113,10 +113,24 @@ ShaderSetup::InputLayout() const {
 
 //------------------------------------------------------------------------------
 void
-ShaderSetup::AddVertexShaderCapture(const StringAtom& name, const VertexFormat::Code fmt, const VertexAttr::Code attr) {
+ShaderSetup::AddVertexCapture(const StringAtom& name, const VertexFormat::Code fmt, const VertexAttr::Code attr) {
     auto& capture = this->program.vsCaptures[attr];
     capture.name = name;
     capture.format = fmt;
+}
+
+//------------------------------------------------------------------------------
+bool
+ShaderSetup::VertexCapture(VertexAttr::Code attr, StringAtom& outName, VertexFormat::Code& outFmt) const {
+    const auto& capture = this->program.vsCaptures[attr];
+    if (capture.format != VertexFormat::InvalidVertexFormat) {
+        outName = capture.name;
+        outFmt = capture.format;
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 //------------------------------------------------------------------------------

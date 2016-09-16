@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 67
+Version = 68
 
 import os
 import sys
@@ -1848,7 +1848,7 @@ def writeProgramSource(f, shdLib, prog) :
 
         for attr in vs.outputs :
             if attr.capture :
-                f.write('    setup.AddVertexShaderCapture("{}", {}, {});\n'.format(
+                f.write('    setup.AddVertexCapture("{}", {}, {});\n'.format(
                     attr.name, attrOryolType[attr.type], attrOryolName[attr.capture]))
         f.write('    #endif\n');
 

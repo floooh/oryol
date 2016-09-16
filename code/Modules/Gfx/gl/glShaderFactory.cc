@@ -86,7 +86,26 @@ glShaderFactory::SetupResource(shader& shd) {
     }
     ORYOL_GL_CHECK_ERROR();
     #endif
-        
+
+    // configure transform feedback varyings
+    #if !ORYOL_OPENGLES2
+    if (glCaps::HasFeature(glCaps::VertexCapture)) {
+        StringAtom outName;
+        VertexFormat::Code outFmt = VertexFormat::InvalidVertexFormat;
+        const char* names[VertexAttr::NumVertexAttrs] = { };
+        int numNames = 0;
+        for (int attr = 0; attr < VertexAttr::NumVertexAttrs; attr++) {
+            if (setup.VertexCapture((VertexAttr::Code)attr, outName, outFmt)) {
+                names[numNames++] = outName.AsCStr();
+            }
+        }
+        if (numNames > 0) {
+            ::glTransformFeedbackVaryings(glProg, numNames, names, GL_INTERLEAVED_ATTRIBS);
+            ORYOL_GL_CHECK_ERROR();
+        }
+    }
+    #endif
+
     // link the program
     ::glLinkProgram(glProg);
     ORYOL_GL_CHECK_ERROR();
@@ -178,7 +197,6 @@ glShaderFactory::SetupResource(shader& shd) {
     }
     ORYOL_GL_CHECK_ERROR();
 
-        
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     // resolve attrib locations
     for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
@@ -186,6 +204,7 @@ glShaderFactory::SetupResource(shader& shd) {
         shd.bindAttribLocation((VertexAttr::Code)i, loc);
     }
     #endif
+
     this->pointers.renderer->invalidateShaderState();
     return ResourceState::Valid;
 }
