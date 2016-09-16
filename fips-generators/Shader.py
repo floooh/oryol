@@ -742,6 +742,8 @@ class Parser :
         capture = None
         if len(args) == 4 :
             capture = args[3]
+            if capture not in validVsInNames :
+                util.fmtError("invalid capture attribute name '{}', must be one of '{}'!".format(capture, ','.join(validVsInNames)))
         if type not in validInOutTypes :
             util.fmtError("invalid 'out' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes))) 
         if checkListDup(name, self.current.outputs) :
