@@ -74,7 +74,7 @@ public:
     bool Empty() const;
     /// get length
     int Length() const;
-    /// get contained c-string
+    /// get contained C-string (static lifetime)
     const char* AsCStr() const;
     /// get String (slow because string object must be constructed)
     String AsString() const;
