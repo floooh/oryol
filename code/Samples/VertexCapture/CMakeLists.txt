@@ -1,7 +1,7 @@
 fips_begin_app(VertexCapture windowed)
     fips_vs_warning_level(3)
     fips_files(VertexCapture.cc)
-    #    oryol_shader(shaders.shd)
+    oryol_shader(shaders.shd)
     fips_deps(Gfx Dbg)
     oryol_add_web_sample(VertexCapture "Vertex capture (aka transform feedback" "emscripten" None "VertexCapture/VertexCapture.cc")
 fips_end_app()

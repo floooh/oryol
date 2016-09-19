@@ -1,1 +1,19 @@
-// FIXME
+//------------------------------------------------------------------------------
+//  DrawCallPerf sample shaders
+//------------------------------------------------------------------------------
+
+@uniform_block params Params
+mat4 mvp ModelViewProjection
+@end
+
+@vs vs
+@use_uniform_block params
+@in vec4 position
+    _position = mul(mvp, position);
+@end
+
+@fs fs
+    _color = vec4(1.0, 0.0, 0.0, 1.0);
+@end
+
+@program Shader vs fs
