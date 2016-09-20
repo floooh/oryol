@@ -147,17 +147,19 @@ Gfx::ApplyDrawState(const DrawState& drawState) {
             break;
         }
     }
-    #if ORYOL_DEBUG
-    validateMeshes(pip, meshes, numMeshes);
-    #endif
-    mesh* output = nullptr;
-    if (drawState.OutputMesh.IsValid()) {
-        output = state->resourceContainer.lookupMesh(drawState.OutputMesh);
-        // FIXME: validate output mesh!
-        // - check if order and types of output mesh layout
-        //   match the shader vertex capture definition
+    mesh* captureMesh = nullptr;
+    if (pip->Setup.EnableVertexCapture) {
+        #if ORYOL_DEBUG
+        if (!drawState.CaptureMesh.IsValid()) {
+            o_error("vertex capture enabled but no CaptureMesh set!\n");
+        }
+        #endif
+        captureMesh = state->resourceContainer.lookupMesh(drawState.CaptureMesh);
     }
-    state->renderer.applyDrawState(pip, meshes, numMeshes, output);
+    #if ORYOL_DEBUG
+    validateMeshes(pip, meshes, numMeshes, captureMesh);
+    #endif
+    state->renderer.applyDrawState(pip, meshes, numMeshes, captureMesh);
 
     // apply vertex textures if any
     texture* vsTextures[GfxConfig::MaxNumVertexTextures] = { };
@@ -352,7 +354,7 @@ Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
 //------------------------------------------------------------------------------
 #if ORYOL_DEBUG
 void
-Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num) {
+Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num, mesh* capture) {
 
     // checks that:
     //  - at least one input mesh must be attached, and it must be in slot 0
@@ -384,18 +386,39 @@ Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num) {
                 o_error("invalid mesh block: input mesh at slot '%d' not valid!\n", mshIndex);
             }
             if ((mshIndex > 0) && (msh->indexBufferAttrs.Type != IndexType::None)) {
-                o_error("invalid drawState: input mesh at slot '%d' has indices, only allowed for slot 0!", mshIndex);
+                o_error("invalid drawState: input mesh at slot '%d' has indices, only allowed for slot 0!\n", mshIndex);
             }
             if ((mshIndex > 0) && (msh->numPrimGroups > 0)) {
-                o_error("invalid mesh block: input mesh at slot '%d' has primitive groups, only allowed for slot 0!", mshIndex);
+                o_error("invalid mesh block: input mesh at slot '%d' has primitive groups, only allowed for slot 0!\n", mshIndex);
             }
             const int numComps = msh->vertexBufferAttrs.Layout.NumComponents();
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const auto& comp = msh->vertexBufferAttrs.Layout.ComponentAt(compIndex);
                 vertexAttrCounts[comp.Attr]++;
                 if (vertexAttrCounts[comp.Attr] > 1) {
-                    o_error("invalid mesh block: same vertex attribute declared in multiple input meshes!");
+                    o_error("invalid mesh block: same vertex attribute declared in multiple input meshes!\n");
                 }
+            }
+        }
+    }
+
+    if (pip->Setup.EnableVertexCapture) {
+        if (!capture) {
+            o_error("vertex capture enabled in Pipeline object, but no capture mesh set in DrawState!\n");
+        }
+        StringAtom outName;
+        VertexFormat::Code outFmt = VertexFormat::InvalidVertexFormat;
+        int numComps = pip->Setup.CaptureLayout.NumComponents();
+        for (int i = 0; i < numComps; i++) {
+            const auto& comp = pip->Setup.CaptureLayout.ComponentAt(i);
+            if (pip->shd->Setup.VertexCapture(comp.Attr, outName, outFmt)) {
+                if (comp.Format != outFmt) {
+                    o_error("vertex capture component format mismatch (%s vs %s)\n",
+                        VertexFormat::ToString(comp.Format), VertexFormat::ToString(outFmt));
+                }
+            }
+            else {
+                o_error("vertex shader does not capture mesh component '%s'!\n", VertexAttr::ToString(comp.Attr));
             }
         }
     }

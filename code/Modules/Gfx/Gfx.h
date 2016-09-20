@@ -117,7 +117,7 @@ public:
 private:
     #if ORYOL_DEBUG
     /// validate mesh binding
-    static void validateMeshes(_priv::pipeline* pip, _priv::mesh** meshes, int numMeshes);
+    static void validateMeshes(_priv::pipeline* pip, _priv::mesh** meshes, int numMeshes, _priv::mesh* capture);
     /// validate texture binding
     static void validateTextures(ShaderStage::Code stage, _priv::pipeline* pip, _priv::texture** textures, int numTextures);
     #endif

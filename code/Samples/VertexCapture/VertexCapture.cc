@@ -44,7 +44,9 @@ VertexCaptureApp::OnInit() {
     for (int i = 0; i < NumPoints * 3; i++) {
         initData[i] = glm::linearRand(-1.0f, 1.0f);
     }
-    this->pointMeshes[0] = Gfx::CreateResource(meshSetup, initData, initDataSize);
+    for (int i = 0; i < NumPointMeshes; i++) {
+        this->pointMeshes[i] = Gfx::CreateResource(meshSetup, initData, initDataSize);
+    }
     Memory::Free(initData);
 
     // pipeline state to render the vertices as point cloud
@@ -54,9 +56,12 @@ VertexCaptureApp::OnInit() {
     pipSetup.DepthStencilState.DepthWriteEnabled = true;
     pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    pipSetup.EnableVertexCapture = true;
+    pipSetup.CaptureLayout = meshSetup.Layout;
     pipSetup.Layouts[0] = meshSetup.Layout;
     drawState.Pipeline = Gfx::CreateResource(pipSetup);
     drawState.Mesh[0] = this->pointMeshes[0];
+    drawState.CaptureMesh = this->pointMeshes[1];
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;

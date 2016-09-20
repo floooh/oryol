@@ -392,7 +392,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState, bool re
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* output, bool record) {
+glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture, bool record) {
     o_assert_dbg(this->valid);
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
@@ -404,7 +404,7 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ou
     o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");    
 
     if (this->useCmdBuffer && record) {
-        this->cmdBuffer.drawState(pip, meshes, numMeshes, output);
+        this->cmdBuffer.drawState(pip, meshes, numMeshes, capture);
         return;
     }
 
@@ -637,7 +637,7 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ou
     ORYOL_GL_CHECK_ERROR();
 
     // FIXME: apply TransformFeedback state
-    if (output) {
+    if (capture) {
         Log::Info("FIXME: transform feedback!\n");
     }
 }

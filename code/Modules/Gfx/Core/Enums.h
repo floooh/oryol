@@ -596,7 +596,7 @@ public:
             case Instance3: return "instance3";
             default:
                 o_error("VertexAttr::ToString(): invalid value!\n");
-                return 0;
+                return nullptr;
         }
     }
 };
@@ -665,6 +665,31 @@ public:
             default:
                 o_error("VertexFormat::ByteSize() called with invalid format!\n");
                 return 0;
+        }
+    }
+
+    // convert to string
+    static const char* ToString(Code c) {
+        switch (c) {
+            case Float:     return "Float";
+            case Float2:    return "Float2";
+            case Float3:    return "Float3";
+            case Float4:    return "Float4";
+            case Byte4:     return "Byte4";
+            case Byte4N:    return "Byte4N";
+            case UByte4:    return "UByte4";
+            case UByte4N:   return "Ubyte4N";
+            case Short2:    return "Short2";
+            case Short2N:   return "Short2N";
+            case Short4:    return "Short4";
+            case Short4N:   return "Short4N";
+            case Int10_2:   return "Int10_2";
+            case Int10_2N:  return "Int10_2N";
+            case UInt10_2:  return "Int10_2";
+            case UInt10_2N: return "Int10_2N";
+            default:
+                o_error("VertexFormat::ToString(): invalid value!\n");
+                return nullptr;
         }
     }
 };

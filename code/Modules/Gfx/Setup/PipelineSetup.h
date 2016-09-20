@@ -43,8 +43,10 @@ public:
     PrimitiveType::Code PrimType;
     /// shader 
     Id Shader;
-    /// optional transform-feedback vertex layout
-    VertexLayout OutputLayout;
+    /// enable vertex capture?
+    bool EnableVertexCapture = false;
+    /// vertex layout of vertex capture mesh
+    VertexLayout CaptureLayout;
 };
 
 } // namespace Oryol

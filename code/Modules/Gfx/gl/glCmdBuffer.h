@@ -40,7 +40,7 @@ public:
     /// set scissor rect
     void scissor(int x, int y, int w, int h, bool originTopLeft);
     /// bind drawState
-    void drawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* output);
+    void drawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture);
     /// bind textures
     void textures(ShaderStage::Code bindStage, texture** textures, int numTextures);
     /// bind uniform block
