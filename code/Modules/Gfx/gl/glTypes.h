@@ -26,6 +26,8 @@ public:
     static GLenum asGLIndexType(IndexType::Code c);
     /// convert Oryol primitive type to GL primitive type
     static GLenum asGLPrimitiveType(PrimitiveType::Code c);
+    /// convert Oryol primitive type to GL primitive mode (points, lines, triangles)
+    static GLenum asGLPrimitiveMode(PrimitiveType::Code c);
     /// convert Oryol shader type to GL shader type
     static GLenum asGLShaderStage(ShaderStage::Code c);
     /// convert Oryol texture filter to GL texture filter

@@ -6,17 +6,31 @@
 mat4 mvp ModelViewProjection
 @end
 
-@vs vs
-@use_uniform_block params
+//------------------------------------------------------------------------------
+@vs captureVS
 @in vec4 position
 @out vec3 pos => position
-    _position = mul(mvp, position);
-    pos = _position.xyz;
+    _position = position;
+    pos = position.xyz * 2.0;
 @end
 
-@fs fs
-@in vec3 pos    // FIXME: shouldn't be required for captured attrs?
+@fs captureFS
+@in vec3 pos
+    discard;
+    _color = vec4(0.0);
+@end
+
+@program CaptureShader captureVS captureFS
+
+//------------------------------------------------------------------------------
+@vs drawVS
+@use_uniform_block params
+@in vec4 position
+    _position = mul(mvp, position);
+@end
+
+@fs drawFS
     _color = vec4(1.0, 0.0, 0.0, 1.0);
 @end
 
-@program Shader vs fs
+@program DrawShader drawVS drawFS

@@ -224,6 +224,24 @@ glTypes::asGLPrimitiveType(PrimitiveType::Code c) {
 
 //------------------------------------------------------------------------------
 GLenum
+glTypes::asGLPrimitiveMode(PrimitiveType::Code c) {
+    switch (c) {
+        case PrimitiveType::Points:
+            return GL_POINTS;
+        case PrimitiveType::Lines:
+        case PrimitiveType::LineStrip:
+            return GL_LINES;
+        case PrimitiveType::Triangles:
+        case PrimitiveType::TriangleStrip:
+            return GL_TRIANGLES;
+        default:
+            o_error("glTypes::asGLPrimitiveMode(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
 glTypes::asGLShaderStage(ShaderStage::Code c) {
     switch (c) {
         case ShaderStage::VS: return GL_VERTEX_SHADER;

@@ -100,6 +100,7 @@ indexBuffer(0),
 program(0)
 #if !ORYOL_OPENGLES2
 ,curUniformBuffer(0)
+,transformFeedbackEnabled(false)
 #endif
 {
     this->samplers2D.Fill(0);
@@ -420,6 +421,14 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     this->curPipeline = pip;
     o_assert_dbg(pip->shd);
 
+    // disable transform feedback if it was enabled in previous draw state
+    if (this->transformFeedbackEnabled) {
+        ::glEndTransformFeedback();
+        ::glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
+        ORYOL_GL_CHECK_ERROR();
+        this->transformFeedbackEnabled = false;
+    }
+    
     // apply DepthStencilState changes
     if (setup.DepthStencilState != this->depthStencilState) {
     
@@ -636,10 +645,20 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     #endif
     ORYOL_GL_CHECK_ERROR();
 
-    // FIXME: apply TransformFeedback state
-    if (capture) {
-        Log::Info("FIXME: transform feedback!\n");
+    // apply TransformFeedback state
+    #if !ORYOL_OPENGLES2
+    if (glCaps::HasFeature(glCaps::VertexCapture)) {
+        if (capture) {
+            const auto& mb = capture->buffers[mesh::vb];
+            GLuint glBuf = mb.glBuffers[mb.activeSlot];
+            ::glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, glBuf);
+            ORYOL_GL_CHECK_ERROR();
+            ::glBeginTransformFeedback(glTypes::asGLPrimitiveMode(setup.PrimType));
+            ORYOL_GL_CHECK_ERROR();
+            this->transformFeedbackEnabled = true;
+        }
     }
+    #endif
 }
 
 //------------------------------------------------------------------------------

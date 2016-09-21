@@ -169,6 +169,7 @@ private:
     StaticArray<uint8_t*, GfxConfig::MaxInflightFrames> rawUniformBuffers;
     #if !ORYOL_OPENGLES2
     GLuint curUniformBuffer;
+    bool transformFeedbackEnabled;
     #endif
 };
 

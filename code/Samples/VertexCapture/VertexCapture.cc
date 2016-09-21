@@ -20,8 +20,9 @@ public:
     static const int NumPoints = 1024;
     static const int NumPointMeshes = 2;
     StaticArray<Id, NumPointMeshes> pointMeshes;
+    DrawState captureState;
     DrawState drawState;
-    Shader::Params vsParams;
+    DrawShader::Params vsParams;
 };
 OryolMain(VertexCaptureApp);
 
@@ -44,24 +45,34 @@ VertexCaptureApp::OnInit() {
     for (int i = 0; i < NumPoints * 3; i++) {
         initData[i] = glm::linearRand(-1.0f, 1.0f);
     }
-    for (int i = 0; i < NumPointMeshes; i++) {
-        this->pointMeshes[i] = Gfx::CreateResource(meshSetup, initData, initDataSize);
-    }
+    this->pointMeshes[0] = Gfx::CreateResource(meshSetup, initData, initDataSize);
     Memory::Free(initData);
 
-    // pipeline state to render the vertices as point cloud
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto pipSetup = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, shd);
+    meshSetup = MeshSetup::Empty(NumPoints, Usage::Immutable);
+    meshSetup.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    this->pointMeshes[1] = Gfx::CreateResource(meshSetup);
+
+    // pipeline state for the vertex capture pass
+    auto pipSetup = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, Gfx::CreateResource(CaptureShader::Setup()));
     pipSetup.PrimType = PrimitiveType::Points;
-    pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
     pipSetup.EnableVertexCapture = true;
     pipSetup.CaptureLayout = meshSetup.Layout;
     pipSetup.Layouts[0] = meshSetup.Layout;
-    drawState.Pipeline = Gfx::CreateResource(pipSetup);
-    drawState.Mesh[0] = this->pointMeshes[0];
-    drawState.CaptureMesh = this->pointMeshes[1];
+    this->captureState.Pipeline = Gfx::CreateResource(pipSetup);
+    this->captureState.Mesh[0] = this->pointMeshes[0];
+    this->captureState.CaptureMesh = this->pointMeshes[1];
+
+    // pipeline state to render the vertices as point cloud
+    pipSetup = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, Gfx::CreateResource(DrawShader::Setup()));
+    pipSetup.PrimType = PrimitiveType::Points;
+    pipSetup.DepthStencilState.DepthWriteEnabled = true;
+    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    pipSetup.Layouts[0] = meshSetup.Layout;
+    this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
+    this->drawState.Mesh[0] = this->pointMeshes[1];
+//this->drawState.Mesh[0] = this->pointMeshes[0];
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -78,6 +89,12 @@ AppState::Code
 VertexCaptureApp::OnRunning() {
 
     Gfx::ApplyDefaultRenderTarget();
+
+    // perform the vertex capture pass
+    Gfx::ApplyDrawState(this->captureState);
+    Gfx::Draw(PrimitiveGroup(0, NumPoints));
+
+    // perform the render pass
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(PrimitiveGroup(0, NumPoints));
