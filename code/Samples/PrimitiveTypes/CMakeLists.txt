@@ -1,0 +1,7 @@
+fips_begin_app(PrimitiveTypes windowed)
+    fips_vs_warning_level(3)
+    fips_files(PrimitiveTypes.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx Assets)
+    oryol_add_web_sample(PrimitiveTypes "Test Gfx primitive types" "emscripten,pnacl,android" None "PrimitiveTypes/PrimitiveTypes.cc")
+fips_end_app()
