@@ -14,7 +14,6 @@ MeshBuilder::Begin() {
     o_assert(!this->inBegin);
     o_assert(this->NumVertices > 0);
     o_assert(!this->Layout.Empty());
-    o_assert(!this->PrimitiveGroups.Empty());
     this->inBegin = true;
 
     // setup MeshSetup object
