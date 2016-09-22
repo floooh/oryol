@@ -382,6 +382,20 @@ public:
         NumPrimitiveTypes,
         InvalidPrimitiveType = 0xFFFFFFFF,
     };
+
+    /// convert primitive type to string
+    static const char* ToString(PrimitiveType::Code c) {
+        switch (c) {
+            case Points:        return "Points";
+            case Lines:         return "Lines";
+            case LineStrip:     return "LineStrip";
+            case Triangles:     return "Triangles";
+            case TriangleStrip: return "TriangleStrip";
+            default:
+                o_error("PrimitiveType::ToString(): invalid value!\n");
+                return 0;
+        }
+    }
 };
 
 //------------------------------------------------------------------------------
