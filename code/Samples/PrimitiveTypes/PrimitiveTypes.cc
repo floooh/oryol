@@ -73,6 +73,8 @@ PrimitiveTypesApp::OnInit() {
     // point list (only need a pipeline object, no index buffer)
     {
         auto pipSetup = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
+        pipSetup.DepthStencilState.DepthWriteEnabled = true;
+        pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
         pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
         pipSetup.PrimType = PrimitiveType::Points;
         auto& ds = this->drawStates[PrimitiveType::Points];
@@ -109,6 +111,8 @@ PrimitiveTypesApp::OnInit() {
         mshSetup.DataVertexOffset = InvalidIndex;
         mshSetup.DataIndexOffset = 0;
         auto pipSetup = PipelineSetup::FromShader(shd);
+        pipSetup.DepthStencilState.DepthWriteEnabled = true;
+        pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
         pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
         pipSetup.Layouts[1] = meshBuilder.Layout;
         pipSetup.PrimType = PrimitiveType::Lines;
@@ -138,6 +142,8 @@ PrimitiveTypesApp::OnInit() {
         mshSetup.DataVertexOffset = InvalidIndex;
         mshSetup.DataIndexOffset = 0;
         auto pipSetup = PipelineSetup::FromShader(shd);
+        pipSetup.DepthStencilState.DepthWriteEnabled = true;
+        pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
         pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
         pipSetup.Layouts[1] = meshBuilder.Layout;
         pipSetup.PrimType = PrimitiveType::LineStrip;

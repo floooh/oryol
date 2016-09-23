@@ -8,6 +8,7 @@ mat4 mvp ModelViewProjection
 @in vec4 color0
 @out vec4 color
     _position = mul(mvp, position);
+    _pointsize = 4.0;
     color = color0;
 @end
 
