@@ -18,6 +18,11 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/PackedNormals/PackedNormals.jpg
   src: PackedNormals/PackedNormals.cc
+- name: PrimitiveTypes
+  desc: Test Gfx primitive types
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/PrimitiveTypes/PrimitiveTypes.jpg
+  src: PrimitiveTypes/PrimitiveTypes.cc
 - name: BlendTest
   desc: Test BlendState implementation
   type: emscripten,android,pnacl
