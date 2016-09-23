@@ -250,10 +250,10 @@ PrimitiveTypesApp::OnRunning() {
         else if (Input::KeyDown(Key::N5)) {
             this->curPrimType = PrimitiveType::TriangleStrip;
         }
-        if (Input::KeyDown(Key::Up)) {
+        if (Input::KeyDown(Key::Right)) {
             this->vsParams.PointSize += 1.0f;
         }
-        if (Input::KeyDown(Key::Down)) {
+        if (Input::KeyDown(Key::Left)) {
             this->vsParams.PointSize -= 1.0f;
         }
     }
@@ -270,7 +270,7 @@ PrimitiveTypesApp::OnRunning() {
 
     // print help- and status-text
     Dbg::TextColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-    Dbg::PrintF("\n Point Size (up/down key to change): %d\n\r", int(this->vsParams.PointSize));
+    Dbg::PrintF("\n Point Size (left/right key to change): %d\n\r", int(this->vsParams.PointSize));
     Dbg::Print(" Keys 1..5, left mouse button, or touch-tap to change primitive type\n\n\r");
     for (int i = 0; i < int(PrimitiveType::NumPrimitiveTypes); i++) {
         if (i == this->curPrimType) {
