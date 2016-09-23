@@ -22,9 +22,11 @@ public:
     static const int NumX = 32;
     static const int NumY = 32;
     static const int NumVertices = NumX * NumY;
-    static const int NumLines = NumX * (NumY-1);
+    static const int NumLineIndices = NumX * (NumY-1) * 2;
+    static const int NumLineStripIndices = NumX * (NumY-1);
+    static const int NumTriangleIndices = (NumX-1) * (NumY-1) * 3;
+    static const int NumTriStripIndices = (NumX-1)*(NumY-1)*2 + (NumY-1)*2;
 
-    Id vertexMesh;            // mesh object with 2D grid vertex data
     StaticArray<DrawState, PrimitiveType::NumPrimitiveTypes> drawStates;
     int curPrimType = 0;
     glm::mat4 view;
@@ -34,6 +36,30 @@ public:
     Shader::Params vsParams;
 };
 OryolMain(PrimitiveTypesApp);
+
+//------------------------------------------------------------------------------
+Id
+createIndexMesh(int numIndices, const void* data, int dataSize) {
+    auto setup = MeshSetup::FromData(Usage::InvalidUsage, Usage::Immutable);
+    setup.NumVertices = 0;
+    setup.NumIndices = numIndices;
+    setup.IndicesType = IndexType::Index16;
+    setup.DataVertexOffset = InvalidIndex;
+    setup.DataIndexOffset = 0;
+    return Gfx::CreateResource(setup, data, dataSize);
+}
+
+//------------------------------------------------------------------------------
+Id
+createPipeline(PrimitiveType::Code primType, int layoutSlot, const VertexLayout& layout, Id shd, int sampleCount) {
+    auto pipSetup = PipelineSetup::FromShader(shd);
+    pipSetup.DepthStencilState.DepthWriteEnabled = true;
+    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    pipSetup.RasterizerState.SampleCount = sampleCount;
+    pipSetup.Layouts[layoutSlot] = layout;
+    pipSetup.PrimType = primType;
+    return Gfx::CreateResource(pipSetup);
+}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -66,91 +92,114 @@ PrimitiveTypesApp::OnInit() {
             }
         }
     }
-    this->vertexMesh = Gfx::CreateResource(meshBuilder.Build());
+    Id vertexMesh = Gfx::CreateResource(meshBuilder.Build());
 
+    // a single shader used by all pipeline objects
     Id shd = Gfx::CreateResource(Shader::Setup());
+
+    // now setup a complete draw state (pipeline + index mesh + shared vertex mesh) for
+    // each primitive type (points, lines, linestrip, triangles, trianglestrip)
 
     // point list (only need a pipeline object, no index buffer)
     {
-        auto pipSetup = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
-        pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-        pipSetup.PrimType = PrimitiveType::Points;
         auto& ds = this->drawStates[PrimitiveType::Points];
-        ds.Pipeline = Gfx::CreateResource(pipSetup);
-        ds.Mesh[0] = this->vertexMesh;
+        ds.Pipeline = createPipeline(PrimitiveType::Points, 0, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Mesh[0] = vertexMesh;
     }
 
     // line list index buffer mesh and pipeline state
     {
-        const int numIndices = 2 * NumLines;
-        StaticArray<uint16_t,numIndices> indices;
+        const int numIndices = NumLineIndices;
+        StaticArray<uint16_t, numIndices> indices;
         int i = 0;
         for (int y = 0; y < (NumY-1); y++) {
             for (int x = 0; x < NumX; x++) {
-                uint16_t i0, i1;
-                if (x & 1) {
-                    i0 = y * NumX + x - 1;
-                    i1 = i0 + NumX + 1;
-                }
-                else {
-                    i0 = y * NumX + x + 1;
-                    i1 = i0 + NumX - 1;
-                }
-                o_assert_dbg((i0 <= NumVertices) && (i1 <= NumVertices));
+                const uint16_t i0 = (x & 1) ? y*NumX+x-1 : y*NumX+x+1;
+                const uint16_t i1 = (x & 1) ? i0+NumX+1  : i0+NumX-1;
+                o_assert_dbg((i0 < NumVertices) && (i1 < NumVertices));
                 indices[i++] = i0;
                 indices[i++] = i1;
             }
         }
         o_assert_dbg(i == numIndices);
-        auto mshSetup = MeshSetup::FromData(Usage::InvalidUsage, Usage::Immutable);
-        mshSetup.NumVertices = 0;
-        mshSetup.NumIndices = numIndices;
-        mshSetup.IndicesType = IndexType::Index16;
-        mshSetup.DataVertexOffset = InvalidIndex;
-        mshSetup.DataIndexOffset = 0;
-        auto pipSetup = PipelineSetup::FromShader(shd);
-        pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-        pipSetup.Layouts[1] = meshBuilder.Layout;
-        pipSetup.PrimType = PrimitiveType::Lines;
         auto& ds = this->drawStates[PrimitiveType::Lines];
-        ds.Pipeline = Gfx::CreateResource(pipSetup);
-        ds.Mesh[0] = Gfx::CreateResource(mshSetup, &indices[0], numIndices*2);
-        ds.Mesh[1] = this->vertexMesh;
+        ds.Pipeline = createPipeline(PrimitiveType::Lines, 1, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Mesh[0] = createIndexMesh(numIndices, &indices[0], numIndices*2);
+        ds.Mesh[1] = vertexMesh;
     }
 
     // line-strip index buffer mesh and pipeline state
     {
-        const int numIndices = NumLines;
-        StaticArray<uint16_t,numIndices> indices;
+        const int numIndices = NumLineStripIndices;
+        StaticArray<uint16_t, numIndices> indices;
         int i = 0;
         for (int y = 0; y < (NumY-1); y++) {
             for (int x = 0; x < NumX; x++) {
                 const uint16_t i0 = (x & 1) ? y*NumX+x : (y+1)*NumX+x;
-                o_assert_dbg(i0 <= NumVertices);
+                o_assert_dbg(i0 < NumVertices);
                 indices[i++] = i0;
             }
         }
         o_assert_dbg(i == numIndices);
-        auto mshSetup = MeshSetup::FromData(Usage::InvalidUsage, Usage::Immutable);
-        mshSetup.NumVertices = 0;
-        mshSetup.NumIndices = numIndices;
-        mshSetup.IndicesType = IndexType::Index16;
-        mshSetup.DataVertexOffset = InvalidIndex;
-        mshSetup.DataIndexOffset = 0;
-        auto pipSetup = PipelineSetup::FromShader(shd);
-        pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-        pipSetup.Layouts[1] = meshBuilder.Layout;
-        pipSetup.PrimType = PrimitiveType::LineStrip;
         auto& ds = this->drawStates[PrimitiveType::LineStrip];
-        ds.Pipeline = Gfx::CreateResource(pipSetup);
-        ds.Mesh[0] = Gfx::CreateResource(mshSetup, &indices[0], numIndices*2);
-        ds.Mesh[1] = this->vertexMesh;
+        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, 1, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Mesh[0] = createIndexMesh(numIndices, &indices[0], numIndices*2);
+        ds.Mesh[1] = vertexMesh;
+    }
+
+    // triangle-list index buffer and pipeline state
+    {
+        const int numIndices = NumTriangleIndices;
+        StaticArray<uint16_t, numIndices> indices;
+        int i = 0;
+        for (int y = 0; y < (NumY-1); y++) {
+            for (int x = 0; x < (NumX-1); x++) {
+                const uint16_t i0 = x+y*NumX;
+                const uint16_t i1 = (x & 1) ? i0+NumX : i0+1;
+                const uint16_t i2 = (x & 1) ? i1+1 : i0+NumX;
+                o_assert_dbg((i0 < NumVertices) && (i1 < NumVertices) && (i2 < NumVertices));
+                indices[i++] = i0;
+                indices[i++] = i1;
+                indices[i++] = i2;
+            }
+        }
+        o_assert_dbg(i == numIndices);
+        auto& ds = this->drawStates[PrimitiveType::Triangles];
+        ds.Pipeline = createPipeline(PrimitiveType::Triangles, 1, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Mesh[0] = createIndexMesh(numIndices, &indices[0], numIndices*2);
+        ds.Mesh[1] = vertexMesh;
+    }
+
+    // triangle-strip index buffer and pipeline state
+    {
+        const int numIndices = NumTriStripIndices;
+        StaticArray<uint16_t, numIndices> indices;
+        int i = 0;
+        for (int y = 0; y < (NumY-1); y++) {
+            uint16_t i0, i1;
+            for (int x = 0; x < (NumX-1); x++) {
+                i0 = x + y*NumX;
+                i1 = i0 + NumX;
+                o_assert_dbg((i0 < NumVertices) && (i1 < NumVertices));
+                indices[i++] = i0;
+                indices[i++] = i1;
+            }
+            // add a degenerate triangle
+            indices[i++] = i1;
+            indices[i++] = (y+1)*NumX;
+        }
+        o_assert_dbg(i == numIndices);
+        auto& ds = this->drawStates[PrimitiveType::TriangleStrip];
+        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, 1, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Mesh[0] = createIndexMesh(numIndices, &indices[0], numIndices*2);
+        ds.Mesh[1] = vertexMesh;
     }
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
+    this->vsParams.PointSize = 4.0f;
 
     return App::OnInit();
 }
@@ -159,20 +208,23 @@ PrimitiveTypesApp::OnInit() {
 AppState::Code
 PrimitiveTypesApp::OnRunning() {
 
+    // setup the animated mvp matrix
     this->angleY += 0.003f;
     this->angleX += 0.001f;
-
-    glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -2.0f));
+    glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.5f));
     model = glm::rotate(model, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
     this->vsParams.ModelViewProjection = this->proj * this->view * model;
 
+    // render the currently selected drawstate
     Gfx::ApplyDefaultRenderTarget();
     int num = 0;
     switch (this->curPrimType) {
         case PrimitiveType::Points: num = NumVertices; break;
-        case PrimitiveType::Lines:  num = 2*NumLines; break;
-        case PrimitiveType::LineStrip: num = NumLines; break;
+        case PrimitiveType::Lines:  num = NumLineIndices; break;
+        case PrimitiveType::LineStrip: num = NumLineStripIndices; break;
+        case PrimitiveType::Triangles: num = NumTriangleIndices; break;
+        case PrimitiveType::TriangleStrip: num = NumTriStripIndices; break;
         default: break;
     }
     if (num > 0) {
@@ -198,6 +250,12 @@ PrimitiveTypesApp::OnRunning() {
         else if (Input::KeyDown(Key::N5)) {
             this->curPrimType = PrimitiveType::TriangleStrip;
         }
+        if (Input::KeyDown(Key::Up)) {
+            this->vsParams.PointSize += 1.0f;
+        }
+        if (Input::KeyDown(Key::Down)) {
+            this->vsParams.PointSize -= 1.0f;
+        }
     }
     if (Input::MouseAttached()) {
         if (Input::MouseButtonDown(MouseButton::Left)) {
@@ -212,7 +270,8 @@ PrimitiveTypesApp::OnRunning() {
 
     // print help- and status-text
     Dbg::TextColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-    Dbg::Print("\n Press keys 1..5, left mouse button, or touch-tap!\n\n\r");
+    Dbg::PrintF("\n Point Size (up/down key to change): %d\n\r", int(this->vsParams.PointSize));
+    Dbg::Print(" Keys 1..5, left mouse button, or touch-tap to change primitive type\n\n\r");
     for (int i = 0; i < int(PrimitiveType::NumPrimitiveTypes); i++) {
         if (i == this->curPrimType) {
             Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));

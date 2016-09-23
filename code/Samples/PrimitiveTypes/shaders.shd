@@ -1,5 +1,6 @@
 @uniform_block params Params
 mat4 mvp ModelViewProjection
+float psize PointSize
 @end
 
 @vs vs
@@ -8,6 +9,7 @@ mat4 mvp ModelViewProjection
 @in vec4 color0
 @out vec4 color
     _position = mul(mvp, position);
+    _pointsize = psize;
     color = color0;
 @end
 

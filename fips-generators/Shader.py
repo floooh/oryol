@@ -2,11 +2,12 @@
 Code generator for shader libraries.
 '''
 
-Version = 58
+Version = 59
 
 import os
 import sys
 import glob
+import re
 import platform
 from pprint import pprint
 from collections import OrderedDict
@@ -69,6 +70,7 @@ slMacros = {
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
+        '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
@@ -83,6 +85,7 @@ slMacros = {
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
+        '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
@@ -97,6 +100,7 @@ slMacros = {
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
+        '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
@@ -111,6 +115,7 @@ slMacros = {
         'ORYOL_HLSL': '(1)',
         'ORYOL_METALSL': '(0)',
         '_position': '_oPosition',
+        '_pointsize': '_oPointSize',
         '_color': '_oColor',
         '_const': 'static const',
         '_func': '',
@@ -132,6 +137,7 @@ slMacros = {
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(1)',
         '_position': 'vs_out._vofi_position',
+        '_pointsize': 'vs_out._vofi_pointsize',
         '_color': '_fo_color',
         '_const': 'constant',
         '_func': 'static',
@@ -449,6 +455,7 @@ class Shader(Snippet) :
         self.outputs = []
         self.resolvedDeps = []
         self.generatedSource = {}
+        self.hasPointSize = False;
 
     def dump(self) :
         Snippet.dump(self)
@@ -526,6 +533,7 @@ class Parser :
         self.current = None
         self.stack = []
         self.inComment = False
+        self.regexPointSize = re.compile('[\s,;,=]*_pointsize[\s,;,=]*')
 
     #---------------------------------------------------------------------------
     def stripComments(self, line) :
@@ -807,6 +815,15 @@ class Parser :
         return line
 
     #---------------------------------------------------------------------------
+    def parseSpecialKeyword(self, line) :
+        '''
+        Checks for special keywords in line, and set internal flags.
+        '''
+        if self.current is not None :
+            if self.regexPointSize.match(line) :
+                self.current.hasPointSize = True
+
+    #---------------------------------------------------------------------------
     def parseLine(self, line) :
         '''
         Parse a single line.
@@ -814,6 +831,7 @@ class Parser :
         line = self.stripComments(line)
         if line != '':
             line = self.parseTags(line)
+            self.parseSpecialKeyword(line)
             if line != '':
                 if self.current is not None:
                     self.current.lines.append(Line(line, self.fileName, self.lineNumber))
@@ -1060,6 +1078,8 @@ class HLSLGenerator :
         for output in vs.outputs :
             l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
+        if vs.hasPointSize :
+            lines.append(Line('out float _oPointSize : PSIZE,'))
         lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
@@ -1226,6 +1246,8 @@ class MetalGenerator :
         lines.append(Line('};'))
         lines.append(Line('struct {}_vs_out_t {{'.format(vs.name)))
         lines.append(Line('    float4 _vofi_position [[position]];'))
+        if vs.hasPointSize :
+            lines.append(Line('    float _vofi_pointsize [[point_size]];'))
         for output in vs.outputs :
             lines.append(Line('    {} _vofi_{};'.format(output.type, output.name), output.filePath, output.lineNumber))
         lines.append(Line('};'))

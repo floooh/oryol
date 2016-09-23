@@ -128,6 +128,10 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     ::glGenVertexArrays(1, &this->globalVAO);
     ::glBindVertexArray(this->globalVAO);
     #endif
+
+    #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+    ::glEnable(GL_PROGRAM_POINT_SIZE);
+    #endif
     
     this->setupDepthStencilState();
     this->setupBlendState();
