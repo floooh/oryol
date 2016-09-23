@@ -1078,6 +1078,8 @@ class HLSLGenerator :
         for output in vs.outputs :
             l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
+        if vs.hasPointSize :
+            lines.append(Line('out float _oPointSize : PSIZE,'))
         lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
