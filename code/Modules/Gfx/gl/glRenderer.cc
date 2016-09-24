@@ -144,6 +144,10 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     if (this->useUniformBuffer) {
         this->setupUniformBuffers(gfxSetup);
     }
+    #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+    ::glEnable(GL_PROGRAM_POINT_SIZE);
+    #endif
+    
     this->setupDepthStencilState();
     this->setupBlendState();
     this->setupRasterizerState();
