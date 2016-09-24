@@ -121,6 +121,7 @@ slMacros = {
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
         '_position': 'gl_Position',
+        '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
