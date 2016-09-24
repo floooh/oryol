@@ -157,13 +157,15 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
             shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
 
 #-------------------------------------------------------------------------------
-def build_deploy_webpage(fips_dir, proj_dir) :
+def build_deploy_webpage(fips_dir, proj_dir, rebuild) :
     # if webpage dir exists, clear it first
     ws_dir = util.get_workspace_dir(fips_dir)
     webpage_dir = '{}/fips-deploy/oryol-webpage'.format(ws_dir)
-    if os.path.isdir(webpage_dir) :
-        shutil.rmtree(webpage_dir)
-    os.makedirs(webpage_dir)
+    if rebuild :
+        if os.path.isdir(webpage_dir) :
+            shutil.rmtree(webpage_dir)
+    if not os.path.isdir(webpage_dir) :
+        os.makedirs(webpage_dir)
 
     # compile samples
     if BuildPNaCl and nacl.check_exists(fips_dir) :
@@ -216,7 +218,9 @@ def serve_webpage(fips_dir, proj_dir) :
 def run(fips_dir, proj_dir, args) :
     if len(args) > 0 :
         if args[0] == 'build' :
-            build_deploy_webpage(fips_dir, proj_dir)
+            build_deploy_webpage(fips_dir, proj_dir, False)
+        elif args[0] == 'rebuild' :
+            build_deploy_webpage(fips_dir, proj_dir, True)
         elif args[0] == 'serve' :
             serve_webpage(fips_dir, proj_dir)
         else :
@@ -228,6 +232,7 @@ def run(fips_dir, proj_dir, args) :
 def help() :
     log.info(log.YELLOW +
              'fips webpage build\n' +
+             'fips webpage rebuild\n' +
              'fips webpage serve\n' +
              log.DEF +
              '    build oryol samples webpage')
