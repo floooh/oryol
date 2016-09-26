@@ -2,16 +2,17 @@
 //  DrawCallPerf sample shaders
 //------------------------------------------------------------------------------
 
-@uniform_block params Params
-mat4 mvp ModelViewProjection
+//------------------------------------------------------------------------------
+@uniform_block captureParams Params
+float time Time
 @end
 
-//------------------------------------------------------------------------------
 @vs captureVS
+@use_uniform_block captureParams
 @in vec4 position
 @out vec3 pos => position
     _position = position;
-    pos = position.xyz * 2.0;
+    pos = position.xyz + normalize(position.xyz) * 0.01;
 @end
 
 @fs captureFS
@@ -23,10 +24,15 @@ mat4 mvp ModelViewProjection
 @program CaptureShader captureVS captureFS
 
 //------------------------------------------------------------------------------
+@uniform_block drawParams Params
+mat4 mvp ModelViewProjection
+@end
+
 @vs drawVS
-@use_uniform_block params
+@use_uniform_block drawParams
 @in vec4 position
     _position = mul(mvp, position);
+    _pointsize = 1.0;
 @end
 
 @fs drawFS
