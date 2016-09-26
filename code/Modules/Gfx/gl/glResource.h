@@ -112,7 +112,7 @@ private:
     static const int MaxStages = ShaderStage::NumShaderStages;
 
     struct ubInfo {
-        GLuint bindLocation = 0xFFFFFFFF;
+        GLuint bindLocation = GL_INVALID_INDEX;
         GLint blockDataSize = 0;
     };
 
