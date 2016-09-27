@@ -4,19 +4,30 @@
 
 //------------------------------------------------------------------------------
 @uniform_block captureParams Params
-float time Time
+float frameTime FrameTime
 @end
 
 @vs captureVS
 @use_uniform_block captureParams
-@in vec4 position
+@in vec3 position
+@in vec3 normal
+@in vec3 color0
 @out vec3 pos => position
-    _position = position;
-    pos = position.xyz + normalize(position.xyz) * 0.01;
+@out vec3 vel => normal
+@out vec3 col => color0
+    vec3 dir = vec3(0.0) - position;
+    float dist = (length(dir) + 0.0001);
+    float i = min(1.0 / (dist * dist), 100.0);
+    vel = 0.995 * (normal + normalize(dir) * i);
+    pos = position + vel * 0.0001;
+    col = color0;
+    _position = vec4(0.0);
 @end
 
 @fs captureFS
 @in vec3 pos
+@in vec3 vel
+@in vec3 col
     discard;
     _color = vec4(0.0);
 @end
@@ -31,12 +42,16 @@ mat4 mvp ModelViewProjection
 @vs drawVS
 @use_uniform_block drawParams
 @in vec4 position
+@in vec3 color0
+@out vec3 color
     _position = mul(mvp, position);
     _pointsize = 1.0;
+    color = color0;
 @end
 
 @fs drawFS
-    _color = vec4(1.0, 0.0, 0.0, 1.0);
+@in vec3 color
+    _color = vec4(abs(color), 1.0);
 @end
 
 @program DrawShader drawVS drawFS

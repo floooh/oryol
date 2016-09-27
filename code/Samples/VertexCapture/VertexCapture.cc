@@ -19,7 +19,7 @@ public:
 
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    static const int NumPoints = 1024 * 1024;
+    static const int NumPoints = 512 * 1024;
     static const int NumPointMeshes = 2;
     StaticArray<Id, NumPointMeshes> pointMeshes;
     DrawState captureState;
@@ -38,7 +38,7 @@ OryolMain(VertexCaptureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 VertexCaptureApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 600, "Oryol Vertex Capture Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Vertex Capture Sample");
     Gfx::Setup(gfxSetup);
 
     if (!Gfx::QueryFeature(GfxFeature::VertexCapture)) {
@@ -46,19 +46,41 @@ VertexCaptureApp::OnInit() {
     }
 
     // create 2 double-buffered point cloud meshes, start with a random data set
+    VertexLayout pointLayout;
+    pointLayout.Add(VertexAttr::Position, VertexFormat::Float3);
+    pointLayout.Add(VertexAttr::Normal, VertexFormat::Float3);
+    pointLayout.Add(VertexAttr::Color0, VertexFormat::Float3);
+
     auto meshSetup = MeshSetup::FromData();
-    meshSetup.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    meshSetup.Layout = pointLayout;
     meshSetup.NumVertices = NumPoints;
     const int initDataSize = NumPoints * meshSetup.Layout.ByteSize();
     float* initData = (float*) Memory::Alloc(initDataSize);
-    for (int i = 0; i < NumPoints * 3; i++) {
-        initData[i] = glm::linearRand(-1.0f, 1.0f);
+    for (int i = 0, j = 0; i < NumPoints; i++) {
+
+        float x = glm::linearRand(-1.0f, 1.0f);
+        float y = glm::linearRand(-1.0f, 1.0f);
+        float z = glm::linearRand(-1.0f, 1.0f);
+        // pos
+        initData[j++] = x;
+        initData[j++] = y;
+        initData[j++] = z;
+
+        // velocity
+        initData[j++] = 0.0f;
+        initData[j++] = 0.0f;
+        initData[j++] = 0.0f;
+
+        // color
+        initData[j++] = fabs(x);
+        initData[j++] = fabs(y);
+        initData[j++] = fabs(z);
     }
     this->pointMeshes[0] = Gfx::CreateResource(meshSetup, initData, initDataSize);
     Memory::Free(initData);
 
     meshSetup = MeshSetup::Empty(NumPoints, Usage::Immutable);
-    meshSetup.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    meshSetup.Layout = pointLayout;
     this->pointMeshes[1] = Gfx::CreateResource(meshSetup);
 
     // pipeline state for the vertex capture pass
@@ -74,9 +96,14 @@ VertexCaptureApp::OnInit() {
     pipSetup = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, Gfx::CreateResource(DrawShader::Setup()));
     pipSetup.PrimType = PrimitiveType::Points;
     pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    pipSetup.Layouts[0] = meshSetup.Layout;
+/*
+    pipSetup.BlendState.BlendEnabled = true;
+    pipSetup.BlendState.SrcFactorRGB = BlendFactor::One;
+    pipSetup.BlendState.DstFactorRGB = BlendFactor::One;
+*/
+    pipSetup.Layouts[0] = pointLayout;
     this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -84,7 +111,7 @@ VertexCaptureApp::OnInit() {
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
 
-    this->captureParams.Time = 0.0f;
+    this->captureParams.FrameTime = 1.0f / 60.0f;
 
     return App::OnInit();
 }
@@ -102,7 +129,6 @@ VertexCaptureApp::computeMVP(const glm::vec3& pos) {
 AppState::Code
 VertexCaptureApp::OnRunning() {
 
-    this->captureParams.Time += 1.0f/60.0f;
     this->angleX += 0.002;
     this->angleY += 0.003;
     this->drawParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, -6.0f));
