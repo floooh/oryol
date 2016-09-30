@@ -1,8 +1,7 @@
 //------------------------------------------------------------------------------
-//  DrawCallPerf sample shaders
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
+// the transform-feedback shader, only the vertex shader does something
+// interesting here
+//
 @uniform_block captureParams Params
 vec3 centerOfGravity CenterOfGravity
 @end
@@ -25,12 +24,15 @@ vec3 centerOfGravity CenterOfGravity
 @in vec3 pos
 @in vec3 vel
     discard;
-    _color = vec4(0.0);
+    // WORKAROUND: use pos+vel so they won't be dropped by ANGLE
+    _color = vec4(pos+vel, 1.0);
 @end
 
 @program CaptureShader captureVS captureFS
 
 //------------------------------------------------------------------------------
+//  the rendering shader, which just renders a colored point lists
+//
 @uniform_block drawParams Params
 mat4 mvp ModelViewProjection
 @end

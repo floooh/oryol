@@ -20,8 +20,8 @@ public:
     AppState::Code OnCleanup();
 
     VertexLayout initPointMeshes();
-    glm::mat4 computeMVP(const glm::vec3& pos);
     glm::vec3 computeCenterOfGravity();
+    AppState::Code notSupported();
 
     static const int NumPointMeshes = 2;
     ResourceLabel pointMeshLabel;
@@ -33,12 +33,6 @@ public:
 
     int numPoints = 128 * 1024;
     uint64_t frameIndex = 0;
-    glm::mat4 proj;
-    glm::mat4 view;
-    glm::mat4 invProj;
-    glm::mat4 invView;
-    float angleX = 0.0f;
-    float angleY = 0.0f;
 };
 OryolMain(VertexCaptureApp);
 
@@ -51,11 +45,11 @@ VertexCaptureApp::OnInit() {
     Dbg::Setup();
 
     if (!Gfx::QueryFeature(GfxFeature::VertexCapture)) {
-        o_error("ERROR: VertexCapture not supported!\n");
+        return App::OnInit();
     }
-    VertexLayout layout = this->initPointMeshes();
 
     // pipeline state for the vertex capture pass
+    VertexLayout layout = this->initPointMeshes();
     auto pipSetup = PipelineSetup::FromLayoutAndShader(layout, Gfx::CreateResource(CaptureShader::Setup()));
     pipSetup.PrimType = PrimitiveType::Points;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
@@ -75,10 +69,9 @@ VertexCaptureApp::OnInit() {
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    this->invProj = glm::inverse(this->proj);
-    this->invView = glm::inverse(this->view);
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -6.0f));
+    this->drawParams.ModelViewProjection = proj * model;
 
     return App::OnInit();
 }
@@ -101,15 +94,10 @@ VertexCaptureApp::initPointMeshes() {
     const int initDataSize = this->numPoints * meshSetup.Layout.ByteSize();
     float* initData = (float*) Memory::Alloc(initDataSize);
     for (int i = 0, j = 0; i < this->numPoints; i++) {
-
-        float x = glm::linearRand(-1.0f, 1.0f);
-        float y = glm::linearRand(-1.0f, 1.0f);
-        float z = glm::linearRand(-1.0f, 1.0f);
         // pos
-        initData[j++] = x;
-        initData[j++] = y;
-        initData[j++] = z;
-
+        initData[j++] = glm::linearRand(-1.0f, 1.0f);
+        initData[j++] = glm::linearRand(-1.0f, 1.0f);
+        initData[j++] = glm::linearRand(-1.0f, 1.0f);
         // velocity
         initData[j++] = 0.0f;
         initData[j++] = 0.0f;
@@ -126,17 +114,6 @@ VertexCaptureApp::initPointMeshes() {
     this->frameIndex = 0;
 
     return meshSetup.Layout;
-}
-
-//------------------------------------------------------------------------------
-glm::mat4
-VertexCaptureApp::computeMVP(const glm::vec3& pos) {
-    glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-/*
-    modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-*/
-    return this->proj * this->view * modelTform;
 }
 
 //------------------------------------------------------------------------------
@@ -163,8 +140,13 @@ VertexCaptureApp::computeCenterOfGravity() {
 AppState::Code
 VertexCaptureApp::OnRunning() {
 
-    // important, creating/destroying resources needs to happen after
-    // last CommitFrame()!
+    // if vertex-capture is not supported just display a message
+    if (!Gfx::QueryFeature(GfxFeature::VertexCapture)) {
+        return notSupported();
+    }
+
+    // creating/destroying resources needs to happen after
+    // outside ApplyRenderTarget() and CommitFrame()!
     if (Input::KeyDown(Key::N1)) {
         this->numPoints = 128 * 1024;
         this->initPointMeshes();
@@ -177,10 +159,14 @@ VertexCaptureApp::OnRunning() {
         this->numPoints = 1024 * 1024;
         this->initPointMeshes();
     }
-
+    else if (Input::KeyDown(Key::N4)) {
+        this->numPoints = 2048 * 1024;
+        this->initPointMeshes();
+    }
 
     Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.2f, 0.3f, 0.4f, 1.0f)));
 
+    // update point positions
     int readIndex = this->frameIndex & 1;
     int writeIndex = (this->frameIndex + 1) & 1;
     this->captureState.Mesh[0] = this->pointMeshes[readIndex];
@@ -190,10 +176,7 @@ VertexCaptureApp::OnRunning() {
     Gfx::ApplyUniformBlock(this->captureParams);
     Gfx::Draw(PrimitiveGroup(0, this->numPoints));
 
-    // perform the render pass
-    this->angleX += 0.002;
-    this->angleY += 0.003;
-    this->drawParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, -6.0f));
+    // render points
     this->drawState.Mesh[0] = this->pointMeshes[writeIndex];
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->drawParams);
@@ -202,7 +185,8 @@ VertexCaptureApp::OnRunning() {
     Dbg::PrintF("\n\r Move the mouse!\n\r"
                 " 1: 128k particles\n\r"
                 " 2: 512k particles\n\r"
-                " 3: 1m particles\n\r");
+                " 3: 1m particles\n\r"
+                " 4: 2m particles\n\r");
     Dbg::DrawTextBuffer();
 
     Gfx::CommitFrame();
@@ -220,3 +204,22 @@ VertexCaptureApp::OnCleanup() {
     return App::OnCleanup();
 }
 
+//------------------------------------------------------------------------------
+AppState::Code
+VertexCaptureApp::notSupported() {
+    // print a warning if vertex-capture is not supported by platform
+    #if ORYOL_EMSCRIPTEN
+    const char* msg = "This demo needs WebGL2\n";
+    #else
+    const char* msg = "This demo needs VertexCapture\n";
+    #endif
+    uint8_t x = (Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2;
+    uint8_t y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
+    Gfx::ApplyDefaultRenderTarget(ClearState::ClearColor(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    Dbg::CursorPos(x, y);
+    Dbg::Print(msg);
+    Dbg::DrawTextBuffer();
+    Gfx::CommitFrame();
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
