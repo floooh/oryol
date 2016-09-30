@@ -426,12 +426,14 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     o_assert_dbg(pip->shd);
 
     // disable transform feedback if it was enabled in previous draw state
+    #if !ORYOL_OPENGLES2
     if (this->transformFeedbackEnabled) {
         ::glEndTransformFeedback();
         ::glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
         ORYOL_GL_CHECK_ERROR();
         this->transformFeedbackEnabled = false;
     }
+    #endif
     
     // apply DepthStencilState changes
     if (setup.DepthStencilState != this->depthStencilState) {
