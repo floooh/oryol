@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 69
+Version = 72
 
 import os
 import sys
@@ -75,6 +75,9 @@ slMacros = {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(100)',
+        '_vertexid': '(0)',
+        '_instanceid': '(0)',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
@@ -90,6 +93,9 @@ slMacros = {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(120)',
+        '_vertexid': 'gl_VertexID',
+        '_instanceid': 'gl_InstanceID',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
@@ -105,6 +111,9 @@ slMacros = {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(150)',
+        '_vertexid': 'gl_VertexID',
+        '_instanceid': 'gl_InstanceID',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
@@ -120,6 +129,9 @@ slMacros = {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(300)',
+        '_vertexid': 'gl_VertexID',
+        '_instanceid': 'gl_InstanceID',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
@@ -135,6 +147,8 @@ slMacros = {
         'ORYOL_GLSL': '(0)',
         'ORYOL_HLSL': '(1)',
         'ORYOL_METALSL': '(0)',
+        '_vertexid': '_iVertexID',
+        '_instanceid': '_iInstanceID',
         '_position': '_oPosition',
         '_pointsize': '_oPointSize',
         '_color': '_oColor',
@@ -157,6 +171,8 @@ slMacros = {
         'ORYOL_GLSL': '(0)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(1)',
+        '_vertexid': 'vs_vertexid',
+        '_instanceid': 'vs_instanceid',
         '_position': 'vs_out._vofi_position',
         '_pointsize': 'vs_out._vofi_pointsize',
         '_color': '_fo_color',
@@ -505,7 +521,9 @@ class Shader(Snippet) :
         self.outputs = []
         self.resolvedDeps = []
         self.generatedSource = {}
-        self.hasPointSize = False;
+        self.hasPointSize = False
+        self.hasVertexId = False
+        self.hasInstanceId = False
 
     def dump(self) :
         Snippet.dump(self)
@@ -583,7 +601,10 @@ class Parser :
         self.current = None
         self.stack = []
         self.inComment = False
-        self.regexPointSize = re.compile('[\s,;,=]*_pointsize[\s,;,=]*')
+        rx_str = '[\s\w,;=+-/%(){}\[\]]*'
+        self.regexPointSize = re.compile('^{}_pointsize{}$'.format(rx_str, rx_str))
+        self.regexVertexId = re.compile('^{}_vertexid{}$'.format(rx_str, rx_str))
+        self.regexInstanceId = re.compile('^{}_instanceid{}$'.format(rx_str, rx_str))
 
     #---------------------------------------------------------------------------
     def stripComments(self, line) :
@@ -879,6 +900,10 @@ class Parser :
         if self.current is not None :
             if self.regexPointSize.match(line) :
                 self.current.hasPointSize = True
+            if self.regexVertexId.match(line) :
+                self.current.hasVertexId = True
+            if self.regexInstanceId.match(line) :
+                self.current.hasInstanceId = True
 
     #---------------------------------------------------------------------------
     def parseLine(self, line) :
@@ -1160,6 +1185,10 @@ class HLSLGenerator :
         for input in vs.inputs :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
+        if vs.hasVertexId :
+            lines.append(Line('in uint _iVertexID : SV_VertexID,'))
+        if vs.hasInstanceId :
+            lines.append(Line('in uint _iInstanceID : SV_InstanceID,'))
         for output in vs.outputs :
             l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
@@ -1267,6 +1296,10 @@ class MetalGenerator :
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
                     lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+        if shd.hasVertexId :
+            lines.append(Line('uint vs_vertexid [[vertex_id]],'))
+        if shd.hasInstanceId :
+            lines.append(Line('uint vs_instanceid [[instance_id]],'))
         return lines
 
     #---------------------------------------------------------------------------
@@ -1576,11 +1609,33 @@ class ShaderLibrary :
         Runs additional validation check after programs are resolved and before
         shader code is generated:
 
+        - check whether each vs and fs is part of a program
+
         - check whether vertex shader output signatures match fragment
         shader input signatures, this is a D3D11 requirement, signatures 
         must match exactly, even if the fragment shader doesn't use all output
         from the vertex shader
-        '''
+        '''        
+        for vs_name,vs in self.vertexShaders.iteritems() :
+            vs_found = False
+            for prog in self.programs.values() :
+                if vs_name == prog.vs :
+                    vs_found = True
+            if not vs_found :
+                util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
+                util.fmtError("vertex shader '{}' is not part of a program".format(vs_name), False)
+                fatalError = True
+
+        for fs_name,fs in self.fragmentShaders.iteritems() :
+            fs_found = False
+            for prog in self.programs.values() :
+                if fs_name == prog.fs :
+                    fs_found = True
+            if not fs_found :
+                util.setErrorLocation(fs.lines[0].path, fs.lines[0].lineNumber)
+                util.fmtError("fragment shader '{}' is not part of a program".format(fs_name), False)
+                fatalError = True
+            
         for prog in self.programs.values() :
             fatalError = False
             vs = self.vertexShaders[prog.vs]
