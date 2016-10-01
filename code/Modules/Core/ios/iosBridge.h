@@ -6,7 +6,6 @@
     @brief private bridge class between IOS and Oryol app
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
 
 #if defined(__OBJC__)
 #import <UIKit/UIKit.h>

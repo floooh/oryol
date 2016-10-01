@@ -7,7 +7,7 @@ fips_begin_module(Resource)
         Id.h
         Locator.cc Locator.h
         ResourceLabel.h
-        ResourceState.cc ResourceState.h
+        ResourceState.h
     )
     fips_dir(Core)
     fips_files(

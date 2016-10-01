@@ -11,7 +11,6 @@
     NOTE: the event handling code has been mostly ripped from GLFW3!
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
 #include "Core/osx/osxInputDefs.h"
 
 #if defined(__OBJC__)

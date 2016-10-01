@@ -74,8 +74,6 @@ public:
     
     /// convert to string
     static const char* ToString(Code c);
-    /// convert from string
-    static Code FromString(const char* str);
 };
   
 } // namepsace Oryol

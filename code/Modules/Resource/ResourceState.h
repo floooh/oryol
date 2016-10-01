@@ -35,9 +35,16 @@ public:
     };
 
     /// convert resource State to string
-    static const char* ToString(Code c);
-    /// convert string to resource State
-    static Code FromString(const char* str);
+    static const char* ToString(Code c) {
+        switch (c) {
+            case Initial:   return "Initial";
+            case Setup:     return "Setup";
+            case Pending:   return "Pending";
+            case Valid:     return "Valid";
+            case Failed:    return "Failed";
+            default:        return "InvalidState";
+        }
+    }
 };
     
 } // namespace Oryol
