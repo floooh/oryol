@@ -26,13 +26,15 @@ public:
     static const int NumPointMeshes = 2;
     ResourceLabel pointMeshLabel;
     StaticArray<Id, NumPointMeshes> pointMeshes;
+    DrawState initState;
     DrawState captureState;
     DrawState drawState;
+    InitShader::Params initParams;
     CaptureShader::Params captureParams;
     DrawShader::Params drawParams;
 
-    int numPoints = 128 * 1024;
     uint64_t frameIndex = 0;
+    bool initPoints = false;
 };
 OryolMain(VertexCaptureApp);
 
@@ -48,7 +50,8 @@ VertexCaptureApp::OnInit() {
         return App::OnInit();
     }
 
-    // pipeline state for the vertex capture pass
+    // pipeline state for the vertex init and capture passes
+    this->initParams.Num = 256;
     VertexLayout layout = this->initPointMeshes();
     auto pipSetup = PipelineSetup::FromLayoutAndShader(layout, Gfx::CreateResource(CaptureShader::Setup()));
     pipSetup.PrimType = PrimitiveType::Points;
@@ -57,6 +60,8 @@ VertexCaptureApp::OnInit() {
     pipSetup.CaptureLayout = layout;
     pipSetup.Layouts[0] = layout;
     this->captureState.Pipeline = Gfx::CreateResource(pipSetup);
+    pipSetup.Shader = Gfx::CreateResource(InitShader::Setup());
+    this->initState.Pipeline = Gfx::CreateResource(pipSetup);
 
     // pipeline state to render the vertices as point cloud
     pipSetup = PipelineSetup::FromLayoutAndShader(layout, Gfx::CreateResource(DrawShader::Setup()));
@@ -85,33 +90,21 @@ VertexCaptureApp::initPointMeshes() {
     this->pointMeshLabel = Gfx::PushResourceLabel();
 
     // create 2 double-buffered point cloud meshes, start with a random data set
+    const int numPoints = this->initParams.Num * this->initParams.Num;
     VertexLayout pointLayout;
     pointLayout.Add(VertexAttr::Position, VertexFormat::Float3);
     pointLayout.Add(VertexAttr::Normal, VertexFormat::Float3);
-    auto meshSetup = MeshSetup::FromData();
+    auto meshSetup = MeshSetup::Empty(numPoints, Usage::Immutable);
     meshSetup.Layout = pointLayout;
-    meshSetup.NumVertices = this->numPoints;
-    const int initDataSize = this->numPoints * meshSetup.Layout.ByteSize();
-    float* initData = (float*) Memory::Alloc(initDataSize);
-    for (int i = 0, j = 0; i < this->numPoints; i++) {
-        // pos
-        initData[j++] = glm::linearRand(-1.0f, 1.0f);
-        initData[j++] = glm::linearRand(-1.0f, 1.0f);
-        initData[j++] = glm::linearRand(-1.0f, 1.0f);
-        // velocity
-        initData[j++] = 0.0f;
-        initData[j++] = 0.0f;
-        initData[j++] = 0.0f;
-    }
-    this->pointMeshes[0] = Gfx::CreateResource(meshSetup, initData, initDataSize);
-    Memory::Free(initData);
+    this->pointMeshes[0] = Gfx::CreateResource(meshSetup);
 
-    meshSetup = MeshSetup::Empty(this->numPoints, Usage::Immutable);
+    meshSetup = MeshSetup::Empty(numPoints, Usage::Immutable);
     meshSetup.Layout = pointLayout;
     this->pointMeshes[1] = Gfx::CreateResource(meshSetup);
 
     Gfx::PopResourceLabel();
     this->frameIndex = 0;
+    this->initPoints = true;
 
     return meshSetup.Layout;
 }
@@ -148,45 +141,55 @@ VertexCaptureApp::OnRunning() {
     // creating/destroying resources needs to happen after
     // outside ApplyRenderTarget() and CommitFrame()!
     if (Input::KeyDown(Key::N1)) {
-        this->numPoints = 128 * 1024;
+        this->initParams.Num = 256;
         this->initPointMeshes();
     }
     else if (Input::KeyDown(Key::N2)) {
-        this->numPoints = 512 * 1024;
+        this->initParams.Num = 512;
         this->initPointMeshes();
     }
     else if (Input::KeyDown(Key::N3)) {
-        this->numPoints = 1024 * 1024;
+        this->initParams.Num = 1024;
         this->initPointMeshes();
     }
     else if (Input::KeyDown(Key::N4)) {
-        this->numPoints = 2048 * 1024;
+        this->initParams.Num = 2048;
         this->initPointMeshes();
     }
 
     Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.2f, 0.3f, 0.4f, 1.0f)));
 
-    // update point positions
+    // initialize or update point positions
     int readIndex = this->frameIndex & 1;
     int writeIndex = (this->frameIndex + 1) & 1;
-    this->captureState.Mesh[0] = this->pointMeshes[readIndex];
-    this->captureState.CaptureMesh = this->pointMeshes[writeIndex];
-    this->captureParams.CenterOfGravity = this->computeCenterOfGravity();
-    Gfx::ApplyDrawState(this->captureState);
-    Gfx::ApplyUniformBlock(this->captureParams);
-    Gfx::Draw(PrimitiveGroup(0, this->numPoints));
+    if (this->initPoints) {
+        this->initPoints = false;
+        this->initState.Mesh[0] = this->pointMeshes[readIndex];
+        this->initState.CaptureMesh = this->pointMeshes[writeIndex];
+        Gfx::ApplyDrawState(this->initState);
+        Gfx::ApplyUniformBlock(this->initParams);
+    }
+    else {
+        this->captureState.Mesh[0] = this->pointMeshes[readIndex];
+        this->captureState.CaptureMesh = this->pointMeshes[writeIndex];
+        this->captureParams.CenterOfGravity = this->computeCenterOfGravity();
+        Gfx::ApplyDrawState(this->captureState);
+        Gfx::ApplyUniformBlock(this->captureParams);
+    }
+    const int numPoints = this->initParams.Num * this->initParams.Num;
+    Gfx::Draw(PrimitiveGroup(0, numPoints));
 
     // render points
     this->drawState.Mesh[0] = this->pointMeshes[writeIndex];
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->drawParams);
-    Gfx::Draw(PrimitiveGroup(0, this->numPoints));
+    Gfx::Draw(PrimitiveGroup(0, numPoints));
 
     Dbg::PrintF("\n\r Move the mouse!\n\r"
-                " 1: 128k particles\n\r"
-                " 2: 512k particles\n\r"
+                " 1: 64k particles\n\r"
+                " 2: 256k particles\n\r"
                 " 3: 1m particles\n\r"
-                " 4: 2m particles\n\r");
+                " 4: 4m particles\n\r");
     Dbg::DrawTextBuffer();
 
     Gfx::CommitFrame();

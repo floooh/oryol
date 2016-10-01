@@ -1,6 +1,42 @@
 //------------------------------------------------------------------------------
-// the transform-feedback shader, only the vertex shader does something
-// interesting here
+//  the transform-feedback shader to compute the initial point positions
+//
+@uniform_block initParams Params
+float num Num
+@end
+
+@vs initVS
+@use_uniform_block initParams
+@in vec3 position
+@in vec3 normal
+@out vec3 pos => position
+@out vec3 vel => normal
+    #if !ORYOL_GLSL || (ORYOL_GLSL_VERSION > 120)
+    int n = int(num);
+    float x = float( _vertexid % n);
+    float y = float(( _vertexid / n) % n);
+    pos.x = (x / float(n)) * 2.0 - 1.0;
+    pos.y = (y / float(n)) * 2.0 - 1.0;
+    pos.z = 0.0;
+    #else
+    pos = vec3(0.0);
+    #endif
+    vel = vec3(0.0);
+    _position = vec4(0.0);
+@end
+
+@fs initFS
+@in vec3 pos
+@in vec3 vel
+    discard;
+    // WORKAROUND: use pos+vel so they won't be dropped by ANGLE
+    _color = vec4(pos+vel, 1.0);
+@end
+
+@program InitShader initVS initFS
+
+//------------------------------------------------------------------------------
+// the transform-feedback shader to update the point cloud
 //
 @uniform_block captureParams Params
 vec3 centerOfGravity CenterOfGravity
@@ -53,3 +89,5 @@ mat4 mvp ModelViewProjection
 @end
 
 @program DrawShader drawVS drawFS
+
+
