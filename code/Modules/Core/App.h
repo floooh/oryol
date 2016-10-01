@@ -58,12 +58,6 @@ public:
     /// start the main loop, returns when QuitRequested is set
     void StartMainLoop();
 
-    /// on construction callback
-    virtual AppState::Code OnConstruct();
-    /// on enqueue preload files frame method
-    virtual AppState::Code OnEnqueuePreload();
-    /// on preloading frame method
-    virtual AppState::Code OnPreloading();
     /// on init frame method
     virtual AppState::Code OnInit();
     /// on running frame method

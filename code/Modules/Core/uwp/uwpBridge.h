@@ -6,7 +6,6 @@
     @brief app bridge class for UWP platform
 */
 #include "Core/Types.h"
-#include "Core/Macros.h"
 
 namespace Oryol {
 class App;

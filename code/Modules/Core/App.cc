@@ -27,7 +27,7 @@ App* App::self = nullptr;
 
 //------------------------------------------------------------------------------
 App::App() :
-curState(AppState::Construct),
+curState(AppState::Init),
 nextState(AppState::InvalidAppState),
 quitRequested(false),
 suspendRequested(false)
@@ -162,15 +162,6 @@ App::onFrame() {
         // call current state handler function
         o_trace_begin(App_InnerFrame);
         switch (this->curState) {
-            case AppState::Construct:
-                this->nextState = this->OnConstruct();
-                break;
-            case AppState::EnqueuePreload:
-                this->nextState = this->OnEnqueuePreload();
-                break;
-            case AppState::Preloading:
-                this->nextState = this->OnPreloading();
-                break;
             case AppState::Init:
                 this->nextState = this->OnInit();
                 break;
@@ -196,24 +187,6 @@ App::onFrame() {
         o_trace_end();
     }
     o_trace_end_frame();
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-App::OnConstruct() {
-    return AppState::EnqueuePreload;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-App::OnEnqueuePreload() {
-    return AppState::Preloading;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-App::OnPreloading() {
-    return AppState::Init;
 }
 
 //------------------------------------------------------------------------------

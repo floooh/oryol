@@ -5,7 +5,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Core/Macros.h"
 #include "Core/Log.h"
 #include "Core/RefCounted.h"
 #include "Core/Ptr.h"

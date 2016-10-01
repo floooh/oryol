@@ -3,12 +3,12 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "IOStatus.h"
-#include "Core/Macros.h"
 #include "Core/Assertion.h"
-#include <cstring>
 
 namespace Oryol {
-    
+
+#define __ORYOL_TOSTRING(c) case c: return #c
+
 //------------------------------------------------------------------------------
 const char*
 IOStatus::ToString(Code c) {
@@ -59,53 +59,4 @@ IOStatus::ToString(Code c) {
     }
 }
 
-//------------------------------------------------------------------------------
-IOStatus::Code
-IOStatus::FromString(const char* str) {
-    o_assert(str);
-    __ORYOL_FROMSTRING(Continue);
-    __ORYOL_FROMSTRING(SwitchingProtocols);
-    __ORYOL_FROMSTRING(OK);
-    __ORYOL_FROMSTRING(Created);
-    __ORYOL_FROMSTRING(Accepted);
-    __ORYOL_FROMSTRING(NonAuthorativeInformation);
-    __ORYOL_FROMSTRING(NoContent);
-    __ORYOL_FROMSTRING(ResetContent);
-    __ORYOL_FROMSTRING(PartialContent);
-    __ORYOL_FROMSTRING(MultipleChoices);
-    __ORYOL_FROMSTRING(MovedPermanently);
-    __ORYOL_FROMSTRING(Found);
-    __ORYOL_FROMSTRING(SeeOther);
-    __ORYOL_FROMSTRING(NotModified);
-    __ORYOL_FROMSTRING(UseProxy);
-    __ORYOL_FROMSTRING(TemporaryRedirect);
-    __ORYOL_FROMSTRING(BadRequest);
-    __ORYOL_FROMSTRING(Unauthorized);
-    __ORYOL_FROMSTRING(PaymentRequired);
-    __ORYOL_FROMSTRING(Forbidden);
-    __ORYOL_FROMSTRING(NotFound);
-    __ORYOL_FROMSTRING(MethodNotAllowed);
-    __ORYOL_FROMSTRING(NotAcceptable);
-    __ORYOL_FROMSTRING(ProxyAuthenticationRequired);
-    __ORYOL_FROMSTRING(RequestTimeout);
-    __ORYOL_FROMSTRING(Conflict);
-    __ORYOL_FROMSTRING(Gone);
-    __ORYOL_FROMSTRING(LengthRequired);
-    __ORYOL_FROMSTRING(PreconditionFailed);
-    __ORYOL_FROMSTRING(RequestEntityTooLarge);
-    __ORYOL_FROMSTRING(RequestURITooLarge);
-    __ORYOL_FROMSTRING(UnsupportedMediaType);
-    __ORYOL_FROMSTRING(RequestedRangeNotSatisfiable);
-    __ORYOL_FROMSTRING(ExpectationFailed);
-    __ORYOL_FROMSTRING(InternalServerError);
-    __ORYOL_FROMSTRING(NotImplemented);
-    __ORYOL_FROMSTRING(BadGateway);
-    __ORYOL_FROMSTRING(ServiceUnavailable);
-    __ORYOL_FROMSTRING(GatewayTimeout);
-    __ORYOL_FROMSTRING(HTTPVersionNotSupported);
-    __ORYOL_FROMSTRING(Cancelled);
-    __ORYOL_FROMSTRING(DownloadError);
-    return InvalidIOStatus;
-}
-    
 } // namespace Oryol

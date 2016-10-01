@@ -9,7 +9,7 @@ fips_begin_module(Core)
     fips_files(
         Main.h
         App.cc App.h
-        AppState.cc AppState.h
+        AppState.h
         Args.cc Args.h
         Assertion.h
         Class.h
@@ -18,7 +18,6 @@ fips_begin_module(Core)
         Creator.h
         Log.cc Log.h
         Logger.cc Logger.h
-        Macros.h
         Ptr.h
         RefCounted.h
         RunLoop.cc RunLoop.h
