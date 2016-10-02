@@ -85,30 +85,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs1.HasDepthBuffer);
     CHECK(!attrs1.HasSharedDepthBuffer);
 
-    // create relative-size render target with depth buffer
-    rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
-    rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::DEPTH;
-    texture tex2;
-    tex2.Setup = rtSetup;
-    factory.SetupResource(tex2);
-    CHECK(tex2.glTextures[0] != 0);
-    CHECK(tex2.glFramebuffer != 0);
-    CHECK(tex2.glDepthRenderbuffer != 0);
-    const TextureAttrs& attrs2 = tex2.textureAttrs;
-    CHECK(attrs2.Locator == Locator::NonShared());
-    CHECK(attrs2.Type == TextureType::Texture2D);
-    CHECK(attrs2.ColorFormat == PixelFormat::RGBA8);
-    CHECK(attrs2.DepthFormat == PixelFormat::DEPTH);
-    CHECK(attrs2.TextureUsage == Usage::Immutable);
-    CHECK(attrs2.Width == 400);
-    CHECK(attrs2.Height == 300);
-    CHECK(attrs2.Depth == 0);
-    CHECK(1 == attrs2.NumMipMaps);
-    CHECK(attrs2.IsRenderTarget);
-    CHECK(attrs2.HasDepthBuffer);
-    CHECK(!attrs2.HasSharedDepthBuffer);
-    
     // cleanup
     factory.DestroyResource(tex1);
     CHECK(tex1.glTextures[0] == 0);
@@ -116,7 +92,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(tex1.glDepthRenderbuffer == 0);
     
     factory.DestroyResource(tex0);
-    factory.DestroyResource(tex2);
     factory.Discard();
     renderer.discard();
     displayManager.DiscardDisplay();
