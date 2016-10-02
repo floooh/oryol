@@ -118,12 +118,7 @@ mtlTextureFactory::createRenderTarget(texture& tex) {
     // get size of new render target
     int width, height;
     texture* sharedDepthProvider = nullptr;
-    if (setup.IsRelSizeRenderTarget()) {
-        const DisplayAttrs& dispAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        width = int(dispAttrs.FramebufferWidth * setup.RelWidth);
-        height = int(dispAttrs.FramebufferHeight * setup.RelHeight);
-    }
-    else if (setup.HasSharedDepth()) {
+    if (setup.HasSharedDepth()) {
         // a shared depth-buffer render target, obtain width and height
         // from the original render target
         texture* sharedDepthProvider = this->pointers.texturePool->Lookup(setup.DepthRenderTarget);

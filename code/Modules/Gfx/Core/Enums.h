@@ -642,9 +642,7 @@ public:
         Short2N,        ///< 2-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
         Short4,         ///< 4-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32767)
         Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
-        Int10_2,        ///< 4-component packed signed 10-bit XYZ, 2-bit W (-512..+511)
         Int10_2N,       ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (-1.0 .. +1.0)
-        UInt10_2,       ///< 4-component packed unsigned 10-bit XYZ, 2-bit W (0..1024)
         UInt10_2N,      ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (0.0 .. 1.0)
 
         NumVertexFormats,       ///< number of vertex formats
@@ -668,9 +666,7 @@ public:
             case UByte4N:
             case Short2:
             case Short2N:
-            case Int10_2:
             case Int10_2N:
-            case UInt10_2:
             case UInt10_2N:
                 return 4;
             case Short4:
@@ -697,9 +693,7 @@ public:
             case Short2N:   return "Short2N";
             case Short4:    return "Short4";
             case Short4N:   return "Short4N";
-            case Int10_2:   return "Int10_2";
             case Int10_2N:  return "Int10_2N";
-            case UInt10_2:  return "Int10_2";
             case UInt10_2N: return "Int10_2N";
             default:
                 o_error("VertexFormat::ToString(): invalid value!\n");

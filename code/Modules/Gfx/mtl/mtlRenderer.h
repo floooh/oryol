@@ -58,19 +58,17 @@ public:
     /// apply scissor rect
     void applyScissorRect(int x, int y, int width, int height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
+    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture);
     /// apply a shader uniform block
     void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
     /// apply a texture block
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
+
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex);
+    void draw(int primGroupIndex, int numInstances);
     /// submit a draw call with direct primitive group
-    void draw(const PrimitiveGroup& primGroup);
-    /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int primGroupIndex, int numInstances);
-    /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    void draw(int baseElementIndex, int numElements, int numInstances);
+
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);
     /// update index data

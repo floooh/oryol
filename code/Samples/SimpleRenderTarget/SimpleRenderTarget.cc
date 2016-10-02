@@ -84,6 +84,7 @@ SimpleRenderTargetApp::OnInit() {
     // if supported, use an anti-aliased offscreen render target
     if (Gfx::QueryFeature(GfxFeature::MSAARenderTargets)) {
         rtSetup.SampleCount = 4;
+        Log::Info("Using MSAA4 render target\n");
     }
     this->renderTarget = Gfx::CreateResource(rtSetup);
 

@@ -20,6 +20,8 @@ mtlTypes::asRenderTargetColorFormat(PixelFormat::Code fmt) {
             return MTLPixelFormatRGBA32Float;
         case PixelFormat::RGBA16F:
             return MTLPixelFormatRGBA16Float;
+        case PixelFormat::R10G10B10A2:
+            return MTLPixelFormatRGB10A2Unorm;
         default:
             return MTLPixelFormatInvalid;
     }
@@ -56,6 +58,7 @@ MTLPixelFormat
 mtlTypes::asTextureFormat(PixelFormat::Code fmt) {
     switch (fmt) {
         case PixelFormat::RGBA8:    return MTLPixelFormatRGBA8Unorm;
+        case PixelFormat::R10G10B10A2:  return MTLPixelFormatRGB10A2Unorm;
         case PixelFormat::RGBA32F:  return MTLPixelFormatRGBA32Float;
         case PixelFormat::RGBA16F:  return MTLPixelFormatRGBA16Float;
         case PixelFormat::L8:       return MTLPixelFormatR8Unorm;
@@ -264,6 +267,8 @@ mtlTypes::asVertexFormat(VertexFormat::Code fmt) {
         case VertexFormat::Short2N:     return MTLVertexFormatShort2Normalized;
         case VertexFormat::Short4:      return MTLVertexFormatShort4;
         case VertexFormat::Short4N:     return MTLVertexFormatShort4Normalized;
+        case VertexFormat::Int10_2N:    return MTLVertexFormatInt1010102Normalized;
+        case VertexFormat::UInt10_2N:   return MTLVertexFormatUInt1010102Normalized;
         default:
             o_error("mtlTypes::asVertexFormat(): invalid value!\n");
             return MTLVertexFormatFloat;

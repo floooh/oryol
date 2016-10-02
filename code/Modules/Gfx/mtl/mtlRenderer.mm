@@ -102,6 +102,7 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::TextureFloat:
         case GfxFeature::Instancing:
         case GfxFeature::OriginTopLeft:
+        case GfxFeature::PackedVertexFormat_10_2:
             return true;
         default:
             return false;
@@ -312,7 +313,7 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
+mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture) {
     o_assert_dbg(this->valid);
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
@@ -450,7 +451,7 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int 
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
+mtlRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
     o_assert_dbg(this->valid);
     if (nil == this->curCommandEncoder) {
         return;
@@ -462,16 +463,16 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_assert_dbg(msh);
     if (IndexType::None == msh->indexBufferAttrs.Type) {
         [this->curCommandEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
-            vertexStart:primGroup.BaseElement
-            vertexCount:primGroup.NumElements
+            vertexStart:baseElementIndex
+            vertexCount:numElements
             instanceCount:numInstances];
     }
     else {
         const auto& ib = msh->buffers[mesh::ib];
         o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
-        NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(msh->indexBufferAttrs.Type);
+        NSUInteger indexBufferOffset = baseElementIndex * IndexType::ByteSize(msh->indexBufferAttrs.Type);
         [this->curCommandEncoder drawIndexedPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
-            indexCount:primGroup.NumElements
+            indexCount:numElements
             indexType:(MTLIndexType)this->curMTLIndexType
             indexBuffer:ib.mtlBuffers[ib.activeSlot]
             indexBufferOffset:indexBufferOffset
@@ -481,7 +482,7 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(int primGroupIndex, int numInstances) {
+mtlRenderer::draw(int primGroupIndex, int numInstances) {
     if (nil == this->curCommandEncoder) {
         return;
     }
@@ -496,19 +497,7 @@ mtlRenderer::drawInstanced(int primGroupIndex, int numInstances) {
         return;
     }
     const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->drawInstanced(primGroup, numInstances);
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::draw(const PrimitiveGroup& primGroup) {
-    this->drawInstanced(primGroup, 1);
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::draw(int primGroupIndex) {
-    this->drawInstanced(primGroupIndex, 1);
+    this->draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
 }
 
 //------------------------------------------------------------------------------
