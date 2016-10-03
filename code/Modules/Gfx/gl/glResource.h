@@ -203,5 +203,25 @@ public:
     StaticArray<GLuint, MaxNumSlots> glTextures;
 };
 
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::glRenderPass
+    @ingroup _priv
+    @brief GL implementation of renderPass
+*/
+class glRenderPass : public renderPassBase {
+public:
+    /// constructor
+    glRenderPass();
+    /// destructor
+    ~glRenderPass();
+
+    /// clear the object
+    void Clear();
+
+    GLuint glFramebuffer;
+    GLuint glMSAAResolveFramebuffer;
+};
+
 } // namespace _priv
 } // namespace Oryol

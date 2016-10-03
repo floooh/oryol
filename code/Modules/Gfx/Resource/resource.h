@@ -102,7 +102,11 @@ class texture : public mtlTexture { };
     @ingroup _priv
     @brief render-pass frontend class
 */
+#if ORYOL_OPENGL
+class renderPass : public glRenderPass { };
+#else
 class renderPass : public renderPassBase { };
+#endif
 
 } // namespace _priv
 } // namespace Oryol

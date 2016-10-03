@@ -34,6 +34,10 @@ public:
 protected:
     gfxPointers pointers;
     bool isValid;
+
+private:
+    /// check render-pass for valid configuration
+    static void validateRenderPass(const renderPass& rp);
 };
 
 } // namespace _priv

@@ -133,6 +133,27 @@ glTexture::Clear() {
     this->glTextures.Fill(0);
 }
 
+//------------------------------------------------------------------------------
+glRenderPass::glRenderPass() :
+glFramebuffer(0),
+glMSAAResolveFramebuffer(0) {
+    // empty
+}
+
+//------------------------------------------------------------------------------
+glRenderPass::~glRenderPass() {
+    o_assert_dbg(0 == this->glFramebuffer);
+    o_assert_dbg(0 == this->glMSAAResolveFramebuffer);
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderPass::Clear() {
+    this->glFramebuffer = 0;
+    this->glMSAAResolveFramebuffer = 0;
+    renderPassBase::Clear();
+}
+
 } // namespace _priv
 } // namespace Oryol
 
