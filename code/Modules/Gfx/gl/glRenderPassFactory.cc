@@ -15,7 +15,7 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
 
     renderPassFactoryBase::SetupResource(rp);
     // FIXME
-    return ResourceState::Failed;
+    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------

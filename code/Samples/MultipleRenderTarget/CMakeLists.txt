@@ -1,0 +1,7 @@
+fips_begin_app(MultipleRenderTarget windowed)
+    fips_vs_warning_level(3)
+    fips_files(MultipleRenderTarget.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx)
+    oryol_add_web_sample(MultipleRenderTarget "Demonstrate MRT rendering" "emscripten,android,pnacl" none "MultipleRenderTarget/MultipleTarget.cc")
+fips_end_app()
