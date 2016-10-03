@@ -11,15 +11,14 @@
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "glm/vec4.hpp"
+#include <initializer_list>
 
 namespace Oryol {
 
 class RenderPassSetup {
 public:
-    /// construct for single color attachment (no depth-stencil-buffer)
-    static RenderPassSetup FromColorTexture(Id colorTex);
-    /// construct for single color attachment and depth-stencil-buffer
-    static RenderPassSetup FromColorAndDepthStencilTextures(Id colorTex, Id depthStencilTex);
+    /// construct from single render target texture
+    static RenderPassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
 
     /// resource locator
     class Locator Locator;

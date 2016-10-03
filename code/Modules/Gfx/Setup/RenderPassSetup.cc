@@ -8,18 +8,13 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 RenderPassSetup
-RenderPassSetup::FromColorTexture(Id colorTex) {
+RenderPassSetup::From(std::initializer_list<Id> colorTextures, Id depthStencilTexture) {
     RenderPassSetup setup;
-    setup.ColorAttachments[0].Texture = colorTex;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-RenderPassSetup
-RenderPassSetup::FromColorAndDepthStencilTextures(Id colorTex, Id depthStencilTex) {
-    RenderPassSetup setup;
-    setup.ColorAttachments[0].Texture = colorTex;
-    setup.DepthStencilAttachment.Texture = depthStencilTex;
+    int i = 0;
+    for (const auto& id : colorTextures) {
+        setup.ColorAttachments[i++].Texture = id;
+    }
+    setup.DepthStencilAttachment.Texture = depthStencilTexture;
     return setup;
 }
 
