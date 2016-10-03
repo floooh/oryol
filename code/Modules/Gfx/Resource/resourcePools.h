@@ -15,6 +15,7 @@ class pipelinePool : public ResourcePool<pipeline, PipelineSetup> { };
 class meshPool : public ResourcePool<mesh, MeshSetup> { };
 class shaderPool : public ResourcePool<shader, ShaderSetup> { };
 class texturePool : public ResourcePool<texture, TextureSetup> { };
+class renderPassPool : public ResourcePool<renderPass, RenderPassSetup> { };
 
 } // namespace _priv
 } // namespace Oryol

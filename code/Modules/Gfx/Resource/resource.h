@@ -92,7 +92,17 @@ class texture : public d3d11Texture { };
 class texture : public d3d12Texture { };
 #elif ORYOL_METAL
 class texture : public mtlTexture { };
+#else
+#error "Target platform not yet supported!"
 #endif
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::renderPass
+    @ingroup _priv
+    @brief render-pass frontend class
+*/
+class renderPass : public renderPassBase { };
 
 } // namespace _priv
 } // namespace Oryol

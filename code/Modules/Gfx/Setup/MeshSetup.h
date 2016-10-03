@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 /**
     @class Oryol::MeshSetup
-    @ingroup Assets
+    @ingroup Gfx
     @brief setup attributes for meshes
 */
 #include "Resource/Id.h"

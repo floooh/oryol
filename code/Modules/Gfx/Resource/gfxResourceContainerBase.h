@@ -65,6 +65,8 @@ public:
     texture* lookupTexture(const Id& resId);
     /// lookup pipeline object
     pipeline* lookupPipeline(const Id& resId);
+    /// lookup render-pass object
+    renderPass* lookupRenderPass(const Id& resId);
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
@@ -74,10 +76,12 @@ public:
     class shaderFactory shaderFactory;
     class textureFactory textureFactory;
     class pipelineFactory pipelineFactory;
+    class renderPassFactory renderPassFactory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class texturePool texturePool;
     class pipelinePool pipelinePool;
+    class renderPassPool renderPassPool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
 };
@@ -108,6 +112,13 @@ inline pipeline*
 gfxResourceContainerBase::lookupPipeline(const Id& resId) {
     o_assert_dbg(this->valid);
     return this->pipelinePool.Lookup(resId);
+}
+
+//------------------------------------------------------------------------------
+inline renderPass*
+gfxResourceContainerBase::lookupRenderPass(const Id& resId) {
+    o_assert_dbg(this->valid);
+    return this->renderPassPool.Lookup(resId);
 }
 
 } // namespace _priv

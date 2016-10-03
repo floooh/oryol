@@ -443,6 +443,7 @@ public:
         Mesh,               ///< a mesh
         Shader,             ///< a shader
         Pipeline,           ///< a pipeline state object
+        RenderPass,         ///< a render-pass object
 
         NumResourceTypes,
         InvalidResourceType = 0xFFFF,
@@ -931,6 +932,37 @@ public:
     enum Code : uint8_t {
         PerVertex = 0,
         PerInstance = 1,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::RenderPassLoadAction
+    @ingroup Gfx
+    @brief action to perform at start of a render pass
+*/
+class RenderPassLoadAction {
+public:
+    enum Code {
+        DontCare,       // initial content of render target is undefined
+        Load,           // previous content of render target is preserved
+        Clear,          // render target pixels are initialized to a value
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::RenderPassStoreAction
+    @ingroup Gfx
+    @brief action to perform at end of render pass
+*/
+class RenderPassStoreAction {
+public:
+    enum Code {
+        DontCare,           // content of render target is left undefined
+        Store,              // content of render target is preserved
+        Resolve,            // only perform an MSAA resolve into resolve target
+        StoreAndResolve,    // preserve render target and perform MSAA resolve
     };
 };
 

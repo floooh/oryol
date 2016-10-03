@@ -4,6 +4,7 @@
 #include "Gfx/Setup/PipelineSetup.h"
 #include "Gfx/Setup/TextureSetup.h"
 #include "Gfx/Setup/MeshSetup.h"
+#include "Gfx/Setup/RenderPassSetup.h"
 #include "Gfx/Attrs/TextureAttrs.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Attrs/VertexBufferAttrs.h"
@@ -70,6 +71,26 @@ public:
     void Clear();    
     /// shader pointer
     shader* shd = nullptr;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::renderPassBase
+    @ingroup _priv
+    @brief base class for render-pass implementations
+*/
+class texture;
+class renderPassBase : public resourceBase<RenderPassSetup> {
+public:
+    /// constructor
+    renderPassBase();
+    /// clear the object
+    void Clear();
+
+    /// color texture pointers
+    StaticArray<texture*, GfxConfig::MaxNumColorAttachments> colorTextures;
+    /// depth-stencil texture pointer
+    texture* depthStencilTexture;
 };
 
 } // namespace _priv

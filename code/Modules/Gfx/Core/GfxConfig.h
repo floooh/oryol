@@ -42,6 +42,8 @@ public:
     static const int MaxNumVertexLayoutComponents = 16;
     /// maximum number of in-flight frames (not used by all platforms)
     static const int MaxInflightFrames = 2;
+    /// maximum number of render pass color attachments
+    static const int MaxNumColorAttachments = 4;
 };
 
 } // namespace Oryol

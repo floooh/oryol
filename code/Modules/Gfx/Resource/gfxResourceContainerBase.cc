@@ -26,11 +26,13 @@ gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) 
     this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
     this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
     this->pipelinePool.Setup(GfxResourceType::Pipeline, setup.PoolSize(GfxResourceType::Pipeline));
+    this->renderPassPool.Setup(GfxResourceType::RenderPass, setup.PoolSize(GfxResourceType::RenderPass));
 
     this->meshFactory.Setup(this->pointers);
     this->shaderFactory.Setup(this->pointers);
     this->textureFactory.Setup(this->pointers);
     this->pipelineFactory.Setup(this->pointers);
+    this->renderPassFactory.Setup(this->pointers);
 
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
         this->update();
@@ -52,6 +54,8 @@ gfxResourceContainerBase::discard() {
     
     resourceContainerBase::discard();
 
+    this->renderPassPool.Discard();
+    this->renderPassFactory.Discard();
     this->pipelinePool.Discard();
     this->pipelineFactory.Discard();
     this->texturePool.Discard();
@@ -287,6 +291,26 @@ gfxResourceContainerBase::Create(const PipelineSetup& setup) {
 }
 
 //------------------------------------------------------------------------------
+template<> Id
+gfxResourceContainerBase::Create(const RenderPassSetup& setup) {
+    o_assert_dbg(this->isValid());
+
+    Id resId = this->registry.Lookup(setup.Locator);
+    if (resId.IsValid()) {
+        return resId;
+    }
+    else {
+        resId = this->renderPassPool.AllocId();
+        this->registry.Add(setup.Locator, resId, this->peekLabel());
+        renderPass& res = this->renderPassPool.Assign(resId, setup, ResourceState::Setup);
+        const ResourceState::Code newState = this->renderPassFactory.SetupResource(res);
+        o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
+        this->renderPassPool.UpdateState(resId, newState);
+    }
+    return resId;
+}
+
+//------------------------------------------------------------------------------
 Id
 gfxResourceContainerBase::Load(const Ptr<ResourceLoader>& loader) {
     o_assert_dbg(this->isValid());
@@ -358,6 +382,18 @@ gfxResourceContainerBase::Destroy(ResourceLabel label) {
             }
             break;
 
+            case GfxResourceType::RenderPass:
+            {
+                if (ResourceState::Valid == this->renderPassPool.QueryState(id)) {
+                    renderPass* rp = this->renderPassPool.Lookup(id);
+                    if (rp) {
+                        this->renderPassFactory.DestroyResource(*rp);
+                    }
+                }
+                this->renderPassPool.Unassign(id);
+            }
+            break;
+
             default:
                 o_assert(false);
                 break;
@@ -400,6 +436,8 @@ gfxResourceContainerBase::QueryResourceInfo(const Id& resId) const {
             return this->shaderPool.QueryResourceInfo(resId);
         case GfxResourceType::Pipeline:
             return this->pipelinePool.QueryResourceInfo(resId);
+        case GfxResourceType::RenderPass:
+            return this->renderPassPool.QueryResourceInfo(resId);
         default:
             o_assert(false);
             return ResourceInfo();
@@ -420,6 +458,8 @@ gfxResourceContainerBase::QueryPoolInfo(GfxResourceType::Code resType) const {
             return this->shaderPool.QueryPoolInfo();
         case GfxResourceType::Pipeline:
             return this->pipelinePool.QueryPoolInfo();
+        case GfxResourceType::RenderPass:
+            return this->renderPassPool.QueryPoolInfo();
         default:
             o_assert(false);
             return ResourcePoolInfo();
@@ -440,6 +480,8 @@ gfxResourceContainerBase::QueryFreeSlots(GfxResourceType::Code resourceType) con
             return this->shaderPool.GetNumFreeSlots();
         case GfxResourceType::Pipeline:
             return this->pipelinePool.GetNumFreeSlots();
+        case GfxResourceType::RenderPass:
+            return this->renderPassPool.GetNumFreeSlots();
         default:
             o_assert(false);
             return 0;

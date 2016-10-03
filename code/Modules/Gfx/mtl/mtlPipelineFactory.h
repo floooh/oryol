@@ -5,9 +5,7 @@
     @ingroup _priv
     @brief Metal implementation of pipelineFactory
 */
-#include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Resource/pipelineFactoryBase.h"
-#include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {
