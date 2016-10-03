@@ -17,6 +17,8 @@ namespace Oryol {
     
 class TextureSetup {
 public:
+    /// default constructor (workaround for gcc)
+    TextureSetup() { };
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
