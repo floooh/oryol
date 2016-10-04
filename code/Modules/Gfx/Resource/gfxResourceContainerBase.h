@@ -47,8 +47,12 @@ public:
     ResourceInfo QueryResourceInfo(const Id& id) const;
     /// query resource pool info (slow)
     ResourcePoolInfo QueryPoolInfo(GfxResourceType::Code resType) const;
-    /// destroy resources by label
-    void Destroy(ResourceLabel label);
+    /// immediately destroy resources by label
+    void Destroy(const ResourceLabel& label);
+    /// queue resources for destruction in GarbageCollect
+    void DestroyDeferred(const ResourceLabel& label);
+    /// destroy deferred resources (called from Gfx::CommitFrame)
+    void GarbageCollect();
     
     /// prepare async creation (usually called at start of async Load)
     template<class SETUP> Id prepareAsync(const SETUP& setup);
@@ -84,6 +88,7 @@ public:
     class renderPassPool renderPassPool;
     RunLoop::Id runLoopId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
+    Array<ResourceLabel> destroyQueue;
 };
 
 //------------------------------------------------------------------------------

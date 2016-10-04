@@ -8,6 +8,8 @@
     FIXME: needs to be extended for multiple-render targets
 */
 #include "Core/Types.h"
+#include "Core/Containers/StaticArray.h"
+#include "Gfx/Core/GfxConfig.h"
 #include "glm/vec4.hpp"
 
 namespace Oryol {
@@ -32,8 +34,8 @@ public:
         DepthStencilBits = DepthBit | StencilBit,
         AllBits = ColorBit | DepthBit
     };
-    /// the clear color (default: black)
-    glm::vec4 Color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    /// the clear colors (default: black)
+    StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;
     /// the clear depth value (default: 1.0)
     float Depth = 1.0f;
     /// the clear stencil value (default: 0)

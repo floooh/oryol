@@ -55,7 +55,7 @@ DebugTextApp::OnInit() {
     this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8_t*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
-    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    this->clearState.Color[0] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     this->strBuilder.Reserve(this->width * 2);
     

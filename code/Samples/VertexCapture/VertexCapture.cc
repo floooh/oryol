@@ -138,25 +138,6 @@ VertexCaptureApp::OnRunning() {
         return notSupported();
     }
 
-    // creating/destroying resources needs to happen after
-    // outside ApplyRenderTarget() and CommitFrame()!
-    if (Input::KeyDown(Key::N1)) {
-        this->initParams.Num = 256;
-        this->initPointMeshes();
-    }
-    else if (Input::KeyDown(Key::N2)) {
-        this->initParams.Num = 512;
-        this->initPointMeshes();
-    }
-    else if (Input::KeyDown(Key::N3)) {
-        this->initParams.Num = 1024;
-        this->initPointMeshes();
-    }
-    else if (Input::KeyDown(Key::N4)) {
-        this->initParams.Num = 2048;
-        this->initPointMeshes();
-    }
-
     Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.2f, 0.3f, 0.4f, 1.0f)));
 
     // initialize or update point positions
@@ -191,6 +172,24 @@ VertexCaptureApp::OnRunning() {
                 " 3: 1m particles\n\r"
                 " 4: 4m particles\n\r");
     Dbg::DrawTextBuffer();
+
+    // handle input
+    if (Input::KeyDown(Key::N1)) {
+        this->initParams.Num = 256;
+        this->initPointMeshes();
+    }
+    else if (Input::KeyDown(Key::N2)) {
+        this->initParams.Num = 512;
+        this->initPointMeshes();
+    }
+    else if (Input::KeyDown(Key::N3)) {
+        this->initParams.Num = 1024;
+        this->initPointMeshes();
+    }
+    else if (Input::KeyDown(Key::N4)) {
+        this->initParams.Num = 2048;
+        this->initPointMeshes();
+    }
 
     Gfx::CommitFrame();
 

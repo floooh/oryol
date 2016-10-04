@@ -20,6 +20,7 @@ namespace _priv {
 class pipeline;
 class mesh;
 class texture;
+class renderPass;
 class glRenderer;
 
 class glCmdBuffer {
@@ -33,6 +34,10 @@ public:
     /// flush the uniform- and command-buffer (play back recorded commands)
     void flush(glRenderer* renderer);
 
+    /// begin a render pass
+    void beginPass(renderPass* rp, ClearState* clearState);
+    /// end a render pass
+    void endPass();
     /// apply render target
     void rendertarget(texture* rt, const ClearState& clearState);
     /// set viewport
@@ -80,6 +85,8 @@ public:
     };
 
     enum cmd {
+        cmdBeginPass,
+        cmdEndPass,
         cmdRenderTarget,
         cmdViewport,
         cmdScissor,

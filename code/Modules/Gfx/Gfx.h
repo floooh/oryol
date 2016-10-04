@@ -83,6 +83,13 @@ public:
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
 
+    /// begin rendering to default render pass
+    static void BeginPass();
+    /// begin rendering to offscreen render pass
+    static void BeginPass(const Id& id);
+    /// finish rendering to current pass
+    static void EndPass();
+
     /// apply the default render target and perform clear-actions
     static void ApplyDefaultRenderTarget(const ClearState& clearState=ClearState());
     /// apply an offscreen render target and perform clear-actions

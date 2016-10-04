@@ -107,7 +107,7 @@ ResourceStressApp::OnInit() {
     this->texBlueprint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     this->texBlueprint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
 
-    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    this->clearState.Color[0] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     return App::OnInit();
 }

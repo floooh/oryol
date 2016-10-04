@@ -27,7 +27,7 @@ class texture;
 class pipeline;
 class mesh;
 class shader;
-class textureBlock;
+class renderPass;
 
 class glRenderer {
 public:
@@ -49,6 +49,11 @@ public:
     void commitFrame();
     /// get the current render target attributes
     const DisplayAttrs& renderTargetAttrs() const;
+
+    /// begin rendering pass (both ptrs can be nullptr)
+    void beginPass(renderPass* pass, ClearState* clearState, bool record=true);
+    /// end current rendering pass
+    void endPass(bool record=true);
 
     /// apply a render target (default or offscreen)
     void applyRenderTarget(texture* rt, const ClearState& clearState, bool record=true);
@@ -136,6 +141,7 @@ private:
     
     // high-level state cache
     texture* curRenderTarget;
+    renderPass* curRenderPass;
     pipeline* curPipeline;
     mesh* curPrimaryMesh;
 

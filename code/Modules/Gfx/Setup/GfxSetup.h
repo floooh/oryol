@@ -51,7 +51,18 @@ public:
     ClearState ClearHint;
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
-    
+
+    /// color load action for the default-render-pass
+    RenderPassLoadAction::Code DefaultColorLoadAction = RenderPassLoadAction::Clear;
+    /// depth-stencil load action for the default-render-pass
+    RenderPassLoadAction::Code  DefaultDepthStencilLoadAction = RenderPassLoadAction::Clear;
+    /// default clear color
+    glm::vec4 DefaultClearColor;
+    /// default clear depth value
+    float DefaultClearDepth = 1.0f;
+    /// default clear stencil value
+    uint8_t DefaultClearStencil = 0;
+
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(GfxResourceType::Code type, int poolSize);
     /// get resource pool size for a rendering resource type

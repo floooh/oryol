@@ -84,6 +84,7 @@ globalVAO(0),
 frameIndex(0),
 rtValid(false),
 curRenderTarget(nullptr),
+curRenderPass(nullptr),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 scissorX(0),
@@ -163,6 +164,7 @@ glRenderer::discard() {
     this->invalidateShaderState();
     this->invalidateTextureState();
     this->curRenderTarget = nullptr;
+    this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
 
     if (this->useUniformBuffer) {
@@ -231,6 +233,7 @@ glRenderer::commitFrame() {
     }
     this->rtValid = false;
     this->curRenderTarget = nullptr;
+    this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
@@ -303,6 +306,66 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
 
 //------------------------------------------------------------------------------
 void
+glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
+    o_assert_dbg(this->valid);
+
+    if (nullptr == pass) {
+        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+    }
+    else {
+        o_assert_dbg(pass->colorTextures[0]);
+        this->rtAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
+    }
+
+    if (this->useCmdBuffer && record) {
+        this->cmdBuffer.beginPass(pass, clearState);
+        return;
+    }
+
+    o_assert_dbg(nullptr == this->curRenderPass);
+    if (nullptr == pass) {
+        this->pointers.displayMgr->glBindDefaultFramebuffer();
+    }
+    else {
+        ::glBindFramebuffer(GL_FRAMEBUFFER, pass->glFramebuffer);
+        ORYOL_GL_CHECK_ERROR();
+    }
+    this->curRenderPass = pass;
+    this->rtValid = true;
+
+    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false, false);
+    
+    if (this->rasterizerState.ScissorTestEnabled) {
+        this->rasterizerState.ScissorTestEnabled = false;
+        ::glDisable(GL_SCISSOR_TEST);
+    }
+
+    // perform clear actions on render targets
+    // FIXME: if default render pass, take load action, default
+    // color and default depth/stencil from GfxConfig, otherwise
+    // take actions from renderPass, if a clearState is provided,
+    // use the colors from it as override (not the actions!)
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderer::endPass(bool record) {
+    o_assert_dbg(this->valid);
+
+    if (this->useCmdBuffer && record) {
+        this->cmdBuffer.endPass();
+        return;
+    }
+
+    // FIXME: perform MSAA resolve if necessary
+
+    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    this->curRenderPass = nullptr;
+    this->rtValid = false;
+}
+
+//------------------------------------------------------------------------------
+void
 glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState, bool record) {
     o_assert_dbg(this->valid);
 
@@ -361,7 +424,7 @@ glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState, bool re
     // update GL state
     if (clearState.Actions & ClearState::ColorBit) {
         glClearMask |= GL_COLOR_BUFFER_BIT;
-        ::glClearColor(clearState.Color.x, clearState.Color.y, clearState.Color.z, clearState.Color.w);
+        ::glClearColor(clearState.Color[0].x, clearState.Color[0].y, clearState.Color[0].z, clearState.Color[0].w);
         if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
             this->blendState.ColorWriteMask = PixelChannel::RGBA;
             ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

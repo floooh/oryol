@@ -34,10 +34,10 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
 
     // attach color textures
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
-        texture* tex = rp.colorTextures[i];
-        if (tex) {
+        texture* colorTex = rp.colorTextures[i];
+        if (colorTex) {
             // FIXME: other texture types than Texture2D!
-            const GLuint glTex = tex->glTextures[0];
+            const GLuint glTex = colorTex->glTextures[0];
             o_assert_dbg(glTex);
             const int mipLevel = rp.Setup.ColorAttachments[i].Level;
             ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, glTex, mipLevel);
@@ -48,7 +48,16 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
         }
     }
 
-    // FIXME: depth-stencil attachment!
+    // attach depth-stencil buffer
+    texture* dsTex = rp.depthStencilTexture;
+    if (dsTex) {
+        const GLuint glDepthRenderBuffer = dsTex->glDepthRenderbuffer;
+        o_assert_dbg(glDepthRenderBuffer);
+        ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
+        if (PixelFormat::IsDepthStencilFormat(dsTex->Setup.DepthFormat)) {
+            ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, glDepthRenderBuffer);
+        }
+    }
 
     // check framebuffer completeness
     if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

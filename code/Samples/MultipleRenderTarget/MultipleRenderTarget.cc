@@ -27,9 +27,11 @@ MultipleRenderTargetApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     auto rtSetup = TextureSetup::RenderTarget(DisplayWidth, DisplayHeight);
+    rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     Id rt0 = Gfx::CreateResource(rtSetup);
+    rtSetup.DepthFormat = PixelFormat::None;
     Id rt1 = Gfx::CreateResource(rtSetup);
-    auto passSetup = RenderPassSetup::From({ rt0, rt1 });
+    auto passSetup = RenderPassSetup::From({ rt0, rt1 }, rt0);
     this->renderPass = Gfx::CreateResource(passSetup);
     return App::OnInit();
 }
@@ -37,7 +39,9 @@ MultipleRenderTargetApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 MultipleRenderTargetApp::OnRunning() {
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
+
+    Gfx::EndPass();
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }

@@ -401,7 +401,7 @@ TestInputApp::OnRunning() {
     this->updateView();
     
     // draw frame
-    this->clearState.Color = this->getClearColor();
+    this->clearState.Color[0] = this->getClearColor();
     Gfx::ApplyDefaultRenderTarget(this->clearState);
     this->drawCube();
     Dbg::DrawTextBuffer();

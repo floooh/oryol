@@ -50,6 +50,35 @@ glCmdBuffer::setCurrentUniformBuffer(uint8_t* ptr, int size) {
 
 //------------------------------------------------------------------------------
 void
+glCmdBuffer::beginPass(renderPass* rp, ClearState* clearState) {
+    o_assert_dbg(this->isValid);
+    const int csSize = 1 + (sizeof(ClearState) / sizeof(uintptr_t));
+    if (this->cmdCheckRoom(3 + csSize)) {
+        this->cmdPut(cmdBeginPass);
+        this->cmdPut(rp);
+        if (clearState) {
+            this->cmdPut(true);
+            ClearState* csPtr = (ClearState*)&(this->cmdBuffer[this->cmdCurIndex]);
+            *csPtr = *clearState;
+            this->cmdCurIndex += csSize;
+        }
+        else {
+            this->cmdPut(false);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+glCmdBuffer::endPass() {
+    o_assert_dbg(this->isValid);
+    if (this->cmdCheckRoom(1)) {
+        this->cmdPut(cmdEndPass);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 glCmdBuffer::rendertarget(texture* rt, const ClearState& clearState) {
     o_assert_dbg(this->isValid);
     const int csSize = 1 + (sizeof(ClearState) / sizeof(uintptr_t));
@@ -177,6 +206,25 @@ glCmdBuffer::flush(glRenderer* r) {
     int i = 0;
     while (i < this->cmdCurIndex) {
         switch (this->cmdGet<cmd>(i++)) {
+            case cmdBeginPass:
+                {
+                    renderPass* rp = this->cmdGet<renderPass*>(i++);
+                    bool hasClearState = this->cmdGet<bool>(i++);
+                    if (hasClearState) {
+                        ClearState* csPtr = (ClearState*)&(this->cmdBuffer[i]);
+                        i += 1 + (sizeof(ClearState) / sizeof(uintptr_t));
+                        r->beginPass(rp, csPtr, false);
+                    }
+                    else {
+                        r->beginPass(rp, nullptr, false);
+                    }
+                }
+                break;
+
+            case cmdEndPass:
+                r->endPass(false);
+                break;
+
             case cmdRenderTarget:
                 {
                     texture* rt = this->cmdGet<texture*>(i++);

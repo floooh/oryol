@@ -138,7 +138,7 @@ DDSTextureLoadingApp::OnInit() {
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
-    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    this->clearState.Color[0] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;

@@ -21,6 +21,8 @@ gfxResourceContainerBase::setup(const GfxSetup& setup, const gfxPointers& ptrs) 
     o_assert(!this->isValid());
     
     this->pointers = ptrs;
+    this->pendingLoaders.Reserve(128);
+    this->destroyQueue.Reserve(128);
 
     this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
     this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
@@ -328,7 +330,23 @@ gfxResourceContainerBase::Load(const Ptr<ResourceLoader>& loader) {
 
 //------------------------------------------------------------------------------
 void
-gfxResourceContainerBase::Destroy(ResourceLabel label) {
+gfxResourceContainerBase::DestroyDeferred(const ResourceLabel& label) {
+    o_assert_dbg(this->isValid());
+    this->destroyQueue.Add(label);
+}
+
+//------------------------------------------------------------------------------
+void
+gfxResourceContainerBase::GarbageCollect() {
+    for (const ResourceLabel& label : this->destroyQueue) {
+        this->Destroy(label);
+    }
+    this->destroyQueue.Clear();
+}
+
+//------------------------------------------------------------------------------
+void
+gfxResourceContainerBase::Destroy(const ResourceLabel& label) {
     o_assert_dbg(this->isValid());
     
     Array<Id> ids = this->registry.Remove(label);

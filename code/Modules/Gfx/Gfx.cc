@@ -108,6 +108,29 @@ Gfx::FrameInfo() {
 
 //------------------------------------------------------------------------------
 void
+Gfx::BeginPass() {
+    o_assert_dbg(IsValid());
+    state->renderer.beginPass(nullptr, nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::BeginPass(const Id& id) {
+    o_assert_dbg(IsValid());
+    renderPass* pass = state->resourceContainer.lookupRenderPass(id);
+    o_assert_dbg(pass);
+    state->renderer.beginPass(pass, nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::EndPass() {
+    o_assert_dbg(IsValid());
+    state->renderer.endPass();
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::ApplyDefaultRenderTarget(const ClearState& clearState) {
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumApplyRenderTarget++;
@@ -268,7 +291,7 @@ Gfx::QueryResourcePoolInfo(GfxResourceType::Code resType) {
 void
 Gfx::DestroyResources(ResourceLabel label) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer.Destroy(label);
+    return state->resourceContainer.DestroyDeferred(label);
 }
 
 //------------------------------------------------------------------------------
@@ -301,6 +324,7 @@ Gfx::CommitFrame() {
     o_assert_dbg(IsValid());
     state->renderer.commitFrame();
     state->displayManager.Present();
+    state->resourceContainer.GarbageCollect();
     state->gfxFrameInfo = GfxFrameInfo();
 }
 
