@@ -54,8 +54,8 @@ public:
 
     /// color load action for the default-render-pass
     RenderPassLoadAction::Code DefaultColorLoadAction = RenderPassLoadAction::Clear;
-    /// depth-stencil load action for the default-render-pass
-    RenderPassLoadAction::Code  DefaultDepthStencilLoadAction = RenderPassLoadAction::Clear;
+    /// depth buffer load action for the default-render-pass
+    RenderPassLoadAction::Code DefaultDepthStencilLoadAction = RenderPassLoadAction::Clear;
     /// default clear color
     glm::vec4 DefaultClearColor;
     /// default clear depth value

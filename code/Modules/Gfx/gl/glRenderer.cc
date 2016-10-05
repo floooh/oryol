@@ -308,6 +308,7 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
 void
 glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
     o_assert_dbg(this->valid);
+    ORYOL_GL_CHECK_ERROR();
 
     if (nullptr == pass) {
         this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
@@ -329,22 +330,94 @@ glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
     else {
         ::glBindFramebuffer(GL_FRAMEBUFFER, pass->glFramebuffer);
         ORYOL_GL_CHECK_ERROR();
+        int numAtts = 0;
+        GLuint att[GfxConfig::MaxNumColorAttachments] = { };
+        for (; numAtts < GfxConfig::MaxNumColorAttachments; numAtts++) {
+            if (pass->colorTextures[numAtts]) {
+                att[numAtts] = GL_COLOR_ATTACHMENT0 + numAtts;
+            }
+            else {
+                break;
+            }
+        }
+        ::glDrawBuffers(numAtts, att);
+        ORYOL_GL_CHECK_ERROR();
     }
+    ORYOL_GL_CHECK_ERROR();
     this->curRenderPass = pass;
     this->rtValid = true;
 
+    // prepare state for clear operations
     this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false, false);
-    
     if (this->rasterizerState.ScissorTestEnabled) {
         this->rasterizerState.ScissorTestEnabled = false;
         ::glDisable(GL_SCISSOR_TEST);
     }
+    if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
+        this->blendState.ColorWriteMask = PixelChannel::RGBA;
+        ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    }
+    if (!this->depthStencilState.DepthWriteEnabled) {
+        this->depthStencilState.DepthWriteEnabled = true;
+        ::glDepthMask(GL_TRUE);
+    }
+    if (this->depthStencilState.StencilWriteMask != 0xFF) {
+        this->depthStencilState.StencilWriteMask = 0xFF;
+        ::glStencilMask(0xFF);
+    }
+    ORYOL_GL_CHECK_ERROR();
 
     // perform clear actions on render targets
-    // FIXME: if default render pass, take load action, default
-    // color and default depth/stencil from GfxConfig, otherwise
-    // take actions from renderPass, if a clearState is provided,
-    // use the colors from it as override (not the actions!)
+    if (nullptr == pass) {
+        // special case: default render pass
+        GLbitfield clearMask = 0;
+        if (this->gfxSetup.DefaultColorLoadAction == RenderPassLoadAction::Clear) {
+            clearMask |= GL_COLOR_BUFFER_BIT;
+            const glm::vec4& c = clearState ? clearState->Color[0] : this->gfxSetup.DefaultClearColor;
+            ::glClearColor(c.x, c.y, c.z, c.w);
+        }
+        if (this->gfxSetup.DefaultDepthStencilLoadAction == RenderPassLoadAction::Clear) {
+            clearMask |= GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT;
+            #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+            ::glClearDepthf(clearState ? clearState->Depth : this->gfxSetup.DefaultClearDepth);
+            #else
+            ::glClearDepth(clearState ? clearState->Depth : this->gfxSetup.DefaultClearDepth);
+            #endif
+            ::glClearStencil(clearState ? clearState->Stencil : this->gfxSetup.DefaultClearStencil);
+        }
+        if (0 != clearMask) {
+            ::glClear(clearMask);
+        }
+    }
+    else {
+        // clear actions for offscreen pass
+        for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            const auto& att = pass->Setup.ColorAttachments[i];
+            if (pass->colorTextures[i] && (att.LoadAction == RenderPassLoadAction::Clear)) {
+                const GLfloat* clearValues = nullptr;
+                if (clearState) {
+                    clearValues = glm::value_ptr(clearState->Color[i]);
+                }
+                else {
+                    clearValues = glm::value_ptr(att.DefaultClearColor);
+                }
+                ::glClearBufferfv(GL_COLOR, i, clearValues);
+                ORYOL_GL_CHECK_ERROR();
+            }
+        }
+        const auto& att = pass->Setup.DepthStencilAttachment;
+        if (pass->depthStencilTexture && (att.LoadAction == RenderPassLoadAction::Clear)) {
+            if (clearState) {
+                ::glClearBufferfi(GL_DEPTH_STENCIL, 0, clearState->Depth, clearState->Stencil);
+                ORYOL_GL_CHECK_ERROR();
+            }
+            else {
+                ::glClearBufferfi(GL_DEPTH_STENCIL, 0, att.DepthClearValue, att.StencilClearValue);
+                ORYOL_GL_CHECK_ERROR();
+            }
+        }
+    }
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
