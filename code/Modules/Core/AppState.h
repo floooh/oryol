@@ -27,6 +27,7 @@ public:
     static const char* ToString(Code c) {
         switch (c) {
             case Init:      return "Init";
+            case Running:   return "Running";
             case Cleanup:   return "Cleanup";
             case Destroy:   return "Destroy";
             case Blocked:   return "Blocked";
