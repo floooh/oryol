@@ -621,7 +621,7 @@ public:
     @class Oryol::VertexFormat
     @ingroup Gfx
     @brief vertex component formats
-    @see VertexLayout
+    @see Vertex
     
     NOTE: The un-normalized integer formats are not compatible across
     GLES2 and D3D11! GLES2 needs to read those as float vec, but D3D11 
@@ -714,7 +714,7 @@ public:
     enum Code {
         GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
         GLSL120,        ///< OpenGL 2.1
-        GLSL150,        ///< OpenGL 3.0
+        GLSL330,        ///< OpenGL 3.3
         GLSLES3,        ///< OpenGLES3
         HLSL5,          ///< D3D11 HLSL
         Metal,          ///< Metal shader language

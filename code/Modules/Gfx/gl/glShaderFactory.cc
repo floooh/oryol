@@ -50,7 +50,7 @@ glShaderFactory::SetupResource(shader& shd) {
     #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     const ShaderLang::Code slang = useUniformBlocks ? ShaderLang::GLSLES3 : ShaderLang::GLSL100;
     #elif ORYOL_OPENGL_CORE_PROFILE
-    const ShaderLang::Code slang = ShaderLang::GLSL150;
+    const ShaderLang::Code slang = ShaderLang::GLSL330;
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif

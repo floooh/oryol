@@ -20,11 +20,13 @@ public:
 
     const int DisplayWidth = 640;
     const int DisplayHeight = 480;
+    const int OffscreenWidth = 200;
+    const int OffscreenHeight = 200;
 
     Id mrtPass;
-    DrawState cubeDrawState;
     DrawState rt0DrawState;
     DrawState rt1DrawState;
+    DrawState cubeDrawState;
     DisplayShader::VSParams cubeParams;
     glm::mat4 proj;
     float angleX = 0.0f;
@@ -39,7 +41,7 @@ MultipleRenderTargetApp::OnInit() {
     gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     Gfx::Setup(gfxSetup);
 
-    auto rtSetup = TextureSetup::RenderTarget(DisplayWidth, DisplayHeight);
+    auto rtSetup = TextureSetup::RenderTarget(OffscreenWidth, OffscreenHeight);
     rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     Id rt0 = Gfx::CreateResource(rtSetup);
     rtSetup.DepthFormat = PixelFormat::None;
@@ -55,7 +57,7 @@ MultipleRenderTargetApp::OnInit() {
         .Add(VertexAttr::Normal, VertexFormat::UByte4N);
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     this->cubeDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(DisplayShader::Setup());
+    Id shd = Gfx::CreateResource(OffscreenShader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
@@ -80,9 +82,7 @@ MultipleRenderTargetApp::OnInit() {
     this->rt1DrawState.Mesh[0] = quadMesh;
     this->rt1DrawState.FSTexture[Textures::Texture] = rt1;
 
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), float(OffscreenWidth), float(OffscreenHeight), 0.01f, 100.0f);
 
     return App::OnInit();
 }
@@ -96,19 +96,17 @@ MultipleRenderTargetApp::OnRunning() {
     this->cubeParams.ModelViewProjection = this->computeMVP(glm::vec3(0, 0, -3));
 
     Gfx::BeginPass(this->mrtPass);
+    Gfx::ApplyDrawState(this->cubeDrawState);
+    Gfx::ApplyUniformBlock(this->cubeParams);
+    Gfx::Draw();
     Gfx::EndPass();
 
     Gfx::BeginPass();
-    Gfx::ApplyViewPort(0, 0, 100, 100);
+    Gfx::ApplyViewPort(0, 0, 200, 200);
     Gfx::ApplyDrawState(this->rt0DrawState);
     Gfx::Draw();
-    Gfx::ApplyViewPort(100, 0, 100, 100);
+    Gfx::ApplyViewPort(200, 0, 200, 200);
     Gfx::ApplyDrawState(this->rt1DrawState);
-    Gfx::Draw();
-    const auto& rtAttrs = Gfx::RenderTargetAttrs();
-    Gfx::ApplyViewPort(0, 0, rtAttrs.FramebufferWidth, rtAttrs.FramebufferHeight);
-    Gfx::ApplyDrawState(this->cubeDrawState);
-    Gfx::ApplyUniformBlock(this->cubeParams);
     Gfx::Draw();
     Gfx::EndPass();
 

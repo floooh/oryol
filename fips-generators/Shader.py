@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 72
+Version = 74
 
 import os
 import sys
@@ -22,12 +22,12 @@ if platform.system() == 'Darwin' :
     from util import metalcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'glsles3', 'hlsl5', 'metal' ]
+slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3', 'hlsl5', 'metal' ]
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
     'glsl120': 'ShaderLang::GLSL120',
-    'glsl150': 'ShaderLang::GLSL150',
+    'glsl330': 'ShaderLang::GLSL330',
     'glsles3': 'ShaderLang::GLSLES3',
     'hlsl5':   'ShaderLang::HLSL5',
     'metal':   'ShaderLang::Metal'
@@ -36,7 +36,7 @@ slSlangTypes = {
 isGLSL = {
     'glsl100': True,
     'glsl120': True,
-    'glsl150': True,
+    'glsl330': True,
     'glsles3': True,
     'hlsl5': False,
     'metal': False
@@ -45,7 +45,7 @@ isGLSL = {
 isHLSL = {
     'glsl100': False,
     'glsl120': False,
-    'glsl150': False,
+    'glsl330': False,
     'glsles3': False,
     'hlsl5': True,
     'metal': False
@@ -54,7 +54,7 @@ isHLSL = {
 isMetal = {
     'glsl100': False,
     'glsl120': False,
-    'glsl150': False,
+    'glsl330': False,
     'glsles3': False,
     'hlsl5': False,
     'metal': True
@@ -63,7 +63,7 @@ isMetal = {
 glslVersionNumber = {
     'glsl100': 100,
     'glsl120': 120,
-    'glsl150': 150,
+    'glsl330': 330,
     'glsles3': 300,
     'hlsl5': None,
     'metal': None
@@ -81,6 +81,9 @@ slMacros = {
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
+        '_color1': 'gl_FragColor',
+        '_color2': 'gl_FragColor',
+        '_color3': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
@@ -99,6 +102,9 @@ slMacros = {
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
+        '_color1': 'gl_FragColor',
+        '_color2': 'gl_FragColor',
+        '_color3': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
@@ -107,16 +113,19 @@ slMacros = {
         'texCUBE(s, t)': 'textureCube(s,t)',
         'tex2Dvs(s, t)': 'texture2D(s,t)'
     },
-    'glsl150': {
+    'glsl330': {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
-        'ORYOL_GLSL_VERSION': '(150)',
+        'ORYOL_GLSL_VERSION': '(330)',
         '_vertexid': 'gl_VertexID',
         '_instanceid': 'gl_InstanceID',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
+        '_color1': '_FragColor1',
+        '_color2': '_FragColor2',
+        '_color3': '_FragColor3',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
@@ -135,6 +144,9 @@ slMacros = {
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
+        '_color1': '_FragColor1',
+        '_color2': '_FragColor2',
+        '_color3': '_FragColor3',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
@@ -176,6 +188,10 @@ slMacros = {
         '_position': 'vs_out._vofi_position',
         '_pointsize': 'vs_out._vofi_pointsize',
         '_color': '_fo_color',
+        '_color0': '_fo_color0',
+        '_color1': '_fo_color1',
+        '_color2': '_fo_color2',
+        '_color3': '_fo_color3',
         '_const': 'constant',
         '_func': 'static',
         'bool': 'int',
@@ -524,6 +540,9 @@ class Shader(Snippet) :
         self.hasPointSize = False
         self.hasVertexId = False
         self.hasInstanceId = False
+        self.hasColor1 = False
+        self.hasColor2 = False
+        self.hasColor3 = False
 
     def dump(self) :
         Snippet.dump(self)
@@ -601,10 +620,13 @@ class Parser :
         self.current = None
         self.stack = []
         self.inComment = False
-        rx_str = '[\s\w,;=+-/%(){}\[\]]*'
+        rx_str = '[\s\w,;=+-/%()*{}\[\]]*'
         self.regexPointSize = re.compile('^{}_pointsize{}$'.format(rx_str, rx_str))
         self.regexVertexId = re.compile('^{}_vertexid{}$'.format(rx_str, rx_str))
         self.regexInstanceId = re.compile('^{}_instanceid{}$'.format(rx_str, rx_str))
+        self.regexColor1 = re.compile('^{}_color1{}$'.format(rx_str, rx_str))
+        self.regexColor2 = re.compile('^{}_color2{}$'.format(rx_str, rx_str))
+        self.regexColor3 = re.compile('^{}_color3{}$'.format(rx_str, rx_str))
 
     #---------------------------------------------------------------------------
     def stripComments(self, line) :
@@ -904,6 +926,12 @@ class Parser :
                 self.current.hasVertexId = True
             if self.regexInstanceId.match(line) :
                 self.current.hasInstanceId = True
+            if self.regexColor1.match(line) :
+                self.current.hasColor1 = True
+            if self.regexColor2.match(line) :
+                self.current.hasColor2 = True
+            if self.regexColor3.match(line) :
+                self.current.hasColor3 = True
 
     #---------------------------------------------------------------------------
     def parseLine(self, line) :
@@ -952,7 +980,7 @@ class GLSLGenerator :
 
     #---------------------------------------------------------------------------
     def genUniforms(self, shd, slVersion, lines) :
-        if glslVersionNumber[slVersion] < 150 :
+        if glslVersionNumber[slVersion] < 300 :
             # no GLSL uniform blocks
             for ub in shd.uniformBlocks :
                 for type in ub.uniformsByType :
@@ -1075,7 +1103,16 @@ class GLSLGenerator :
 
         # write the fragcolor output
         if glslVersionNumber[slVersion] >= 130 :
-            lines.append(Line('out vec4 _FragColor;'))
+            if glslVersionNumber[slVersion] >= 300 :
+                lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
+                if fs.hasColor1 :
+                    lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
+                if fs.hasColor2 :
+                    lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
+                if fs.hasColor3 :
+                    lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
+            else :
+                lines.append(Line('out vec4 _FragColor;'))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
