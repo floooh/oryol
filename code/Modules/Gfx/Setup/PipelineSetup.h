@@ -29,7 +29,7 @@ public:
 
     /// resource locator
     class Locator Locator;
-    /// blend state
+    /// blend state (GLES3.0 doesn't allow separate MRT blend state
     class BlendState BlendState;
     /// blend color
     glm::vec4 BlendColor;

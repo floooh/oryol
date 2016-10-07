@@ -540,9 +540,24 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
 
     // do debug validation before record/playback, simplifies debugging
     const PipelineSetup& setup = pip->Setup;
+    #if ORYOL_DEBUG
     o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
     o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
     o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");    
+    if (this->curRenderPass) {
+        for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            const texture* tex = this->curRenderPass->colorTextures[i];
+            if (tex) {
+                o_assert2(setup.BlendState.ColorFormat == tex->textureAttrs.ColorFormat, "ColorFormat in BlendState must match MRT color attachments!\n");
+                o_assert2(setup.RasterizerState.SampleCount == tex->textureAttrs.SampleCount, "SampleCount in RasterizerState must match MRT color attachments!\n");
+            }
+        }
+        const texture* dsTex = this->curRenderPass->depthStencilTexture;
+        if (dsTex) {
+            o_assert2(setup.BlendState.DepthFormat == dsTex->textureAttrs.DepthFormat, "DepthFormat in BlendState must match depth/stencil attachment!\n");
+        }
+    }
+    #endif
 
     if (this->useCmdBuffer && record) {
         this->cmdBuffer.drawState(pip, meshes, numMeshes, capture);
