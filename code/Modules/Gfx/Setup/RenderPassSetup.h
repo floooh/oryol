@@ -28,7 +28,6 @@ public:
         Id Texture;
         uint16_t Level = 0;
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        RenderPassStoreAction::Code StoreAction = RenderPassStoreAction::Store;
         glm::vec4 DefaultClearColor;
     };
     StaticArray<ColorAttachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
@@ -38,11 +37,13 @@ public:
         Id Texture;
         uint16_t Level = 0;
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        RenderPassStoreAction::Code StoreAction = RenderPassStoreAction::Store;
         float DepthClearValue = 1.0f;
         uint8_t StencilClearValue = 0;
     };
     struct DepthStencilAttachment DepthStencilAttachment;
+
+    /// what to do in Gfx::EndPass (preserve or drop content, MSAA resolve)
+    RenderPassStoreAction::Code StoreAction = RenderPassStoreAction::Store;
 };
 
 } // namespace Oryol

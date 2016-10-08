@@ -55,7 +55,9 @@ renderPassFactoryBase::SetupResource(renderPass& rp) {
         rp.depthStencilTexture = this->pointers.texturePool->Lookup(id);
         o_assert_dbg(rp.depthStencilTexture && (ResourceState::Valid == rp.depthStencilTexture->State));
     }
+    #if ORYOL_DEBUG
     this->validateRenderPass(rp);
+    #endif
     return ResourceState::Valid;
 }
 
@@ -66,6 +68,7 @@ renderPassFactoryBase::DestroyResource(renderPass& rp) {
 }
 
 //------------------------------------------------------------------------------
+#if ORYOL_DEBUG
 void
 renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
 
@@ -89,12 +92,16 @@ renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
     // check that all render targets have the required params
     const int w = rp.colorTextures[0]->textureAttrs.Width;
     const int h = rp.colorTextures[0]->textureAttrs.Height;
+    const int sampleCount = rp.colorTextures[0]->textureAttrs.SampleCount;
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
         const texture* tex = rp.colorTextures[i];
         if (tex) {
             const auto& attrs = tex->textureAttrs;
             if ((attrs.Width != w) || (attrs.Height != h)) {
                 o_error("invalid render pass: all color attachments must have the same size!\n");
+            }
+            if (attrs.SampleCount != sampleCount) {
+                o_error("invalid render pass: all color attachments must have same sample-count!\n");
             }
             if (attrs.TextureUsage != Usage::Immutable) {
                 o_error("invalid render pass: color attachments must have immutable usage!\n");
@@ -110,6 +117,9 @@ renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
         if ((attrs.Width != w) || (attrs.Height != h)) {
             o_error("invalid render pass: depth-stencil attachment must have same size as color attachments!\n");
         }
+        if (attrs.SampleCount != sampleCount) {
+            o_error("invalid render pass: depth-stencil attachment must have sample sample-count as color attachments!\n");
+        }
         if (attrs.TextureUsage != Usage::Immutable) {
             o_error("invalid render pass: depth attachment must have immutable usage!\n");
         }
@@ -118,6 +128,7 @@ renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
         }
     }
 }
+#endif
 
 } // namespace _priv
 } // namespace Oryol

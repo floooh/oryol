@@ -430,8 +430,29 @@ glRenderer::endPass(bool record) {
         return;
     }
 
-    // FIXME: perform MSAA resolve if necessary
+    // perform the MSAA resolve if necessary
+    const renderPass* rp = this->curRenderPass;
+    if (rp) {
+        if ((rp->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
+            (rp->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve)) {
 
+            o_assert_dbg(rp->glMSAAResolveFramebuffer);
+            ::glBindFramebuffer(GL_READ_FRAMEBUFFER, rp->glFramebuffer);
+            ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rp->glMSAAResolveFramebuffer);
+            o_assert_dbg(rp->colorTextures[0]);
+            const int w = rp->colorTextures[0]->textureAttrs.Width;
+            const int h = rp->colorTextures[0]->textureAttrs.Height;
+            for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+                if (rp->colorTextures[i]) {
+                    const GLenum bufId = GL_COLOR_ATTACHMENT0+i;
+                    ::glReadBuffer(bufId);
+                    ::glDrawBuffers(1, &bufId);
+                    ::glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                }
+            }
+            ORYOL_GL_CHECK_ERROR();
+        }
+    }
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     this->curRenderPass = nullptr;
     this->rtValid = false;

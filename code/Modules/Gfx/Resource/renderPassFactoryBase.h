@@ -37,7 +37,9 @@ protected:
 
 private:
     /// check render-pass for valid configuration
+    #if ORYOL_DEBUG
     static void validateRenderPass(const renderPass& rp);
+    #endif
 };
 
 } // namespace _priv

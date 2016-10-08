@@ -42,6 +42,7 @@ MultipleRenderTargetApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     auto rtSetup = TextureSetup::RenderTarget(OffscreenWidth, OffscreenHeight);
+    rtSetup.SampleCount = 4;
     rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     Id rt0 = Gfx::CreateResource(rtSetup);
     rtSetup.DepthFormat = PixelFormat::None;
@@ -49,6 +50,7 @@ MultipleRenderTargetApp::OnInit() {
     auto passSetup = RenderPassSetup::From({ rt0, rt1 }, rt0);
     passSetup.ColorAttachments[0].DefaultClearColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     passSetup.ColorAttachments[1].DefaultClearColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    passSetup.StoreAction = RenderPassStoreAction::Resolve;
     this->mrtPass = Gfx::CreateResource(passSetup);
 
     ShapeBuilder shapeBuilder;
@@ -62,7 +64,7 @@ MultipleRenderTargetApp::OnInit() {
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     ps.RasterizerState.CullFaceEnabled = true;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    ps.RasterizerState.SampleCount = rtSetup.SampleCount;
     this->cubeDrawState.Pipeline = Gfx::CreateResource(ps);
 
     auto quadMeshSetup = MeshSetup::FullScreenQuad();
