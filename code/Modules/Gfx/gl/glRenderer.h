@@ -10,7 +10,7 @@
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/ClearState.h"
+#include "Gfx/Core/PassState.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/Attrs/ImageDataAttrs.h"
@@ -47,16 +47,14 @@ public:
     bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame
     void commitFrame();
-    /// get the current render target attributes
-    const DisplayAttrs& renderTargetAttrs() const;
+    /// get the current render pass attributes
+    const DisplayAttrs& renderPassAttrs() const;
 
     /// begin rendering pass (both ptrs can be nullptr)
-    void beginPass(renderPass* pass, ClearState* clearState, bool record=true);
+    void beginPass(renderPass* pass, const PassState* passState, bool record=true);
     /// end current rendering pass
     void endPass(bool record=true);
 
-    /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt, const ClearState& clearState, bool record=true);
     /// apply viewport
     void applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record=true);
     /// apply scissor rect
@@ -135,12 +133,11 @@ private:
     static GLenum mapBlendOp[BlendOperation::NumBlendOperations];
     static GLenum mapCullFace[Face::NumFaceCodes];
 
-    bool rtValid;
-    DisplayAttrs rtAttrs;
+    bool rpValid;
+    DisplayAttrs rpAttrs;
     GfxSetup gfxSetup;
     
     // high-level state cache
-    texture* curRenderTarget;
     renderPass* curRenderPass;
     pipeline* curPipeline;
     mesh* curPrimaryMesh;
@@ -181,8 +178,8 @@ private:
 
 //------------------------------------------------------------------------------
 inline const DisplayAttrs&
-glRenderer::renderTargetAttrs() const {
-    return this->rtAttrs;
+glRenderer::renderPassAttrs() const {
+    return this->rpAttrs;
 }
     
 } // namespace _priv

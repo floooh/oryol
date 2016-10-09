@@ -63,7 +63,7 @@ DrawCallPerfApp::OnRunning() {
     
     // render block
     TimePoint applyRtStart = Clock::Now();
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     applyRtTime = Clock::Since(applyRtStart);
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDrawState(this->drawState);
@@ -76,6 +76,7 @@ DrawCallPerfApp::OnRunning() {
     drawTime = Clock::Since(drawStart);
     
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
 
     // toggle particle update

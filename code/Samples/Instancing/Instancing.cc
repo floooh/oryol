@@ -68,13 +68,14 @@ InstancingApp::OnRunning() {
     
     // render block        
     TimePoint drawStart = Clock::Now();
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(0, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
     
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // toggle particle update

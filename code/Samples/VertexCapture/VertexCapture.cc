@@ -42,6 +42,7 @@ OryolMain(VertexCaptureApp);
 AppState::Code
 VertexCaptureApp::OnInit() {
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Vertex Capture Sample");
+    gfxSetup.DefaultClearColor = glm::vec4(0.2f, 0.3f, 0.4f, 1.0f);
     Gfx::Setup(gfxSetup);
     Input::Setup();
     Dbg::Setup();
@@ -117,8 +118,8 @@ VertexCaptureApp::computeCenterOfGravity() {
         mousePos = Input::MousePosition();
     }
     if ((mousePos.x > 0.0f) && (mousePos.y > 0.0f)) {
-        int fbWidth = (float) Gfx::RenderTargetAttrs().FramebufferWidth;
-        int fbHeight = (float) Gfx::RenderTargetAttrs().FramebufferHeight;
+        int fbWidth = (float) Gfx::RenderPassAttrs().FramebufferWidth;
+        int fbHeight = (float) Gfx::RenderPassAttrs().FramebufferHeight;
         float x = 3.1f * ((mousePos.x / fbWidth) * 2.0f - 1.0f);
         float y = 2.1f * ((mousePos.y / fbHeight) * -2.0f + 1.0f);
         glm::vec3 centerOfGravity = glm::vec3(x, y, 0.0f);
@@ -138,7 +139,7 @@ VertexCaptureApp::OnRunning() {
         return notSupported();
     }
 
-    Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.2f, 0.3f, 0.4f, 1.0f)));
+    Gfx::BeginPass();
 
     // initialize or update point positions
     int readIndex = this->frameIndex & 1;
@@ -190,7 +191,7 @@ VertexCaptureApp::OnRunning() {
         this->initParams.Num = 2048;
         this->initPointMeshes();
     }
-
+    Gfx::EndPass();
     Gfx::CommitFrame();
 
     this->frameIndex++;
@@ -217,7 +218,7 @@ VertexCaptureApp::notSupported() {
     #endif
     uint8_t x = (Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2;
     uint8_t y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
-    Gfx::ApplyDefaultRenderTarget(ClearState::ClearColor(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    Gfx::BeginPass(PassState(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     Dbg::CursorPos(x, y);
     Dbg::Print(msg);

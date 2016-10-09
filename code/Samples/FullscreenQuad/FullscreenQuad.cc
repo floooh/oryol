@@ -25,10 +25,11 @@ AppState::Code
 FullscreenQuadApp::OnRunning() {
     // render one frame
     this->params.Time += 1.0f / 60.0f;
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->params);
     Gfx::Draw();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?

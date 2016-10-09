@@ -24,7 +24,6 @@ private:
     int height;
     uint8_t* buffer = nullptr;
     StringBuilder strBuilder;
-    ClearState clearState;
 };
 OryolMain(DebugTextApp);
 
@@ -36,8 +35,9 @@ DebugTextApp::OnRunning() {
     this->moveChars();
     this->drawText();
     
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    Gfx::BeginPass();
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?
@@ -47,7 +47,9 @@ DebugTextApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(800, 600, "Oryol DebugText Sample"));
+    auto gfxSetup = GfxSetup::Window(800, 600, "Oryol DebugText Sample");
+    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    Gfx::Setup(gfxSetup);
     Dbg::Setup();
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     
@@ -55,8 +57,7 @@ DebugTextApp::OnInit() {
     this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
     this->buffer = (uint8_t*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
-    this->clearState.Color[0] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-    
+
     this->strBuilder.Reserve(this->width * 2);
     
     return App::OnInit();

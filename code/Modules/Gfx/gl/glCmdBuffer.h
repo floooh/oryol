@@ -12,7 +12,6 @@
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
-#include <cstring>
 
 namespace Oryol {
 namespace _priv {
@@ -35,11 +34,9 @@ public:
     void flush(glRenderer* renderer);
 
     /// begin a render pass
-    void beginPass(renderPass* rp, ClearState* clearState);
+    void beginPass(renderPass* rp, const PassState* passState);
     /// end a render pass
     void endPass();
-    /// apply render target
-    void rendertarget(texture* rt, const ClearState& clearState);
     /// set viewport
     void viewport(int x, int y, int w, int h, bool originTopLeft);
     /// set scissor rect
@@ -87,7 +84,6 @@ public:
     enum cmd {
         cmdBeginPass,
         cmdEndPass,
-        cmdRenderTarget,
         cmdViewport,
         cmdScissor,
         cmdDrawState,

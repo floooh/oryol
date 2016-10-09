@@ -12,7 +12,7 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
-#include "Gfx/Core/ClearState.h"
+#include "Gfx/Core/PassState.h"
 #include "Gfx/Core/DrawState.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/PrimitiveGroup.h"
@@ -48,8 +48,8 @@ public:
     static const class GfxSetup& GfxSetup();
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
-    /// get the current render target attributes (default or offscreen)
-    static const struct DisplayAttrs& RenderTargetAttrs();
+    /// get the current render pass attributes (default or offscreen)
+    static const struct DisplayAttrs& RenderPassAttrs();
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
 
@@ -85,15 +85,15 @@ public:
 
     /// begin rendering to default render pass
     static void BeginPass();
-    /// begin rendering to offscreen render pass
+    /// begin rendering to default render pass with override clear values
+    static void BeginPass(const PassState& passState);
+    /// begin offscreen rendering
     static void BeginPass(const Id& id);
+    /// begin offscreen rendering with override clear colors
+    static void BeginPass(const Id& id, const PassState& passState);
     /// finish rendering to current pass
     static void EndPass();
 
-    /// apply the default render target and perform clear-actions
-    static void ApplyDefaultRenderTarget(const ClearState& clearState=ClearState());
-    /// apply an offscreen render target and perform clear-actions
-    static void ApplyRenderTarget(const Id& id, const ClearState& clearState=ClearState());
     /// apply view port
     static void ApplyViewPort(int x, int y, int width, int height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in Pipeline object)
@@ -138,6 +138,7 @@ private:
         _priv::displayMgr displayManager;
         class _priv::renderer renderer;
         _priv::gfxResourceContainer resourceContainer;
+        bool inPass = false;
     };
     static _state* state;
 };

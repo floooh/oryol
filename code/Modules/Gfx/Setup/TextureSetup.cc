@@ -83,20 +83,6 @@ TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelF
 }
 
 //------------------------------------------------------------------------------
-TextureSetup
-TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
-    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type == GfxResourceType::Texture);
-
-    TextureSetup setup;
-    setup.setupAsRenderTarget = true;
-    setup.hasSharedDepth = true;
-    setup.DepthRenderTarget = depthRenderTarget;
-    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
 bool
 TextureSetup::ShouldSetupFromFile() const {
     return this->setupFromFile;
@@ -123,13 +109,7 @@ TextureSetup::ShouldSetupAsRenderTarget() const {
 //------------------------------------------------------------------------------
 bool
 TextureSetup::HasDepth() const {
-    return this->hasSharedDepth || (this->DepthFormat != PixelFormat::InvalidPixelFormat);
-}
-
-//------------------------------------------------------------------------------
-bool
-TextureSetup::HasSharedDepth() const {
-    return this->hasSharedDepth;
+    return this->DepthFormat != PixelFormat::InvalidPixelFormat;
 }
 
 } // namespace Oryol

@@ -30,7 +30,6 @@ private:
     Shader::VSParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
-    ClearState clearState;
 };
 OryolMain(DDSTextureLoadingApp);
 
@@ -40,7 +39,7 @@ DDSTextureLoadingApp::OnRunning() {
     
     this->distVal += 0.01f;
     
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    Gfx::BeginPass();
 
     // only render when texture is loaded (until texture placeholder are implemented)
     static const glm::vec3 pos[NumTextures] = {
@@ -77,6 +76,7 @@ DDSTextureLoadingApp::OnRunning() {
             Gfx::Draw();
         }
     }
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?
@@ -95,6 +95,7 @@ DDSTextureLoadingApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
+    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     Gfx::Setup(gfxSetup);
 
     // setup resources
@@ -138,8 +139,7 @@ DDSTextureLoadingApp::OnInit() {
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
-    this->clearState.Color[0] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-    
+
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

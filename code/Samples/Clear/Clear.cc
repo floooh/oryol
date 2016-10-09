@@ -16,7 +16,7 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    ClearState clearState;
+    PassState passState;
 };
 OryolMain(ClearApp);
 
@@ -25,13 +25,14 @@ AppState::Code
 ClearApp::OnRunning() {
 
     // render one frame
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    Gfx::BeginPass(this->passState);
+    Gfx::EndPass();
     Gfx::CommitFrame();
 
     // update the clear color for next frame
-    this->clearState.Color[0] += glm::vec4(0.01f, 0.005f, 0.0025f, 0.0f);
-    this->clearState.Color[0] = glm::mod(this->clearState.Color[0], glm::vec4(1.0f));
-    this->clearState.Color[0].w = 1.0f;
+    this->passState.Color[0] += glm::vec4(0.01f, 0.005f, 0.0025f, 0.0f);
+    this->passState.Color[0] = glm::mod(this->passState.Color[0], glm::vec4(1.0f));
+    this->passState.Color[0].w = 1.0f;
 
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

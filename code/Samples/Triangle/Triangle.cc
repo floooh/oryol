@@ -23,9 +23,10 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnRunning() {
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::Draw();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?

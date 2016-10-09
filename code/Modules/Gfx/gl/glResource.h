@@ -191,9 +191,7 @@ public:
     void Clear();
 
     GLenum glTarget;
-    GLuint glFramebuffer;
     GLuint glDepthRenderbuffer;
-    GLuint glMSAAResolveFramebuffer;
     GLuint glMSAARenderbuffer;
 
     static const int MaxNumSlots = 2;

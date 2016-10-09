@@ -46,7 +46,6 @@ private:
     float maxDist;
 
     DrawState drawState;
-    ClearState clearState;
     glm::vec2 startPolar;
     glm::vec2 polar;
     float distance = 6.0f;
@@ -401,10 +400,11 @@ TestInputApp::OnRunning() {
     this->updateView();
     
     // draw frame
-    this->clearState.Color[0] = this->getClearColor();
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    PassState passState(this->getClearColor());
+    Gfx::BeginPass(passState);
     this->drawCube();
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?

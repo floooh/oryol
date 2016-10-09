@@ -38,8 +38,6 @@ struct TextureAttrs {
     bool IsRenderTarget = false;
     /// true if this render target texture has an attached depth buffer
     bool HasDepthBuffer = false;
-    /// true if this render target texture shared a depth buffer with another render target texture
-    bool HasSharedDepthBuffer = false;
 };
     
 } // namespace Oryol

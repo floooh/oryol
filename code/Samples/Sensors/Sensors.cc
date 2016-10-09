@@ -75,7 +75,7 @@ SensorsApp::computeMVP() {
 AppState::Code
 SensorsApp::OnRunning() {
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     this->vsParams.ModelViewProjection = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
@@ -91,6 +91,7 @@ SensorsApp::OnRunning() {
     Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r", ypr.x, ypr.y, ypr.z);
     Dbg::PrintF(" frame time: %.3fms", frameTime.AsMilliSeconds());
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?

@@ -15,7 +15,7 @@
 #include "Core/Containers/Array.h"
 #include "Gfx/Core/Enums.h"
 #include "Gfx/Core/GfxConfig.h"
-#include "Gfx/Core/ClearState.h"
+#include "Gfx/Core/PassState.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
@@ -47,8 +47,6 @@ public:
     int SwapInterval = 1;
     /// window title
     String Title = "Oryol";
-    /// optional clear-hint how the default render target is clear, used in D3D12 for MSAA backbuffer
-    ClearState ClearHint;
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
 

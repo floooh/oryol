@@ -18,8 +18,8 @@ using namespace Oryol;
 
 class ResourceStressApp : public App {
 public:
-    AppState::Code OnRunning();
     AppState::Code OnInit();
+    AppState::Code OnRunning();
     AppState::Code OnCleanup();
 private:
     void createObjects();
@@ -40,38 +40,8 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     TextureSetup texBlueprint;
-    ClearState clearState;
 };
 OryolMain(ResourceStressApp);
-
-//------------------------------------------------------------------------------
-AppState::Code
-ResourceStressApp::OnRunning() {
-
-    // delete and create objects
-    this->frameCount++;
-    this->updateObjects();
-    this->createObjects();
-    this->showInfo();
-
-    Shader::VSParams vsParams;
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
-    for (const auto& obj : this->objects) {
-        // only render objects that have successfully loaded
-        const Id& tex = obj.drawState.FSTexture[Textures::Texture];
-        if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
-            vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
-            Gfx::ApplyDrawState(obj.drawState);
-            Gfx::ApplyUniformBlock(vsParams);
-            Gfx::Draw();
-        }
-    }
-    Dbg::DrawTextBuffer();
-    Gfx::CommitFrame();
-    
-    // quit or keep running?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -84,6 +54,7 @@ ResourceStressApp::OnInit() {
 
     // setup Gfx system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol Resource Stress Test");
+    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     gfxSetup.SetPoolSize(GfxResourceType::Mesh, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::Texture, MaxNumObjects + 32);
     gfxSetup.SetPoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32);
@@ -107,9 +78,37 @@ ResourceStressApp::OnInit() {
     this->texBlueprint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     this->texBlueprint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
 
-    this->clearState.Color[0] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-    
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+ResourceStressApp::OnRunning() {
+
+    // delete and create objects
+    this->frameCount++;
+    this->updateObjects();
+    this->createObjects();
+    this->showInfo();
+
+    Gfx::BeginPass();
+    for (const auto& obj : this->objects) {
+        // only render objects that have successfully loaded
+        const Id& tex = obj.drawState.FSTexture[Textures::Texture];
+        if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
+            Gfx::ApplyDrawState(obj.drawState);
+            Shader::VSParams vsParams;
+            vsParams.ModelViewProjection = this->proj * this->view * obj.modelTransform;
+            Gfx::ApplyUniformBlock(vsParams);
+            Gfx::Draw();
+        }
+    }
+    Dbg::DrawTextBuffer();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // quit or keep running?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

@@ -23,14 +23,17 @@ const int ParticleBufferHeight = NumParticlesY;
 
 class GPUParticlesApp : public App {
 public:
-    AppState::Code OnRunning();
     AppState::Code OnInit();
+    AppState::Code OnRunning();
     AppState::Code OnCleanup();
     
 private:
     void updateCamera();
 
-    Id particleBuffer[NumParticleBuffers];
+    struct {
+        Id texture;
+        Id pass;
+    } particleBuffer[NumParticleBuffers];
     DrawState initParticles;
     DrawState updParticles;
     DrawState drawParticles;
@@ -45,70 +48,8 @@ private:
     InitShader::FSParams initFSParams;
     UpdateShader::FSParams updFSParams;
     DrawShader::VSParams drawVSParams;
-
-    ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(GPUParticlesApp);
-
-//------------------------------------------------------------------------------
-AppState::Code
-GPUParticlesApp::OnRunning() {
-    
-    // increment frame count, update camera position
-    this->frameCount++;
-    this->updateCamera();
-    
-    // bump number of active particles
-    this->curNumParticles += NumParticlesEmittedPerFrame;
-    if (this->curNumParticles > MaxNumParticles) {
-        this->curNumParticles = MaxNumParticles;
-    }
-    
-    // ping and pong particle state buffer indices
-    const int readIndex = (this->frameCount + 1) % NumParticleBuffers;
-    const int drawIndex = this->frameCount % NumParticleBuffers;
-    
-    // update particle state texture by rendering a fullscreen-quad:
-    // - the previous and next particle state are stored in separate float textures
-    // - the particle update shader reads the previous state and draws the next state
-    // - we use a scissor rect around the currently active particles to make this update
-    //   a bit more efficient
-    const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-    this->updParticles.FSTexture[UpdateTextures::PrevState] = this->particleBuffer[readIndex];
-    this->updFSParams.NumParticles = (float) this->curNumParticles;
-    Gfx::ApplyRenderTarget(this->particleBuffer[drawIndex], this->noClearState);
-    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    Gfx::ApplyDrawState(this->updParticles);
-    Gfx::ApplyUniformBlock(this->updFSParams);
-    Gfx::Draw();
-    
-    // now the actual particle shape rendering:
-    // - the new particle state texture is sampled in the vertex shader to obtain particle positions
-    // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-    this->drawParticles.VSTexture[DrawTextures::ParticleState] = this->particleBuffer[drawIndex];
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->drawParticles);
-    Gfx::ApplyUniformBlock(this->drawVSParams);
-    Gfx::Draw(0, this->curNumParticles);
-    
-    Dbg::DrawTextBuffer();
-    Gfx::CommitFrame();
-    
-    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-void
-GPUParticlesApp::updateCamera() {
-    float angle = this->frameCount * 0.01f;
-    glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawVSParams.ModelViewProjection = this->proj * this->view * this->model;
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -136,15 +77,18 @@ GPUParticlesApp::OnInit() {
     // - 2 fullscreen-quad draw-states for emitting and updating particles
     // - 1 particle-rendering draw state
     
-    // the 2 ping/pong particle state textures
-    auto particleBufferSetup = TextureSetup::RenderTarget(ParticleBufferWidth, ParticleBufferHeight);
-    particleBufferSetup.ColorFormat = PixelFormat::RGBA32F;
-    particleBufferSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
-    particleBufferSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    this->particleBuffer[0] = Gfx::CreateResource(particleBufferSetup);
-    particleBufferSetup.Locator = "pong";
-    this->particleBuffer[1] = Gfx::CreateResource(particleBufferSetup);
-    
+    // the 2 ping/pong particle state textures and render passes
+    auto particleTextureSetup = TextureSetup::RenderTarget(ParticleBufferWidth, ParticleBufferHeight);
+    particleTextureSetup.ColorFormat = PixelFormat::RGBA32F;
+    particleTextureSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
+    particleTextureSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
+    for (int i = 0; i < 2; i++) {
+        this->particleBuffer[i].texture = Gfx::CreateResource(particleTextureSetup);
+        auto particlePassSetup = RenderPassSetup::From(this->particleBuffer[i].texture);
+        particlePassSetup.ColorAttachments[0].LoadAction = RenderPassLoadAction::DontCare;
+        this->particleBuffer[i].pass = Gfx::CreateResource(particlePassSetup);
+    }
+
     // a fullscreen mesh for the particle init- and update-shaders
     auto quadSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Id quadMesh = Gfx::CreateResource(quadSetup);
@@ -155,8 +99,8 @@ GPUParticlesApp::OnInit() {
     Id initShader = Gfx::CreateResource(InitShader::Setup());
     Id updShader = Gfx::CreateResource(UpdateShader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, initShader);
-    ps.BlendState.ColorFormat = particleBufferSetup.ColorFormat;
-    ps.BlendState.DepthFormat = particleBufferSetup.DepthFormat;
+    ps.BlendState.ColorFormat = particleTextureSetup.ColorFormat;
+    ps.BlendState.DepthFormat = particleTextureSetup.DepthFormat;
     this->initParticles.Pipeline = Gfx::CreateResource(ps);
     ps.Shader = updShader;
     ps.RasterizerState.ScissorTestEnabled = true;
@@ -206,16 +150,76 @@ GPUParticlesApp::OnInit() {
     this->drawVSParams.BufferDims = bufferDims;
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
-    Gfx::ApplyRenderTarget(this->particleBuffer[0], this->noClearState);
-    Gfx::ApplyDrawState(this->initParticles);
-    Gfx::ApplyUniformBlock(this->initFSParams);
-    Gfx::Draw();
-    Gfx::ApplyRenderTarget(this->particleBuffer[1], this->noClearState);
-    Gfx::ApplyDrawState(this->initParticles);
-    Gfx::ApplyUniformBlock(this->initFSParams);
-    Gfx::Draw();
-    
+    for (int i = 0; i < 2; i++) {
+        Gfx::BeginPass(this->particleBuffer[0].pass);
+        Gfx::ApplyDrawState(this->initParticles);
+        Gfx::ApplyUniformBlock(this->initFSParams);
+        Gfx::Draw();
+        Gfx::EndPass();
+    }
+
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+GPUParticlesApp::OnRunning() {
+    
+    // increment frame count, update camera position
+    this->frameCount++;
+    this->updateCamera();
+    
+    // bump number of active particles
+    this->curNumParticles += NumParticlesEmittedPerFrame;
+    if (this->curNumParticles > MaxNumParticles) {
+        this->curNumParticles = MaxNumParticles;
+    }
+    
+    // ping and pong particle state buffer indices
+    const int readIndex = (this->frameCount + 1) % NumParticleBuffers;
+    const int drawIndex = this->frameCount % NumParticleBuffers;
+    
+    // update particle state texture by rendering a fullscreen-quad:
+    // - the previous and next particle state are stored in separate float textures
+    // - the particle update shader reads the previous state and draws the next state
+    // - we use a scissor rect around the currently active particles to make this update
+    //   a bit more efficient
+    const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
+    this->updParticles.FSTexture[UpdateTextures::PrevState] = this->particleBuffer[readIndex].texture;
+    this->updFSParams.NumParticles = (float) this->curNumParticles;
+    Gfx::BeginPass(this->particleBuffer[drawIndex].pass);
+    Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
+    Gfx::ApplyDrawState(this->updParticles);
+    Gfx::ApplyUniformBlock(this->updFSParams);
+    Gfx::Draw();
+    Gfx::EndPass();
+    
+    // now the actual particle shape rendering:
+    // - the new particle state texture is sampled in the vertex shader to obtain particle positions
+    // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
+    this->drawParticles.VSTexture[DrawTextures::ParticleState] = this->particleBuffer[drawIndex].texture;
+    Gfx::BeginPass();
+    Gfx::ApplyDrawState(this->drawParticles);
+    Gfx::ApplyUniformBlock(this->drawVSParams);
+    Gfx::Draw(0, this->curNumParticles);
+    Dbg::DrawTextBuffer();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    Dbg::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
+}
+
+//------------------------------------------------------------------------------
+void
+GPUParticlesApp::updateCamera() {
+    float angle = this->frameCount * 0.01f;
+    glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
+    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->drawVSParams.ModelViewProjection = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------

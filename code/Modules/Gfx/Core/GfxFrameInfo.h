@@ -9,7 +9,7 @@
 namespace Oryol {
 
 struct GfxFrameInfo {
-    int NumApplyRenderTarget = 0;
+    int NumPasses = 0;
     int NumApplyViewPort = 0;
     int NumApplyScissorRect = 0;
     int NumApplyDrawState = 0;

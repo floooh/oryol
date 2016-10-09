@@ -217,7 +217,7 @@ PrimitiveTypesApp::OnRunning() {
     this->vsParams.ModelViewProjection = this->proj * this->view * model;
 
     // render the currently selected drawstate
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     int num = 0;
     switch (this->curPrimType) {
         case PrimitiveType::Points: num = NumVertices; break;
@@ -283,6 +283,7 @@ PrimitiveTypesApp::OnRunning() {
     }
 
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
 
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

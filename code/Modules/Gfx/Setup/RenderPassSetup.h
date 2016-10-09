@@ -17,11 +17,13 @@ namespace Oryol {
 
 class RenderPassSetup {
 public:
-    /// construct from single render target texture
+    /// construct from single render target textures, and option depth-stencil texture
+    static RenderPassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
+    /// construct from MRT render target textures, and option depth-stencil texture
     static RenderPassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
 
     /// resource locator
-    class Locator Locator;
+    class Locator Locator = Locator::NonShared();
 
     /// 1..N color attachments
     struct ColorAttachment {

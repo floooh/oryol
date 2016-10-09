@@ -42,6 +42,7 @@ Gfx::Setup(const class GfxSetup& setup) {
 void
 Gfx::Discard() {
     o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
     state->resourceContainer.Destroy(ResourceLabel::All);
     Core::PreRunLoop()->Remove(state->runLoopId);
     state->renderer.discard();
@@ -94,9 +95,9 @@ Gfx::DisplayAttrs() {
 
 //------------------------------------------------------------------------------
 const DisplayAttrs&
-Gfx::RenderTargetAttrs() {
+Gfx::RenderPassAttrs() {
     o_assert_dbg(IsValid());
-    return state->renderer.renderTargetAttrs();
+    return state->renderer.renderPassAttrs();
 }
 
 //------------------------------------------------------------------------------
@@ -110,13 +111,29 @@ Gfx::FrameInfo() {
 void
 Gfx::BeginPass() {
     o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
+    state->inPass = true;
+    state->gfxFrameInfo.NumPasses++;
     state->renderer.beginPass(nullptr, nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::BeginPass(const PassState& passState) {
+    o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
+    state->inPass = true;
+    state->gfxFrameInfo.NumPasses++;
+    state->renderer.beginPass(nullptr, &passState);
 }
 
 //------------------------------------------------------------------------------
 void
 Gfx::BeginPass(const Id& id) {
     o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
+    state->inPass = true;
+    state->gfxFrameInfo.NumPasses++;
     renderPass* pass = state->resourceContainer.lookupRenderPass(id);
     o_assert_dbg(pass);
     state->renderer.beginPass(pass, nullptr);
@@ -124,30 +141,23 @@ Gfx::BeginPass(const Id& id) {
 
 //------------------------------------------------------------------------------
 void
+Gfx::BeginPass(const Id& id, const PassState& passState) {
+    o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
+    state->inPass = true;
+    state->gfxFrameInfo.NumPasses++;
+    renderPass* pass = state->resourceContainer.lookupRenderPass(id);
+    o_assert_dbg(pass);
+    state->renderer.beginPass(pass, &passState);
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::EndPass() {
     o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
+    state->inPass = false;
     state->renderer.endPass();
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::ApplyDefaultRenderTarget(const ClearState& clearState) {
-    o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumApplyRenderTarget++;
-    state->renderer.applyRenderTarget(nullptr, clearState);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::ApplyRenderTarget(const Id& id, const ClearState& clearState) {
-    o_assert_dbg(IsValid());
-    o_assert_dbg(id.IsValid());
-    o_assert_dbg(id.Type == GfxResourceType::Texture);
-
-    state->gfxFrameInfo.NumApplyRenderTarget++;
-    texture* renderTarget = state->resourceContainer.lookupTexture(id);
-    o_assert_dbg(nullptr != renderTarget);
-    state->renderer.applyRenderTarget(renderTarget, clearState);
 }
 
 //------------------------------------------------------------------------------
@@ -155,6 +165,7 @@ void
 Gfx::ApplyDrawState(const DrawState& drawState) {
     o_trace_scoped(Gfx_ApplyDrawState);
     o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
     o_assert_dbg(drawState.Pipeline.Type == GfxResourceType::Pipeline);
     state->gfxFrameInfo.NumApplyDrawState++;
 
@@ -305,6 +316,7 @@ Gfx::resource() {
 void
 Gfx::ApplyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
     state->gfxFrameInfo.NumApplyViewPort++;
     state->renderer.applyViewPort(x, y, width, height, originTopLeft);
 }
@@ -313,6 +325,7 @@ Gfx::ApplyViewPort(int x, int y, int width, int height, bool originTopLeft) {
 void
 Gfx::ApplyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
     state->gfxFrameInfo.NumApplyScissorRect++;
     state->renderer.applyScissorRect(x, y, width, height, originTopLeft);
 }
@@ -322,6 +335,7 @@ void
 Gfx::CommitFrame() {
     o_trace_scoped(Gfx_CommitFrame);
     o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
     state->renderer.commitFrame();
     state->displayManager.Present();
     state->resourceContainer.GarbageCollect();
@@ -363,6 +377,7 @@ void
 Gfx::Draw(int primGroupIndex, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
     state->gfxFrameInfo.NumDraw++;
     state->renderer.draw(primGroupIndex, numInstances);
 }
@@ -372,6 +387,7 @@ void
 Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
     state->gfxFrameInfo.NumDraw++;
     state->renderer.draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
 }

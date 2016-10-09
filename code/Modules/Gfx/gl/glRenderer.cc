@@ -82,8 +82,7 @@ useUniformBuffer(false),
 globalVAO(0),
 #endif
 frameIndex(0),
-rtValid(false),
-curRenderTarget(nullptr),
+rpValid(false),
 curRenderPass(nullptr),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
@@ -163,7 +162,6 @@ glRenderer::discard() {
     this->invalidateMeshState();
     this->invalidateShaderState();
     this->invalidateTextureState();
-    this->curRenderTarget = nullptr;
     this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
 
@@ -231,8 +229,7 @@ glRenderer::commitFrame() {
     if (this->useCmdBuffer) {
         this->cmdBuffer.flush(this);
     }
-    this->rtValid = false;
-    this->curRenderTarget = nullptr;
+    this->rpValid = false;
     this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
@@ -251,7 +248,7 @@ glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLef
     }
 
     // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
-    y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
+    y = originTopLeft ? (this->rpAttrs.FramebufferHeight - (y + height)) : y;
 
     if ((x != this->viewPortX) ||
         (y != this->viewPortY) ||
@@ -283,7 +280,7 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
     }
 
     // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
-    y = originTopLeft ? (this->rtAttrs.FramebufferHeight - (y + height)) : y;
+    y = originTopLeft ? (this->rpAttrs.FramebufferHeight - (y + height)) : y;
 
     if ((x != this->scissorX) ||
         (y != this->scissorY) ||
@@ -306,20 +303,20 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
 
 //------------------------------------------------------------------------------
 void
-glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
+glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record) {
     o_assert_dbg(this->valid);
     ORYOL_GL_CHECK_ERROR();
 
     if (nullptr == pass) {
-        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+        this->rpAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
         o_assert_dbg(pass->colorTextures[0]);
-        this->rtAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
+        this->rpAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
     }
 
     if (this->useCmdBuffer && record) {
-        this->cmdBuffer.beginPass(pass, clearState);
+        this->cmdBuffer.beginPass(pass, passState);
         return;
     }
 
@@ -345,10 +342,10 @@ glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
     }
     ORYOL_GL_CHECK_ERROR();
     this->curRenderPass = pass;
-    this->rtValid = true;
+    this->rpValid = true;
 
     // prepare state for clear operations
-    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false, false);
+    this->applyViewPort(0, 0, this->rpAttrs.FramebufferWidth, this->rpAttrs.FramebufferHeight, false, false);
     if (this->rasterizerState.ScissorTestEnabled) {
         this->rasterizerState.ScissorTestEnabled = false;
         ::glDisable(GL_SCISSOR_TEST);
@@ -373,17 +370,17 @@ glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
         GLbitfield clearMask = 0;
         if (this->gfxSetup.DefaultColorLoadAction == RenderPassLoadAction::Clear) {
             clearMask |= GL_COLOR_BUFFER_BIT;
-            const glm::vec4& c = clearState ? clearState->Color[0] : this->gfxSetup.DefaultClearColor;
+            const glm::vec4& c = passState ? passState->Color[0] : this->gfxSetup.DefaultClearColor;
             ::glClearColor(c.x, c.y, c.z, c.w);
         }
         if (this->gfxSetup.DefaultDepthStencilLoadAction == RenderPassLoadAction::Clear) {
             clearMask |= GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT;
             #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-            ::glClearDepthf(clearState ? clearState->Depth : this->gfxSetup.DefaultClearDepth);
+            ::glClearDepthf(passState ? passStateState->Depth : this->gfxSetup.DefaultClearDepth);
             #else
-            ::glClearDepth(clearState ? clearState->Depth : this->gfxSetup.DefaultClearDepth);
+            ::glClearDepth(passState ? passState->Depth : this->gfxSetup.DefaultClearDepth);
             #endif
-            ::glClearStencil(clearState ? clearState->Stencil : this->gfxSetup.DefaultClearStencil);
+            ::glClearStencil(passState ? passState->Stencil : this->gfxSetup.DefaultClearStencil);
         }
         if (0 != clearMask) {
             ::glClear(clearMask);
@@ -395,8 +392,8 @@ glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
             const auto& att = pass->Setup.ColorAttachments[i];
             if (pass->colorTextures[i] && (att.LoadAction == RenderPassLoadAction::Clear)) {
                 const GLfloat* clearValues = nullptr;
-                if (clearState) {
-                    clearValues = glm::value_ptr(clearState->Color[i]);
+                if (passState) {
+                    clearValues = glm::value_ptr(passState->Color[i]);
                 }
                 else {
                     clearValues = glm::value_ptr(att.DefaultClearColor);
@@ -407,8 +404,8 @@ glRenderer::beginPass(renderPass* pass, ClearState* clearState, bool record) {
         }
         const auto& att = pass->Setup.DepthStencilAttachment;
         if (pass->depthStencilTexture && (att.LoadAction == RenderPassLoadAction::Clear)) {
-            if (clearState) {
-                ::glClearBufferfi(GL_DEPTH_STENCIL, 0, clearState->Depth, clearState->Stencil);
+            if (passState) {
+                ::glClearBufferfi(GL_DEPTH_STENCIL, 0, passState->Depth, passState->Stencil);
                 ORYOL_GL_CHECK_ERROR();
             }
             else {
@@ -455,101 +452,7 @@ glRenderer::endPass(bool record) {
     }
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     this->curRenderPass = nullptr;
-    this->rtValid = false;
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::applyRenderTarget(texture* rt, const ClearState& clearState, bool record) {
-    o_assert_dbg(this->valid);
-
-    if (nullptr == rt) {
-        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-    }
-    else {
-        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
-    }
-    
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.rendertarget(rt, clearState);
-        return;
-    }
-
-    // check if previously assigned render target is MSAA and needs to be resolved
-    #if !ORYOL_OPENGLES2
-    if (this->curRenderTarget && (this->curRenderTarget->Setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets)) {
-        ::glBindFramebuffer(GL_READ_FRAMEBUFFER, this->curRenderTarget->glFramebuffer);
-        ::glReadBuffer(GL_COLOR_ATTACHMENT0);
-        ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->curRenderTarget->glMSAAResolveFramebuffer);
-        ORYOL_GL_CHECK_ERROR();
-        const int w = this->curRenderTarget->textureAttrs.Width;
-        const int h = this->curRenderTarget->textureAttrs.Height;
-        ::glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        ORYOL_GL_CHECK_ERROR();
-    }
-    #endif
-
-    // apply the frame buffer
-    if (rt != this->curRenderTarget) {
-        // default render target?
-        if (nullptr == rt) {
-            this->pointers.displayMgr->glBindDefaultFramebuffer();
-        }
-        else {
-            ::glBindFramebuffer(GL_FRAMEBUFFER, rt->glFramebuffer);
-            ORYOL_GL_CHECK_ERROR();
-        }
-    }
-    this->curRenderTarget = rt;
-    this->rtValid = true;
-    
-    // set viewport to cover whole screen
-    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, false, false);
-    
-    // reset scissor test
-    if (this->rasterizerState.ScissorTestEnabled) {
-        this->rasterizerState.ScissorTestEnabled = false;
-        ::glDisable(GL_SCISSOR_TEST);
-    }
-
-    // perform clear actions
-    GLbitfield glClearMask = 0;
-    
-    // update GL state
-    if (clearState.Actions & ClearState::ColorBit) {
-        glClearMask |= GL_COLOR_BUFFER_BIT;
-        ::glClearColor(clearState.Color[0].x, clearState.Color[0].y, clearState.Color[0].z, clearState.Color[0].w);
-        if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
-            this->blendState.ColorWriteMask = PixelChannel::RGBA;
-            ::glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        }
-    }
-    if (clearState.Actions & ClearState::DepthBit) {
-        glClearMask |= GL_DEPTH_BUFFER_BIT;
-        #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-        ::glClearDepthf(clearState.Depth);
-        #else
-        ::glClearDepth(clearState.Depth);
-        #endif
-        if (!this->depthStencilState.DepthWriteEnabled) {
-            this->depthStencilState.DepthWriteEnabled = true;
-            ::glDepthMask(GL_TRUE);
-        }
-    }
-    if (clearState.Actions & ClearState::StencilBit) {
-        glClearMask |= GL_STENCIL_BUFFER_BIT;
-        ::glClearStencil(clearState.Stencil);
-        if (this->depthStencilState.StencilWriteMask != 0xFF) {
-            this->depthStencilState.StencilWriteMask = 0xFF;
-            ::glStencilMask(0xFF);
-        }
-    }
-
-    // finally do the actual clear
-    if (0 != glClearMask) {
-        ::glClear(glClearMask);
-    }
-    ORYOL_GL_CHECK_ERROR();
+    this->rpValid = false;
 }
 
 //------------------------------------------------------------------------------
@@ -562,9 +465,9 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     // do debug validation before record/playback, simplifies debugging
     const PipelineSetup& setup = pip->Setup;
     #if ORYOL_DEBUG
-    o_assert2(setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2(setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-    o_assert2(setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");    
+    o_assert2(setup.BlendState.ColorFormat == this->rpAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(setup.BlendState.DepthFormat == this->rpAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(setup.RasterizerState.SampleCount == this->rpAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
     if (this->curRenderPass) {
         for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
             const texture* tex = this->curRenderPass->colorTextures[i];
@@ -850,7 +753,7 @@ glRenderer::draw(int baseElementIndex, int numElements, int numInstances, bool r
         return;
     }
 
-    o_assert2_dbg(this->rtValid, "No render target set!");
+    o_assert2_dbg(this->rpValid, "Not inside BeginPass / EndPass!");
     if (nullptr == this->curPipeline) {
         return;
     }
@@ -893,7 +796,7 @@ glRenderer::draw(int primGroupIndex, int numInstances, bool record) {
         return;
     }
 
-    o_assert2_dbg(this->rtValid, "No render target set!");
+    o_assert2_dbg(this->rpValid, "Not inside BeginPass / EndPass!");
     if (nullptr == this->curPipeline) {
         return;
     }

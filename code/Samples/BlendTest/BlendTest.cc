@@ -27,7 +27,7 @@ AppState::Code
 BlendTestApp::OnRunning() {
     
     // draw checkboard background
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->bgDrawState);
     Gfx::Draw();
 
@@ -45,6 +45,7 @@ BlendTestApp::OnRunning() {
             Gfx::Draw();
         }
     }
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?
