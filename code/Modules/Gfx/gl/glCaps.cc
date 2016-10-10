@@ -93,6 +93,7 @@ glCaps::setupFeatures(Flavour flav) {
             state.features[TextureHalfFloat] = state.features[TextureFloat];
         }
         state.features[UniformBlocks] = strBuilder.Contains("_uniform_buffer_object");
+        // FIXME: check for EXT_draw_buffers 
     }
     else {
         // GL 3.3 Core
@@ -100,11 +101,13 @@ glCaps::setupFeatures(Flavour flav) {
         state.features[InstancedArrays] = true;
         state.features[TextureFloat] = true;
         state.features[UniformBlocks] = true;
+        state.features[MultipleRenderTarget] = true;
     }
     if (flav == GLES3) {
         state.features[InstancedArrays] = true;
         state.features[TextureCompressionETC2] = true;
         state.features[UniformBlocks] = true;
+        state.features[MultipleRenderTarget] = true;
     }
     if (flav != GLES2) {
         state.features[MSAARenderTargets] = true;
@@ -223,6 +226,9 @@ glCaps::printInfo(Flavour flav) {
         printInt(GL_MAX_UNIFORM_BLOCK_SIZE, "GL_MAX_UNIFORM_BLOCK_SIZE", 1);
         printInt(GL_MAX_UNIFORM_BUFFER_BINDINGS, "GL_MAX_UNIFORM_BUFFER_BINDINGS", 1);
         printInt(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT", 1);
+    }
+    if (HasFeature(MultipleRenderTarget)) {
+        printInt(GL_MAX_COLOR_ATTACHMENTS, "GL_MAX_COLOR_ATTACHMENTS", 1);
     }
     #endif
     if (flav != GL_3_3_CORE) {

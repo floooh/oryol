@@ -45,6 +45,7 @@ public:
         MapBuffer,
         PackedVertexFormat_10_2,
         VertexCapture,
+        MultipleRenderTarget,
 
         NumFeatures,
     };

@@ -129,22 +129,20 @@ glTexture::Clear() {
 
 //------------------------------------------------------------------------------
 glRenderPass::glRenderPass() :
-glFramebuffer(0),
-glMSAAResolveFramebuffer(0) {
-    // empty
+glFramebuffer(0) {
+    this->glMSAAResolveFramebuffers.Fill(0);
 }
 
 //------------------------------------------------------------------------------
 glRenderPass::~glRenderPass() {
     o_assert_dbg(0 == this->glFramebuffer);
-    o_assert_dbg(0 == this->glMSAAResolveFramebuffer);
 }
 
 //------------------------------------------------------------------------------
 void
 glRenderPass::Clear() {
     this->glFramebuffer = 0;
-    this->glMSAAResolveFramebuffer = 0;
+    this->glMSAAResolveFramebuffers.Fill(0);
     renderPassBase::Clear();
 }
 

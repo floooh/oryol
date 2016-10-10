@@ -328,7 +328,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
         ::glBindFramebuffer(GL_FRAMEBUFFER, pass->glFramebuffer);
         ORYOL_GL_CHECK_ERROR();
         int numAtts = 0;
-        GLuint att[GfxConfig::MaxNumColorAttachments] = { };
+        GLenum att[GfxConfig::MaxNumColorAttachments] = { };
         for (; numAtts < GfxConfig::MaxNumColorAttachments; numAtts++) {
             if (pass->colorTextures[numAtts]) {
                 att[numAtts] = GL_COLOR_ATTACHMENT0 + numAtts;
@@ -376,7 +376,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
         if (this->gfxSetup.DefaultDepthStencilLoadAction == RenderPassLoadAction::Clear) {
             clearMask |= GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT;
             #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-            ::glClearDepthf(passState ? passStateState->Depth : this->gfxSetup.DefaultClearDepth);
+            ::glClearDepthf(passState ? passState->Depth : this->gfxSetup.DefaultClearDepth);
             #else
             ::glClearDepth(passState ? passState->Depth : this->gfxSetup.DefaultClearDepth);
             #endif
@@ -433,18 +433,21 @@ glRenderer::endPass(bool record) {
         if ((rp->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
             (rp->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve)) {
 
-            o_assert_dbg(rp->glMSAAResolveFramebuffer);
             ::glBindFramebuffer(GL_READ_FRAMEBUFFER, rp->glFramebuffer);
-            ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rp->glMSAAResolveFramebuffer);
             o_assert_dbg(rp->colorTextures[0]);
             const int w = rp->colorTextures[0]->textureAttrs.Width;
             const int h = rp->colorTextures[0]->textureAttrs.Height;
-            for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
-                if (rp->colorTextures[i]) {
-                    const GLenum bufId = GL_COLOR_ATTACHMENT0+i;
-                    ::glReadBuffer(bufId);
-                    ::glDrawBuffers(1, &bufId);
+            for (int attIndex = 0; attIndex < GfxConfig::MaxNumColorAttachments; attIndex++) {
+                if (rp->colorTextures[attIndex]) {
+                    o_assert_dbg(rp->glMSAAResolveFramebuffers[attIndex]);
+                    ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rp->glMSAAResolveFramebuffers[attIndex]);
+                    ::glReadBuffer(GL_COLOR_ATTACHMENT0+attIndex);
+                    const GLenum att = GL_COLOR_ATTACHMENT0;
+                    ::glDrawBuffers(1, &att);
                     ::glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                }
+                else {
+                    break;
                 }
             }
             ORYOL_GL_CHECK_ERROR();

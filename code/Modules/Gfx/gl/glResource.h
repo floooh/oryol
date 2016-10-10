@@ -218,7 +218,7 @@ public:
     void Clear();
 
     GLuint glFramebuffer;
-    GLuint glMSAAResolveFramebuffer;
+    StaticArray<GLuint, GfxConfig::MaxNumColorAttachments> glMSAAResolveFramebuffers;
 };
 
 } // namespace _priv

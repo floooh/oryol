@@ -155,11 +155,10 @@ glTextureFactory::createRenderTarget(texture& tex) {
     }
     ORYOL_GL_CHECK_ERROR();
 
-    // create MSAA render target if requested and possible
+    // create MSAA renderbuffer
     #if !ORYOL_OPENGLES2
     const bool msaa = (setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets);
     if (msaa) {
-        // create a framebuffer 
         ::glGenRenderbuffers(1, &tex.glMSAARenderbuffer);
         o_assert_dbg(0 != tex.glMSAARenderbuffer);
         ::glBindRenderbuffer(GL_RENDERBUFFER, tex.glMSAARenderbuffer);

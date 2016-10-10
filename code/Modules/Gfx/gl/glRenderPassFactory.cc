@@ -91,14 +91,21 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
         o_warn("glRenderPassFactory: framebuffer completeness check failed!\n");
     }
 
-    // for MSAA, create an extra framebuffer for the MSAA resolve operation and
-    // attach the render-color-textures as resolve-targets
+    // for MSAA, need to create resolve-framebuffers...
     if (isMSAA) {
-        ::glGenFramebuffers(1, &rp.glMSAAResolveFramebuffer);
-        ::glBindFramebuffer(GL_FRAMEBUFFER, rp.glMSAAResolveFramebuffer);
-        attachFramebufferTextures(rp);
-        if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            o_warn("glRenderPassFactory: MSAA resolve framebuffer completeness check failed!\n");
+        for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            texture* colorTex = rp.colorTextures[i];
+            if (colorTex) {
+                ::glGenFramebuffers(1, &rp.glMSAAResolveFramebuffers[i]);
+                ::glBindFramebuffer(GL_FRAMEBUFFER, rp.glMSAAResolveFramebuffers[i]);
+                const GLuint glTex = colorTex->glTextures[0];
+                o_assert_dbg(glTex);
+                const int mipLevel = rp.Setup.ColorAttachments[i].Level;
+                ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex, mipLevel);
+                if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                    o_warn("glRenderPassFactory: MSAA resolve framebuffer completeness check failed!\n");
+                }
+            }
         }
     }
 
@@ -118,8 +125,10 @@ glRenderPassFactory::DestroyResource(renderPass& rp) {
     if (0 != rp.glFramebuffer) {
         ::glDeleteFramebuffers(1, &rp.glFramebuffer);
     }
-    if (0 != rp.glMSAAResolveFramebuffer) {
-        ::glDeleteFramebuffers(1, &rp.glMSAAResolveFramebuffer);
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        if (rp.glMSAAResolveFramebuffers[i]) {
+            ::glDeleteFramebuffers(1, &(rp.glMSAAResolveFramebuffers[i]));
+        }
     }
     ORYOL_GL_CHECK_ERROR();
 

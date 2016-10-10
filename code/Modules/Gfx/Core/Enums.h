@@ -745,6 +745,7 @@ public:
         MSAARenderTargets,          ///< MSAA support in offscreen-render-targets
         PackedVertexFormat_10_2,    ///< support for VertexFormat Int10_2, Int10_2N, UInt10_2, UInt10_2N
         VertexCapture,              ///< vertex shader output capture (aka transform feedback / stream output)
+        MultipleRenderTarget,       ///< support for MRT offscreen rendering
 
         NumFeatures,
         InvalidFeature
