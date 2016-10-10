@@ -26,6 +26,7 @@ public:
     Id mrtPass;
     DrawState rt0DrawState;
     DrawState rt1DrawState;
+    DrawState rt2DrawState;
     DrawState cubeDrawState;
     DisplayShader::VSParams cubeParams;
     glm::mat4 proj;
@@ -47,9 +48,11 @@ MultipleRenderTargetApp::OnInit() {
     Id rt0 = Gfx::CreateResource(rtSetup);
     rtSetup.DepthFormat = PixelFormat::None;
     Id rt1 = Gfx::CreateResource(rtSetup);
-    auto passSetup = RenderPassSetup::From({ rt0, rt1 }, rt0);
-    passSetup.ColorAttachments[0].DefaultClearColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    passSetup.ColorAttachments[1].DefaultClearColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    Id rt2 = Gfx::CreateResource(rtSetup);
+    auto passSetup = RenderPassSetup::From({ rt0, rt1, rt2 }, rt0);
+    passSetup.ColorAttachments[0].DefaultClearColor = glm::vec4(0.25f, 0.0f, 0.0f, 1.0f);
+    passSetup.ColorAttachments[1].DefaultClearColor = glm::vec4(0.0f, 0.25f, 0.0f, 1.0f);
+    passSetup.ColorAttachments[2].DefaultClearColor = glm::vec4(0.0f, 0.0f, 0.25f, 1.0f);
     passSetup.StoreAction = RenderPassStoreAction::Resolve;
     this->mrtPass = Gfx::CreateResource(passSetup);
 
@@ -84,6 +87,10 @@ MultipleRenderTargetApp::OnInit() {
     this->rt1DrawState.Mesh[0] = quadMesh;
     this->rt1DrawState.FSTexture[Textures::Texture] = rt1;
 
+    this->rt2DrawState.Pipeline = this->rt0DrawState.Pipeline;
+    this->rt2DrawState.Mesh[0] = quadMesh;
+    this->rt2DrawState.FSTexture[Textures::Texture] = rt2;
+
     this->proj = glm::perspectiveFov(glm::radians(45.0f), float(OffscreenWidth), float(OffscreenHeight), 0.01f, 100.0f);
 
     return App::OnInit();
@@ -109,6 +116,9 @@ MultipleRenderTargetApp::OnRunning() {
     Gfx::Draw();
     Gfx::ApplyViewPort(200, 0, 200, 200);
     Gfx::ApplyDrawState(this->rt1DrawState);
+    Gfx::Draw();
+    Gfx::ApplyViewPort(400, 0, 200, 200);
+    Gfx::ApplyDrawState(this->rt2DrawState);
     Gfx::Draw();
     Gfx::EndPass();
 
