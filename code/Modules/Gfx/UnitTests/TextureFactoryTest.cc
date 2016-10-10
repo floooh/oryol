@@ -45,7 +45,6 @@ TEST(RenderTargetCreationTest) {
     tex0.Setup = texSetup;
     factory.SetupResource(tex0);
     CHECK(tex0.glTextures[0] != 0);
-    CHECK(tex0.glFramebuffer != 0);
     CHECK(tex0.glDepthRenderbuffer == 0);
     const TextureAttrs& attrs0 = tex0.textureAttrs;
     CHECK(attrs0.Locator == Locator::NonShared());
@@ -59,7 +58,6 @@ TEST(RenderTargetCreationTest) {
     CHECK(1 == attrs0.NumMipMaps);
     CHECK(attrs0.IsRenderTarget);
     CHECK(!attrs0.HasDepthBuffer);
-    CHECK(!attrs0.HasSharedDepthBuffer);
 
     // create a render target with depth buffer
     auto rtSetup = TextureSetup::RenderTarget(640, 480);
@@ -69,7 +67,6 @@ TEST(RenderTargetCreationTest) {
     tex1.Setup = rtSetup;
     factory.SetupResource(tex1);
     CHECK(tex1.glTextures[0] != 0);
-    CHECK(tex1.glFramebuffer != 0);
     CHECK(tex1.glDepthRenderbuffer != 0);
     const TextureAttrs& attrs1 = tex1.textureAttrs;
     CHECK(attrs1.Locator == Locator::NonShared());
@@ -83,12 +80,10 @@ TEST(RenderTargetCreationTest) {
     CHECK(1 == attrs1.NumMipMaps);
     CHECK(attrs1.IsRenderTarget);
     CHECK(attrs1.HasDepthBuffer);
-    CHECK(!attrs1.HasSharedDepthBuffer);
 
     // cleanup
     factory.DestroyResource(tex1);
     CHECK(tex1.glTextures[0] == 0);
-    CHECK(tex1.glFramebuffer == 0);
     CHECK(tex1.glDepthRenderbuffer == 0);
     
     factory.DestroyResource(tex0);
