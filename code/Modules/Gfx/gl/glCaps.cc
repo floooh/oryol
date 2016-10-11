@@ -134,6 +134,8 @@ glCaps::VertexAttribDivisor(GLuint index, GLuint divisor) {
         ::glVertexAttribDivisorEXT(index, divisor);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::VertexAttribDivisor() called!\n");
+        #elif ORYOL_EMSCRIPTEN
+        ::glVertexAttribDivisor(index, divisor);
         #elif ORYOL_OPENGLES2
         ::glVertexAttribDivisorANGLE(index, divisor);
         #else
@@ -150,6 +152,8 @@ glCaps::DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei pri
         ::glDrawArraysInstancedEXT(mode, first, count, primcount);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::DrawArraysInstanced() called!\n");
+        #elif ORYOL_EMSCRIPTEN
+        ::glDrawArraysInstanced(mode, first, count, primcount);
         #elif ORYOL_OPENGLES2
         ::glDrawArraysInstancedANGLE(mode, first, count, primcount);
         #else
@@ -166,6 +170,8 @@ glCaps::DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const voi
         ::glDrawElementsInstancedEXT(mode, count, type, indices, primcount);
         #elif ORYOL_RASPBERRYPI
         o_error("glCaps::DrawElementsInstanced() called!\n");
+        #elif ORYOL_EMSCRIPTEN
+        ::glDrawElementsInstanced(mode, count, type, indices, primcount);
         #elif ORYOL_OPENGLES2
         ::glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
         #else

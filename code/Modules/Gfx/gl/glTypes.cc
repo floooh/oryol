@@ -35,7 +35,7 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
             return GL_DEPTH_COMPONENT;
             
         case PixelFormat::DEPTHSTENCIL:
-            #if ORYOL_OPENGLES2 
+            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN 
             return GL_DEPTH_STENCIL_OES;
             #else
             return GL_DEPTH_STENCIL;
@@ -127,7 +127,7 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
             return GL_FLOAT;
         
         case PixelFormat::RGBA16F:
-            #if ORYOL_OPENGLES2
+            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_HALF_FLOAT_OES;
             #else
             return GL_HALF_FLOAT;
@@ -151,7 +151,7 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
             return GL_UNSIGNED_SHORT;
             
         case PixelFormat::DEPTHSTENCIL:
-            #if ORYOL_OPENGLES2
+            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_UNSIGNED_INT_24_8_OES;
             #else
             return GL_UNSIGNED_INT_24_8;
@@ -171,7 +171,7 @@ glTypes::asGLDepthAttachmentFormat(PixelFormat::Code c) {
         case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT16;
         case PixelFormat::DEPTHSTENCIL:
-            #if ORYOL_OPENGLES2
+            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             return GL_DEPTH24_STENCIL8_OES;
             #else
             return GL_DEPTH24_STENCIL8;
