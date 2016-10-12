@@ -327,6 +327,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
     else {
         ::glBindFramebuffer(GL_FRAMEBUFFER, pass->glFramebuffer);
         ORYOL_GL_CHECK_ERROR();
+        #if !ORYOL_OPENGLES2
         int numAtts = 0;
         GLenum att[GfxConfig::MaxNumColorAttachments] = { };
         for (; numAtts < GfxConfig::MaxNumColorAttachments; numAtts++) {
@@ -339,6 +340,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
         }
         ::glDrawBuffers(numAtts, att);
         ORYOL_GL_CHECK_ERROR();
+        #endif
     }
     ORYOL_GL_CHECK_ERROR();
     this->curRenderPass = pass;
@@ -365,7 +367,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
     ORYOL_GL_CHECK_ERROR();
 
     // perform clear actions on render targets
-    if (nullptr == pass) {
+    if ((nullptr == pass) || !glCaps::HasFeature(glCaps::MultipleRenderTarget)) {
         // special case: default render pass
         GLbitfield clearMask = 0;
         if (this->gfxSetup.DefaultColorLoadAction == RenderPassLoadAction::Clear) {
@@ -386,6 +388,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
             ::glClear(clearMask);
         }
     }
+    #if !ORYOL_OPENGLES2
     else {
         // clear actions for offscreen pass
         for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
@@ -414,6 +417,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
             }
         }
     }
+    #endif
     ORYOL_GL_CHECK_ERROR();
 }
 
@@ -428,6 +432,7 @@ glRenderer::endPass(bool record) {
     }
 
     // perform the MSAA resolve if necessary
+    #if !ORYOL_OPENGLES2
     const renderPass* rp = this->curRenderPass;
     if (rp) {
         if ((rp->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
@@ -453,6 +458,7 @@ glRenderer::endPass(bool record) {
             ORYOL_GL_CHECK_ERROR();
         }
     }
+    #endif
     ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
     this->curRenderPass = nullptr;
     this->rpValid = false;
