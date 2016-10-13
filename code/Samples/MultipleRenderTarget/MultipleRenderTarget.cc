@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
+#include "Dbg/Dbg.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
@@ -17,6 +18,7 @@ public:
     AppState::Code OnCleanup();
 
     glm::mat4 computeMVP(const glm::vec3& pos);
+    AppState::Code notSupported();
 
     const int DisplayWidth = 640;
     const int DisplayHeight = 480;
@@ -41,6 +43,11 @@ MultipleRenderTargetApp::OnInit() {
     auto gfxSetup = GfxSetup::Window(DisplayWidth, DisplayHeight, "Oryol MRT Sample");
     gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
     Gfx::Setup(gfxSetup);
+    Dbg::Setup();
+
+    if (!Gfx::QueryFeature(GfxFeature::MultipleRenderTarget)) {
+        return App::OnInit();
+    }
 
     auto rtSetup = TextureSetup::RenderTarget(OffscreenWidth, OffscreenHeight);
     rtSetup.SampleCount = 4;
@@ -100,6 +107,10 @@ MultipleRenderTargetApp::OnInit() {
 AppState::Code
 MultipleRenderTargetApp::OnRunning() {
 
+    if (!Gfx::QueryFeature(GfxFeature::MultipleRenderTarget)) {
+        return this->notSupported();
+    }
+
     this->angleY += 0.01f;
     this->angleX += 0.02f;
     this->cubeParams.ModelViewProjection = this->computeMVP(glm::vec3(0, 0, -3));
@@ -129,6 +140,7 @@ MultipleRenderTargetApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 MultipleRenderTargetApp::OnCleanup() {
+    Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();
 }
@@ -142,3 +154,23 @@ MultipleRenderTargetApp::computeMVP(const glm::vec3& pos) {
     return this->proj * modelTform;
 }
 
+//------------------------------------------------------------------------------
+AppState::Code
+MultipleRenderTargetApp::notSupported() {
+    // print a warning if vertex-capture is not supported by platform
+    #if ORYOL_EMSCRIPTEN
+    const char* msg = "This demo needs WebGL2\n";
+    #else
+    const char* msg = "This demo needs VertexCapture\n";
+    #endif
+    uint8_t x = (Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2;
+    uint8_t y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
+    Gfx::BeginPass(PassState(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    Dbg::CursorPos(x, y);
+    Dbg::Print(msg);
+    Dbg::DrawTextBuffer();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
+}

@@ -223,6 +223,7 @@ VertexCaptureApp::notSupported() {
     Dbg::CursorPos(x, y);
     Dbg::Print(msg);
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }

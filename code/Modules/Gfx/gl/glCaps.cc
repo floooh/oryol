@@ -95,27 +95,30 @@ glCaps::setupFeatures(Flavour flav) {
         state.features[UniformBlocks] = strBuilder.Contains("_uniform_buffer_object");
         // FIXME: check for EXT_draw_buffers 
     }
-    else {
+    if (flav == GL_3_3_CORE) {
         // GL 3.3 Core
-        state.features[TextureCompressionDXT] = true;
         state.features[InstancedArrays] = true;
         state.features[TextureFloat] = true;
         state.features[UniformBlocks] = true;
         state.features[MultipleRenderTarget] = true;
+        state.features[MSAARenderTargets] = true;
+        state.features[PackedVertexFormat_10_2] = true;
+        state.features[VertexCapture] = true;
+        state.features[MapBuffer] = true;
+        state.features[TextureCompressionDXT] = true;
     }
-    if (flav == GLES3) {
+    else if (flav == GLES3) {
         state.features[InstancedArrays] = true;
-        state.features[TextureCompressionETC2] = true;
+        state.features[TextureFloat] = true;
         state.features[UniformBlocks] = true;
         state.features[MultipleRenderTarget] = true;
-    }
-    if (flav != GLES2) {
         state.features[MSAARenderTargets] = true;
         state.features[PackedVertexFormat_10_2] = true;
         state.features[VertexCapture] = true;
         #if !ORYOL_EMSCRIPTEN
         state.features[MapBuffer] = true;
         #endif
+        state.features[TextureCompressionETC2] = true;
     }
     ORYOL_GL_CHECK_ERROR();
 }
