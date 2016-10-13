@@ -30,7 +30,7 @@ public:
         Id Texture;
         uint16_t Level = 0;
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        glm::vec4 DefaultClearColor;
+        glm::vec4 DefaultClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
     StaticArray<ColorAttachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
 

@@ -16,7 +16,11 @@ namespace Oryol {
 class PassState {
 public:
     /// default constructor
-    PassState() : Depth(1.0f), Stencil(0) { };
+    PassState() : Depth(1.0f), Stencil(0) {
+        for (auto& c : this->Color) {
+            c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+    };
     /// construct with clear color (all attachment to same color), optional depth/stencil
     PassState(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0) {
         for (auto& c : this->Color) {
