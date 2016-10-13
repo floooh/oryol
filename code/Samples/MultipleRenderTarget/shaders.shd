@@ -1,10 +1,10 @@
-@uniform_block vsParams VSParams
-mat4 mvp ModelViewProjection
-@end
 
 //------------------------------------------------------------------------------
+@uniform_block offscreenVSParams VSParams
+mat4 mvp ModelViewProjection
+@end
 @vs offscreenVS
-@use_uniform_block vsParams
+@use_uniform_block offscreenVSParams
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
@@ -25,7 +25,7 @@ mat4 mvp ModelViewProjection
 @program OffscreenShader offscreenVS offscreenFS
 
 //------------------------------------------------------------------------------
-@texture_block quadTextures Textures
+@texture_block quadTextures QuadTextures
 sampler2D tex Texture
 @end
 
@@ -46,18 +46,43 @@ sampler2D tex Texture
 @program QuadShader quadVS quadFS
 
 //------------------------------------------------------------------------------
+@uniform_block displayVSParams VSParams
+mat4 mvp ModelViewProjection
+vec2 offsets Offsets
+@end
 @vs displayVS
-@use_uniform_block vsParams
+@use_uniform_block displayVSParams
 @in vec4 position
 @in vec4 normal
+@in vec2 texcoord0
 @out vec4 nrm
+@out vec2 uvRed
+@out vec2 uvGreen
+@out vec2 uvBlue
     _position = mul(mvp, position);
     nrm = normalize(mul(mvp, normal));
+    uvRed = texcoord0 + vec2(offsets.x, 0.0);
+    uvGreen = texcoord0 + vec2(0.0, offsets.y);
+    uvBlue = texcoord0;
+@end
+
+@texture_block displayTextures DisplayTextures
+sampler2D redTex Red
+sampler2D greenTex Green
+sampler2D blueTex Blue
 @end
 
 @fs displayFS
+@use_texture_block displayTextures
 @in vec4 nrm
-    _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
+@in vec2 uvRed
+@in vec2 uvGreen
+@in vec2 uvBlue
+    vec4 red = tex2D(redTex, uvRed);
+    vec4 green = tex2D(greenTex, uvGreen);
+    vec4 blue = tex2D(blueTex, uvBlue);
+    vec4 c = vec4(red.xyz + green.xyz + blue.xyz, 1.0);
+    _color = c;
 @end
 
 @program DisplayShader displayVS displayFS
