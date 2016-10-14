@@ -119,15 +119,14 @@ MultipleRenderTargetApp::OnInit() {
     this->rt2DrawState.Mesh[0] = quadMesh;
     this->rt2DrawState.FSTexture[QuadTextures::Texture] = rt2;
 
-    // and finally create a draw state to render a cube to the
+    // and finally create a draw state to render a plane to the
     // main display which samples the 3 offscreen render targets
     Id displayShd = Gfx::CreateResource(DisplayShader::Setup());
     ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, displayShd);
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
     ps.RasterizerState.CullFaceEnabled = false;
+    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->displayDrawState.Pipeline = Gfx::CreateResource(ps);
     this->displayDrawState.Mesh[0] = cubeMesh;
     this->displayDrawState.FSTexture[DisplayTextures::Red] = rt0;
