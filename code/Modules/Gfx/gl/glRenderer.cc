@@ -219,6 +219,10 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
             return glCaps::HasFeature(glCaps::VertexCapture);
         case GfxFeature::MultipleRenderTarget:
             return glCaps::HasFeature(glCaps::MultipleRenderTarget);
+        case GfxFeature::Texture3D:
+            return glCaps::HasFeature(glCaps::Texture3D);
+        case GfxFeature::TextureArray:
+            return glCaps::HasFeature(glCaps::TextureArray);
         default:
             return false;
     }

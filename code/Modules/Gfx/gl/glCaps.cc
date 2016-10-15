@@ -106,6 +106,8 @@ glCaps::setupFeatures(Flavour flav) {
         state.features[VertexCapture] = true;
         state.features[MapBuffer] = true;
         state.features[TextureCompressionDXT] = true;
+        state.features[Texture3D] = true;
+        state.features[TextureArray] = true;
     }
     else if (flav == GLES3) {
         state.features[InstancedArrays] = true;
@@ -119,6 +121,8 @@ glCaps::setupFeatures(Flavour flav) {
         state.features[MapBuffer] = true;
         #endif
         state.features[TextureCompressionETC2] = true;
+        state.features[Texture3D] = true;
+        state.features[TextureArray] = true;
     }
     ORYOL_GL_CHECK_ERROR();
 }

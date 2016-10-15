@@ -46,6 +46,8 @@ public:
         PackedVertexFormat_10_2,
         VertexCapture,
         MultipleRenderTarget,
+        Texture3D,
+        TextureArray,
 
         NumFeatures,
     };

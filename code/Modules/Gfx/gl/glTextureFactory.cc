@@ -275,6 +275,16 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
         return ResourceState::Failed;
     }
 
+    // check required features
+    if ((setup.Type == TextureType::Texture3D) && (!glCaps::HasFeature(glCaps::Texture3D))) {
+        o_warn("glTextureFactory: 3D textures not supported\n");
+        return ResourceState::Failed;
+    }
+    if ((setup.Type == TextureType::TextureArray) && (!glCaps::HasFeature(glCaps::TextureArray))) {
+        o_warn("glTextureFactory: array textures not supported\n");
+        return ResourceState::Failed;
+    }
+
     // create one or two texture object
     tex.numSlots = (Usage::Stream == setup.TextureUsage) ? 2 : 1;
     #if ORYOL_DEBUG
@@ -389,6 +399,7 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                             }
                         }
                     }
+                    #if !ORYOL_OPENGLES2
                     else if ((TextureType::Texture3D == setup.Type) || (TextureType::TextureArray == setup.Type)) {
                         int mipDepth = setup.Depth >> mipIndex;
                         if (mipDepth == 0) {
@@ -437,6 +448,7 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                             }
                         }
                     }
+                    #endif
                 }
             }
         }
