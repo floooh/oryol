@@ -502,8 +502,9 @@ public:
     /// texture type enum
     enum Code {
         Texture2D = 0,
-        Texture3D,
         TextureCube,
+        Texture3D,
+        TextureArray,
 
         NumTextureTypes,
         InvalidTextureType = 0xFFFFFFFF,

@@ -46,10 +46,8 @@ private:
     void setupTextureAttrs(texture& tex);
     /// create a render target
     ResourceState::Code createRenderTarget(texture& tex);
-    /// create texture from raw pixel data
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32_t size);
-    /// create an empty texture (cannot be an immutable texture)
-    ResourceState::Code createEmptyTexture(texture& tex);
+    /// create a texture with or without associated data
+    ResourceState::Code createTexture(texture& tex, const void* data, int32_t size);
 
     gfxPointers pointers;
     bool isValid;

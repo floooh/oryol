@@ -24,8 +24,12 @@ public:
     static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
-    /// setup empty texture (usually for dynamic streaming of CPU generated texture data)
-    static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code Usage);
+    /// setup empty 2D or Cube texture (usually for dynamic streaming of CPU generated texture data)
+    static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage);
+    /// setup empty 3D texture
+    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage);
+    /// setup empty array texture
+    static TextureSetup EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code, Usage::Code usage);
     /// setup as absolute-size render target
     static TextureSetup RenderTarget(int w, int h);
 
@@ -44,10 +48,12 @@ public:
     Usage::Code TextureUsage = Usage::Immutable;
     /// texture type
     TextureType::Code Type = TextureType::Texture2D;
-    /// the width in pixels
+    /// width in pixels
     int Width = 0;
-    /// the height in pixels
+    /// height in pixels
     int Height = 0;
+    /// depth/slices in pixels (for 3D and Array textures)
+    int Depth = 0;
     /// number of mipmaps (default is 1, only for FromPixelData)
     int NumMipMaps = 1;
     /// the color pixel format
