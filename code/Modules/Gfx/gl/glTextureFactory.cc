@@ -242,6 +242,9 @@ glTextureFactory::setupTextureParams(const TextureSetup& setup, GLenum glTexTarg
     else {
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
+        #if !ORYOL_OPENGLES2
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, glTypes::asGLTexWrapMode(setup.Sampler.WrapW));
+        #endif
     }
     ORYOL_GL_CHECK_ERROR();
 }

@@ -24,6 +24,10 @@ public:
     static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    //// setup 3D texture from raw pixel data
+    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt);
+    /// setup array texture from raw pixel data
+    static TextureSetup FromPixelDataArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt);
     /// setup empty 2D or Cube texture (usually for dynamic streaming of CPU generated texture data)
     static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage);
     /// setup empty 3D texture

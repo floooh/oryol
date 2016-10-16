@@ -1015,8 +1015,13 @@ void
 glRenderer::bindTexture(int samplerIndex, GLenum target, GLuint tex) {
     o_assert_dbg(this->valid);
     o_assert_range_dbg(samplerIndex, MaxTextureSamplers);
+    #if ORYOL_OPENGLES2
     o_assert_dbg((target == GL_TEXTURE_2D) || (target == GL_TEXTURE_CUBE_MAP));
-    
+    #else
+    o_assert_dbg((target == GL_TEXTURE_2D) || (target == GL_TEXTURE_CUBE_MAP) ||
+                 (target == GL_TEXTURE_3D) || (target == GL_TEXTURE_2D_ARRAY));
+    #endif
+
     GLuint* samplers = (GL_TEXTURE_2D == target) ? this->samplers2D.begin() : this->samplersCube.begin();
     if (tex != samplers[samplerIndex]) {
         samplers[samplerIndex] = tex;

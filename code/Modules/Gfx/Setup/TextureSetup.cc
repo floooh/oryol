@@ -46,7 +46,8 @@ TextureSetup::FromPixelData(int w, int h, int numMipMaps, TextureType::Code type
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    
+    o_assert_dbg((TextureType::Texture2D == type) || (TextureType::TextureCube == type));
+
     TextureSetup setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = type;
@@ -61,12 +62,53 @@ TextureSetup::FromPixelData(int w, int h, int numMipMaps, TextureType::Code type
 
 //------------------------------------------------------------------------------
 TextureSetup
+TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt) {
+    o_assert_dbg((w > 0) && (h > 0) && (d > 0));
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+
+    TextureSetup setup;
+    setup.setupFromPixelData = true;
+    setup.Type = TextureType::Texture3D;
+    setup.Width = w;
+    setup.Height = h;
+    setup.Depth = d;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.ImageData.NumFaces = 1;
+    setup.ImageData.NumMipMaps = numMipMaps;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromPixelDataArray(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt) {
+    o_assert_dbg((w > 0) && (h > 0) && (d > 0));
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+
+    TextureSetup setup;
+    setup.setupFromPixelData = true;
+    setup.Type = TextureType::TextureArray;
+    setup.Width = w;
+    setup.Height = h;
+    setup.Depth = d;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.ImageData.NumFaces = 1;
+    setup.ImageData.NumMipMaps = numMipMaps;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
 TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((TextureType::Texture2D == type) || (TextureType::TextureCube == type));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    
+    o_assert_dbg((TextureType::Texture2D == type) || (TextureType::TextureCube == type));
+
     TextureSetup setup;
     setup.setupEmpty = true;
     setup.Type = type;
