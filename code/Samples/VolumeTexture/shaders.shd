@@ -1,0 +1,30 @@
+//------------------------------------------------------------------------------
+//  VolumeTexture sample shaders.
+//------------------------------------------------------------------------------
+
+@uniform_block vsParams VSParams
+vec3 texOffset TexOffset
+@end
+
+@vs vs
+@use_uniform_block vsParams
+@in vec4 position
+@in vec2 texcoord0
+@out vec3 uvw
+    _position = position;
+    uvw = vec3(texcoord0, 0.0) + texOffset;
+@end
+
+//------------------------------------------------------------------------------
+@texture_block textures Textures
+sampler3D tex Texture
+@end
+
+@fs fs
+@highp sampler3D
+@use_texture_block textures
+@in vec3 uvw
+    _color = tex3D(tex, uvw);
+@end
+
+@program Shader vs fs

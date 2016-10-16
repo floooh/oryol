@@ -1,0 +1,7 @@
+fips_begin_app(VolumeTexture windowed)
+    fips_vs_warning_level(3)
+    fips_files(VolumeTexture.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx) 
+    oryol_add_web_sample(VolumeTexture "Demonstrate 3D texture usage" "emscripten" VolumeTexture.jpg "VolumeTexture/VolumeTexture.cc")
+fips_end_app()
