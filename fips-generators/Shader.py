@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 74
+Version = 76
 
 import os
 import sys
@@ -87,10 +87,13 @@ slMacros = {
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
+        'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
+        'tex3D(s, t)': 'vec4(0.0)',
         'texCUBE(s, t)': 'textureCube(s,t)',
-        'tex2Dvs(s, t)': 'texture2D(s,t)'
+        'tex2Dvs(s, t)': 'texture2D(s,t)',
+        'tex3Dvs(s, t)': 'vec4(0.0)'
     },
     'glsl120': {
         'ORYOL_GLSL': '(1)',
@@ -108,10 +111,13 @@ slMacros = {
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
+        'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
+        'tex3D(s, t)': 'vec4(0.0)',
         'texCUBE(s, t)': 'textureCube(s,t)',
-        'tex2Dvs(s, t)': 'texture2D(s,t)'
+        'tex2Dvs(s, t)': 'texture2D(s,t)',
+        'tex3Dvs(s, t)': 'vec4(0.0)'
     },
     'glsl330': {
         'ORYOL_GLSL': '(1)',
@@ -131,8 +137,10 @@ slMacros = {
         '_func': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
+        'tex3D(s, t)': 'texture(s,t)',
         'texCUBE(s, t)': 'texture(s,t)',
-        'tex2Dvs(s, t)': 'texture(s,t)'
+        'tex2Dvs(s, t)': 'texture(s,t)',
+        'tex3Dvs(s, t)': 'texture(s,t)'
     },
     'glsles3': {
         'ORYOL_GLSL': '(1)',
@@ -152,8 +160,10 @@ slMacros = {
         '_func': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
+        'tex3D(s, t)': 'texture(s,t)',
         'texCUBE(s, t)': 'texture(s,t)',
-        'tex2Dvs(s, t)': 'texture(s,t)'
+        'tex2Dvs(s, t)': 'texture(s,t)',
+        'tex3Dvs(s, t)': 'texture(s,t)'
     },
     'hlsl5': {
         'ORYOL_GLSL': '(0)',
@@ -205,7 +215,9 @@ slMacros = {
         'mod(x,y)': '(x-y*floor(x/y))',
         'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'tex3D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
+        'tex3Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
         'discard': 'discard_fragment()'
     }
 }
@@ -281,8 +293,15 @@ attrOryolName = {
 }
 
 validTextureTypes = [
-    'sampler2D', 'samplerCube'
+    'sampler2D', 'samplerCube', 'sampler3D', 'sampler2DArray'
 ]
+
+texOryolType = {
+    'sampler2D':        'TextureType::Texture2D',
+    'samplerCube':      'TextureType::TextureCube',
+    'sampler3D':        'TextureType::Texture3D',
+    'sampler2DArray':   'TextureType::TextureArray',
+}
 
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
@@ -1036,10 +1055,12 @@ class GLSLGenerator :
         # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
         if slVersion == 'glsl100' or slVersion == 'glsles3' :
             if vs.highPrecision :
-                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                if slVersion == 'glsl100' :
+                    lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
                 for type in vs.highPrecision :
                     lines.append(Line('precision highp {};'.format(type)))
-                lines.append(Line('#endif'))
+                if slVersion == 'glsl100' :
+                    lines.append(Line('#endif'))
 
         # write uniform definition 
         lines = self.genUniforms(vs, slVersion, lines)
@@ -1078,18 +1099,20 @@ class GLSLGenerator :
         elif glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
+        # write compatibility macros
+        for func in slMacros[slVersion] :
+            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+
         # precision modifiers
         if slVersion == 'glsl100' or slVersion == 'glsles3' :
             lines.append(Line('precision mediump float;'))
             if fs.highPrecision :
-                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                if 'glsl100' == slVersion :
+                    lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
                 for type in fs.highPrecision :
                     lines.append(Line('precision highp {};'.format(type)))
-                lines.append(Line('#endif'))
-
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
+                if 'glsl100' == slVersion :
+                    lines.append(Line('#endif'))
 
         # write uniform definition
         lines = self.genUniforms(fs, slVersion, lines)
@@ -1297,6 +1320,7 @@ class MetalGenerator :
         lines.append(Line('};'))
         lines.append(Line('typedef _tex<texture2d<float,access::sample>> sampler2D;'))
         lines.append(Line('typedef _tex<texturecube<float,access::sample>> samplerCube;'))
+        lines.append(Line('typedef _tex<texture3d<float,access::sample>> sampler3D;'))
         lines.append(Line('#endif'))
         return lines
 
@@ -1333,6 +1357,11 @@ class MetalGenerator :
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
                     lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler3D' :
+                    lines.append(Line('texture3d<float,access::sample> _t_{} [[texture({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
         if shd.hasVertexId :
             lines.append(Line('uint vs_vertexid [[vertex_id]],'))
         if shd.hasInstanceId :
@@ -1348,6 +1377,9 @@ class MetalGenerator :
                         tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
                 elif tex.type == 'samplerCube' :
                     lines.append(Line('samplerCube {}(_t_{},_s_{});'.format(
+                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler3D' :
+                    lines.append(Line('sampler3D {}(_t_{},_s_{});'.format(
                         tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
         return lines
 
@@ -1986,11 +2018,7 @@ def writeProgramSource(f, shdLib, prog) :
         layoutName = '{}_tblayout'.format(tb.bindName)
         f.write('    TextureBlockLayout {};\n'.format(layoutName))
         for tex in tb.textures :
-            if tex.type == 'sampler2D':
-                texType = 'Texture2D'
-            else :
-                texType = 'TextureCube'
-            f.write('    {}.Add("{}", TextureType::{}, {});\n'.format(layoutName, tex.name, texType, tex.bindSlot))
+            f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, tex.name, texOryolType[tex.type], tex.bindSlot))
         if tb.bindStage == 'vs' :
             stageName = 'VS'
         else :
