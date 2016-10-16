@@ -321,138 +321,135 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                     break;
             }
         }
-        else
         #endif
-        {
-            const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
-            const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
-            for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-                GLenum glImgTarget;
-                if (TextureType::TextureCube == setup.Type) {
-                    switch (faceIndex) {
-                        case 0: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
-                        case 1: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
-                        case 2: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
-                        case 3: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
-                        case 4: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
-                        default: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
-                    }
-                }
-                else {
-                    glImgTarget = glTextureTarget;
-                }
 
-
-                for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
-                    GLvoid* mipDataPtr = nullptr;
-                    int mipDataSize = 0;
-                    if (srcPtr) {
-                        mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
-                        mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
-                    }
-                    int mipWidth = setup.Width >> mipIndex;
-                    if (mipWidth == 0) {
-                        mipWidth = 1;
-                    }
-                    int mipHeight = setup.Height >> mipIndex;
-                    if (mipHeight == 0) {
-                        mipHeight = 1;
-                    }
-                    if ((TextureType::Texture2D == setup.Type) || (TextureType::TextureCube == setup.Type)) {
-                        if (isCompressed) {
-                            #if ORYOL_OPENGLES3
-                            if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                                ::glCompressedTexSubImage2D(glImgTarget,
-                                                            mipIndex, 0, 0, mipWidth, mipHeight,
-                                                            glTexImageFormat,
-                                                            mipDataSize, mipDataPtr);
-                            }
-                            else
-                            #endif
-                            {
-                                ::glCompressedTexImage2D(glImgTarget,
-                                                         mipIndex,
-                                                         glTexImageInternalFormat,
-                                                         mipWidth, mipHeight,
-                                                         0,
-                                                         mipDataSize, mipDataPtr);
-                            }
-                        }
-                        else {
-                            const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-                            #if ORYOL_OPENGLES3
-                            if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                                ::glTexSubImage2D(glImgTarget,
-                                                  mipIndex, 0, 0, mipWidth, mipHeight,
-                                                  glTexImageFormat,
-                                                  glTexImageType,
-                                                  mipDataPtr);
-                            }
-                            else
-                            #endif
-                            {
-                                ::glTexImage2D(glImgTarget,
-                                               mipIndex,
-                                               glTexImageInternalFormat,
-                                               mipWidth, mipHeight,
-                                               0,
-                                               glTexImageFormat,
-                                               glTexImageType,
-                                               mipDataPtr);
-                            }
-                        }
-                    }
-                    #if !ORYOL_OPENGLES2
-                    else if ((TextureType::Texture3D == setup.Type) || (TextureType::TextureArray == setup.Type)) {
-                        int mipDepth = setup.Depth >> mipIndex;
-                        if (mipDepth == 0) {
-                            mipDepth = 1;
-                        }
-                        if (isCompressed) {
-                            #if ORYOL_OPENGLES3
-                            if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                                ::glCompressedTexSubImage3D(glImgTarget,
-                                                            mipIndex, 0, 0, 0, mipWidth, mipHeight, mipDepth,
-                                                            glTexImageFormat,
-                                                            mipDataSize, mipDataPtr);
-                            }
-                            else
-                            #endif
-                            {
-                                ::glCompressedTexImage3D(glImgTarget,
-                                                         mipIndex,
-                                                         glTexImageInternalFormat,
-                                                         mipWidth, mipHeight, mipDepth,
-                                                         0,
-                                                         mipDataSize, mipDataPtr);
-                            }
-                        }
-                        else {
-                            const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-                            #if ORYOL_OPENGLES3
-                            if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                                ::glTexSubImage3D(glImgTarget,
-                                                  mipIndex, 0, 0, 0, mipWidth, mipHeight, mipDepth,
-                                                  glTexImageFormat,
-                                                  glTexImageType,
-                                                  mipDataPtr);
-                            }
-                            else
-                            #endif
-                            {
-                                ::glTexImage3D(glImgTarget,
-                                               mipIndex,
-                                               glTexImageInternalFormat,
-                                               mipWidth, mipHeight, mipDepth,
-                                               0,
-                                               glTexImageFormat,
-                                               glTexImageType,
-                                               mipDataPtr);
-                            }
-                        }
-                    }
-                    #endif
+        const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
+        const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+        for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+            GLenum glImgTarget;
+            if (TextureType::TextureCube == setup.Type) {
+                switch (faceIndex) {
+                    case 0: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+                    case 1: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
+                    case 2: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
+                    case 3: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
+                    case 4: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
+                    default: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
                 }
+            }
+            else {
+                glImgTarget = glTextureTarget;
+            }
+
+            for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
+                GLvoid* mipDataPtr = nullptr;
+                int mipDataSize = 0;
+                if (srcPtr) {
+                    mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
+                    mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
+                }
+                int mipWidth = setup.Width >> mipIndex;
+                if (mipWidth == 0) {
+                    mipWidth = 1;
+                }
+                int mipHeight = setup.Height >> mipIndex;
+                if (mipHeight == 0) {
+                    mipHeight = 1;
+                }
+                if ((TextureType::Texture2D == setup.Type) || (TextureType::TextureCube == setup.Type)) {
+                    if (isCompressed) {
+                        #if ORYOL_OPENGLES3
+                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
+                            ::glCompressedTexSubImage2D(glImgTarget,
+                                                        mipIndex, 0, 0, mipWidth, mipHeight,
+                                                        glTexImageFormat,
+                                                        mipDataSize, mipDataPtr);
+                        }
+                        else
+                        #endif
+                        {
+                            ::glCompressedTexImage2D(glImgTarget,
+                                                     mipIndex,
+                                                     glTexImageInternalFormat,
+                                                     mipWidth, mipHeight,
+                                                     0,
+                                                     mipDataSize, mipDataPtr);
+                        }
+                    }
+                    else {
+                        const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
+                        #if ORYOL_OPENGLES3
+                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
+                            ::glTexSubImage2D(glImgTarget,
+                                              mipIndex, 0, 0, mipWidth, mipHeight,
+                                              glTexImageFormat,
+                                              glTexImageType,
+                                              mipDataPtr);
+                        }
+                        else
+                        #endif
+                        {
+                            ::glTexImage2D(glImgTarget,
+                                           mipIndex,
+                                           glTexImageInternalFormat,
+                                           mipWidth, mipHeight,
+                                           0,
+                                           glTexImageFormat,
+                                           glTexImageType,
+                                           mipDataPtr);
+                        }
+                    }
+                }
+                #if !ORYOL_OPENGLES2
+                else if ((TextureType::Texture3D == setup.Type) || (TextureType::TextureArray == setup.Type)) {
+                    int mipDepth = setup.Depth >> mipIndex;
+                    if (mipDepth == 0) {
+                        mipDepth = 1;
+                    }
+                    if (isCompressed) {
+                        #if ORYOL_OPENGLES3
+                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
+                            ::glCompressedTexSubImage3D(glImgTarget,
+                                                        mipIndex, 0, 0, 0, mipWidth, mipHeight, mipDepth,
+                                                        glTexImageFormat,
+                                                        mipDataSize, mipDataPtr);
+                        }
+                        else
+                        #endif
+                        {
+                            ::glCompressedTexImage3D(glImgTarget,
+                                                     mipIndex,
+                                                     glTexImageInternalFormat,
+                                                     mipWidth, mipHeight, mipDepth,
+                                                     0,
+                                                     mipDataSize, mipDataPtr);
+                        }
+                    }
+                    else {
+                        const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
+                        #if ORYOL_OPENGLES3
+                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
+                            ::glTexSubImage3D(glImgTarget,
+                                              mipIndex, 0, 0, 0, mipWidth, mipHeight, mipDepth,
+                                              glTexImageFormat,
+                                              glTexImageType,
+                                              mipDataPtr);
+                        }
+                        else
+                        #endif
+                        {
+                            ::glTexImage3D(glImgTarget,
+                                           mipIndex,
+                                           glTexImageInternalFormat,
+                                           mipWidth, mipHeight, mipDepth,
+                                           0,
+                                           glTexImageFormat,
+                                           glTexImageType,
+                                           mipDataPtr);
+                        }
+                    }
+                }
+                #endif
             }
         }
         ORYOL_GL_CHECK_ERROR();

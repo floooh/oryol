@@ -237,6 +237,9 @@ glCaps::printInfo(Flavour flav) {
     if (HasFeature(MultipleRenderTarget)) {
         printInt(GL_MAX_COLOR_ATTACHMENTS, "GL_MAX_COLOR_ATTACHMENTS", 1);
     }
+    if (HasFeature(Texture3D)) {
+        printInt(GL_MAX_3D_TEXTURE_SIZE, "GL_MAX_3D_TEXTURE_SIZE", 1);
+    }
     #endif
     if (flav != GL_3_3_CORE) {
         printString(GL_EXTENSIONS, "GL_EXTENSIONS", true);
