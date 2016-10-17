@@ -5,7 +5,10 @@
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
+#include "Assets/Gfx/ShapeBuilder.h"
 #include "shaders.h"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/noise.hpp"
 
 using namespace Oryol;
 
@@ -16,16 +19,20 @@ public:
     AppState::Code OnCleanup();
 
     AppState::Code notSupported();    // render a warning if 3D textures not supported by platform
+    void computeShaderParams();
 
     DrawState drawState;
+    Shader::VSParams vsParams;
     int frameIndex = 0;
+    glm::mat4 proj;
 };
 OryolMain(VolumeTextureApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 VolumeTextureApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 600, "3D Texture Sample");
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "3D Texture Sample");
+    gfxSetup.DefaultClearColor = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
 
@@ -35,32 +42,47 @@ VolumeTextureApp::OnInit() {
     }
 
     // create a RGBA volume texture
-    const int dim = 16;
-    const int mul = 256 / dim;
-    uint8_t data[dim][dim][dim][4] = { };
+    glm::vec3 p(0.0f, 0.0f, 0.0f);
+    const int dim = 32;
+    static uint8_t data[dim][dim][dim][4] = { };
     for (int z = 0; z < dim; z++) {
+        p.y = 0.0f;
         for (int y = 0; y < dim; y++) {
+            p.x = 0.0f;
             for (int x = 0; x < dim; x++) {
-                data[z][y][x][0] = x*mul;
-                data[z][y][x][1] = y*mul;
-                data[z][y][x][2] = z*mul;
-                data[z][y][x][3] = 255;
+                data[x][y][z][0] = glm::simplex(p * 1.0f) * 255;
+                data[x][y][z][1] = glm::simplex(p * 1.2f) * 255;
+                data[x][y][z][2] = glm::simplex(p * 1.4f) * 255;
+                data[x][y][z][3] = 0;
+                p.x += 1.0f / dim;
             }
+            p.y += 1.0f / dim;
         }
+        p.z += 1.0f / dim;
     }
     auto texSetup = TextureSetup::FromPixelData3D(dim, dim, dim, 1, PixelFormat::RGBA8);
     texSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->drawState.FSTexture[Textures::Texture] = Gfx::CreateResource(texSetup, data, sizeof(data));
-    auto fsqSetup = MeshSetup::FullScreenQuad();
-    this->drawState.Mesh[0] = Gfx::CreateResource(fsqSetup);
 
+    // create a cube which will be the hull geometry for raycasting through the 3D texture
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+
+    // pipeline state for rendering the 3D-textures cube
     Id shd = Gfx::CreateResource(Shader::Setup());
-    auto pipSetup = PipelineSetup::FromLayoutAndShader(fsqSetup.Layout, shd);
-    pipSetup.DepthStencilState.DepthWriteEnabled = false;
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    auto pipSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    pipSetup.DepthStencilState.DepthWriteEnabled = true;
+    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
+
+    // setup a projection matrix with the right aspect ratio
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
 
     return App::OnInit();
 }
@@ -74,13 +96,12 @@ VolumeTextureApp::OnRunning() {
         return this->notSupported();
     }
 
-    Shader::VSParams vsParams;
-    float d = float(this->frameIndex % 256) / 256.0f;
-    vsParams.TexOffset = glm::vec3(d, d, d);
+    this->computeShaderParams();
 
+    // render the rotating cube
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(vsParams);
+    Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw();
     Gfx::EndPass();
     Gfx::CommitFrame();
@@ -94,6 +115,25 @@ VolumeTextureApp::OnCleanup() {
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();
+}
+
+//------------------------------------------------------------------------------
+void
+VolumeTextureApp::computeShaderParams() {
+    const glm::vec4 eyePos(0.0f, 0.0f, 0.0f, 1.0f);
+
+    const glm::vec3 pos(0.0f, 0.0f, -2.0f);
+//    float d = float(this->frameIndex % 256) / 256.0f;
+//    vsParams.TexOffset = glm::vec3(d, d, d);
+
+    float angleX = glm::radians(0.2f * this->frameIndex);
+    float angleY = glm::radians(0.1f * this->frameIndex);
+    glm::mat4 model = glm::translate(glm::mat4(), pos);
+    model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 invModel = glm::inverse(model);
+    this->vsParams.ModelViewProj = this->proj * model;
+    this->vsParams.ModelEyePos = invModel * eyePos;
 }
 
 //------------------------------------------------------------------------------

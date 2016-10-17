@@ -3,16 +3,18 @@
 //------------------------------------------------------------------------------
 
 @uniform_block vsParams VSParams
-vec3 texOffset TexOffset
+mat4 mvp ModelViewProj
+vec4 modelEyePos ModelEyePos
 @end
 
 @vs vs
 @use_uniform_block vsParams
 @in vec4 position
-@in vec2 texcoord0
-@out vec3 uvw
-    _position = position;
-    uvw = vec3(texcoord0, 0.0) + texOffset;
+@out vec3 eyePos
+@out vec3 surfPos
+    _position = mul(mvp, position);
+    eyePos = modelEyePos.xyz + vec3(0.5, 0.5, 0.5);
+    surfPos = position.xyz + vec3(0.5, 0.5, 0.5);
 @end
 
 //------------------------------------------------------------------------------
@@ -22,9 +24,21 @@ sampler3D tex Texture
 
 @fs fs
 @highp sampler3D
+@highp float
 @use_texture_block textures
-@in vec3 uvw
-    _color = tex3D(tex, uvw);
+@in vec3 eyePos
+@in vec3 surfPos
+    vec3 ep = eyePos;
+    vec3 sp = surfPos;
+    vec3 dir = normalize(sp - ep);
+    float t = 0.0;
+    vec4 c = vec4(0.0);
+    for (int i = 0; i < 64; i++) {
+        vec3 p = (sp + dir * t);
+        c += tex3D(tex, p) * 0.02;
+        t += 1.0 / 64.0;
+    }
+    _color = vec4(c.xyz, 1.0);
 @end
 
 @program Shader vs fs
