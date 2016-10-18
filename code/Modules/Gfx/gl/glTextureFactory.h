@@ -44,8 +44,6 @@ private:
     void setupTextureParams(const TextureSetup& setup, GLenum glTexTarget, GLuint glTex);
     /// helper method to setup texture params on GL texture
     void setupTextureAttrs(texture& tex);
-    /// create a render target
-    ResourceState::Code createRenderTarget(texture& tex);
     /// create a texture with or without associated data
     ResourceState::Code createTexture(texture& tex, const void* data, int32_t size);
 

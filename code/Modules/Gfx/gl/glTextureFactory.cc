@@ -54,16 +54,7 @@ glTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    if (tex.Setup.RenderTarget) {
-        return this->createRenderTarget(tex);
-    }
-    else if (tex.Setup.ShouldSetupEmpty()) {
-        return this->createTexture(tex, nullptr, 0);
-    }
-    else {
-        // here would go more ways to create textures without image data
-        return ResourceState::InvalidState;
-    }
+    return this->createTexture(tex, nullptr, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -71,14 +62,8 @@ ResourceState::Code
 glTextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(!tex.Setup.RenderTarget);
-    
-    if (tex.Setup.ShouldSetupFromPixelData()) {
-        return this->createTexture(tex, data, size);
-    }
-    else {
-        // here would go more ways to create textures with image data
-        return ResourceState::InvalidState;
-    }
+
+    return this->createTexture(tex, data, size);
 }
 
 //------------------------------------------------------------------------------
@@ -103,116 +88,6 @@ glTextureFactory::DestroyResource(texture& tex) {
     }
 
     tex.Clear();
-}
-
-//------------------------------------------------------------------------------
-/**
- @todo:
-    - multisample render targets (except GLES2)
-    - multiple color attachments
-*/
-ResourceState::Code
-glTextureFactory::createRenderTarget(texture& tex) {
-    o_assert_dbg(0 == tex.glDepthRenderbuffer);
-    o_assert_dbg(0 == tex.glTextures[0]);
-
-    const TextureSetup& setup = tex.Setup;
-    o_assert_dbg(setup.RenderTarget);
-    o_assert_dbg(setup.TextureUsage == Usage::Immutable);
-    o_assert_dbg(setup.NumMipMaps == 1);
-    o_assert_dbg(setup.Type == TextureType::Texture2D);
-    o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
-
-    // get size of new render target
-    int width = setup.Width;
-    int height = setup.Height;
-    o_assert_dbg((width > 0) && (height > 0));
-    
-    // create a backing texture, for non-MSAA render targets this is also the actual render target,
-    // for MSAA render targets, the MSAA image will be resolved into this backing texture
-    const GLenum glColorInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
-    const GLuint glColorTexture = this->glGenAndBindTexture(GL_TEXTURE_2D);
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glTypes::asGLTexFilterMode(setup.Sampler.MinFilter));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glTypes::asGLTexFilterMode(setup.Sampler.MagFilter));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
-    ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
-    #if !ORYOL_OPENGLES2
-    if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
-    }
-    #endif
-    ORYOL_GL_CHECK_ERROR();
-    #if ORYOL_OPENGLES3    
-    if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        ::glTexStorage2D(GL_TEXTURE_2D, 1, glColorInternalFormat, width, height);
-    }
-    else
-    #endif
-    {
-        GLenum glColorFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
-        GLenum glColorType = glTypes::asGLTexImageType(setup.ColorFormat);
-        ::glTexImage2D(GL_TEXTURE_2D, 0, glColorInternalFormat, width, height, 0, glColorFormat, glColorType, NULL);
-    }
-    ORYOL_GL_CHECK_ERROR();
-
-    // create MSAA renderbuffer
-    #if !ORYOL_OPENGLES2
-    const bool msaa = (setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets);
-    if (msaa) {
-        ::glGenRenderbuffers(1, &tex.glMSAARenderbuffer);
-        o_assert_dbg(0 != tex.glMSAARenderbuffer);
-        ::glBindRenderbuffer(GL_RENDERBUFFER, tex.glMSAARenderbuffer);
-        ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glColorInternalFormat, width, height);
-    }
-    #endif
-    ORYOL_GL_CHECK_ERROR();
-    
-    // create depth buffer
-    GLuint glDepthRenderBuffer = 0;
-    if (setup.HasDepth()) {
-        o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(setup.DepthFormat));
-
-        // FIXME: optionally create a depth texture instead of a render buffer here...
-        o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
-        
-        ::glGenRenderbuffers(1, &glDepthRenderBuffer);
-        o_assert_dbg(0 != glDepthRenderBuffer);
-        ::glBindRenderbuffer(GL_RENDERBUFFER, glDepthRenderBuffer);
-        GLint glDepthFormat = glTypes::asGLDepthAttachmentFormat(setup.DepthFormat);
-        #if !ORYOL_OPENGLES2
-        if (msaa) {
-            ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glDepthFormat, width, height);
-        }
-        else
-        #endif
-        {
-            ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, width, height);
-        }
-        ORYOL_GL_CHECK_ERROR();
-    }
-    this->pointers.renderer->invalidateTextureState();
-    
-    // setup texture attrs and set on texture
-    TextureAttrs attrs;
-    attrs.Locator = setup.Locator;
-    attrs.Type = TextureType::Texture2D;
-    attrs.ColorFormat = setup.ColorFormat;
-    attrs.DepthFormat = setup.DepthFormat;
-    attrs.SampleCount = setup.SampleCount;
-    attrs.TextureUsage = Usage::Immutable;
-    attrs.Width = width;
-    attrs.Height = height;
-    attrs.NumMipMaps = 1;
-    attrs.IsRenderTarget = true;
-    attrs.HasDepthBuffer = setup.HasDepth();
-    
-    // setup the texture object
-    tex.textureAttrs = attrs;
-    tex.glTextures[0] = glColorTexture;
-    tex.glDepthRenderbuffer = glDepthRenderBuffer;
-    tex.glTarget = GL_TEXTURE_2D;
-
-    return ResourceState::Valid;
 }
 
 //------------------------------------------------------------------------------
@@ -256,11 +131,15 @@ glTextureFactory::setupTextureAttrs(texture& tex) {
     attrs.Locator = tex.Setup.Locator;
     attrs.Type = tex.Setup.Type;
     attrs.ColorFormat = tex.Setup.ColorFormat;
+    attrs.DepthFormat = tex.Setup.DepthFormat;
+    attrs.SampleCount = tex.Setup.SampleCount;
     attrs.TextureUsage = tex.Setup.TextureUsage;
     attrs.Width = tex.Setup.Width;
     attrs.Height = tex.Setup.Height;
     attrs.Depth = tex.Setup.Depth;
     attrs.NumMipMaps = tex.Setup.NumMipMaps;
+    attrs.IsRenderTarget = tex.Setup.RenderTarget;
+    attrs.HasDepthBuffer = tex.Setup.HasDepth();
     tex.textureAttrs = attrs;
 }
 
@@ -455,10 +334,50 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
         ORYOL_GL_CHECK_ERROR();
     }
 
+    // additional render target stuff
+    if (setup.RenderTarget) {
+
+        // create MSAA renderbuffer
+        #if !ORYOL_OPENGLES2
+        const bool msaa = (setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets);
+        if (msaa) {
+            ::glGenRenderbuffers(1, &tex.glMSAARenderbuffer);
+            o_assert_dbg(0 != tex.glMSAARenderbuffer);
+            ::glBindRenderbuffer(GL_RENDERBUFFER, tex.glMSAARenderbuffer);
+            ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glTexImageInternalFormat, setup.Width, setup.Height);
+        }
+        #endif
+        ORYOL_GL_CHECK_ERROR();
+
+        // create depth buffer
+        if (setup.HasDepth()) {
+            o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(setup.DepthFormat));
+
+            // FIXME: optionally create a depth texture instead of a render buffer here...
+            o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
+            
+            ::glGenRenderbuffers(1, &tex.glDepthRenderbuffer);
+            o_assert_dbg(0 != tex.glDepthRenderbuffer);
+            ::glBindRenderbuffer(GL_RENDERBUFFER, tex.glDepthRenderbuffer);
+            GLint glDepthFormat = glTypes::asGLDepthAttachmentFormat(setup.DepthFormat);
+            #if !ORYOL_OPENGLES2
+            if (msaa) {
+                ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glDepthFormat, setup.Width, setup.Height);
+            }
+            else
+            #endif
+            {
+                ::glRenderbufferStorage(GL_RENDERBUFFER, glDepthFormat, setup.Width, setup.Height);
+            }
+            ORYOL_GL_CHECK_ERROR();
+        }
+    }
+
     // setup texture object
     this->setupTextureAttrs(tex);
     tex.glTarget = glTextureTarget;
 
+    this->pointers.renderer->invalidateTextureState();
     return ResourceState::Valid;
 }
 
