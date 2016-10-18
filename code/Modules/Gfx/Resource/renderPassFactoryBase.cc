@@ -106,7 +106,7 @@ renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
             if (attrs.TextureUsage != Usage::Immutable) {
                 o_error("invalid render pass: color attachments must have immutable usage!\n");
             }
-            if (!tex->Setup.ShouldSetupAsRenderTarget()) {
+            if (!tex->Setup.RenderTarget) {
                 o_error("invalid render pass: color attachment must have been setup as render target!\n");
             }
         }
@@ -123,7 +123,7 @@ renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
         if (attrs.TextureUsage != Usage::Immutable) {
             o_error("invalid render pass: depth attachment must have immutable usage!\n");
         }
-        if (!dsTex->Setup.ShouldSetupAsRenderTarget()) {
+        if (!dsTex->Setup.RenderTarget) {
             o_error("invalid render pass: depth attachment must have been setup as render target!\n");
         }
     }

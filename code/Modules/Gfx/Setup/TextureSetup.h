@@ -22,20 +22,30 @@ public:
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
-    /// setup texture from raw pixel data
-    static TextureSetup FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    /// setup 2D texture from raw pixel data
+    static TextureSetup FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    /// setup cube texture from raw pixel data
+    static TextureSetup FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     //// setup 3D texture from raw pixel data
-    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt);
+    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup array texture from raw pixel data
-    static TextureSetup FromPixelDataArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt);
-    /// setup empty 2D or Cube texture (usually for dynamic streaming of CPU generated texture data)
-    static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage);
+    static TextureSetup FromPixelDataArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    /// setup empty 2D texture
+    static TextureSetup Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    /// setup empty cube texture
+    static TextureSetup EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty 3D texture
-    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage);
+    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty array texture
-    static TextureSetup EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code, Usage::Code usage);
-    /// setup as absolute-size render target
-    static TextureSetup RenderTarget(int w, int h);
+    static TextureSetup EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    /// setup as 2D render target
+    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    /// setup as cube render target
+    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    /// setup as 3D render target
+    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    /// setup as array render target
+    static TextureSetup RenderTargetArray(int w, int h, int slices, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
 
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
@@ -43,8 +53,6 @@ public:
     bool ShouldSetupFromPixelData() const;
     /// return true if texture should be created empty
     bool ShouldSetupEmpty() const;
-    /// return true if texture should be setup as render target
-    bool ShouldSetupAsRenderTarget() const;
     /// return true if render target has depth
     bool HasDepth() const;
 
@@ -52,6 +60,8 @@ public:
     Usage::Code TextureUsage = Usage::Immutable;
     /// texture type
     TextureType::Code Type = TextureType::Texture2D;
+    /// use as render target
+    bool RenderTarget = false;
     /// width in pixels
     int Width = 0;
     /// height in pixels
@@ -82,7 +92,6 @@ private:
     bool setupFromFile = false;
     bool setupFromPixelData = false;
     bool setupEmpty = false;
-    bool setupAsRenderTarget = false;
     bool hasMipMaps = false;
 };
     

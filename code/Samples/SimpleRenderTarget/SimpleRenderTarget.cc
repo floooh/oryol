@@ -44,9 +44,7 @@ SimpleRenderTargetApp::OnInit() {
 
     // create an offscreen render pass object with a single color attachment
     // texture, we explicitly want repeat texture wrap mode and linear blending...
-    auto rtSetup = TextureSetup::RenderTarget(128, 128);
-    rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::DEPTH;
+    auto rtSetup = TextureSetup::RenderTarget2D(128, 128, PixelFormat::RGBA8, PixelFormat::DEPTH);
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;

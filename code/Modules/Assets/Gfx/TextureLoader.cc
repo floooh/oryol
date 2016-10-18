@@ -97,6 +97,7 @@ TextureSetup
 TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* ctx, const uint8_t* data) {
     const int w = ctx->image_width(0, 0);
     const int h = ctx->image_height(0, 0);
+    const int d = ctx->image_depth(0, 0);
     const int numFaces = ctx->num_faces();
     const int numMips = ctx->num_mipmaps(0);
     PixelFormat::Code pixelFormat = PixelFormat::InvalidPixelFormat;
@@ -157,22 +158,21 @@ TextureLoader::buildSetup(const TextureSetup& blueprint, const gliml::context* c
             break;
     }
     o_assert(PixelFormat::InvalidPixelFormat != pixelFormat);
-    TextureType::Code type = TextureType::InvalidTextureType;
+    TextureSetup newSetup;
     switch (ctx->texture_target()) {
         case GLIML_GL_TEXTURE_2D:
-            type = TextureType::Texture2D;
+            newSetup = TextureSetup::FromPixelData2D(w, h, numMips, pixelFormat, this->setup);
             break;
         case GLIML_GL_TEXTURE_3D:
-            type = TextureType::Texture3D;
+            newSetup = TextureSetup::FromPixelData3D(w, h, d, numMips, pixelFormat, this->setup);
             break;
         case GLIML_GL_TEXTURE_CUBE_MAP:
-            type = TextureType::TextureCube;
+            newSetup = TextureSetup::FromPixelDataCube(w, h, numMips, pixelFormat, this->setup);
             break;
         default:
             o_error("Unknown texture type!\n");
             break;
     }
-    TextureSetup newSetup = TextureSetup::FromPixelData(w, h, numMips, type, pixelFormat, this->setup);
     
     // setup mipmap offsets
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx->num_mipmaps(0));

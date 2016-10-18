@@ -78,8 +78,7 @@ GPUParticlesApp::OnInit() {
     // - 1 particle-rendering draw state
     
     // the 2 ping/pong particle state textures and render passes
-    auto particleTextureSetup = TextureSetup::RenderTarget(ParticleBufferWidth, ParticleBufferHeight);
-    particleTextureSetup.ColorFormat = PixelFormat::RGBA32F;
+    auto particleTextureSetup = TextureSetup::RenderTarget2D(ParticleBufferWidth, ParticleBufferHeight, PixelFormat::RGBA32F);
     particleTextureSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     particleTextureSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     for (int i = 0; i < 2; i++) {

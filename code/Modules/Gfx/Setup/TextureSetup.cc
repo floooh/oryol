@@ -28,46 +28,50 @@ TextureSetup::FromFile(const class Locator& loc, const TextureSetup& blueprint, 
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::RenderTarget(int w, int h) {
-    o_assert_dbg((w > 0) && (h > 0));
-
-    TextureSetup setup;
-    setup.setupAsRenderTarget = true;
-    setup.Width = w;
-    setup.Height = h;
-    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-TextureSetup
-TextureSetup::FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+TextureSetup::FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    o_assert_dbg((TextureType::Texture2D == type) || (TextureType::TextureCube == type));
 
     TextureSetup setup(blueprint);
     setup.setupFromPixelData = true;
-    setup.Type = type;
+    setup.Type = TextureType::Texture2D;
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
-    setup.ImageData.NumFaces = (type == TextureType::Texture2D) ? 1 : 6;
+    setup.ImageData.NumFaces = 1;
     setup.ImageData.NumMipMaps = numMipMaps;
     return setup;
 }
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt) {
+TextureSetup::FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+    o_assert_dbg((w > 0) && (h > 0));
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+
+    TextureSetup setup(blueprint);
+    setup.setupFromPixelData = true;
+    setup.Type = TextureType::TextureCube;
+    setup.Width = w;
+    setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.ImageData.NumFaces = 6;
+    setup.ImageData.NumMipMaps = numMipMaps;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (d > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
 
-    TextureSetup setup;
+    TextureSetup setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = TextureType::Texture3D;
     setup.Width = w;
@@ -82,12 +86,12 @@ TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::FromPixelDataArray(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt) {
+TextureSetup::FromPixelDataArray(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (d > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
 
-    TextureSetup setup;
+    TextureSetup setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = TextureType::TextureArray;
     setup.Width = w;
@@ -102,16 +106,14 @@ TextureSetup::FromPixelDataArray(int w, int h, int d, int numMipMaps, PixelForma
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
+TextureSetup::Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-    o_assert_dbg((TextureType::Texture2D == type) || (TextureType::TextureCube == type));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    o_assert_dbg((TextureType::Texture2D == type) || (TextureType::TextureCube == type));
 
-    TextureSetup setup;
+    TextureSetup setup(blueprint);
     setup.setupEmpty = true;
-    setup.Type = type;
+    setup.Type = TextureType::Texture2D;
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
@@ -122,12 +124,30 @@ TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelF
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage) {
+TextureSetup::EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
+    o_assert_dbg((w > 0) && (h > 0));
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+
+    TextureSetup setup(blueprint);
+    setup.setupEmpty = true;
+    setup.Type = TextureType::TextureCube;
+    setup.Width = w;
+    setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.TextureUsage = usage;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (d > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
 
-    TextureSetup setup;
+    TextureSetup setup(blueprint);
     setup.setupEmpty = true;
     setup.Type = TextureType::Texture3D;
     setup.Width = w;
@@ -141,12 +161,12 @@ TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage) {
+TextureSetup::EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (slices > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
 
-    TextureSetup setup;
+    TextureSetup setup(blueprint);
     setup.setupEmpty = true;
     setup.Type = TextureType::TextureArray;
     setup.Width = w;
@@ -155,6 +175,76 @@ TextureSetup::EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::
     setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
     setup.TextureUsage = usage;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::RenderTarget2D(int w, int h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+    o_assert_dbg((w > 0) && (h > 0));
+
+    TextureSetup setup;
+    setup.Type = TextureType::Texture2D;
+    setup.RenderTarget = true;
+    setup.Width = w;
+    setup.Height = h;
+    setup.ColorFormat = colorFmt;
+    setup.DepthFormat = depthFmt;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::RenderTargetCube(int w, int h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+    o_assert_dbg((w > 0) && (h > 0));
+
+    TextureSetup setup;
+    setup.Type = TextureType::TextureCube;
+    setup.RenderTarget = true;
+    setup.Width = w;
+    setup.Height = h;
+    setup.ColorFormat = colorFmt;
+    setup.DepthFormat = depthFmt;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+    o_assert_dbg((w > 0) && (h > 0));
+
+    TextureSetup setup;
+    setup.Type = TextureType::Texture3D;
+    setup.RenderTarget = true;
+    setup.Width = w;
+    setup.Height = h;
+    setup.Depth = d;
+    setup.ColorFormat = colorFmt;
+    setup.DepthFormat = depthFmt;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::RenderTargetArray(int w, int h, int slices, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+    o_assert_dbg((w > 0) && (h > 0));
+
+    TextureSetup setup;
+    setup.Type = TextureType::TextureArray;
+    setup.RenderTarget = true;
+    setup.Width = w;
+    setup.Height = h;
+    setup.Depth = slices;
+    setup.ColorFormat = colorFmt;
+    setup.DepthFormat = depthFmt;
+    setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
+    setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 
@@ -174,12 +264,6 @@ TextureSetup::ShouldSetupFromPixelData() const {
 bool
 TextureSetup::ShouldSetupEmpty() const {
     return this->setupEmpty;
-}
-
-//------------------------------------------------------------------------------
-bool
-TextureSetup::ShouldSetupAsRenderTarget() const {
-    return this->setupAsRenderTarget;
 }
 
 //------------------------------------------------------------------------------

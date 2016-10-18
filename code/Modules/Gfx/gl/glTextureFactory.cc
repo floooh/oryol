@@ -54,7 +54,7 @@ glTextureFactory::SetupResource(texture& tex) {
     o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
     o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
 
-    if (tex.Setup.ShouldSetupAsRenderTarget()) {
+    if (tex.Setup.RenderTarget) {
         return this->createRenderTarget(tex);
     }
     else if (tex.Setup.ShouldSetupEmpty()) {
@@ -70,7 +70,7 @@ glTextureFactory::SetupResource(texture& tex) {
 ResourceState::Code
 glTextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(!tex.Setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(!tex.Setup.RenderTarget);
     
     if (tex.Setup.ShouldSetupFromPixelData()) {
         return this->createTexture(tex, data, size);
@@ -117,7 +117,7 @@ glTextureFactory::createRenderTarget(texture& tex) {
     o_assert_dbg(0 == tex.glTextures[0]);
 
     const TextureSetup& setup = tex.Setup;
-    o_assert_dbg(setup.ShouldSetupAsRenderTarget());
+    o_assert_dbg(setup.RenderTarget);
     o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     o_assert_dbg(setup.NumMipMaps == 1);
     o_assert_dbg(setup.Type == TextureType::Texture2D);

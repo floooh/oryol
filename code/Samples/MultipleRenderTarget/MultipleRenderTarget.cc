@@ -58,9 +58,8 @@ MultipleRenderTargetApp::OnInit() {
 
     // create 3 rendertarget textures, the first one with a DepthStencil
     // surface, note that the render target textures use MSAA anti-aliasing
-    auto rtSetup = TextureSetup::RenderTarget(OffscreenWidth, OffscreenHeight);
+    auto rtSetup = TextureSetup::RenderTarget2D(OffscreenWidth, OffscreenHeight, PixelFormat::RGBA8, PixelFormat::DEPTHSTENCIL);
     rtSetup.SampleCount = 4;
-    rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     Id rt0 = Gfx::CreateResource(rtSetup);
