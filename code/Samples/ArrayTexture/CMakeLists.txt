@@ -1,0 +1,7 @@
+fips_begin_app(ArrayTexture windowed)
+    fips_vs_warning_level(3)
+    fips_files(ArrayTexture.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx Dbg Assets)
+    oryol_add_web_sample(ArrayTexture "Demonstrate array texture usage" "emscripten" none "ArrayTexture/ArrayTexture.cc")
+fips_end_app()

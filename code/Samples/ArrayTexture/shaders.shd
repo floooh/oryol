@@ -1,0 +1,41 @@
+//------------------------------------------------------------------------------
+//  ArrayTexture sample shaders.
+//------------------------------------------------------------------------------
+
+@uniform_block vsParams VSParams
+mat4 mvp ModelViewProj
+vec4 uvOffset UVOffset
+@end
+
+@vs vs
+@use_uniform_block vsParams
+@in vec4 position
+@in vec2 texcoord0
+@out vec3 uv0
+@out vec3 uv1
+    _position = mul(mvp, position);
+    uv0 = vec3(texcoord0 + uvOffset.xy, 0.0);
+    uv1 = vec3(texcoord0 + uvOffset.zw, 1.0);
+@end
+
+//------------------------------------------------------------------------------
+@texture_block textures Textures
+sampler2DArray tex Texture
+@end
+
+@fs fs
+@highp sampler2DArray
+@highp float
+@use_texture_block textures
+@in vec3 uv0
+@in vec3 uv1
+#if ORYOL_GLSL
+    vec4 c0 = tex2DArray(tex, uv0);
+    vec4 c1 = tex2DArray(tex, uv1);
+    _color = vec4(c0.xyz + c1.xyz, 1.0);
+#else
+    _color = vec4(1.0, 0.0, 1.0, 1.0);
+#endif
+@end
+
+@program Shader vs fs
