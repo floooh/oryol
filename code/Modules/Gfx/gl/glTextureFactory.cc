@@ -226,6 +226,7 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                 if (srcPtr) {
                     mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
                     mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
+                    o_assert_dbg(mipDataSize > 0);
                 }
                 int mipWidth = setup.Width >> mipIndex;
                 if (mipWidth == 0) {
