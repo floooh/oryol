@@ -63,6 +63,7 @@ VolumeTextureApp::OnInit() {
     auto texSetup = TextureSetup::FromPixelData3D(dim, dim, dim, 1, PixelFormat::RGBA8);
     texSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
+    texSetup.ImageData.Sizes[0][0] = sizeof(data);
     this->drawState.FSTexture[Textures::Texture] = Gfx::CreateResource(texSetup, data, sizeof(data));
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
@@ -121,10 +122,7 @@ VolumeTextureApp::OnCleanup() {
 void
 VolumeTextureApp::computeShaderParams() {
     const glm::vec4 eyePos(0.0f, 0.0f, 0.0f, 1.0f);
-
     const glm::vec3 pos(0.0f, 0.0f, -2.0f);
-//    float d = float(this->frameIndex % 256) / 256.0f;
-//    vsParams.TexOffset = glm::vec3(d, d, d);
 
     float angleX = glm::radians(0.2f * this->frameIndex);
     float angleY = glm::radians(0.1f * this->frameIndex);
