@@ -88,12 +88,15 @@ slMacros = {
         '_const': 'const',
         '_func': '',
         'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
+        'sampler2DArray': 'sampler2D',  # hack to hide invalid sampler types
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
         'tex3D(s, t)': 'vec4(0.0)',
+        'tex2DArray(s, t)': 'vec4(0.0)',
         'texCUBE(s, t)': 'textureCube(s,t)',
         'tex2Dvs(s, t)': 'texture2D(s,t)',
-        'tex3Dvs(s, t)': 'vec4(0.0)'
+        'tex3Dvs(s, t)': 'vec4(0.0)',
+        'tex2DArrayvs(s, t)': 'vec4(0.0)',
     },
     'glsl120': {
         'ORYOL_GLSL': '(1)',
@@ -112,12 +115,15 @@ slMacros = {
         '_const': 'const',
         '_func': '',
         'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
+        'sampler2DArray': 'sampler2D',  # hack to hide invalid sampler types
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
         'tex3D(s, t)': 'vec4(0.0)',
+        'tex2DArray(s, t)': 'vec4(0.0)',
         'texCUBE(s, t)': 'textureCube(s,t)',
         'tex2Dvs(s, t)': 'texture2D(s,t)',
-        'tex3Dvs(s, t)': 'vec4(0.0)'
+        'tex3Dvs(s, t)': 'vec4(0.0)',
+        'tex2DArrayvs(s, t)': 'vec4(0.0)',
     },
     'glsl330': {
         'ORYOL_GLSL': '(1)',
@@ -138,9 +144,11 @@ slMacros = {
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
         'tex3D(s, t)': 'texture(s,t)',
+        'tex2DArray(s, t)': 'texture(s,t)',
         'texCUBE(s, t)': 'texture(s,t)',
         'tex2Dvs(s, t)': 'texture(s,t)',
-        'tex3Dvs(s, t)': 'texture(s,t)'
+        'tex3Dvs(s, t)': 'texture(s,t)',
+        'tex2DArrayvs(s, t)': 'texture(s,t)',
     },
     'glsles3': {
         'ORYOL_GLSL': '(1)',
@@ -161,9 +169,11 @@ slMacros = {
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
         'tex3D(s, t)': 'texture(s,t)',
+        'tex2DArray(s, t)': 'texture(s,t)',
         'texCUBE(s, t)': 'texture(s,t)',
         'tex2Dvs(s, t)': 'texture(s,t)',
-        'tex3Dvs(s, t)': 'texture(s,t)'
+        'tex3Dvs(s, t)': 'texture(s,t)',
+        'tex2DArrayvs(s, t)': 'texture(s,t)',
     },
     'hlsl5': {
         'ORYOL_GLSL': '(0)',
@@ -214,10 +224,12 @@ slMacros = {
         'mul(m,v)': '(m*v)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'tex3D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
         'tex3Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
+        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
         'discard': 'discard_fragment()'
     }
 }
