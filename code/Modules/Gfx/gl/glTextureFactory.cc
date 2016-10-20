@@ -10,6 +10,7 @@
 #include "gl_impl.h"
 #include "glTypes.h"
 #include "glCaps.h"
+#include <math.h>
 
 namespace Oryol {
 namespace _priv {
@@ -187,18 +188,35 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
         // initialize texture storage
         #if ORYOL_OPENGLES3
         if (!glCaps::IsFlavour(glCaps::GLES2)) {
+            // if generating mipmaps, glTexStorage needs to know the resulting number of mipmaps
+            int numMips = setup.NumMipMaps;
+            if (setup.GenerateMipMaps) {
+                switch (setup.Type) {
+                    case TextureType::Texture2D:
+                    case TextureType::TextureCube:
+                    case TextureType::TextureArray:
+                        numMips = 1 + int(log2(std::max(setup.Width, setup.Height)));
+                        break;
+                    case TextureType::Texture3D:
+                        numMips = 1 + int(log2(std::max(std::max(setup.Width, setup.Height), setup.Depth)));
+                        break;
+                    default:
+                        break;
+                }
+            }
             switch (setup.Type) {
                 case TextureType::Texture2D:
                 case TextureType::TextureCube:
-                    ::glTexStorage2D(glTextureTarget, setup.NumMipMaps, glTexImageInternalFormat, setup.Width, setup.Height);
+                    ::glTexStorage2D(glTextureTarget, numMips, glTexImageInternalFormat, setup.Width, setup.Height);
                     break;
                 case TextureType::Texture3D:
                 case TextureType::TextureArray:
-                    ::glTexStorage3D(glTextureTarget, setup.NumMipMaps, glTexImageInternalFormat, setup.Width, setup.Height, setup.Depth);
+                    ::glTexStorage3D(glTextureTarget, numMips, glTexImageInternalFormat, setup.Width, setup.Height, setup.Depth);
                     break;
                 default:
                     break;
             }
+            Log::Info("glTexStorage numMips (%dx%dx%d): %d\n", setup.Width, setup.Height, setup.Depth, numMips);
         }
         #endif
 
