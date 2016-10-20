@@ -32,8 +32,8 @@ OryolMain(ArrayTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ArrayTextureApp::OnInit() {
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Array Texture Sample");
-    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    auto gfxSetup = GfxSetup::WindowMSAA4(800, 512, "Array Texture Sample");
+    gfxSetup.DefaultClearColor = glm::vec4(0.2f, 0.2f, 0.3f, 1.0f);
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
 
@@ -42,20 +42,31 @@ ArrayTextureApp::OnInit() {
         return App::OnInit();
     }
 
-    // create a 16x16 array texture with 2 slices, one with red, the
-    // other with green checker board
-    const int numSlices = 2;
+    // create a 16x16 array texture with 3 layers and RGB checkboard pattern
+    const int numSlices = 3;
     const int width = 16;
     const int height = 16;
     uint32_t data[numSlices][height][width];
     for (int slice = 0, evenOdd = 0; slice < numSlices; slice++, evenOdd++) {
         for (int y = 0; y < height; y++, evenOdd++) {
             for (int x = 0; x < width; x++, evenOdd++) {
-                data[slice][y][x] = evenOdd&1 ? 0 : (slice==0 ? 0xFF0000FF : 0xFF00FF00);
+                if (evenOdd & 1) {
+                    switch (slice) {
+                        case 0: data[slice][y][x] = 0xFF0000FF; break;
+                        case 1: data[slice][y][x] = 0xFF00FF00; break;
+                        case 2: data[slice][y][x] = 0xFFFF0000; break;
+                    }
+                }
+                else {
+                    data[slice][y][x] = 0;
+                }
             }
         }
     }
-    auto texSetup = TextureSetup::FromPixelDataArray(16, 16, 2, 1, PixelFormat::RGBA8);
+    auto texSetup = TextureSetup::FromPixelDataArray(16, 16, numSlices, 1, PixelFormat::RGBA8);
+    texSetup.GenerateMipMaps = true;
+    texSetup.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
+    texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     texSetup.ImageData.Sizes[0][0] = sizeof(data);
     this->drawState.FSTexture[Textures::Texture] = Gfx::CreateResource(texSetup, data, sizeof(data));
 
@@ -92,8 +103,10 @@ ArrayTextureApp::OnRunning() {
         return this->notSupported();
     }
 
+    // get model-view-proj matrix and animated uv offsets
     auto vsParams = this->computeShaderParams();
 
+    // render texture cube
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
@@ -119,12 +132,14 @@ ArrayTextureApp::computeShaderParams() {
     Shader::VSParams vsParams;
 
     float offset = float(this->frameIndex) * 0.001f;
-    vsParams.UVOffset = glm::vec4(offset, -offset, -offset, offset);
+    vsParams.UVOffset0 = glm::vec2(offset, -offset);
+    vsParams.UVOffset1 = glm::vec2(-offset, offset);
+    vsParams.UVOffset2 = glm::vec2(0.0f, 0.0f);
 
-    const glm::vec3 pos(0.0f, 0.0f, -3.0f);
+    const glm::vec3 cubePos(0.0f, 0.0f, -2.5f);
     float angleX = glm::radians(0.25f * this->frameIndex);
     float angleY = glm::radians(0.2f * this->frameIndex);
-    glm::mat4 model = glm::translate(glm::mat4(), pos);
+    glm::mat4 model = glm::translate(glm::mat4(), cubePos);
     model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
     vsParams.ModelViewProj = this->proj * model;

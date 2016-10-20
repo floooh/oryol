@@ -4,7 +4,9 @@
 
 @uniform_block vsParams VSParams
 mat4 mvp ModelViewProj
-vec4 uvOffset UVOffset
+vec2 uvOffset0 UVOffset0
+vec2 uvOffset1 UVOffset1
+vec2 uvOffset2 UVOffset2
 @end
 
 @vs vs
@@ -13,9 +15,11 @@ vec4 uvOffset UVOffset
 @in vec2 texcoord0
 @out vec3 uv0
 @out vec3 uv1
+@out vec3 uv2
     _position = mul(mvp, position);
-    uv0 = vec3(texcoord0 + uvOffset.xy, 0.0);
-    uv1 = vec3(texcoord0 + uvOffset.zw, 1.0);
+    uv0 = vec3(texcoord0 + uvOffset0, 0.0);
+    uv1 = vec3(texcoord0 + uvOffset1, 1.0);
+    uv2 = vec3(texcoord0 + uvOffset2, 2.0);
 @end
 
 //------------------------------------------------------------------------------
@@ -29,10 +33,12 @@ sampler2DArray tex Texture
 @use_texture_block textures
 @in vec3 uv0
 @in vec3 uv1
+@in vec3 uv2
 #if ORYOL_GLSL
     vec4 c0 = tex2DArray(tex, uv0);
     vec4 c1 = tex2DArray(tex, uv1);
-    _color = vec4(c0.xyz + c1.xyz, 1.0);
+    vec4 c2 = tex2DArray(tex, uv2);
+    _color = vec4(c0.xyz + c1.xyz + c2.xyz, 1.0);
 #else
     _color = vec4(1.0, 0.0, 1.0, 1.0);
 #endif

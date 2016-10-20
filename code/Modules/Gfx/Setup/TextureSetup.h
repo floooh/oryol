@@ -60,8 +60,10 @@ public:
     Usage::Code TextureUsage = Usage::Immutable;
     /// texture type
     TextureType::Code Type = TextureType::Texture2D;
-    /// use as render target
+    /// use as render target?
     bool RenderTarget = false;
+    /// automatically generate mipmaps?
+    bool GenerateMipMaps = false;
     /// width in pixels
     int Width = 0;
     /// height in pixels

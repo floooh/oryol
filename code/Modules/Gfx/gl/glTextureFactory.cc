@@ -95,7 +95,7 @@ void
 glTextureFactory::setupTextureParams(const TextureSetup& setup, GLenum glTexTarget, GLuint glTex) {
     GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.Sampler.MinFilter);
     GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.Sampler.MagFilter);
-    if (1 == setup.NumMipMaps) {
+    if ((1 == setup.NumMipMaps) && !setup.GenerateMipMaps) {
         #if !ORYOL_OPENGLES2
         if (!glCaps::IsFlavour(glCaps::GLES2)) {
             ::glTexParameteri(glTexTarget, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
@@ -331,6 +331,11 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                 }
                 #endif
             }
+
+        }
+        // generate mipmaps if requested
+        if (setup.GenerateMipMaps) {
+            ::glGenerateMipmap(glTextureTarget);
         }
         ORYOL_GL_CHECK_ERROR();
     }
