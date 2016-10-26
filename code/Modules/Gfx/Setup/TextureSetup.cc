@@ -161,8 +161,8 @@ TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
-    o_assert_dbg((w > 0) && (h > 0) && (slices > 0));
+TextureSetup::EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
+    o_assert_dbg((w > 0) && (h > 0) && (layers > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
 
@@ -171,7 +171,7 @@ TextureSetup::EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::
     setup.Type = TextureType::TextureArray;
     setup.Width = w;
     setup.Height = h;
-    setup.Depth = slices;
+    setup.Depth = layers;
     setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
     setup.TextureUsage = usage;
@@ -232,7 +232,7 @@ TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt, Pi
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::RenderTargetArray(int w, int h, int slices, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup::RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
     o_assert_dbg((w > 0) && (h > 0));
 
     TextureSetup setup;
@@ -240,7 +240,7 @@ TextureSetup::RenderTargetArray(int w, int h, int slices, PixelFormat::Code colo
     setup.RenderTarget = true;
     setup.Width = w;
     setup.Height = h;
-    setup.Depth = slices;
+    setup.Depth = layers;
     setup.ColorFormat = colorFmt;
     setup.DepthFormat = depthFmt;
     setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;

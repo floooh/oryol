@@ -29,7 +29,7 @@ public:
     //// setup 3D texture from raw pixel data
     static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup array texture from raw pixel data
-    static TextureSetup FromPixelDataArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    static TextureSetup FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup empty 2D texture
     static TextureSetup Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty cube texture
@@ -37,7 +37,7 @@ public:
     /// setup empty 3D texture
     static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty array texture
-    static TextureSetup EmptyArray(int w, int h, int slices, int numMipMaps, PixelFormat::Code, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    static TextureSetup EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup as 2D render target
     static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup as cube render target
@@ -45,7 +45,7 @@ public:
     /// setup as 3D render target
     static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup as array render target
-    static TextureSetup RenderTargetArray(int w, int h, int slices, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
 
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
@@ -68,7 +68,7 @@ public:
     int Width = 0;
     /// height in pixels
     int Height = 0;
-    /// depth/slices in pixels (for 3D and Array textures)
+    /// depth/layers in pixels (for 3D and Array textures)
     int Depth = 0;
     /// number of mipmaps (default is 1, only for FromPixelData)
     int NumMipMaps = 1;

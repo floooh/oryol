@@ -28,7 +28,9 @@ public:
     /// 1..N color attachments
     struct ColorAttachment {
         Id Texture;
-        uint16_t Level = 0;
+        uint16_t Level = 0;     ///< mipmap-level
+        uint16_t Layer = 0;     ///< layer (for 3D- or 2D-array-textures)
+        uint16_t Face = 0;      ///< cubemap face
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
         glm::vec4 DefaultClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
@@ -37,7 +39,6 @@ public:
     /// optional depth-stencil attachment
     struct DepthStencilAttachment {
         Id Texture;
-        uint16_t Level = 0;
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
         float DepthClearValue = 1.0f;
         uint8_t StencilClearValue = 0;

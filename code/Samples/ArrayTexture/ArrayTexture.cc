@@ -43,27 +43,27 @@ ArrayTextureApp::OnInit() {
     }
 
     // create a 16x16 array texture with 3 layers and RGB checkboard pattern
-    const int numSlices = 3;
+    const int numLayers = 3;
     const int width = 16;
     const int height = 16;
-    uint32_t data[numSlices][height][width];
-    for (int slice = 0, evenOdd = 0; slice < numSlices; slice++, evenOdd++) {
+    uint32_t data[numLayers][height][width];
+    for (int layer = 0, evenOdd = 0; layer < numLayers; layer++, evenOdd++) {
         for (int y = 0; y < height; y++, evenOdd++) {
             for (int x = 0; x < width; x++, evenOdd++) {
                 if (evenOdd & 1) {
-                    switch (slice) {
-                        case 0: data[slice][y][x] = 0xFF0000FF; break;
-                        case 1: data[slice][y][x] = 0xFF00FF00; break;
-                        case 2: data[slice][y][x] = 0xFFFF0000; break;
+                    switch (layer) {
+                        case 0: data[layer][y][x] = 0xFF0000FF; break;
+                        case 1: data[layer][y][x] = 0xFF00FF00; break;
+                        case 2: data[layer][y][x] = 0xFFFF0000; break;
                     }
                 }
                 else {
-                    data[slice][y][x] = 0;
+                    data[layer][y][x] = 0;
                 }
             }
         }
     }
-    auto texSetup = TextureSetup::FromPixelDataArray(16, 16, numSlices, 1, PixelFormat::RGBA8);
+    auto texSetup = TextureSetup::FromPixelDataArray(16, 16, numLayers, 1, PixelFormat::RGBA8);
     texSetup.GenerateMipMaps = true;
     texSetup.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
     texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
