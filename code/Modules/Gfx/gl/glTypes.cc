@@ -310,5 +310,18 @@ glTypes::asGLBufferUsage(Usage::Code c) {
     }
 }
 
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLCubeFaceTarget(int faceIndex) {
+    switch (faceIndex) {
+        case 0: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+        case 1: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+        case 2: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+        case 3: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+        case 4: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+        default: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+    }
+}
+
 } // namespace _priv
 } // namespace Oryol

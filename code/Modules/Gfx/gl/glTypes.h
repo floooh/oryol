@@ -38,6 +38,8 @@ public:
     static GLenum asGLTextureTarget(TextureType::Code c);
     /// convert Oryol usage to GL buffer usage
     static GLenum asGLBufferUsage(Usage::Code c);
+    /// convert cubemap face index to texture target
+    static GLenum asGLCubeFaceTarget(int faceIndex);
 };
     
 } // namespace _priv

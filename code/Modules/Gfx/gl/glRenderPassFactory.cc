@@ -7,6 +7,7 @@
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resource.h"
+#include "Gfx/gl/glTypes.h"
 #include "gl_impl.h"
 
 namespace Oryol {
@@ -18,11 +19,33 @@ attachFramebufferTextures(const renderPass& rp) {
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
         texture* colorTex = rp.colorTextures[i];
         if (colorTex) {
-            // FIXME: other texture types than Texture2D!
             const GLuint glTex = colorTex->glTextures[0];
             o_assert_dbg(glTex);
-            const int mipLevel = rp.Setup.ColorAttachments[i].Level;
-            ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, glTex, mipLevel);
+            const auto& att = rp.Setup.ColorAttachments[i];
+            switch (colorTex->textureAttrs.Type) {
+                case TextureType::Texture2D:
+                    ::glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                             GL_COLOR_ATTACHMENT0+i,
+                                             GL_TEXTURE_2D,
+                                             glTex,
+                                             att.Level);
+                    break;
+                case TextureType::TextureCube:
+                    ::glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                             GL_COLOR_ATTACHMENT0+i,
+                                             glTypes::asGLCubeFaceTarget(att.Face),
+                                             glTex,
+                                             att.Level);
+                    break;
+                default:
+                    // 3D- and 2D-array-texture
+                    ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
+                                                GL_COLOR_ATTACHMENT0,
+                                                glTex,
+                                                att.Level,
+                                                att.Layer);
+                    break;
+            }
         }
     }
     ORYOL_GL_CHECK_ERROR();
@@ -100,8 +123,31 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
                 ::glBindFramebuffer(GL_FRAMEBUFFER, rp.glMSAAResolveFramebuffers[i]);
                 const GLuint glTex = colorTex->glTextures[0];
                 o_assert_dbg(glTex);
-                const int mipLevel = rp.Setup.ColorAttachments[i].Level;
-                ::glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex, mipLevel);
+                const auto& att = rp.Setup.ColorAttachments[i];
+                switch (colorTex->textureAttrs.Type) {
+                    case TextureType::Texture2D:
+                        ::glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                 GL_COLOR_ATTACHMENT0,
+                                                 GL_TEXTURE_2D,
+                                                 glTex,
+                                                 att.Level);
+                        break;
+                    case TextureType::TextureCube:
+                        ::glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                                 GL_COLOR_ATTACHMENT0,
+                                                 glTypes::asGLCubeFaceTarget(att.Face),
+                                                 glTex,
+                                                 att.Level);
+                        break;
+                    default:
+                        // 2D-array and 3D texture
+                        ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
+                                                    GL_COLOR_ATTACHMENT0,
+                                                    glTex,
+                                                    att.Level,
+                                                    att.Layer);
+                        break;
+                }
                 if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
                     o_warn("glRenderPassFactory: MSAA resolve framebuffer completeness check failed!\n");
                 }

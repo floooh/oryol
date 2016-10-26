@@ -225,14 +225,7 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
         for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
             GLenum glImgTarget;
             if (TextureType::TextureCube == setup.Type) {
-                switch (faceIndex) {
-                    case 0: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
-                    case 1: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
-                    case 2: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
-                    case 3: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
-                    case 4: glImgTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
-                    default: glImgTarget = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
-                }
+                glImgTarget = glTypes::asGLCubeFaceTarget(faceIndex);
             }
             else {
                 glImgTarget = glTextureTarget;
@@ -349,7 +342,6 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                 }
                 #endif
             }
-
         }
         // generate mipmaps if requested
         if (setup.GenerateMipMaps) {
