@@ -3,56 +3,59 @@
 //  Shaders for RenderToCubemap sample
 //------------------------------------------------------------------------------
 
-@uniform_block vsParams VSParams
+//------------------------------------------------------------------------------
+//  Render simple colored shapes
+//
+@uniform_block shapeVSParams VSParams
+mat4 mvp ModelViewProjection
+vec4 shapeColor Color
+@end
+
+@vs shapeVS
+@use_uniform_block shapeVSParams
+@in vec4 position
+@in vec3 normal
+//@out vec4 nrm
+@out vec4 color
+    _position = mul(mvp, position);
+//    nrm = normalize(mul(mvp, vec4(normal, 0.0)));
+    color = shapeColor;
+@end
+
+@fs shapeFS
+//@in vec4 nrm
+@in vec4 color
+    _color = color;
+@end
+
+@program ShapeShader shapeVS shapeFS
+
+//------------------------------------------------------------------------------
+//  Render shape with reflection/refraction.
+//
+@uniform_block sphereVSParams VSParams
 mat4 mvp ModelViewProjection
 @end
 
 @texture_block textures Textures
-sampler2D tex Texture
+samplerCube tex Texture
 @end
 
-//------------------------------------------------------------------------------
-//  Vertex and fragment shaders for rendering into the offscreen render target
-//
-@vs offscreenVS
-@use_uniform_block vsParams
+@vs sphereVS
+@use_uniform_block sphereVSParams
 @in vec4 position
-@in vec4 normal
-@out vec4 nrm
+@in vec3 normal
+@out vec3 nrm
     _position = mul(mvp, position);
     nrm = normal;
 @end
 
-@fs offscreenFS
-@in vec4 nrm
-    _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
-@end
-
-@program OffscreenShader offscreenVS offscreenFS
-
-//------------------------------------------------------------------------------
-//  Vertex and fragment shaders for rendering into the frame buffer.
-//
-@vs displayVS
-@use_uniform_block vsParams
-@in vec4 position
-@in vec4 normal
-@in vec2 texcoord0
-@out vec2 uv
-@out vec4 nrm
-    _position = mul(mvp, position);
-    uv = texcoord0;
-    nrm = normalize(mul(mvp, normal));
-@end
-
-@fs displayFS
+@fs sphereFS
 @use_texture_block textures
-@in vec2 uv
-@in vec4 nrm
-    vec4 c = tex2D(tex, uv * vec2(20.0, 10.0));
-    float l = clamp(dot(nrm.xyz, normalize(vec3(1.0, 1.0, -1.0))), 0.0, 1.0) * 2.0;
-    _color = vec4(c.xyz * (l + 0.25), 1.0);
+@in vec3 nrm
+    _color = texCUBE(tex, nrm);
 @end
 
-@program DisplayShader displayVS displayFS
+@program SphereShader sphereVS sphereFS
+
 
