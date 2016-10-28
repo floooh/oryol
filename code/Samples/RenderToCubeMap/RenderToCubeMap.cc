@@ -25,6 +25,8 @@ public:
 
     /// handle input to move viewer position
     void handleInput();
+    /// update shape orbit positions
+    void updateShapes();
     /// draw the environment shapes
     void drawEnvShapes(Id pipeline, const glm::mat4& view, const glm::mat4& proj);
 
@@ -52,6 +54,7 @@ public:
         int shapeIndex = 0;
         float radius = 0.0f;
         float angle = 0.0f;
+        float angularVelocity = 0.0f;
     } Shapes[NumShapes];
 };
 OryolMain(RenderToCubeMapApp);
@@ -127,6 +130,7 @@ RenderToCubeMapApp::OnInit() {
         shape.axis = glm::ballRand(1.0f);
         shape.radius = glm::linearRand(5.0f, 10.0f);
         shape.angle = glm::linearRand(0.0f, glm::pi<float>());
+        shape.angularVelocity = glm::linearRand(-3.0f, +3.0f);
     }
 
     return App::OnInit();
@@ -138,12 +142,12 @@ RenderToCubeMapApp::OnRunning() {
 
     // render environment shapes into cubemap
     const glm::vec3 centerAndUp[NumFaces][2] = {
-        { glm::vec3(+1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) },
-        { glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) },
-        { glm::vec3(0.0f, +1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) },
-        { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f) },
-        { glm::vec3(0.0f, 0.0f, +1.0f), glm::vec3(0.0f, 1.0f, 0.0f) },
-        { glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f) },
+        { glm::vec3(+1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
+        { glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
+        { glm::vec3(0.0f, +1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
+        { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f) },
+        { glm::vec3(0.0f, 0.0f, +1.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
+        { glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
     };
     for (int i = 0; i < NumFaces; i++) {
         Gfx::BeginPass(this->passes[i]);
@@ -157,6 +161,7 @@ RenderToCubeMapApp::OnRunning() {
 
     // draw the environment shapes
     this->handleInput();
+    this->updateShapes();
     const glm::vec3 eyePos = glm::euclidean(this->polar) * distance;
     const glm::mat4 view = glm::lookAt(eyePos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->drawEnvShapes(this->displayShapesPipeline, view, this->displayProj);
@@ -201,6 +206,14 @@ RenderToCubeMapApp::handleInput() {
 
 //------------------------------------------------------------------------------
 void
+RenderToCubeMapApp::updateShapes() {
+    for (auto& shape : this->Shapes) {
+        shape.angle += shape.angularVelocity * (1.0f/60.0f);
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::mat4& view, const glm::mat4& proj) {
 
     DrawState drawState;
@@ -210,8 +223,8 @@ RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::mat4& view, const glm:
     ShapeShader::VSParams vsParams;
     for (int i = 0; i < NumShapes; i++) {
         const auto& shape = this->Shapes[i];
-        glm::vec3 pos = glm::rotate(glm::vec3(shape.radius, 0.0f, 0.0f), shape.angle, shape.axis);
-        glm::mat4 model = glm::translate(glm::mat4(), pos);
+        glm::mat4 model = glm::rotate(glm::mat4(), shape.angle, shape.axis);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, shape.radius));
         vsParams.ModelViewProjection = proj * view * model;
         vsParams.Color = shape.color;
         Gfx::ApplyUniformBlock(vsParams);

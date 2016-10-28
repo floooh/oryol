@@ -78,7 +78,7 @@ samplerCube tex Texture
     vec3 eyeVec = normalize(worldEyePos.xyz - worldPosition.xyz);
     vec3 nrm = normalize(worldNormal.xyz);
     vec3 refl = reflect(-eyeVec, nrm);
-    vec3 refr = refract(-eyeVec, nrm, 0.8);
+    vec3 refr = refract(-eyeVec, nrm, 0.7);
     vec4 reflectColor = texCUBE(tex, refl);
     vec4 refractColor;
     if (length(refr) > 0.0) {
@@ -88,7 +88,7 @@ samplerCube tex Texture
         refractColor = reflectColor;
     }
     float fr = fresnel(eyeVec, nrm, 0.2);
-    _color = vec4(vec3(0.2) * fr + mix(refractColor.xyz, reflectColor.xyz, fr), 1.0);
+    _color = vec4(vec3(0.8, 0.4, 0.1) * fr + mix(refractColor.xyz, reflectColor.xyz, fr), 1.0);
 @end
 
 @program SphereShader sphereVS sphereFS
