@@ -33,8 +33,23 @@ vec4 shapeColor Color
 //------------------------------------------------------------------------------
 //  Render shape with reflection/refraction.
 //
+@code_block util
+// Adapted from http://developer.download.nvidia.com/SDK/9.5/Samples/DEMOS/Direct3D9/src/HLSL_FresnelReflection/docs/FresnelReflection.pdf
+_func float fresnel(vec3 V, vec3 N, float R0)
+{
+    float cosAngle = 1.0-max(dot(V, N), 0.0);
+    float result = cosAngle * cosAngle;
+    result = result * result;
+    result = result * cosAngle;
+    result = clamp(result * (1.0 - R0) + R0, 0.0, 1.0);
+    return result;
+}
+@end
+
 @uniform_block sphereVSParams VSParams
 mat4 mvp ModelViewProjection
+mat4 model Model
+vec3 eyePos EyePos
 @end
 
 @texture_block textures Textures
@@ -45,15 +60,35 @@ samplerCube tex Texture
 @use_uniform_block sphereVSParams
 @in vec4 position
 @in vec3 normal
-@out vec3 nrm
+@out vec4 worldPosition
+@out vec4 worldNormal
+@out vec4 worldEyePos
     _position = mul(mvp, position);
-    nrm = normal;
+    worldPosition = mul(model, position);
+    worldNormal = mul(model, vec4(normal, 0.0));
+    worldEyePos = vec4(eyePos, 1.0);
 @end
 
 @fs sphereFS
 @use_texture_block textures
-@in vec3 nrm
-    _color = texCUBE(tex, nrm);
+@use_code_block util
+@in vec4 worldPosition
+@in vec4 worldNormal
+@in vec4 worldEyePos
+    vec3 eyeVec = normalize(worldEyePos.xyz - worldPosition.xyz);
+    vec3 nrm = normalize(worldNormal.xyz);
+    vec3 refl = reflect(-eyeVec, nrm);
+    vec3 refr = refract(-eyeVec, nrm, 0.8);
+    vec4 reflectColor = texCUBE(tex, refl);
+    vec4 refractColor;
+    if (length(refr) > 0.0) {
+        refractColor = texCUBE(tex, refr);
+    }
+    else {
+        refractColor = reflectColor;
+    }
+    float fr = fresnel(eyeVec, nrm, 0.2);
+    _color = vec4(vec3(0.2) * fr + mix(refractColor.xyz, reflectColor.xyz, fr), 1.0);
 @end
 
 @program SphereShader sphereVS sphereFS
