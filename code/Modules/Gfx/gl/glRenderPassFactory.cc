@@ -89,11 +89,16 @@ checkFramebufferCompleteness() {
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         const char* reason;
         switch (status) {
+            #if !ORYOL_OPENGLES2
             case GL_FRAMEBUFFER_UNDEFINED: reason = "GL_FRAMEBUFFER_UNDEFINED"; break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: reason = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"; break;
+            #endif
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: reason = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"; break;
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: reason = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"; break;
             case GL_FRAMEBUFFER_UNSUPPORTED: reason = "GL_FRAMEBUFFER_UNSUPPORTED"; break;
-            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: reason = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"; break;
+            #if ORYOL_OPENGLES2
+            case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS: reason = "GL_FRAMEBUFFER_IMCOMPLETE_DIMENSIONS"; break;
+            #endif
             default: reason = "unknown";
         }
         o_warn("glRenderPassFactory: framebuffer completeness check failed with '%s'\n", reason);
