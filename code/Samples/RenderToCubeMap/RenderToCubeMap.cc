@@ -28,10 +28,11 @@ public:
     /// update shape orbit positions
     void updateShapes();
     /// draw the environment shapes
-    void drawEnvShapes(Id pipeline, const glm::mat4& view, const glm::mat4& proj);
+    void drawEnvShapes(Id pipeline, const glm::vec3& eyePos, const glm::mat4& view, const glm::mat4& proj);
 
     static const int NumFaces = 6;
     const glm::vec4 ClearColor = glm::vec4(0.5f, 0.5f, 0.7f, 1.0f);
+    const glm::vec3 LightDir = glm::normalize(glm::vec3(-0.75, 1.0, 0.0));
 
     Id cubeMap;
     Id passes[NumFaces];
@@ -47,8 +48,9 @@ public:
     glm::vec2 polar;
     float distance = 20.0f;
 
-    static const int NumShapes = 64;
+    static const int NumShapes = 32;
     struct {
+        glm::mat4 model;
         glm::vec4 color;
         glm::vec3 axis;
         int shapeIndex = 0;
@@ -72,7 +74,7 @@ RenderToCubeMapApp::OnInit() {
     cubeMapSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->cubeMap = Gfx::CreateResource(cubeMapSetup);
 
-    // create 6 render passes, one per cube map
+    // create 6 render passes, one per cubemap face
     auto rpSetup = RenderPassSetup::From(this->cubeMap, this->cubeMap);
     rpSetup.ColorAttachments[0].DefaultClearColor = ClearColor;
     for (int faceIndex = 0; faceIndex < NumFaces; faceIndex++) {
@@ -80,7 +82,7 @@ RenderToCubeMapApp::OnInit() {
         this->passes[faceIndex] = Gfx::CreateResource(rpSetup);
     }
 
-    // mesh, shader and pipeline to render color shapes
+    // mesh, shaders and pipelines to render color shapes
     ShapeBuilder shapeBuilder;
     shapeBuilder.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
@@ -97,11 +99,12 @@ RenderToCubeMapApp::OnInit() {
     pipSetup.DepthStencilState.DepthWriteEnabled = true;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->displayShapesPipeline = Gfx::CreateResource(pipSetup);
+    pipSetup.Shader = Gfx::CreateResource(ShapeShaderWithGamma::Setup());
     pipSetup.RasterizerState.SampleCount = cubeMapSetup.SampleCount;
     this->offscreenShapesPipeline = Gfx::CreateResource(pipSetup);
 
     // create a sphere where the env-shapes reflect and refract in
-    this->sphereDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Sphere(3.5f, 36, 24).Build());
+    this->sphereDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Sphere(3.5f, 72, 48).Build());
     Id sphereShd = Gfx::CreateResource(SphereShader::Setup());
     pipSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, sphereShd);
     pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
@@ -117,7 +120,6 @@ RenderToCubeMapApp::OnInit() {
 
     // setup projection matrix for cubemap rendering
     this->offscreenProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 100.0f);
-    this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
 
     // setup orbital camera initial position
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
@@ -140,7 +142,12 @@ RenderToCubeMapApp::OnInit() {
 AppState::Code
 RenderToCubeMapApp::OnRunning() {
 
+    // update camera and shape positions
+    this->handleInput();
+    this->updateShapes();
+
     // render environment shapes into cubemap
+    // NOTE: it would make sense here to do view-volume culling
     const glm::vec3 centerAndUp[NumFaces][2] = {
         { glm::vec3(+1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
         { glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
@@ -152,7 +159,7 @@ RenderToCubeMapApp::OnRunning() {
     for (int i = 0; i < NumFaces; i++) {
         Gfx::BeginPass(this->passes[i]);
         const glm::mat4 view = glm::lookAt(glm::vec3(0.0f), centerAndUp[i][0], centerAndUp[i][1]);
-        this->drawEnvShapes(this->offscreenShapesPipeline, view, this->offscreenProj);
+        this->drawEnvShapes(this->offscreenShapesPipeline, glm::vec3(0.0f), view, this->offscreenProj);
         Gfx::EndPass();
     }
 
@@ -160,17 +167,16 @@ RenderToCubeMapApp::OnRunning() {
     Gfx::BeginPass(PassState(ClearColor));
 
     // draw the environment shapes
-    this->handleInput();
-    this->updateShapes();
     const glm::vec3 eyePos = glm::euclidean(this->polar) * distance;
     const glm::mat4 view = glm::lookAt(eyePos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawEnvShapes(this->displayShapesPipeline, view, this->displayProj);
+    this->drawEnvShapes(this->displayShapesPipeline, eyePos, view, this->displayProj);
 
     // draw the sphere with reflection/refraction from cubemap
     Gfx::ApplyDrawState(this->sphereDrawState);
     SphereShader::VSParams vsParams;
     vsParams.ModelViewProjection = this->displayProj * view;
     vsParams.Model = glm::mat4();
+    vsParams.LightDir = LightDir;
     vsParams.EyePos = eyePos;
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw();
@@ -194,8 +200,8 @@ RenderToCubeMapApp::handleInput() {
     if (Input::MouseAttached()) {
         static const float minLatitude = glm::radians(-85.0f);
         static const float maxLatitude = glm::radians(85.0f);
-        static const float minDist = 3.0f;
-        static const float maxDist = 20.0f;
+        static const float minDist = 5.0f;
+        static const float maxDist = 40.0f;
         if (Input::MouseButtonPressed(MouseButton::Left)) {
             this->polar.y -= Input::MouseMovement().x * 0.01f;
             this->polar.x = glm::clamp(this->polar.x + Input::MouseMovement().y * 0.01f, minLatitude, maxLatitude);
@@ -209,13 +215,16 @@ void
 RenderToCubeMapApp::updateShapes() {
     for (auto& shape : this->Shapes) {
         shape.angle += shape.angularVelocity * (1.0f/60.0f);
+        glm::mat4 model = glm::rotate(glm::mat4(), shape.angle, shape.axis);
+        shape.model = glm::translate(model, glm::vec3(0.0f, 0.0f, shape.radius));
     }
 }
 
 //------------------------------------------------------------------------------
 void
-RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::mat4& view, const glm::mat4& proj) {
+RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::vec3& eyePos, const glm::mat4& view, const glm::mat4& proj) {
 
+    const glm::mat4 viewProj = proj * view;
     DrawState drawState;
     drawState.Pipeline = pipeline;
     drawState.Mesh[0] = this->shapesMesh;
@@ -223,10 +232,11 @@ RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::mat4& view, const glm:
     ShapeShader::VSParams vsParams;
     for (int i = 0; i < NumShapes; i++) {
         const auto& shape = this->Shapes[i];
-        glm::mat4 model = glm::rotate(glm::mat4(), shape.angle, shape.axis);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, shape.radius));
-        vsParams.ModelViewProjection = proj * view * model;
+        vsParams.ModelViewProjection = viewProj * shape.model;
+        vsParams.Model = shape.model;
         vsParams.Color = shape.color;
+        vsParams.LightDir = LightDir;
+        vsParams.EyePos = eyePos;
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(shape.shapeIndex);
     }
