@@ -57,6 +57,10 @@ public:
     static MTLIndexType asIndexType(IndexType::Code c);
     /// convert primitive type
     static MTLPrimitiveType asPrimitiveType(PrimitiveType::Code c);
+    /// convert pass-load-action
+    static MTLLoadAction asLoadAction(RenderPassLoadAction::Code c);
+    /// convert pass-store-action
+    static MTLStoreAction asStoreAction(RenderPassStoreAction::Code c);
 };
 
 } // namespace _priv

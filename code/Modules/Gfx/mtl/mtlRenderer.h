@@ -8,7 +8,7 @@
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Enums.h"
-#include "Gfx/Core/ClearState.h"
+#include "Gfx/Core/PassState.h"
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
@@ -17,6 +17,7 @@
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/Attrs/ImageDataAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
+#include "Gfx/Resource/resource.h"
 #include "glm/vec4.hpp"
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/mtl/mtlReleaseQueue.h"
@@ -24,11 +25,6 @@
 
 namespace Oryol {
 namespace _priv {
-
-class texture;
-class pipeline;
-class mesh;
-class textureBlock;
 
 class mtlRenderer {
 public:
@@ -48,11 +44,14 @@ public:
     bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame
     void commitFrame();
-    /// get the current render target attributes
-    const DisplayAttrs& renderTargetAttrs() const;
+    /// get the current render pass attributes
+    const DisplayAttrs& renderPassAttrs() const;
 
-    /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt, const ClearState& clearState);
+    /// begin rendering pass (both ptrs can be nullptr)
+    void beginPass(renderPass* pass, const PassState* passState);
+    /// end current rendering pass
+    void endPass();
+
     /// apply viewport
     void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
     /// apply scissor rect
@@ -94,8 +93,8 @@ public:
     int frameIndex;
     int curFrameRotateIndex;
 
-    bool rtValid;
-    DisplayAttrs rtAttrs;
+    bool rpValid;
+    DisplayAttrs rpAttrs;
     
     pipeline* curPipeline;
     mesh* curPrimaryMesh;

@@ -153,7 +153,7 @@ ArrayTextureApp::notSupported() {
     #if ORYOL_EMSCRIPTEN
     const char* msg = "This demo needs WebGL2\n";
     #else
-    const char* msg = "This demo needs 3D texture support\n";
+    const char* msg = "This demo needs array texture support\n";
     #endif
     uint8_t x = (Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2;
     uint8_t y = Gfx::DisplayAttrs().FramebufferHeight/16/2;

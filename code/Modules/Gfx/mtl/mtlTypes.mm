@@ -15,6 +15,7 @@ mtlTypes::asRenderTargetColorFormat(PixelFormat::Code fmt) {
     //
     switch (fmt) {
         case PixelFormat::RGBA8:
+            // this is a bit of a hack since the default backbuffer format is BGRA8
             return MTLPixelFormatBGRA8Unorm;
         case PixelFormat::RGBA32F:
             return MTLPixelFormatRGBA32Float;
@@ -322,6 +323,27 @@ mtlTypes::asPrimitiveType(PrimitiveType::Code c) {
         default:
             o_error("mtlTypes::asPrimitiveType(): invalid value!\n");
             return MTLPrimitiveTypePoint;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLLoadAction
+mtlTypes::asLoadAction(RenderPassLoadAction::Code c) {
+    switch (c) {
+        case RenderPassLoadAction::DontCare: return MTLLoadActionDontCare;
+        case RenderPassLoadAction::Load: return MTLLoadActionLoad;
+        case RenderPassLoadAction::Clear: return MTLLoadActionClear;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLStoreAction
+mtlTypes::asStoreAction(RenderPassStoreAction::Code c) {
+    switch (c) {
+        case RenderPassStoreAction::DontCare: return MTLStoreActionDontCare;
+        case RenderPassStoreAction::Store: return MTLStoreActionStore;
+        case RenderPassStoreAction::Resolve: return MTLStoreActionMultisampleResolve;
+        case RenderPassStoreAction::StoreAndResolve: return MTLStoreActionStoreAndMultisampleResolve;
     }
 }
 

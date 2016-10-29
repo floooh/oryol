@@ -105,6 +105,16 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLTexture) mtlDepthTex;
 };
 
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::mtlRenderPass
+    @ingroup _priv
+    @brief Metal implementation of renderPass
+*/
+class mtlRenderPass : public renderPassBase {
+    // empty
+};
+
 } // namespace _priv
 } // namespace Oryol
 
