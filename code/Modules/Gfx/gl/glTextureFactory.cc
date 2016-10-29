@@ -187,42 +187,6 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
         tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
         this->setupTextureParams(setup, glTextureTarget, tex.glTextures[slotIndex]);
 
-        // initialize texture storage
-        #if ORYOL_OPENGLES3
-        if (!glCaps::IsFlavour(glCaps::GLES2)) {
-            // if generating mipmaps, glTexStorage needs to know the resulting number of mipmaps
-            int numMips = setup.NumMipMaps;
-            if (setup.GenerateMipMaps) {
-                switch (setup.Type) {
-                    case TextureType::Texture2D:
-                    case TextureType::TextureCube:
-                    case TextureType::TextureArray:
-                        numMips = 1 + int(log2(std::max(setup.Width, setup.Height)));
-                        break;
-                    case TextureType::Texture3D:
-                        numMips = 1 + int(log2(std::max(std::max(setup.Width, setup.Height), setup.Depth)));
-                        break;
-                    default:
-                        break;
-                }
-            }
-            switch (setup.Type) {
-                case TextureType::Texture2D:
-                case TextureType::TextureCube:
-                    ::glTexStorage2D(glTextureTarget, numMips, glTexImageInternalFormat, setup.Width, setup.Height);
-                    ORYOL_GL_CHECK_ERROR();
-                    break;
-                case TextureType::Texture3D:
-                case TextureType::TextureArray:
-                    ::glTexStorage3D(glTextureTarget, numMips, glTexImageInternalFormat, setup.Width, setup.Height, setup.Depth);
-                    ORYOL_GL_CHECK_ERROR();
-                    break;
-                default:
-                    break;
-            }
-        }
-        #endif
-
         const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
         for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
             GLenum glImgTarget;
@@ -251,50 +215,25 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                 }
                 if ((TextureType::Texture2D == setup.Type) || (TextureType::TextureCube == setup.Type)) {
                     if (isCompressed) {
-                        #if ORYOL_OPENGLES3
-                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                            ::glCompressedTexSubImage2D(glImgTarget,
-                                                        mipIndex, 0, 0, mipWidth, mipHeight,
-                                                        glTexImageFormat,
-                                                        mipDataSize, mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
-                        else
-                        #endif
-                        {
-                            ::glCompressedTexImage2D(glImgTarget,
-                                                     mipIndex,
-                                                     glTexImageInternalFormat,
-                                                     mipWidth, mipHeight,
-                                                     0,
-                                                     mipDataSize, mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
+                        ::glCompressedTexImage2D(glImgTarget,
+                                                 mipIndex,
+                                                 glTexImageInternalFormat,
+                                                 mipWidth, mipHeight,
+                                                 0,
+                                                 mipDataSize, mipDataPtr);
+                        ORYOL_GL_CHECK_ERROR();
                     }
                     else {
                         const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-                        #if ORYOL_OPENGLES3
-                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                            ::glTexSubImage2D(glImgTarget,
-                                              mipIndex, 0, 0, mipWidth, mipHeight,
-                                              glTexImageFormat,
-                                              glTexImageType,
-                                              mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
-                        else
-                        #endif
-                        {
-                            ::glTexImage2D(glImgTarget,
-                                           mipIndex,
-                                           glTexImageInternalFormat,
-                                           mipWidth, mipHeight,
-                                           0,
-                                           glTexImageFormat,
-                                           glTexImageType,
-                                           mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
+                        ::glTexImage2D(glImgTarget,
+                                       mipIndex,
+                                       glTexImageInternalFormat,
+                                       mipWidth, mipHeight,
+                                       0,
+                                       glTexImageFormat,
+                                       glTexImageType,
+                                       mipDataPtr);
+                        ORYOL_GL_CHECK_ERROR();
                     }
                 }
                 #if !ORYOL_OPENGLES2
@@ -304,50 +243,25 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                         mipDepth = 1;
                     }
                     if (isCompressed) {
-                        #if ORYOL_OPENGLES3
-                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                            ::glCompressedTexSubImage3D(glImgTarget,
-                                                        mipIndex, 0, 0, 0, mipWidth, mipHeight, mipDepth,
-                                                        glTexImageFormat,
-                                                        mipDataSize, mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
-                        else
-                        #endif
-                        {
-                            ::glCompressedTexImage3D(glImgTarget,
-                                                     mipIndex,
-                                                     glTexImageInternalFormat,
-                                                     mipWidth, mipHeight, mipDepth,
-                                                     0,
-                                                     mipDataSize, mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
+                        ::glCompressedTexImage3D(glImgTarget,
+                                                 mipIndex,
+                                                 glTexImageInternalFormat,
+                                                 mipWidth, mipHeight, mipDepth,
+                                                 0,
+                                                 mipDataSize, mipDataPtr);
+                        ORYOL_GL_CHECK_ERROR();
                     }
                     else {
                         const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-                        #if ORYOL_OPENGLES3
-                        if (!glCaps::IsFlavour(glCaps::GLES2)) {
-                            ::glTexSubImage3D(glImgTarget,
-                                              mipIndex, 0, 0, 0, mipWidth, mipHeight, mipDepth,
-                                              glTexImageFormat,
-                                              glTexImageType,
-                                              mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
-                        else
-                        #endif
-                        {
-                            ::glTexImage3D(glImgTarget,
-                                           mipIndex,
-                                           glTexImageInternalFormat,
-                                           mipWidth, mipHeight, mipDepth,
-                                           0,
-                                           glTexImageFormat,
-                                           glTexImageType,
-                                           mipDataPtr);
-                            ORYOL_GL_CHECK_ERROR();
-                        }
+                        ::glTexImage3D(glImgTarget,
+                                       mipIndex,
+                                       glTexImageInternalFormat,
+                                       mipWidth, mipHeight, mipDepth,
+                                       0,
+                                       glTexImageFormat,
+                                       glTexImageType,
+                                       mipDataPtr);
+                        ORYOL_GL_CHECK_ERROR();
                     }
                 }
                 #endif
