@@ -38,12 +38,14 @@ attachFramebufferTextures(const renderPass& rp) {
                                              att.Level);
                     break;
                 default:
+                    #if !ORYOL_OPENGLES2
                     // 3D- and 2D-array-texture
                     ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
                                                 GL_COLOR_ATTACHMENT0,
                                                 glTex,
                                                 att.Level,
                                                 att.Layer);
+                    #endif
                     break;
             }
         }
@@ -156,12 +158,14 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
                                                  att.Level);
                         break;
                     default:
+                        #if !ORYOL_OPENGLES2
                         // 2D-array and 3D texture
                         ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
                                                     GL_COLOR_ATTACHMENT0,
                                                     glTex,
                                                     att.Level,
                                                     att.Layer);
+                        #endif
                         break;
                 }
                 checkFramebufferCompleteness();
