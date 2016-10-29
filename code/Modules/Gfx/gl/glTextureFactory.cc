@@ -216,7 +216,6 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                 default:
                     break;
             }
-            Log::Info("glTexStorage numMips (%dx%dx%d): %d\n", setup.Width, setup.Height, setup.Depth, numMips);
         }
         #endif
 
