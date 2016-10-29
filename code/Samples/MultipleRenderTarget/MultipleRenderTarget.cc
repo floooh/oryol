@@ -209,7 +209,7 @@ MultipleRenderTargetApp::notSupported() {
     #if ORYOL_EMSCRIPTEN
     const char* msg = "This demo needs WebGL2\n";
     #else
-    const char* msg = "This demo needs VertexCapture\n";
+    const char* msg = "This demo needs MultipleRenderTarget\n";
     #endif
     uint8_t x = (Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2;
     uint8_t y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
