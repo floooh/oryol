@@ -114,6 +114,9 @@ glTextureFactory::setupTextureParams(const TextureSetup& setup, GLenum glTexTarg
     if (setup.Type == TextureType::TextureCube) {
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        #if !ORYOL_OPENGLES2
+        ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        #endif
     }
     else {
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));

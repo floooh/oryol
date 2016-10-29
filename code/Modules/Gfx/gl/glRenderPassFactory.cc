@@ -81,6 +81,24 @@ attachFramebufferDepthStencilBuffer(const renderPass& rp) {
 }
 
 //------------------------------------------------------------------------------
+static void
+checkFramebufferCompleteness() {
+    const GLenum status = ::glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        const char* reason;
+        switch (status) {
+            case GL_FRAMEBUFFER_UNDEFINED: reason = "GL_FRAMEBUFFER_UNDEFINED"; break;
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: reason = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"; break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: reason = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"; break;
+            case GL_FRAMEBUFFER_UNSUPPORTED: reason = "GL_FRAMEBUFFER_UNSUPPORTED"; break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: reason = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"; break;
+            default: reason = "unknown";
+        }
+        o_warn("glRenderPassFactory: framebuffer completeness check failed with '%s'\n", reason);
+    }
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 glRenderPassFactory::SetupResource(renderPass& rp) {
     o_assert_dbg(this->isValid);
@@ -110,9 +128,7 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
     attachFramebufferDepthStencilBuffer(rp);
 
     // check framebuffer completeness
-    if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        o_warn("glRenderPassFactory: framebuffer completeness check failed!\n");
-    }
+    checkFramebufferCompleteness();
 
     // for MSAA, need to create resolve-framebuffers...
     if (isMSAA) {
@@ -148,9 +164,7 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
                                                     att.Layer);
                         break;
                 }
-                if (::glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                    o_warn("glRenderPassFactory: MSAA resolve framebuffer completeness check failed!\n");
-                }
+                checkFramebufferCompleteness();
             }
         }
     }

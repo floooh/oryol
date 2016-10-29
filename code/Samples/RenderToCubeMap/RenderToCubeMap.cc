@@ -69,7 +69,7 @@ RenderToCubeMapApp::OnInit() {
     Input::Setup();
 
     // create a cubemap which will serve as render target
-    auto cubeMapSetup = TextureSetup::RenderTargetCube(1024, 1024, PixelFormat::RGBA8, PixelFormat::DEPTHSTENCIL);
+    auto cubeMapSetup = TextureSetup::RenderTargetCube(1024, 1024, PixelFormat::RGBA8, PixelFormat::DEPTH);
     cubeMapSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     cubeMapSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     this->cubeMap = Gfx::CreateResource(cubeMapSetup);
@@ -98,9 +98,13 @@ RenderToCubeMapApp::OnInit() {
     pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     pipSetup.DepthStencilState.DepthWriteEnabled = true;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
+    pipSetup.BlendState.ColorFormat = gfxSetup.ColorFormat;
+    pipSetup.BlendState.DepthFormat = gfxSetup.DepthFormat;
     this->displayShapesPipeline = Gfx::CreateResource(pipSetup);
     pipSetup.Shader = Gfx::CreateResource(ShapeShaderWithGamma::Setup());
     pipSetup.RasterizerState.SampleCount = cubeMapSetup.SampleCount;
+    pipSetup.BlendState.ColorFormat = cubeMapSetup.ColorFormat;
+    pipSetup.BlendState.DepthFormat = cubeMapSetup.DepthFormat;
     this->offscreenShapesPipeline = Gfx::CreateResource(pipSetup);
 
     // create a sphere where the env-shapes reflect and refract in
