@@ -95,6 +95,8 @@ MultipleRenderTargetApp::OnInit() {
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     ps.RasterizerState.CullFaceEnabled = true;
     ps.RasterizerState.SampleCount = rtSetup.SampleCount;
+    ps.BlendState.ColorFormat = rtSetup.ColorFormat;
+    ps.BlendState.MRTCount = 3;
     this->cubeDrawState.Pipeline = Gfx::CreateResource(ps);
     this->cubeDrawState.Mesh[0] = cubeMesh;
 

@@ -78,6 +78,9 @@ mtlTextureFactory::DestroyResource(texture& tex) {
     if (nil != tex.mtlDepthTex) {
         this->pointers.renderer->releaseDeferred(tex.mtlDepthTex);
     }
+    if (nil != tex.mtlMSAATex) {
+        this->pointers.renderer->releaseDeferred(tex.mtlMSAATex);
+    }
     if (nil != tex.mtlSamplerState) {
         this->releaseSamplerState(tex);
     }
@@ -103,9 +106,6 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
     if (setup.Type == TextureType::TextureArray) {
         o_error("mtlTextureFactory: array textures not yet implemented!\n");
-    }
-    if (setup.SampleCount != 1) {
-        o_error("mtlTextureFactory: MSAA textures not yet implemented!\n");
     }
     if (setup.GenerateMipMaps) {
         o_error("mtlTextureFactory: generate mipmaps not yet implemented!\n");
@@ -136,7 +136,6 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
         texDesc.depth = 1;
     }
     texDesc.mipmapLevelCount = setup.NumMipMaps;
-    texDesc.sampleCount = setup.SampleCount;
     if (setup.Type == TextureType::TextureArray) {
         texDesc.arrayLength = setup.Depth;
     }
@@ -181,16 +180,27 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
         }
     }
 
+    // prepare texture descriptor for optional MSAA and depth texture
+    texDesc.textureType = MTLTextureType2D;
+    texDesc.depth = 1;
+    texDesc.mipmapLevelCount = 1;
+    texDesc.arrayLength = 1;
+
+    // create optional MSAA texture where offscreen rendering will go to,
+    // the 'default' Metal texture will serve as resolve-texture
+    if (setup.SampleCount > 1) {
+        texDesc.textureType = MTLTextureType2DMultisample;
+        texDesc.sampleCount = setup.SampleCount;
+        tex.mtlMSAATex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
+        o_assert(nil != tex.mtlMSAATex);
+    }
+
+    // create optional depth buffer texture (may be MSAA)
     if (setup.HasDepth()) {
         o_assert_dbg(setup.RenderTarget);
-        // create depth buffer texture
         o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
         o_assert_dbg(PixelFormat::None != setup.DepthFormat);
-        texDesc.textureType = MTLTextureType2D;
         texDesc.pixelFormat = mtlTypes::asRenderTargetDepthFormat(setup.DepthFormat);
-        texDesc.depth = 1;
-        texDesc.mipmapLevelCount = 1;
-        texDesc.arrayLength = 1;
         tex.mtlDepthTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
         o_assert(nil != tex.mtlDepthTex);
     }

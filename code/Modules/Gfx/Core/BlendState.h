@@ -24,7 +24,9 @@ public:
             BlendOperation::Code OpAlpha:3;
             PixelChannel::Mask ColorWriteMask:4;
             PixelFormat::Code ColorFormat : 5;
+            PixelFormat::Code ColorFormat3 : 5;
             PixelFormat::Code DepthFormat : 5;
+            uint64_t MRTCount : 3;
         };
         #pragma pack(pop)
         /// hash code from merged state
@@ -45,6 +47,7 @@ public:
         this->ColorWriteMask = PixelChannel::RGBA;
         this->ColorFormat = PixelFormat::RGBA8;
         this->DepthFormat = PixelFormat::DEPTHSTENCIL;
+        this->MRTCount = 1;
     };
     
     /// equality

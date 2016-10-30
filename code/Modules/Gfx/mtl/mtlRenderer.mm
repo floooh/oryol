@@ -103,6 +103,7 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::Instancing:
         case GfxFeature::OriginTopLeft:
         case GfxFeature::PackedVertexFormat_10_2:
+        case GfxFeature::MultipleRenderTarget:
             return true;
         default:
             return false;
@@ -246,13 +247,58 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
         return;
     }
 
-    // init renderpass descriptor
+    // initialize renderpass descriptor
     if (pass) {
-        passDesc.colorAttachments[0].texture = pass->colorTextures[0]->mtlTextures[0];
-        const auto& colorAtt = pass->Setup.ColorAttachments[0];
-        passDesc.colorAttachments[0].loadAction = mtlTypes::asLoadAction(colorAtt.LoadAction);
-        const glm::vec4& c = passState ? passState->Color[0] : colorAtt.DefaultClearColor;
-        passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
+        // offscreen, might be multiple-rendertarget
+        for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            if (pass->colorTextures[i]) {
+                const auto& colorAtt = pass->Setup.ColorAttachments[i];
+                passDesc.colorAttachments[i].loadAction = mtlTypes::asLoadAction(colorAtt.LoadAction);
+                passDesc.colorAttachments[i].storeAction = mtlTypes::asStoreAction(pass->Setup.StoreAction);
+                const glm::vec4& c = passState ? passState->Color[i] : colorAtt.DefaultClearColor;
+                passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
+                if ((pass->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
+                    (pass->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve)) {
+
+                    // render to MSAA render target...
+                    o_assert_dbg(pass->colorTextures[i]->mtlMSAATex);
+                    passDesc.colorAttachments[i].texture = pass->colorTextures[i]->mtlMSAATex;
+                    passDesc.colorAttachments[i].resolveTexture = pass->colorTextures[i]->mtlTextures[0];
+                    passDesc.colorAttachments[i].resolveLevel = colorAtt.Level;
+                    switch (pass->colorTextures[i]->textureAttrs.Type) {
+                        case TextureType::TextureCube:
+                            passDesc.colorAttachments[i].resolveSlice = pass->Setup.ColorAttachments[i].Face;
+                            break;
+                        case TextureType::TextureArray:
+                            passDesc.colorAttachments[i].resolveSlice = pass->Setup.ColorAttachments[i].Layer;
+                            break;
+                        case TextureType::Texture3D:
+                            passDesc.colorAttachments[i].resolveDepthPlane = pass->Setup.ColorAttachments[i].Layer;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else {
+                    // render to non-MSAA render target...
+                    passDesc.colorAttachments[i].texture = pass->colorTextures[i]->mtlTextures[0];
+                    passDesc.colorAttachments[i].level = colorAtt.Level;
+                    switch (pass->colorTextures[i]->textureAttrs.Type) {
+                        case TextureType::TextureCube:
+                            passDesc.colorAttachments[i].slice = pass->Setup.ColorAttachments[i].Face;
+                            break;
+                        case TextureType::TextureArray:
+                            passDesc.colorAttachments[i].slice = pass->Setup.ColorAttachments[i].Layer;
+                            break;
+                        case TextureType::Texture3D:
+                            passDesc.colorAttachments[i].depthPlane = pass->Setup.ColorAttachments[i].Layer;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
         const auto& dsAtt = pass->Setup.DepthStencilAttachment;
         if (PixelFormat::IsDepthFormat(this->rpAttrs.DepthPixelFormat)) {
             passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
@@ -269,6 +315,7 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
         }
     }
     else {
+        // default framebuffer
         passDesc.colorAttachments[0].loadAction = mtlTypes::asLoadAction(this->gfxSetup.DefaultColorLoadAction);
         const glm::vec4& c = passState ? passState->Color[0] : this->gfxSetup.DefaultClearColor;
         passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);

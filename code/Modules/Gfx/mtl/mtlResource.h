@@ -103,6 +103,7 @@ public:
 
     ORYOL_OBJC_TYPED_ID(MTLSamplerState) mtlSamplerState;
     ORYOL_OBJC_TYPED_ID(MTLTexture) mtlDepthTex;
+    ORYOL_OBJC_TYPED_ID(MTLTexture) mtlMSAATex;
 };
 
 //------------------------------------------------------------------------------

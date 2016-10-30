@@ -61,15 +61,18 @@ mtlPipelineFactory::createRPS(pipeline& pip) {
     // create renderpipeline-state
     const BlendState& blendState = pip.Setup.BlendState;
     MTLRenderPipelineDescriptor* rpDesc = [[MTLRenderPipelineDescriptor alloc] init];
-    rpDesc.colorAttachments[0].pixelFormat = mtlTypes::asRenderTargetColorFormat(blendState.ColorFormat);
-    rpDesc.colorAttachments[0].writeMask = mtlTypes::asColorWriteMask(blendState.ColorWriteMask);
-    rpDesc.colorAttachments[0].blendingEnabled = blendState.BlendEnabled;
-    rpDesc.colorAttachments[0].alphaBlendOperation = mtlTypes::asBlendOp(blendState.OpAlpha);
-    rpDesc.colorAttachments[0].rgbBlendOperation = mtlTypes::asBlendOp(blendState.OpRGB);
-    rpDesc.colorAttachments[0].destinationAlphaBlendFactor = mtlTypes::asBlendFactor(blendState.DstFactorAlpha);
-    rpDesc.colorAttachments[0].destinationRGBBlendFactor = mtlTypes::asBlendFactor(blendState.DstFactorRGB);
-    rpDesc.colorAttachments[0].sourceAlphaBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorAlpha);
-    rpDesc.colorAttachments[0].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
+    o_assert(blendState.MRTCount <= GfxConfig::MaxNumColorAttachments);
+    for (int i = 0; i < blendState.MRTCount; i++) {
+        rpDesc.colorAttachments[i].pixelFormat = mtlTypes::asRenderTargetColorFormat(blendState.ColorFormat);
+        rpDesc.colorAttachments[i].writeMask = mtlTypes::asColorWriteMask(blendState.ColorWriteMask);
+        rpDesc.colorAttachments[i].blendingEnabled = blendState.BlendEnabled;
+        rpDesc.colorAttachments[i].alphaBlendOperation = mtlTypes::asBlendOp(blendState.OpAlpha);
+        rpDesc.colorAttachments[i].rgbBlendOperation = mtlTypes::asBlendOp(blendState.OpRGB);
+        rpDesc.colorAttachments[i].destinationAlphaBlendFactor = mtlTypes::asBlendFactor(blendState.DstFactorAlpha);
+        rpDesc.colorAttachments[i].destinationRGBBlendFactor = mtlTypes::asBlendFactor(blendState.DstFactorRGB);
+        rpDesc.colorAttachments[i].sourceAlphaBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorAlpha);
+        rpDesc.colorAttachments[i].sourceRGBBlendFactor = mtlTypes::asBlendFactor(blendState.SrcFactorRGB);
+    }
     rpDesc.depthAttachmentPixelFormat = mtlTypes::asRenderTargetDepthFormat(blendState.DepthFormat);
     rpDesc.stencilAttachmentPixelFormat = mtlTypes::asRenderTargetStencilFormat(blendState.DepthFormat);
     rpDesc.fragmentFunction = pip.shd->mtlFragmentShader;
