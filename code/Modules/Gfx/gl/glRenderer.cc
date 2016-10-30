@@ -139,6 +139,7 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     #if !ORYOL_OPENGLES2
     ::glGenVertexArrays(1, &this->globalVAO);
     ::glBindVertexArray(this->globalVAO);
+    ORYOL_GL_CHECK_ERROR();
     #endif
 
     if (this->useUniformBuffer) {
@@ -146,6 +147,7 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     }
     #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     ::glEnable(GL_PROGRAM_POINT_SIZE);
+    ORYOL_GL_CHECK_ERROR();
     #endif
     
     this->setupDepthStencilState();
@@ -267,7 +269,7 @@ glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLef
         this->viewPortHeight = height;
         #if ORYOL_IOS
         // fix iOS high-dpi coordinates (only for default rendertarget)
-        if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
+        if (!this->curRenderPass && this->gfxSetup.HighDPI) {
             x*=2; y*=2; width*=2; height*=2;
         }
         #endif
@@ -299,7 +301,7 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
         this->scissorHeight = height;
         #if ORYOL_IOS
         // fix iOS high-dpi coordinates (only for default rendertarget)
-        if (!this->curRenderTarget && this->gfxSetup.HighDPI) {
+        if (!this->curRenderPass && this->gfxSetup.HighDPI) {
             x*=2; y*=2; width*=2; height*=2;
         }
         #endif
@@ -465,7 +467,8 @@ glRenderer::endPass(bool record) {
         }
     }
     #endif
-    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    this->pointers.displayMgr->glBindDefaultFramebuffer();
+    ORYOL_GL_CHECK_ERROR();
     this->curRenderPass = nullptr;
     this->rpValid = false;
 }

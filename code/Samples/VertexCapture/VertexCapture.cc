@@ -117,6 +117,9 @@ VertexCaptureApp::computeCenterOfGravity() {
     if (Input::MouseAttached()) {
         mousePos = Input::MousePosition();
     }
+    else if (Input::TouchpadAttached()) {
+        mousePos = Input::TouchPosition(0);
+    }
     if ((mousePos.x > 0.0f) && (mousePos.y > 0.0f)) {
         int fbWidth = (float) Gfx::RenderPassAttrs().FramebufferWidth;
         int fbHeight = (float) Gfx::RenderPassAttrs().FramebufferHeight;
@@ -168,28 +171,50 @@ VertexCaptureApp::OnRunning() {
     Gfx::Draw(PrimitiveGroup(0, numPoints));
 
     Dbg::PrintF("\n\r Move the mouse!\n\r"
-                " 1: 64k particles\n\r"
-                " 2: 256k particles\n\r"
+                " 1: 256k particles\n\r"
+                " 2: 512k particles\n\r"
                 " 3: 1m particles\n\r"
-                " 4: 4m particles\n\r");
+                " 4: 2m particles\n\r"
+                " Current number of particles: %d\n\r"
+                " Touch-double-tap: increase particle number\n\r",
+                int(this->initParams.Num));
     Dbg::DrawTextBuffer();
 
     // handle input
-    if (Input::KeyDown(Key::N1)) {
-        this->initParams.Num = 256;
-        this->initPointMeshes();
+    if (Input::KeyboardAttached()) {
+        if (Input::KeyDown(Key::N1)) {
+            this->initParams.Num = 256;
+            this->initPointMeshes();
+        }
+        else if (Input::KeyDown(Key::N2)) {
+            this->initParams.Num = 512;
+            this->initPointMeshes();
+        }
+        else if (Input::KeyDown(Key::N3)) {
+            this->initParams.Num = 1024;
+            this->initPointMeshes();
+        }
+        else if (Input::KeyDown(Key::N4)) {
+            this->initParams.Num = 2048;
+            this->initPointMeshes();
+        }
     }
-    else if (Input::KeyDown(Key::N2)) {
-        this->initParams.Num = 512;
-        this->initPointMeshes();
-    }
-    else if (Input::KeyDown(Key::N3)) {
-        this->initParams.Num = 1024;
-        this->initPointMeshes();
-    }
-    else if (Input::KeyDown(Key::N4)) {
-        this->initParams.Num = 2048;
-        this->initPointMeshes();
+    else if (Input::TouchpadAttached()) {
+        if (Input::TouchDoubleTapped()) {
+            if (256 == this->initParams.Num) {
+                this->initParams.Num = 512;
+            }
+            else if (512 == this->initParams.Num) {
+                this->initParams.Num = 1024;
+            }
+            else if (1024 == this->initParams.Num) {
+                this->initParams.Num = 2048;
+            }
+            else {
+                this->initParams.Num = 256;
+            }
+            this->initPointMeshes();
+        }
     }
     Gfx::EndPass();
     Gfx::CommitFrame();
