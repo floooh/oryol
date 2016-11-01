@@ -32,7 +32,7 @@ public:
         uint16_t Layer = 0;     ///< layer (for 3D- or 2D-array-textures)
         uint16_t Face = 0;      ///< cubemap face
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        glm::vec4 DefaultClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        glm::vec4 ClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
     StaticArray<ColorAttachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
 

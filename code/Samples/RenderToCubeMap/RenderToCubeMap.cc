@@ -76,7 +76,7 @@ RenderToCubeMapApp::OnInit() {
 
     // create 6 render passes, one per cubemap face
     auto rpSetup = RenderPassSetup::From(this->cubeMap, this->cubeMap);
-    rpSetup.ColorAttachments[0].DefaultClearColor = ClearColor;
+    rpSetup.ColorAttachments[0].ClearColor = ClearColor;
     for (int faceIndex = 0; faceIndex < NumFaces; faceIndex++) {
         rpSetup.ColorAttachments[0].Face = faceIndex;
         this->passes[faceIndex] = Gfx::CreateResource(rpSetup);

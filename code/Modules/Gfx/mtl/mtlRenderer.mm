@@ -255,7 +255,7 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
                 const auto& colorAtt = pass->Setup.ColorAttachments[i];
                 passDesc.colorAttachments[i].loadAction = mtlTypes::asLoadAction(colorAtt.LoadAction);
                 passDesc.colorAttachments[i].storeAction = mtlTypes::asStoreAction(pass->Setup.StoreAction);
-                const glm::vec4& c = passState ? passState->Color[i] : colorAtt.DefaultClearColor;
+                const glm::vec4& c = passState ? passState->Color[i] : colorAtt.ClearColor;
                 passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
                 if ((pass->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
                     (pass->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve)) {

@@ -71,9 +71,9 @@ MultipleRenderTargetApp::OnInit() {
     // as color attachments, and the first texture as depth-stencil buffer
     // FIXME: depth-stencil should be its own texture!
     auto passSetup = RenderPassSetup::From({ rt0, rt1, rt2 }, rt0);
-    passSetup.ColorAttachments[0].DefaultClearColor = glm::vec4(0.25f, 0.0f, 0.0f, 1.0f);
-    passSetup.ColorAttachments[1].DefaultClearColor = glm::vec4(0.0f, 0.25f, 0.0f, 1.0f);
-    passSetup.ColorAttachments[2].DefaultClearColor = glm::vec4(0.0f, 0.0f, 0.25f, 1.0f);
+    passSetup.ColorAttachments[0].ClearColor = glm::vec4(0.25f, 0.0f, 0.0f, 1.0f);
+    passSetup.ColorAttachments[1].ClearColor = glm::vec4(0.0f, 0.25f, 0.0f, 1.0f);
+    passSetup.ColorAttachments[2].ClearColor = glm::vec4(0.0f, 0.0f, 0.25f, 1.0f);
     passSetup.StoreAction = RenderPassStoreAction::Resolve;
     this->mrtPass = Gfx::CreateResource(passSetup);
 
