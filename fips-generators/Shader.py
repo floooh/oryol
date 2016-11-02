@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 76
+Version = 77
 
 import os
 import sys
@@ -207,11 +207,11 @@ slMacros = {
         '_instanceid': 'vs_instanceid',
         '_position': 'vs_out._vofi_position',
         '_pointsize': 'vs_out._vofi_pointsize',
-        '_color': '_fo_color',
-        '_color0': '_fo_color0',
-        '_color1': '_fo_color1',
-        '_color2': '_fo_color2',
-        '_color3': '_fo_color3',
+        '_color': '_fo_color.color0',
+        '_color0': '_fo_color.color0',
+        '_color1': '_fo_color.color1',
+        '_color2': '_fo_color.color2',
+        '_color3': '_fo_color.color3',
         '_const': 'constant',
         '_func': 'static',
         'bool': 'int',
@@ -1504,17 +1504,28 @@ class MetalGenerator :
             lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
         lines.append(Line('};'))
 
+        # write output struct
+        lines.append(Line('struct {}_fs_out_t {{'.format(fs.name)))
+        lines.append(Line('    float4 color0 [[color(0)]];'))
+        if fs.hasColor1:
+            lines.append(Line('    float4 color1 [[color(1)]];'))
+        if fs.hasColor2:
+            lines.append(Line('    float4 color2 [[color(2)]];'))
+        if fs.hasColor3:
+            lines.append(Line('    float4 color3 [[color(3)]];'))
+        lines.append(Line('};'))
+
         # write the main function
         for input in fs.inputs :
             l = '#define {} fs_in._vofi_{}'.format(input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
         for uniformDef in uniformDefs :
             lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
-        lines.append(Line('fragment float4 {}('.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
+        lines.append(Line('fragment {}_fs_out_t {}('.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genFuncArgs(fs, lines)
         lines.append(Line('float4 _fragcoord [[position]],'))
         lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
-        lines.append(Line('float4 _fo_color;'))
+        lines.append(Line('{}_fs_out_t _fo_color;'.format(fs.name)))
         lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))

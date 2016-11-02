@@ -16,10 +16,8 @@ mat4 mvp ModelViewProjection
 @in vec4 nrm
     vec3 c = abs(nrm.xyz) * vec3(0.5) + vec3(0.5);
     _color = vec4(c.x, 0.0, 0.0, 1.0);
-    #if ORYOL_GLSL
     _color1 = vec4(0.0, c.y, 0.0, 1.0);
     _color2 = vec4(0.0, 0.0, c.z, 1.0);
-    #endif
 @end
 
 @program OffscreenShader offscreenVS offscreenFS
