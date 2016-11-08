@@ -43,6 +43,8 @@ public:
     void Add(const uint8_t* data, int numBytes);
     /// add uninitialized bytes to buffer, return pointer to start
     uint8_t* Add(int numBytes);
+    /// remove a chunk of data from the buffer, return number of bytes removed
+    int Remove(int offset, int numBytes);
     /// clear the buffer (deletes content, keeps capacity)
     void Clear();
     /// get read-only pointer to content (throws assert if would return nullptr)
@@ -194,6 +196,27 @@ Buffer::Add(int numBytes) {
 inline void
 Buffer::Clear() {
     this->size = 0;
+}
+
+//------------------------------------------------------------------------------
+inline int
+Buffer::Remove(int offset, int numBytes) {
+    o_assert_dbg(offset >= 0);
+    o_assert_dbg(numBytes >= 0);
+    if (offset >= this->size) {
+        return 0;
+    }
+    if ((offset + numBytes) >= this->size) {
+        numBytes = this->size - offset;
+    }
+    o_assert_dbg((offset + numBytes) <= this->size);
+    o_assert_dbg(numBytes >= 0);
+    if (numBytes > 0) {
+        Memory::Move(this->data + offset + numBytes, this->data + offset, numBytes);
+        this->size -= numBytes;
+        o_assert_dbg(this->size >= 0);
+    }
+    return numBytes;
 }
 
 //------------------------------------------------------------------------------
