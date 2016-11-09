@@ -105,4 +105,9 @@ TEST(BufferTest) {
     CHECK(6 == buf3.Remove(0, 6));
     CHECK(buf3.Size() == 5);
     CHECK(std::strcmp((const char*)buf3.Data(), "worl") == 0);
+
+    Buffer buf4;
+    buf4.Add((const uint8_t*)str, std::strlen(str)+1);
+    CHECK(6 == buf4.Remove(0, 6));
+    CHECK(std::strcmp((const char*)buf4.Data(), "wonderful world!") == 0);
 }
