@@ -13,6 +13,35 @@ namespace _priv {
 emscDisplayMgr* emscDisplayMgr::self = nullptr;
 
 //------------------------------------------------------------------------------
+extern "C" {
+
+// this function can be called from Javascript to enter 'real' fullscreen mode
+void enter_fullscreen() {
+    EmscriptenFullscreenStrategy fsStrategy = { };
+    fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
+    fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+    fsStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST;
+    fsStrategy.canvasResizedCallback = emscDisplayMgr::emscCanvasSizeChanged;
+    fsStrategy.canvasResizedCallbackUserData = nullptr;    
+    EMSCRIPTEN_RESULT res;
+    res = emscripten_request_fullscreen_strategy(nullptr, false, &fsStrategy);
+}
+
+// this function can be called from Javascript to enter 'soft' fullscreen mode
+// NOTE: there's currently no programmatical way to leave this 
+// soft fullscreen mode in Oryol (would need a separate Gfx call)
+void enter_soft_fullscreen() {
+    EmscriptenFullscreenStrategy fsStrategy = { };
+    fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
+    fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+    fsStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST;
+    fsStrategy.canvasResizedCallback = emscDisplayMgr::emscCanvasSizeChanged;
+    fsStrategy.canvasResizedCallbackUserData = nullptr;    
+    EMSCRIPTEN_RESULT res;
+    res = emscripten_enter_soft_fullscreen(nullptr, &fsStrategy);
+}
+
+//------------------------------------------------------------------------------
 emscDisplayMgr::emscDisplayMgr() :
 storedCanvasWidth(0),
 storedCanvasHeight(0),
@@ -34,7 +63,12 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     o_assert(!this->IsDisplayValid());
     displayMgrBase::SetupDisplay(renderSetup, ptrs);
 
-    emscripten_set_canvas_size(renderSetup.Width, renderSetup.Height);
+    if (renderSetup.Windowed) {
+        emscripten_set_canvas_size(renderSetup.Width, renderSetup.Height);
+    }
+    else {
+        enter_soft_fullscreen();
+    }
 
     EmscriptenWebGLContextAttributes ctxAttrs;
     emscripten_webgl_init_context_attributes(&ctxAttrs);
@@ -102,35 +136,6 @@ emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void*
     self->displayAttrs.FramebufferWidth = newWidth; 
     self->displayAttrs.FramebufferHeight = newHeight;
     return true;
-}
-
-//------------------------------------------------------------------------------
-extern "C" {
-
-// this function can be called from Javascript to enter 'real' fullscreen mode
-void enter_fullscreen() {
-    EmscriptenFullscreenStrategy fsStrategy = { };
-    fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
-    fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-    fsStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST;
-    fsStrategy.canvasResizedCallback = emscDisplayMgr::emscCanvasSizeChanged;
-    fsStrategy.canvasResizedCallbackUserData = nullptr;    
-    EMSCRIPTEN_RESULT res;
-    res = emscripten_request_fullscreen_strategy(nullptr, false, &fsStrategy);
-}
-
-// this function can be called from Javascript to enter 'soft' fullscreen mode
-// NOTE: there's currently no programmatical way to leave this 
-// soft fullscreen mode in Oryol (would need a separate Gfx call)
-void enter_soft_fullscreen() {
-    EmscriptenFullscreenStrategy fsStrategy = { };
-    fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
-    fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-    fsStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_NEAREST;
-    fsStrategy.canvasResizedCallback = emscDisplayMgr::emscCanvasSizeChanged;
-    fsStrategy.canvasResizedCallbackUserData = nullptr;    
-    EMSCRIPTEN_RESULT res;
-    res = emscripten_enter_soft_fullscreen(nullptr, &fsStrategy);
 }
 
 } // extern "C"
