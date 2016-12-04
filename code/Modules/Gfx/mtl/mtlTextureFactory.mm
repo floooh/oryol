@@ -101,9 +101,6 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
     #endif
 
-    if (setup.Type == TextureType::Texture3D) {
-        o_error("mtlTextureFactory: 3d textures not yet implemented!\n");
-    }
     if (setup.Type == TextureType::TextureArray) {
         o_error("mtlTextureFactory: array textures not yet implemented!\n");
     }
@@ -165,44 +162,59 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
                     int mipHeight = std::max(setup.Height >> mipIndex, 1);
                     // special case PVRTC formats: bytesPerRow must be 0
                     int bytesPerRow = 0;
+                    int bytesPerImage = 0;
                     if (!PixelFormat::IsPVRTC(setup.ColorFormat)) {
                         bytesPerRow = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
                     }
-                    MTLRegion region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
-                    [tex.mtlTextures[0] replaceRegion:region
+                    MTLRegion region;
+                    if (setup.Type == TextureType::Texture3D) {
+                        int mipDepth = std::max(setup.Depth >> mipIndex, 1);
+                        region = MTLRegionMake3D(0, 0, 0, mipWidth, mipHeight, mipDepth);
+                        bytesPerImage = bytesPerRow * mipHeight;
+                        if (bytesPerImage < 4096) {
+                            o_warn("FIXME: bytesPerImage < 4096, this must be fixed in code by copying the data\n"
+                                   "into a temp buffer with the right image alignment!\n");
+                        }
+                    }
+                    else {
+                        region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
+                    }
+                    [tex.mtlTextures[slotIndex] replaceRegion:region
                         mipmapLevel:mipIndex
                         slice:faceIndex
                         withBytes:srcPtr+setup.ImageData.Offsets[faceIndex][mipIndex]
                         bytesPerRow:bytesPerRow
-                        bytesPerImage:0];
+                        bytesPerImage:bytesPerImage];
                 }
             }
         }
     }
 
-    // prepare texture descriptor for optional MSAA and depth texture
-    texDesc.textureType = MTLTextureType2D;
-    texDesc.depth = 1;
-    texDesc.mipmapLevelCount = 1;
-    texDesc.arrayLength = 1;
+    if (setup.RenderTarget) {
+        // prepare texture descriptor for optional MSAA and depth texture
+        texDesc.textureType = MTLTextureType2D;
+        texDesc.depth = 1;
+        texDesc.mipmapLevelCount = 1;
+        texDesc.arrayLength = 1;
 
-    // create optional MSAA texture where offscreen rendering will go to,
-    // the 'default' Metal texture will serve as resolve-texture
-    if (setup.SampleCount > 1) {
-        texDesc.textureType = MTLTextureType2DMultisample;
-        texDesc.sampleCount = setup.SampleCount;
-        tex.mtlMSAATex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
-        o_assert(nil != tex.mtlMSAATex);
-    }
+        // create optional MSAA texture where offscreen rendering will go to,
+        // the 'default' Metal texture will serve as resolve-texture
+        if (setup.SampleCount > 1) {
+            texDesc.textureType = MTLTextureType2DMultisample;
+            texDesc.sampleCount = setup.SampleCount;
+            tex.mtlMSAATex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
+            o_assert(nil != tex.mtlMSAATex);
+        }
 
-    // create optional depth buffer texture (may be MSAA)
-    if (setup.HasDepth()) {
-        o_assert_dbg(setup.RenderTarget);
-        o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
-        o_assert_dbg(PixelFormat::None != setup.DepthFormat);
-        texDesc.pixelFormat = mtlTypes::asRenderTargetDepthFormat(setup.DepthFormat);
-        tex.mtlDepthTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
-        o_assert(nil != tex.mtlDepthTex);
+        // create optional depth buffer texture (may be MSAA)
+        if (setup.HasDepth()) {
+            o_assert_dbg(setup.RenderTarget);
+            o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
+            o_assert_dbg(PixelFormat::None != setup.DepthFormat);
+            texDesc.pixelFormat = mtlTypes::asRenderTargetDepthFormat(setup.DepthFormat);
+            tex.mtlDepthTex = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
+            o_assert(nil != tex.mtlDepthTex);
+        }
     }
 
     // create sampler object
