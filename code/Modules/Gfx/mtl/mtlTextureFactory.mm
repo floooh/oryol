@@ -101,11 +101,8 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
     #endif
 
-    if (setup.Type == TextureType::TextureArray) {
-        o_error("mtlTextureFactory: array textures not yet implemented!\n");
-    }
     if (setup.GenerateMipMaps) {
-        o_error("mtlTextureFactory: generate mipmaps not yet implemented!\n");
+        o_warn("mtlTextureFactory: generate mipmaps not yet implemented!\n");
     }
 
     // create one or two texture objects
@@ -147,6 +144,8 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
         texDesc.usage |= MTLTextureUsageRenderTarget;
     }
 
+    const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+    const int numSlices = setup.Type == TextureType::TextureArray ? setup.Depth : 1;
     for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
         tex.mtlTextures[slotIndex] = [this->pointers.renderer->mtlDevice newTextureWithDescriptor:texDesc];
         o_assert(nil != tex.mtlTextures[slotIndex]);
@@ -155,7 +154,6 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
         if (data) {
             o_assert_dbg(size > 0);
             const uint8* srcPtr = (const uint8*) data;
-            const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
             for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
                 for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
                     int mipWidth = std::max(setup.Width >> mipIndex, 1);
@@ -179,12 +177,16 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
                     else {
                         region = MTLRegionMake2D(0, 0, mipWidth, mipHeight);
                     }
-                    [tex.mtlTextures[slotIndex] replaceRegion:region
-                        mipmapLevel:mipIndex
-                        slice:faceIndex
-                        withBytes:srcPtr+setup.ImageData.Offsets[faceIndex][mipIndex]
-                        bytesPerRow:bytesPerRow
-                        bytesPerImage:bytesPerImage];
+                    for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
+                        const int mtlSliceIndex = setup.Type == TextureType::TextureCube ? faceIndex : sliceIndex;
+                        const int sliceDataOffset = sliceIndex * PixelFormat::ImagePitch(setup.ColorFormat, mipWidth, mipHeight);
+                        [tex.mtlTextures[slotIndex] replaceRegion:region
+                            mipmapLevel:mipIndex
+                            slice:mtlSliceIndex
+                            withBytes:srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex] + sliceDataOffset
+                            bytesPerRow:bytesPerRow
+                            bytesPerImage:bytesPerImage];
+                    }
                 }
             }
         }

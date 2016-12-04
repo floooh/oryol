@@ -145,7 +145,6 @@ fips_begin_module(Gfx)
             mtlMeshFactory.h mtlMeshFactory.mm
             mtlShaderFactory.h mtlShaderFactory.mm
             mtlPipelineFactory.h mtlPipelineFactory.mm
-            mtlRenderPassFactory.h mtlRenderPassFactory.mm
             mtlTextureFactory.h mtlTextureFactory.mm
             mtlRenderer.h mtlRenderer.mm
             mtlReleaseQueue.h mtlReleaseQueue.mm

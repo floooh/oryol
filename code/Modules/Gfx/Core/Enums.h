@@ -389,6 +389,31 @@ public:
         }
         return pitch;
     }
+    /// compute image-pitch (distance in bytes from one image to next)
+    static int ImagePitch(PixelFormat::Code fmt, int width, int height) {
+        int numRows = 0;
+        switch (fmt) {
+            case PixelFormat::DXT1:
+            case PixelFormat::ETC2_RGB8:
+            case PixelFormat::ETC2_SRGB8:
+            case PixelFormat::DXT3:
+            case PixelFormat::DXT5:
+            case PixelFormat::PVRTC4_RGB:
+            case PixelFormat::PVRTC4_RGBA:
+            case PixelFormat::PVRTC2_RGB:
+            case PixelFormat::PVRTC2_RGBA:
+                numRows = ((height + 3) / 4);
+                break;
+            default:
+                numRows = height;
+                break;
+        }
+        if (numRows < 1) {
+            numRows = 1;
+        }
+        const int pitch = numRows * RowPitch(fmt, width);
+        return pitch;
+    }
 };
 
 //------------------------------------------------------------------------------

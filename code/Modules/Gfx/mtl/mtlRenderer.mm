@@ -106,6 +106,7 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::PackedVertexFormat_10_2:
         case GfxFeature::MultipleRenderTarget:
         case GfxFeature::Texture3D:
+        case GfxFeature::TextureArray:
             return true;
         default:
             return false;

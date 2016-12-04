@@ -84,6 +84,7 @@ mtlTypes::asTextureType(TextureType::Code type) {
         case TextureType::Texture2D:    return MTLTextureType2D;
         case TextureType::Texture3D:    return MTLTextureType3D;
         case TextureType::TextureCube:  return MTLTextureTypeCube;
+        case TextureType::TextureArray: return MTLTextureType2DArray;
         default:
             o_error("mtlTypes::asTextureType(): invalid value!\n");
             return MTLTextureType1D;

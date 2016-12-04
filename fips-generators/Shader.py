@@ -224,12 +224,12 @@ slMacros = {
         'mul(m,v)': '(m*v)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
-        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t.xy,(uint)_t.z)',
         'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'tex3D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
         'tex3Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
-        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
+        'tex2DArrayvs(_obj, _t)': '_obj.t.sample(_obj.s,_t.xy,(uint)_t.z,level(0))',
         'discard': 'discard_fragment()'
     }
 }
@@ -1333,6 +1333,7 @@ class MetalGenerator :
         lines.append(Line('typedef _tex<texture2d<float,access::sample>> sampler2D;'))
         lines.append(Line('typedef _tex<texturecube<float,access::sample>> samplerCube;'))
         lines.append(Line('typedef _tex<texture3d<float,access::sample>> sampler3D;'))
+        lines.append(Line('typedef _tex<texture2d_array<float,access::sample>> sampler2DArray;'))
         lines.append(Line('#endif'))
         return lines
 
@@ -1374,6 +1375,11 @@ class MetalGenerator :
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
                     lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler2DArray' :
+                    lines.append(Line('texture2d_array<float,access::sample> _t_{} [[texture({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
         if shd.hasVertexId :
             lines.append(Line('uint vs_vertexid [[vertex_id]],'))
         if shd.hasInstanceId :
@@ -1392,6 +1398,9 @@ class MetalGenerator :
                         tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
                 elif tex.type == 'sampler3D' :
                     lines.append(Line('sampler3D {}(_t_{},_s_{});'.format(
+                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler2DArray' :
+                    lines.append(Line('sampler2DArray {}(_t_{},_s_{});'.format(
                         tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
         return lines
 

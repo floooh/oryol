@@ -23,7 +23,7 @@
 #include "Gfx/mtl/mtlPipelineFactory.h"
 #include "Gfx/mtl/mtlShaderFactory.h"
 #include "Gfx/mtl/mtlTextureFactory.h"
-#include "Gfx/mtl/mtlRenderPassFactory.h"
+#include "Gfx/Resource/renderPassFactoryBase.h"
 #else
 #error "Platform not yet supported!"
 #endif
@@ -53,7 +53,7 @@ class meshFactory : public mtlMeshFactory { };
 class pipelineFactory : public mtlPipelineFactory { };
 class shaderFactory : public mtlShaderFactory { };
 class textureFactory : public mtlTextureFactory { };
-class renderPassFactory : public mtlRenderPassFactory { };
+class renderPassFactory : public renderPassFactoryBase { };
 #endif
 
 } // namespace _priv
