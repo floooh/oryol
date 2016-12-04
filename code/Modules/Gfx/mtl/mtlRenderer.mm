@@ -102,6 +102,7 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::TextureFloat:
         case GfxFeature::Instancing:
         case GfxFeature::OriginTopLeft:
+        case GfxFeature::MSAARenderTargets:
         case GfxFeature::PackedVertexFormat_10_2:
         case GfxFeature::MultipleRenderTarget:
             return true;
