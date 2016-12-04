@@ -8,6 +8,7 @@
 #include <emscripten/emscripten.h>
 
 namespace Oryol {
+
 namespace _priv {
 
 emscDisplayMgr* emscDisplayMgr::self = nullptr;
@@ -28,8 +29,8 @@ void enter_fullscreen() {
 }
 
 // this function can be called from Javascript to enter 'soft' fullscreen mode
-// NOTE: there's currently no programmatical way to leave this 
-// soft fullscreen mode in Oryol (would need a separate Gfx call)
+static bool soft_fullscreen_active = false;
+
 void enter_soft_fullscreen() {
     EmscriptenFullscreenStrategy fsStrategy = { };
     fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
@@ -39,7 +40,21 @@ void enter_soft_fullscreen() {
     fsStrategy.canvasResizedCallbackUserData = nullptr;    
     EMSCRIPTEN_RESULT res;
     res = emscripten_enter_soft_fullscreen(nullptr, &fsStrategy);
+    soft_fullscreen_active = true;
+    Log::Info("enter_soft_fullscreen called!\n");
 }
+
+void leave_soft_fullscreen() {
+    emscripten_exit_soft_fullscreen();
+    soft_fullscreen_active = false;
+    Log::Info("leave_soft_fullscreen called!\n");
+}
+
+bool is_soft_fullscreen_active() {
+    return soft_fullscreen_active;
+}
+
+} // extern "C"
 
 //------------------------------------------------------------------------------
 emscDisplayMgr::emscDisplayMgr() :
@@ -138,7 +153,6 @@ emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void*
     return true;
 }
 
-} // extern "C"
 } // namespace _priv
 } // namespace Oryol
 

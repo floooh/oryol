@@ -9,6 +9,14 @@
 #include <emscripten/html5.h>
 
 namespace Oryol {
+
+// emscripten-specific soft-fullscreen control functions
+extern "C" {
+extern void enter_soft_fullscreen();
+extern void leave_soft_fullscreen();
+extern bool is_soft_fullscreen_active();
+}
+
 namespace _priv {
 
 class emscDisplayMgr : public displayMgrBase {
