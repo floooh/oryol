@@ -964,6 +964,12 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
                           srcPtr + offsetsAndSizes.Offsets[0][mipIndex]);
         ORYOL_GL_CHECK_ERROR();
     }
+
+    // re-generate mipmaps if necessary
+    if (tex->Setup.GenerateMipMaps) {
+        ::glGenerateMipmap(tex->glTarget);
+        ORYOL_GL_CHECK_ERROR();
+    }
 }
 
 //------------------------------------------------------------------------------
