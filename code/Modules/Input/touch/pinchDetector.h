@@ -28,7 +28,6 @@ public:
     /// get start position of second touch
     glm::vec2 startPosition1;
     
-private:
     touchEvent startEvent;
 };
     

@@ -100,9 +100,9 @@ d3d11Types::asSemanticName(VertexAttr::Code attr) {
         case VertexAttr::Binormal:
             return "BINORMAL";
         case VertexAttr::Weights:
-            return "BLENDWEIGHT";
+            return "WEIGHTS";
         case VertexAttr::Indices:
-            return "BLENDINDICES";
+            return "INDICES";
         case VertexAttr::Color0:
         case VertexAttr::Color1:
             return "COLOR";

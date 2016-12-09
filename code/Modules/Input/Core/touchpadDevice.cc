@@ -10,21 +10,6 @@ namespace Oryol {
 namespace _priv {
     
 //------------------------------------------------------------------------------
-touchpadDevice::touchpadDevice() :
-attached(false),
-tapped(false),
-doubleTapped(false),
-panningStarted(false),
-panning(false),
-panningEnded(false),
-pinchingStarted(false),
-pinching(false),
-pinchingEnded(false),
-dispatcher(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 touchpadDevice::reset() {
     this->tapped = false;
@@ -36,6 +21,15 @@ touchpadDevice::reset() {
     for (int i = 0; i < MaxNumTouches; i++) {
         this->movement[i] = glm::vec2(0.0f, 0.0f);
     }
+}
+
+//------------------------------------------------------------------------------
+void
+touchpadDevice::onTouch(bool active, const glm::vec2& p) {
+    o_assert_dbg(this->dispatcher);
+    this->touched = active;
+    this->position[0] = p;
+    // no associated input event!
 }
 
 //------------------------------------------------------------------------------

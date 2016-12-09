@@ -25,8 +25,6 @@ public:
     glm::vec2 position;
     /// get pan start position
     glm::vec2 startPosition;
-    
-private:
     /// check if distance between 2 points is less then
     bool distLess(const glm::vec2& pos0, const glm::vec2& pos1, int dist) const;
     

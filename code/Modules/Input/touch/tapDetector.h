@@ -32,7 +32,6 @@ public:
     /// get current tap position
     glm::vec2 position;
     
-private:
     /// check if 2 touch events are within the tap max distance
     bool withinDistance(const touchEvent& newEvent, const touchEvent& oldEvent, int maxDist) const;
     /// check if 2 touch events are within a timeout

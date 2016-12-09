@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Buffer.h"
+#include <cstring>
 
 using namespace Oryol;
 
@@ -84,4 +85,29 @@ TEST(BufferTest) {
     CHECK(buf2.Empty());
     CHECK(buf2.Capacity() == 21);
     CHECK(buf2.Spare() == 21);
+
+    Buffer buf3;
+    const char* str = "Hello wonderful world!";
+    buf3.Add((const uint8_t*)str, std::strlen(str)+1);
+    CHECK(0 == buf3.Remove(0, 0));
+    CHECK(std::strcmp((const char*)buf3.Data(), str) == 0);
+    CHECK(buf3.Size() == 23);
+    CHECK(0 == buf3.Remove(128, 10));
+    CHECK(std::strcmp((const char*)buf3.Data(), str) == 0);
+    CHECK(buf3.Size() == 23);
+    CHECK(10 == buf3.Remove(5, 10));
+    CHECK(std::strcmp((const char*)buf3.Data(), "Hello world!") == 0);
+    CHECK(buf3.Size() == 13);
+    CHECK(3 == buf3.Remove(10, 5));
+    CHECK(buf3.Size() == 10);
+    buf3.Add((const uint8*)"\0", 1);
+    CHECK(std::strcmp((const char*)buf3.Data(), "Hello worl") == 0);
+    CHECK(6 == buf3.Remove(0, 6));
+    CHECK(buf3.Size() == 5);
+    CHECK(std::strcmp((const char*)buf3.Data(), "worl") == 0);
+
+    Buffer buf4;
+    buf4.Add((const uint8_t*)str, std::strlen(str)+1);
+    CHECK(6 == buf4.Remove(0, 6));
+    CHECK(std::strcmp((const char*)buf4.Data(), "wonderful world!") == 0);
 }

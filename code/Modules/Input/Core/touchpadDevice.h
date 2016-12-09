@@ -22,28 +22,27 @@ public:
     /// max number of touch positions
     static const int MaxNumTouches = 2;
 
-    /// constructor
-    touchpadDevice();
-    
     /// touchpad valid?
-    bool attached;
-    
+    bool attached = false;
+
+    /// 'raw' touched?
+    bool touched = false;
     /// single-tapped?
-    bool tapped;
+    bool tapped = false;
     /// double-tapped?
-    bool doubleTapped;
+    bool doubleTapped = false;
     /// started panning
-    bool panningStarted;
+    bool panningStarted = false;
     /// panning gesture underway?
-    bool panning;
+    bool panning = false;
     /// ended panning
-    bool panningEnded;
+    bool panningEnded = false;
     /// started pinching
-    bool pinchingStarted;
+    bool pinchingStarted = false;
     /// pinching underway
-    bool pinching;
+    bool pinching = false;
     /// ended pinching
-    bool pinchingEnded;
+    bool pinchingEnded = false;
 
     /// current position (1 for tap/pan, 2 for pinch)
     StaticArray<glm::vec2, MaxNumTouches> position;
@@ -52,6 +51,8 @@ public:
     /// start position (useful for tap/pan)
     StaticArray<glm::vec2, MaxNumTouches> startPosition;
 
+    /// called on a 'raw touch'
+    void onTouch(bool active, const glm::vec2& pos);
     /// called when single-tap detected
     void onTapped(const glm::vec2& pos);
     /// called when double-tap detected

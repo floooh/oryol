@@ -231,6 +231,13 @@ Input::TouchpadAttached() {
 
 //------------------------------------------------------------------------------
 bool
+Input::TouchTouched() {
+    o_assert_dbg(state);
+    return state->inputManager.touchpad.touched;
+}
+
+//------------------------------------------------------------------------------
+bool
 Input::TouchTapped() {
     o_assert_dbg(state);
     return state->inputManager.touchpad.tapped;

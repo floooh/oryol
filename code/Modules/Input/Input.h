@@ -91,6 +91,8 @@ public:
 
     /// return true if a touchpad is attached
     static bool TouchpadAttached();
+    /// touchpad 'raw touch'?
+    static bool TouchTouched();
     /// touchpad single-tapped?
     static bool TouchTapped();
     /// touchpad double-tapped?
