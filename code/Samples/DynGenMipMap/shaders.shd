@@ -1,5 +1,5 @@
 @uniform_block vsParams VSParams
-mat4 mvp ModelViewProjection
+mat4 mvp ModelViewProj
 @end
 @texture_block textures Textures
 sampler2D tex Texture
