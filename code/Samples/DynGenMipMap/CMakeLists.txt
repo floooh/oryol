@@ -1,0 +1,7 @@
+fips_begin_app(DynGenMipMap windowed)
+    fips_vs_warning_level(3)
+    fips_files(DynGenMipMap.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx Dbg Assets)
+    oryol_add_web_sample(DynGenMipMap "Demonstrate mipmap generation on dynamic texture" "emscripten" DynGenMipMap.jpg "DynGenMipMap/DynGenMipMap.cc")
+fips_end_app()
