@@ -939,7 +939,7 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
     o_assert_dbg(TextureType::Texture2D == attrs.Type);
     o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
     o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
-    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumMipMaps <= attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
     GLuint glTex = obtainUpdateTexture(tex, int(this->frameIndex));
@@ -947,7 +947,7 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
     uint8_t* srcPtr = (uint8_t*)data;
     GLenum glTexImageFormat = glTypes::asGLTexImageFormat(attrs.ColorFormat);
     GLenum glTexImageType = glTypes::asGLTexImageType(attrs.ColorFormat);
-    for (int mipIndex = 0; mipIndex < attrs.NumMipMaps; mipIndex++) {
+    for (int mipIndex = 0; mipIndex < offsetsAndSizes.NumMipMaps; mipIndex++) {
         o_assert_dbg(offsetsAndSizes.Sizes[0][mipIndex] > 0);
         int mipWidth = attrs.Width >> mipIndex;
         if (mipWidth == 0) mipWidth = 1;
@@ -964,12 +964,17 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
                           srcPtr + offsetsAndSizes.Offsets[0][mipIndex]);
         ORYOL_GL_CHECK_ERROR();
     }
+}
 
-    // re-generate mipmaps if necessary
-    if (tex->Setup.GenerateMipMaps) {
-        ::glGenerateMipmap(tex->glTarget);
-        ORYOL_GL_CHECK_ERROR();
-    }
+//------------------------------------------------------------------------------
+void
+glRenderer::generateMipmaps(texture* tex) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nullptr != tex);
+    ::glBindTexture(tex->glTarget, tex->glTextures[tex->activeSlot]);
+    ::glGenerateMipmap(tex->glTarget);
+    ORYOL_GL_CHECK_ERROR();
+    this->invalidateTextureState();
 }
 
 //------------------------------------------------------------------------------

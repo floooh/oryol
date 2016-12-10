@@ -99,6 +99,8 @@ public:
 
     /// update data in per-frame uniform-buffer (called from glCmdBuffer)
     void updateUniforms(const uint8_t* basePtr, int startOffset, int size);
+    /// generate mipmaps for texture
+    void generateMipmaps(texture* tex);
     
 private:
     /// setup the initial depth-stencil-state

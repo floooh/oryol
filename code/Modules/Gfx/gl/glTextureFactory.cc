@@ -96,7 +96,7 @@ void
 glTextureFactory::setupTextureParams(const TextureSetup& setup, GLenum glTexTarget, GLuint glTex) {
     GLenum glMinFilter = glTypes::asGLTexFilterMode(setup.Sampler.MinFilter);
     GLenum glMagFilter = glTypes::asGLTexFilterMode(setup.Sampler.MagFilter);
-    if ((1 == setup.NumMipMaps) && !setup.GenerateMipMaps) {
+    if (1 == setup.NumMipMaps) {
         #if !ORYOL_OPENGLES2
         if (!glCaps::IsFlavour(glCaps::GLES2)) {
             ::glTexParameteri(glTexTarget, GL_TEXTURE_MAX_LEVEL, 0); // see: http://www.opengl.org/wiki/Hardware_specifics:_NVidia
@@ -178,6 +178,8 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
     // initialize with data is only allowed for immutable texture
     if (data) {
         o_assert_dbg(setup.TextureUsage == Usage::Immutable);
+        o_assert_dbg(setup.ImageData.NumMipMaps > 0);
+        o_assert_dbg(setup.ImageData.NumFaces > 0);
     }
     #endif
     const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
@@ -199,14 +201,15 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
             else {
                 glImgTarget = glTextureTarget;
             }
-
             for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
                 GLvoid* mipDataPtr = nullptr;
                 int mipDataSize = 0;
                 if (srcPtr) {
-                    mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
-                    mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
-                    o_assert_dbg(mipDataSize > 0);
+                    if (mipIndex < setup.ImageData.NumMipMaps) {
+                        mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
+                        mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
+                        o_assert_dbg(mipDataSize > 0);
+                    }
                 }
                 int mipWidth = setup.Width >> mipIndex;
                 if (mipWidth == 0) {
@@ -269,11 +272,6 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
                 }
                 #endif
             }
-        }
-        // generate mipmaps if requested
-        if (setup.GenerateMipMaps) {
-            ::glGenerateMipmap(glTextureTarget);
-            ORYOL_GL_CHECK_ERROR();
         }
     }
 
