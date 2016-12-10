@@ -64,11 +64,12 @@ ArrayTextureApp::OnInit() {
         }
     }
     auto texSetup = TextureSetup::FromPixelDataArray(16, 16, numLayers, 1, PixelFormat::RGBA8);
-    texSetup.GenerateMipMaps = true;
+    texSetup.NumMipMaps = 5;
     texSetup.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
     texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     texSetup.ImageData.Sizes[0][0] = sizeof(data);
     this->drawState.FSTexture[Textures::Texture] = Gfx::CreateResource(texSetup, data, sizeof(data));
+    Gfx::GenerateMipmaps(this->drawState.FSTexture[Textures::Texture]);
 
     // build a cube mesh
     ShapeBuilder shapeBuilder;

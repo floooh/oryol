@@ -83,6 +83,9 @@ public:
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
 
+    /// generate mipmaps for a texture (must be called outside pass)
+    static void GenerateMipmaps(const Id& id);
+
     /// begin rendering to default render pass
     static void BeginPass();
     /// begin rendering to default render pass with override clear values

@@ -374,6 +374,18 @@ Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsets
 
 //------------------------------------------------------------------------------
 void
+Gfx::GenerateMipmaps(const Id& id) {
+    o_trace_scoped(Gfx_GenerateMipmaps);
+    o_assert_dbg(IsValid());
+    o_assert_dbg(!state->inPass);
+    state->gfxFrameInfo.NumGenerateMipmaps++;
+    texture* tex = state->resourceContainer.lookupTexture(id);
+    o_assert_dbg(tex->Setup.NumMipMaps > 1);
+    state->renderer.generateMipmaps(tex);
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::Draw(int primGroupIndex, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());

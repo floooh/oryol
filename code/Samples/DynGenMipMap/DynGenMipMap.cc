@@ -23,8 +23,8 @@ public:
 
     Shader::VSParams computeShaderParams();
 
-    static const int TexWidth = 32;
-    static const int TexHeight = 32;
+    const int TexWidth = 32;
+    const int TexHeight = 32;
     bool mipEnabled = true;
     Id mipTexture;
     Id noMipTexture;
@@ -47,7 +47,7 @@ DynGenMipMap::OnInit() {
     tex.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
     tex.Sampler.MagFilter = TextureFilterMode::Linear;
     this->noMipTexture = Gfx::CreateResource(tex);
-    tex.GenerateMipMaps = true;
+    tex.NumMipMaps = 1 + std::floor(std::log2(std::max(TexWidth, TexHeight)));
     this->mipTexture = Gfx::CreateResource(tex);
 
     // create mesh, shader pipeline
@@ -93,9 +93,12 @@ DynGenMipMap::OnRunning() {
     imgAttrs.NumMipMaps = 1;
     imgAttrs.Sizes[0][0] = sizeof(buf);
     Gfx::UpdateTexture(this->drawState.FSTexture[0], buf, imgAttrs);
+    if (this->mipEnabled) {
+        Gfx::GenerateMipmaps(this->drawState.FSTexture[0]);
+    }
 
     // ...and draw
-    Gfx::BeginPass(PassState(glm::vec4(0.8f, 0.4f, 0.0f, 1.0f)));
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->computeShaderParams());
     Gfx::Draw();

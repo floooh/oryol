@@ -17,6 +17,7 @@ struct GfxFrameInfo {
     int NumUpdateVertices = 0;
     int NumUpdateIndices = 0;
     int NumUpdateTextures = 0;
+    int NumGenerateMipmaps = 0;
     int NumDraw = 0;
     int NumDrawInstanced = 0;
 };

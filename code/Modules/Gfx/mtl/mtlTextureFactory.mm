@@ -101,10 +101,6 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
     #endif
 
-    if (setup.GenerateMipMaps) {
-        o_warn("mtlTextureFactory: generate mipmaps not yet implemented!\n");
-    }
-
     // create one or two texture objects
     tex.numSlots = Usage::Immutable == setup.TextureUsage ? 1 : 2;
 
@@ -155,7 +151,8 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
             o_assert_dbg(size > 0);
             const uint8* srcPtr = (const uint8*) data;
             for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-                for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
+                for (int mipIndex = 0; mipIndex < setup.ImageData.NumMipMaps; mipIndex++) {
+                    o_assert_dbg(mipIndex <= setup.NumMipMaps);
                     int mipWidth = std::max(setup.Width >> mipIndex, 1);
                     int mipHeight = std::max(setup.Height >> mipIndex, 1);
                     // special case PVRTC formats: bytesPerRow must be 0
@@ -225,18 +222,18 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
 
     // setup texture attributes
     TextureAttrs attrs;
-    attrs.Locator       = tex.Setup.Locator;
-    attrs.Type          = tex.Setup.Type;
-    attrs.ColorFormat   = tex.Setup.ColorFormat;
-    attrs.DepthFormat   = tex.Setup.DepthFormat;
-    attrs.SampleCount   = tex.Setup.SampleCount;
-    attrs.TextureUsage  = tex.Setup.TextureUsage;
-    attrs.Width         = tex.Setup.Width;
-    attrs.Height        = tex.Setup.Height;
-    attrs.Depth         = tex.Setup.Depth;
-    attrs.NumMipMaps    = tex.Setup.NumMipMaps;
-    attrs.IsRenderTarget = tex.Setup.RenderTarget;
-    attrs.HasDepthBuffer = tex.Setup.HasDepth();
+    attrs.Locator       = setup.Locator;
+    attrs.Type          = setup.Type;
+    attrs.ColorFormat   = setup.ColorFormat;
+    attrs.DepthFormat   = setup.DepthFormat;
+    attrs.SampleCount   = setup.SampleCount;
+    attrs.TextureUsage  = setup.TextureUsage;
+    attrs.Width         = setup.Width;
+    attrs.Height        = setup.Height;
+    attrs.Depth         = setup.Depth;
+    attrs.NumMipMaps    = setup.NumMipMaps;
+    attrs.IsRenderTarget = setup.RenderTarget;
+    attrs.HasDepthBuffer = setup.HasDepth();
     tex.textureAttrs = attrs;
 
     return ResourceState::Valid;

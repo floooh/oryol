@@ -27,7 +27,8 @@ curMTLIndexType(MTLIndexTypeUInt16),
 mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
-curCommandEncoder(nil),
+curRenderCmdEncoder(nil),
+curBlitCmdEncoder(nil),
 curUniformBufferPtr(nullptr),
 curUniformBufferOffset(0) {
     // empty
@@ -117,10 +118,16 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nil == this->curCommandEncoder);
+    o_assert_dbg(nil == this->curRenderCmdEncoder);
     o_assert_dbg(nil != this->curCommandBuffer);
 
     this->rpValid = false;
+
+    // finish any outstanding genmipmaps
+    if (nil != this->curBlitCmdEncoder) {
+        [this->curBlitCmdEncoder endEncoding];
+        this->curBlitCmdEncoder = nil;
+    }
 
     // commit the global uniform buffer updates
     #if ORYOL_MACOS
@@ -140,7 +147,7 @@ mtlRenderer::commitFrame() {
 
     this->frameIndex++;
     this->curUniformBufferOffset = 0;
-    this->curCommandEncoder = nil;
+    this->curRenderCmdEncoder = nil;
     this->curCommandBuffer = nil;
     this->curUniformBufferPtr = nullptr;
     this->curPipeline = nullptr;
@@ -158,7 +165,7 @@ mtlRenderer::renderPassAttrs() const {
 void
 mtlRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
 
@@ -169,7 +176,7 @@ mtlRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLe
     vp.height  = (double) height;
     vp.znear   = 0.0;
     vp.zfar    = 1.0;
-    [this->curCommandEncoder setViewport:vp];
+    [this->curRenderCmdEncoder setViewport:vp];
 }
 
 //------------------------------------------------------------------------------
@@ -179,7 +186,7 @@ mtlRenderer::applyScissorRect(int x, int y, int width, int height, bool originTo
     o_assert_dbg(width >= 0);
     o_assert_dbg(height >= 0);
 
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
 
@@ -206,17 +213,14 @@ mtlRenderer::applyScissorRect(int x, int y, int width, int height, bool originTo
     rect.height = height;
 
     // need to clip against render target
-    [this->curCommandEncoder setScissorRect:rect];
+    [this->curRenderCmdEncoder setScissorRect:rect];
 }
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
+mtlRenderer::checkCreateCommandBuffer() {
     o_assert_dbg(this->valid);
-    o_assert_dbg(nil == this->curCommandEncoder);
-
-    // create command buffer if this is the first call in the current frame
-    if (this->curCommandBuffer == nil) {
+    if (nil == this->curCommandBuffer) {
         // block until the oldest frame in flight has finished
         dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
         // safely destroy released GPU resources
@@ -224,6 +228,26 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
         // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::checkCreateBlitCommandEncoder() {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nil != this->curCommandBuffer);
+    if (nil == this->curBlitCmdEncoder) {
+        this->curBlitCmdEncoder = [this->curCommandBuffer blitCommandEncoder];
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nil == this->curRenderCmdEncoder);
+
+    // create command buffer if this is the first call in the current frame
+    this->checkCreateCommandBuffer();
 
     // get the base pointer for the uniform buffer, this only happens once per frame
     if (nullptr == this->curUniformBufferPtr) {
@@ -334,16 +358,22 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
         }
     }
 
+    // if a blit command encoder exists, finish encoding now and get rid of it
+    if (nil != this->curBlitCmdEncoder) {
+        [this->curBlitCmdEncoder endEncoding];
+        this->curBlitCmdEncoder = nil;
+    }
+
     // create command encoder for this render pass
     // this might return nil if the window is minimized
-    this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
-    if (nil != this->curCommandEncoder) {
+    this->curRenderCmdEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
+    if (nil != this->curRenderCmdEncoder) {
         for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
-            [this->curCommandEncoder
+            [this->curRenderCmdEncoder
                 setVertexBuffer:this->uniformBuffers[this->curFrameRotateIndex]
                 offset:0
                 atIndex:bindSlot];
-            [this->curCommandEncoder
+            [this->curRenderCmdEncoder
                 setFragmentBuffer:this->uniformBuffers[this->curFrameRotateIndex]
                 offset:0
                 atIndex:bindSlot];
@@ -355,9 +385,9 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
 void
 mtlRenderer::endPass() {
     o_assert_dbg(this->valid);
-    if (nil != this->curCommandEncoder) {
-        [this->curCommandEncoder endEncoding];
-        this->curCommandEncoder = nil;
+    if (nil != this->curRenderCmdEncoder) {
+        [this->curRenderCmdEncoder endEncoding];
+        this->curRenderCmdEncoder = nil;
     }
 }
 
@@ -368,7 +398,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* c
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     // if any of the meshes are still loading, cancel the next draw-call
@@ -393,13 +423,13 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* c
     const glm::vec4& bc = pip->Setup.BlendColor;
     const RasterizerState& rs = pip->Setup.RasterizerState;
     const DepthStencilState& dss = pip->Setup.DepthStencilState;
-    [this->curCommandEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
-    [this->curCommandEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
-    [this->curCommandEncoder setStencilReferenceValue:dss.StencilRef];
+    [this->curRenderCmdEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
+    [this->curRenderCmdEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
+    [this->curRenderCmdEncoder setStencilReferenceValue:dss.StencilRef];
 
     // apply state objects
-    [this->curCommandEncoder setRenderPipelineState:pip->mtlRenderPipelineState];
-    [this->curCommandEncoder setDepthStencilState:pip->mtlDepthStencilState];
+    [this->curRenderCmdEncoder setRenderPipelineState:pip->mtlRenderPipelineState];
+    [this->curRenderCmdEncoder setDepthStencilState:pip->mtlDepthStencilState];
 
     // apply vertex buffers
     for (int meshIndex = 0; meshIndex < GfxConfig::MaxNumInputMeshes; meshIndex++) {
@@ -409,10 +439,10 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* c
         if (msh) {
             // note: vb.mtlBuffers[vb.activeSlot] can be nil!
             const auto& vb = msh->buffers[mesh::vb];
-            [this->curCommandEncoder setVertexBuffer:vb.mtlBuffers[vb.activeSlot] offset:0 atIndex:vbSlotIndex];
+            [this->curRenderCmdEncoder setVertexBuffer:vb.mtlBuffers[vb.activeSlot] offset:0 atIndex:vbSlotIndex];
         }
         else {
-            [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
+            [this->curRenderCmdEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
         }
     }
 
@@ -427,7 +457,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* c
 void
 mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -452,10 +482,10 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32
     uint8* dstPtr = this->curUniformBufferPtr + this->curUniformBufferOffset;
     std::memcpy(dstPtr, ptr, byteSize);
     if (ShaderStage::VS == bindStage) {
-        [this->curCommandEncoder setVertexBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curRenderCmdEncoder setVertexBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     else {
-        [this->curCommandEncoder setFragmentBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curRenderCmdEncoder setFragmentBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, MtlUniformAlignment);
 }
@@ -466,7 +496,7 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int 
     o_assert_dbg(this->valid);
     o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                  ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -485,16 +515,16 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int 
     // apply textures and samplers
     if (ShaderStage::VS == bindStage) {
         for (int i = 0; i < numTextures; i++) {
-            const texture* tex = textures[i];
-            [this->curCommandEncoder setVertexTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
-            [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
+            texture* tex = textures[i];
+            [this->curRenderCmdEncoder setVertexTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
+            [this->curRenderCmdEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
     else {
         for (int i = 0; i < numTextures; i++) {
-            const texture* tex = textures[i];
-            [this->curCommandEncoder setFragmentTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
-            [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
+            texture* tex = textures[i];
+            [this->curRenderCmdEncoder setFragmentTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
+            [this->curRenderCmdEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
 }
@@ -503,7 +533,7 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int 
 void
 mtlRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
     o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -512,7 +542,7 @@ mtlRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     if (IndexType::None == msh->indexBufferAttrs.Type) {
-        [this->curCommandEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
+        [this->curRenderCmdEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
             vertexStart:baseElementIndex
             vertexCount:numElements
             instanceCount:numInstances];
@@ -521,7 +551,7 @@ mtlRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
         const auto& ib = msh->buffers[mesh::ib];
         o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
         NSUInteger indexBufferOffset = baseElementIndex * IndexType::ByteSize(msh->indexBufferAttrs.Type);
-        [this->curCommandEncoder drawIndexedPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
+        [this->curRenderCmdEncoder drawIndexedPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
             indexCount:numElements
             indexType:(MTLIndexType)this->curMTLIndexType
             indexBuffer:ib.mtlBuffers[ib.activeSlot]
@@ -533,7 +563,7 @@ mtlRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
 //------------------------------------------------------------------------------
 void
 mtlRenderer::draw(int primGroupIndex, int numInstances) {
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -623,6 +653,16 @@ texRotateActiveSlot(texture* tex, int frameIndex) {
 
 //------------------------------------------------------------------------------
 void
+mtlRenderer::generateMipmaps(texture* tex) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nil == this->curRenderCmdEncoder); // must be called outside pass
+    this->checkCreateCommandBuffer();
+    this->checkCreateBlitCommandEncoder();
+    [this->curBlitCmdEncoder generateMipmapsForTexture:tex->mtlTextures[tex->activeSlot]];
+}
+
+//------------------------------------------------------------------------------
+void
 mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nullptr != tex);
@@ -632,7 +672,7 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
     o_assert_dbg(TextureType::Texture2D == attrs.Type);
     o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
     o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
-    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumMipMaps <= attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
     texRotateActiveSlot(tex, this->frameIndex);

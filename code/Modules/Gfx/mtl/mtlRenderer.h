@@ -79,6 +79,12 @@ public:
 
     /// defered-release a render resource
     void releaseDeferred(ORYOL_OBJC_ID obj);
+    /// check if command buffer exists, create if not
+    void checkCreateCommandBuffer();
+    /// check if a blit-command-encoder exists, create if not
+    void checkCreateBlitCommandEncoder();
+    /// generate mipmaps for a texture
+    void generateMipmaps(texture* tex);
 
     #if ORYOL_MACOS
     static const int MtlUniformAlignment = 256;
@@ -104,7 +110,8 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
     ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
-    ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
+    ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curRenderCmdEncoder;
+    ORYOL_OBJC_TYPED_ID(MTLBlitCommandEncoder) curBlitCmdEncoder;
 
     // rotated global uniform buffers
     uint8_t* curUniformBufferPtr;
