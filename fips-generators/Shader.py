@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 59
+Version = 60
 
 import os
 import sys
