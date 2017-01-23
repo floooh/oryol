@@ -59,7 +59,7 @@ glTextureFactory::SetupResource(texture& tex) {
     if (tex.Setup.ShouldSetupAsRenderTarget()) {
         return this->createRenderTarget(tex);
     }
-    else if (tex.Setup.ShouldSetupEmpty()) {
+    else if (tex.Setup.ShouldSetupEmpty() || tex.Setup.ShouldSetupFromNativeTexture()) {
         return this->createEmptyTexture(tex);
     }
     else {
@@ -95,17 +95,19 @@ glTextureFactory::DestroyResource(texture& tex) {
         ORYOL_GL_CHECK_ERROR();
     }
 
-    for (auto& glTex : tex.glTextures) {
-        if (0 != glTex) {
-            ::glDeleteTextures(1, &glTex);
-            ORYOL_GL_CHECK_ERROR();
-        }
-    }
-    
     if (!tex.textureAttrs.HasSharedDepthBuffer) {
         if (0 != tex.glDepthRenderbuffer) {
             ::glDeleteRenderbuffers(1, &tex.glDepthRenderbuffer);
             ORYOL_GL_CHECK_ERROR();
+        }
+    }
+
+    if (!tex.nativeHandles) {
+        for (auto& glTex : tex.glTextures) {
+            if (0 != glTex) {
+                ::glDeleteTextures(1, &glTex);
+                ORYOL_GL_CHECK_ERROR();
+            }
         }
     }
     
@@ -413,9 +415,6 @@ glTextureFactory::createEmptyTexture(texture& tex) {
     const int width = setup.Width;
     const int height = setup.Height;
     const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
-    const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
-    const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-    const GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
 
     // test if the texture format is actually supported
     if (!glCaps::HasTextureFormat(setup.ColorFormat)) {
@@ -423,34 +422,45 @@ glTextureFactory::createEmptyTexture(texture& tex) {
         return ResourceState::Failed;
     }
 
-    // create one or two texture object
     tex.numSlots = Usage::Stream == setup.TextureUsage ? 2 : 1;
-    for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
+    if (tex.Setup.ShouldSetupFromNativeTexture()) {
+        // existing native GL texture object provided
+        tex.nativeHandles = true;
+        tex.glTextures[0] = tex.Setup.NativeHandle[0];
+        tex.glTextures[1] = tex.Setup.NativeHandle[1];
+    }
+    else {
+        // create one or two texture object
+        const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
+        const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
+        const GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
+        for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
 
-        tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
-        this->setupTextureParams(setup, tex.glTextures[slotIndex]);
+            tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
+            this->setupTextureParams(setup, tex.glTextures[slotIndex]);
 
-        // initialize texture storage
-        const int numMipMaps = setup.NumMipMaps;
-        for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
-            int mipWidth = width >> mipIndex;
-            if (mipWidth == 0) {
-                mipWidth = 1;
+            // initialize texture storage
+            const int numMipMaps = setup.NumMipMaps;
+            for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++) {
+                int mipWidth = width >> mipIndex;
+                if (mipWidth == 0) {
+                    mipWidth = 1;
+                }
+                int mipHeight = height >> mipIndex;
+                if (mipHeight == 0) {
+                    mipHeight = 1;
+                }
+                ::glTexImage2D(glTextureTarget,
+                               mipIndex,
+                               glTexImageInternalFormat,
+                               mipWidth,
+                               mipHeight,
+                               0,
+                               glTexImageFormat,
+                               glTexImageType,
+                               nullptr);
+                ORYOL_GL_CHECK_ERROR();
             }
-            int mipHeight = height >> mipIndex;
-            if (mipHeight == 0) {
-                mipHeight = 1;
-            }
-            ::glTexImage2D(glTextureTarget,
-                           mipIndex,
-                           glTexImageInternalFormat,
-                           mipWidth,
-                           mipHeight,
-                           0,
-                           glTexImageFormat,
-                           glTexImageType,
-                           nullptr);
-            ORYOL_GL_CHECK_ERROR();
         }
     }
 

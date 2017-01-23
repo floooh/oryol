@@ -31,6 +31,8 @@ class textureBase : public resourceBase<TextureSetup> {
 public:
     /// texture attributes
     TextureAttrs textureAttrs;
+    /// was created from native texture handles
+    bool nativeHandles = false;
     
     /// clear the object
     void Clear();
