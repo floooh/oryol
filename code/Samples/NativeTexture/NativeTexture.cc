@@ -27,6 +27,7 @@ public:
 
     glm::mat4 computeMVP(const glm::vec3& pos);
     DrawState drawState;
+    ResourceLabel texLabel;
     Shader::Params params;
     glm::mat4 view;
     glm::mat4 proj;
@@ -84,14 +85,18 @@ NativeTextureApp::OnInit() {
     Gfx::ResetStateCache();
 
     // make sure that the texture creation parameters here match the OpenGL
-    // creation parameters (size, texture type, pixel format etc...)
+    // creation parameters (size, texture type, pixel format etc...),
     auto texSetup = TextureSetup::FromNativeTexture(TexWidth, TexHeight, 1,
         TextureType::Texture2D,
         PixelFormat::RGBA8,
         Usage::Stream,
         this->glTextures[0],
         this->glTextures[1]);
+    // push a new resource label and keep it for later since we'll have
+    // to cleanup the resource ourselves
+    Gfx::PushResourceLabel();
     this->drawState.FSTexture[0] = Gfx::CreateResource(texSetup);
+    this->texLabel = Gfx::PopResourceLabel();
     #endif
     
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
@@ -150,6 +155,10 @@ NativeTextureApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 NativeTextureApp::OnCleanup() {
+    // for externally created textures, we need to cleanup the resources
+    // ourselves, Oryol will not delete the externally owned GL textures!
+    Gfx::DestroyResources(this->texLabel);
+    ::glDeleteTextures(2, this->glTextures);
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();
