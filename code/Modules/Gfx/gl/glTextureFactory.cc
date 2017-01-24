@@ -426,8 +426,8 @@ glTextureFactory::createEmptyTexture(texture& tex) {
     if (tex.Setup.ShouldSetupFromNativeTexture()) {
         // existing native GL texture object provided
         tex.nativeHandles = true;
-        tex.glTextures[0] = tex.Setup.NativeHandle[0];
-        tex.glTextures[1] = tex.Setup.NativeHandle[1];
+        tex.glTextures[0] = (GLuint) tex.Setup.NativeHandle[0];
+        tex.glTextures[1] = (GLuint) tex.Setup.NativeHandle[1];
     }
     else {
         // create one or two texture object
