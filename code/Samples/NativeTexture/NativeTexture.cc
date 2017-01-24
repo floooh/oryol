@@ -157,8 +157,10 @@ AppState::Code
 NativeTextureApp::OnCleanup() {
     // for externally created textures, we need to cleanup the resources
     // ourselves, Oryol will not delete the externally owned GL textures!
+    #if ORYOL_OPENGL
     Gfx::DestroyResources(this->texLabel);
     ::glDeleteTextures(2, this->glTextures);
+    #endif
     Dbg::Discard();
     Gfx::Discard();
     return App::OnCleanup();
