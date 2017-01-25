@@ -199,6 +199,7 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::Instancing:
             return glCaps::HasFeature(glCaps::InstancedArrays);
         case GfxFeature::OriginBottomLeft:
+        case GfxFeature::NativeTexture:
             return true;
         default:
             return false;

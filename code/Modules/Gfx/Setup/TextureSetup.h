@@ -23,8 +23,10 @@ public:
     static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup texture from raw pixel data
     static TextureSetup FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
+    static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
     /// setup empty texture (usually for dynamic streaming of CPU generated texture data)
-    static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code Usage);
+    static TextureSetup Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage);
     /// setup as absolute-size render target
     static TextureSetup RenderTarget(int w, int h);
     /// setup as render target with size relative to current display size
@@ -38,6 +40,8 @@ public:
     bool ShouldSetupFromFile() const;
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;
+    /// return true if texture should be setup from native texture handles
+    bool ShouldSetupFromNativeTexture() const;
     /// return true if texture should be created empty
     bool ShouldSetupEmpty() const;
     /// return true if texture should be setup as render target
@@ -80,6 +84,10 @@ public:
     /// resource placeholder
     Id Placeholder;
 
+    /// optional: native texture handle (only on platforms which support GfxFeature::NativeTextures)
+    static const int MaxNumNativeHandles = 2;
+    StaticArray<intptr_t, MaxNumNativeHandles> NativeHandle;
+
     /// optional image surface offsets and sizes
     ImageDataAttrs ImageData;
 
@@ -88,6 +96,7 @@ private:
     bool setupFromPixelData : 1;
     bool setupEmpty : 1;
     bool setupAsRenderTarget : 1;
+    bool setupFromNativeHandle : 1;
     bool isRelSizeRenderTarget : 1;
     bool hasSharedDepth : 1;
     bool hasMipMaps : 1;

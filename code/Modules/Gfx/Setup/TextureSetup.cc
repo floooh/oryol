@@ -22,10 +22,11 @@ setupFromFile(false),
 setupFromPixelData(false),
 setupEmpty(false),
 setupAsRenderTarget(false),
+setupFromNativeHandle(false),
 isRelSizeRenderTarget(false),
 hasSharedDepth(false),
 hasMipMaps(false) {
-    // empty
+    NativeHandle.Fill(0);
 }
 
 //------------------------------------------------------------------------------
@@ -51,8 +52,8 @@ TextureSetup::FromFile(const class Locator& loc, const TextureSetup& blueprint, 
 //------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::RenderTarget(int w, int h) {
-    o_assert(w > 0);
-    o_assert(h > 0);
+    o_assert_dbg(w > 0);
+    o_assert_dbg(h > 0);
 
     TextureSetup setup;
     setup.setupAsRenderTarget = true;
@@ -66,10 +67,10 @@ TextureSetup::RenderTarget(int w, int h) {
 //------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::FromPixelData(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, const TextureSetup& blueprint) {
-    o_assert(w > 0);
-    o_assert(h > 0);
-    o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
-    o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+    o_assert_dbg(w > 0);
+    o_assert_dbg(h > 0);
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
     
     TextureSetup setup(blueprint);
     setup.setupFromPixelData = true;
@@ -85,13 +86,35 @@ TextureSetup::FromPixelData(int w, int h, int numMipMaps, TextureType::Code type
 
 //------------------------------------------------------------------------------
 TextureSetup
-TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
-    o_assert(w > 0);
-    o_assert(h > 0);
-    o_assert(PixelFormat::IsValidTextureColorFormat(fmt));
-    o_assert(!PixelFormat::IsCompressedFormat(fmt));
-    o_assert(TextureType::Texture2D == type);
+TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1) {
+    o_assert_dbg(w > 0);
+    o_assert_dbg(h > 0);
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+    o_assert_dbg(h0 != 0);
+
+    TextureSetup setup;
+    setup.setupFromNativeHandle = true;
+    setup.Type = type;
+    setup.Width = w;
+    setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.TextureUsage = usage;
+    setup.NativeHandle[0] = h0;
+    setup.NativeHandle[1] = h1;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
+TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage) {
+    o_assert_dbg(w > 0);
+    o_assert_dbg(h > 0);
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert_dbg(!PixelFormat::IsCompressedFormat(fmt));
+    o_assert_dbg(TextureType::Texture2D == type);
+    o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
     
     TextureSetup setup;
     setup.setupEmpty = true;
@@ -107,8 +130,8 @@ TextureSetup::Empty(int w, int h, int numMipMaps, TextureType::Code type, PixelF
 //------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::RelSizeRenderTarget(float relWidth, float relHeight) {
-    o_assert(relWidth > 0.0f);
-    o_assert(relHeight > 0.0f);
+    o_assert_dbg(relWidth > 0.0f);
+    o_assert_dbg(relHeight > 0.0f);
 
     TextureSetup setup;
     setup.setupAsRenderTarget = true;
@@ -123,7 +146,7 @@ TextureSetup::RelSizeRenderTarget(float relWidth, float relHeight) {
 //------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::SharedDepthRenderTarget(const Id& depthRenderTarget) {
-    o_assert(depthRenderTarget.IsValid() && depthRenderTarget.Type == GfxResourceType::Texture);
+    o_assert_dbg(depthRenderTarget.IsValid() && depthRenderTarget.Type == GfxResourceType::Texture);
 
     TextureSetup setup;
     setup.setupAsRenderTarget = true;
@@ -144,6 +167,12 @@ TextureSetup::ShouldSetupFromFile() const {
 bool
 TextureSetup::ShouldSetupFromPixelData() const {
     return this->setupFromPixelData;
+}
+
+//------------------------------------------------------------------------------
+bool
+TextureSetup::ShouldSetupFromNativeTexture() const {
+    return this->setupFromNativeHandle;
 }
 
 //------------------------------------------------------------------------------
