@@ -51,6 +51,10 @@ public:
     ClearState ClearHint;
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
+    /// if true, ignore own size and instead track size of an HTML element (emscripten only)
+    bool HtmlTrackElementSize = false;
+    /// name of the HTML element to track (default: #canvas)
+    String HtmlElement = "#canvas";
     
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(GfxResourceType::Code type, int poolSize);

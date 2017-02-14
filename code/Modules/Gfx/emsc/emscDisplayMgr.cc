@@ -78,7 +78,20 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     o_assert(!this->IsDisplayValid());
     displayMgrBase::SetupDisplay(renderSetup, ptrs);
 
-    if (renderSetup.Windowed) {
+    if (renderSetup.HtmlTrackElementSize) {
+        // register notification callback when canvas size changes
+        double width, height;
+        if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(renderSetup.HtmlElement.AsCStr(), &width, &height)) {
+            this->displayAttrs.FramebufferWidth = (int) width;
+            this->displayAttrs.FramebufferHeight = (int) height;
+            Log::Info("Tracked HTML element size '%s': %dx%d\n", 
+                renderSetup.HtmlElement.AsCStr(),
+                this->displayAttrs.FramebufferWidth,
+                this->displayAttrs.FramebufferHeight);
+        }
+        emscripten_set_canvas_size(this->displayAttrs.FramebufferWidth, this->displayAttrs.FramebufferHeight);
+        emscripten_set_resize_callback(nullptr, nullptr, false, emscWindowSizeChanged); 
+    } else if (renderSetup.Windowed) {
         emscripten_set_canvas_size(renderSetup.Width, renderSetup.Height);
     }
     else {
@@ -150,6 +163,18 @@ emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void*
     emscripten_get_canvas_size(&newWidth, &newHeight, &isFullscreen);
     self->displayAttrs.FramebufferWidth = newWidth; 
     self->displayAttrs.FramebufferHeight = newHeight;
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscDisplayMgr::emscWindowSizeChanged(int eventType, const EmscriptenUiEvent* uiEvent, void* userData) {
+    double width, height;
+    if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(self->gfxSetup.HtmlElement.AsCStr(), &width, &height)) {
+        self->displayAttrs.FramebufferWidth = (int) width;
+        self->displayAttrs.FramebufferHeight = (int) height;
+        emscripten_set_canvas_size(self->displayAttrs.FramebufferWidth, self->displayAttrs.FramebufferHeight);
+    }
     return true;
 }
 
