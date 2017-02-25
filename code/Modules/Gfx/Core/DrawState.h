@@ -27,8 +27,6 @@ struct DrawState {
     StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
     /// fragment shader stage textures
     StaticArray<Id, GfxConfig::MaxNumFragmentTextures> FSTexture;
-    /// optional mesh for vertex capture result
-    Id CaptureMesh;
 };
 
 } // namepace Oryol

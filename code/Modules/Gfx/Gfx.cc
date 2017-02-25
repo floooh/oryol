@@ -182,19 +182,10 @@ Gfx::ApplyDrawState(const DrawState& drawState) {
             break;
         }
     }
-    mesh* captureMesh = nullptr;
-    if (pip->Setup.EnableVertexCapture) {
-        #if ORYOL_DEBUG
-        if (!drawState.CaptureMesh.IsValid()) {
-            o_error("vertex capture enabled but no CaptureMesh set!\n");
-        }
-        #endif
-        captureMesh = state->resourceContainer.lookupMesh(drawState.CaptureMesh);
-    }
     #if ORYOL_DEBUG
-    validateMeshes(pip, meshes, numMeshes, captureMesh);
+    validateMeshes(pip, meshes, numMeshes);
     #endif
-    state->renderer.applyDrawState(pip, meshes, numMeshes, captureMesh);
+    state->renderer.applyDrawState(pip, meshes, numMeshes);
 
     // apply vertex textures if any
     texture* vsTextures[GfxConfig::MaxNumVertexTextures] = { };
@@ -407,7 +398,7 @@ Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
 //------------------------------------------------------------------------------
 #if ORYOL_DEBUG
 void
-Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num, mesh* capture) {
+Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num) {
 
     // checks that:
     //  - at least one input mesh must be attached, and it must be in slot 0
@@ -451,27 +442,6 @@ Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num, mesh* capture) {
                 if (vertexAttrCounts[comp.Attr] > 1) {
                     o_error("invalid mesh block: same vertex attribute declared in multiple input meshes!\n");
                 }
-            }
-        }
-    }
-
-    if (pip->Setup.EnableVertexCapture) {
-        if (!capture) {
-            o_error("vertex capture enabled in Pipeline object, but no capture mesh set in DrawState!\n");
-        }
-        StringAtom outName;
-        VertexFormat::Code outFmt = VertexFormat::InvalidVertexFormat;
-        int numComps = pip->Setup.CaptureLayout.NumComponents();
-        for (int i = 0; i < numComps; i++) {
-            const auto& comp = pip->Setup.CaptureLayout.ComponentAt(i);
-            if (pip->shd->Setup.VertexCapture(comp.Attr, outName, outFmt)) {
-                if (comp.Format != outFmt) {
-                    o_error("vertex capture component format mismatch (%s vs %s)\n",
-                        VertexFormat::ToString(comp.Format), VertexFormat::ToString(outFmt));
-                }
-            }
-            else {
-                o_error("vertex shader does not capture mesh component '%s'!\n", VertexAttr::ToString(comp.Attr));
             }
         }
     }

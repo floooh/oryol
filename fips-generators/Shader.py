@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 77
+Version = 78
 
 import os
 import sys
@@ -533,19 +533,16 @@ class Attr :
     '''
     A shader input or output attribute.
     '''         
-    def __init__(self, type, name, capture, filePath, lineNumber) :
+    def __init__(self, type, name, filePath, lineNumber) :
         self.type = type
         self.name = name
-        self.capture = capture
         self.filePath = filePath
         self.lineNumber = lineNumber
 
     def __eq__(self, other) :
-        # NOTE: capture does NOT influence equality check!
         return (self.type == other.type) and (self.name == other.name) 
 
     def __ne__(self, other) :
-        # NOTE: capture does NOT influence equality check!
         return (self.type != other.type) or (self.name != other.name)
 
     def dump(self) :
@@ -810,28 +807,21 @@ class Parser :
                 util.fmtError("invalid input attribute name '{}', must be one of '{}'!".format(name, ','.join(validVsInNames)))
         if checkListDup(name, self.current.inputs) :
             util.fmtError("@in '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.inputs.append(Attr(type, name, None, self.fileName, self.lineNumber))
+        self.current.inputs.append(Attr(type, name, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onOut(self, args) :
         if not self.current or not self.current.getTag() in ['vs'] :
             util.fmtError("@out must come after @vs!")
-        if len(args) != 2 and len(args) != 4:
-            util.fmtError("@out must have 2 args (type name) or (type name => capture)")
-        if len(args) == 4 and args[2] != '=>':
-            util.fmtError("@out with capture must have form 'type name => capture'")
+        if len(args) != 2:
+            util.fmtError("@out must have 2 args (type name)")
         type = args[0]
         name = args[1]
-        capture = None
-        if len(args) == 4 :
-            capture = args[3]
-            if capture not in validVsInNames :
-                util.fmtError("invalid capture attribute name '{}', must be one of '{}'!".format(capture, ','.join(validVsInNames)))
         if type not in validInOutTypes :
             util.fmtError("invalid 'out' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes))) 
         if checkListDup(name, self.current.outputs) :
             util.fmtError("@out '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.outputs.append(Attr(type, name, capture, self.fileName, self.lineNumber))
+        self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onPrecision(self, args) :
@@ -1011,42 +1001,19 @@ class GLSLGenerator :
 
     #---------------------------------------------------------------------------
     def genUniforms(self, shd, slVersion, lines) :
-        if glslVersionNumber[slVersion] < 300 :
-            # no GLSL uniform blocks
-            for ub in shd.uniformBlocks :
-                for type in ub.uniformsByType :
-                    for uniform in ub.uniformsByType[type] :
-                        if uniform.num == 1 :
-                            lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), 
-                                uniform.filePath, uniform.lineNumber))
-                        else :
-                            lines.append(Line('uniform {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
-                                uniform.filePath, uniform.lineNumber))
-            for tb in shd.textureBlocks :
-                for tex in tb.textures :
-                    lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
-        else :
-            # GLSL uniform blocks
-            for ub in shd.uniformBlocks:
-                lines.append(Line('layout (std140) uniform {} {{'.format(
-                    ub.name), ub.filePath, ub.lineNumber))
-                for type in ub.uniformsByType :
-                    for uniform in ub.uniformsByType[type] :
-                        if uniform.num == 1 :
-                            lines.append(Line('  {} {};'.format(uniform.type, uniform.name), 
-                                uniform.filePath, uniform.lineNumber))
-                        else :
-                            lines.append(Line('  {} {}[{}];'.format(uniform.type, uniform.name, uniform.num),
-                                uniform.filePath, uniform.lineNumber))
-                        # pad vec3's to 16 bytes
-                        if type == 'vec3':
-                            lines.append(Line('  float _pad_{};'.format(uniform.name)))
-                lines.append(Line('};', ub.filePath, ub.lineNumber))
-            for tb in shd.textureBlocks :
-                for tex in tb.textures :
-                    lines.append(Line('uniform {} {};'.format(
-                        tex.type, tex.name), 
-                        tex.filePath, tex.lineNumber))
+        # no GLSL uniform blocks
+        for ub in shd.uniformBlocks :
+            for type in ub.uniformsByType :
+                for uniform in ub.uniformsByType[type] :
+                    if uniform.num == 1 :
+                        lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), 
+                            uniform.filePath, uniform.lineNumber))
+                    else :
+                        lines.append(Line('uniform {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
+                            uniform.filePath, uniform.lineNumber))
+        for tb in shd.textureBlocks :
+            for tex in tb.textures :
+                lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
         return lines 
 
     #---------------------------------------------------------------------------
@@ -2024,11 +1991,6 @@ def writeProgramSource(f, shdLib, prog) :
             f.write('    setup.SetProgramFromLibrary({}, "{}", "{}");\n'.format(
                 slangType, vsName, fsName))
         f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
-
-        for attr in vs.outputs :
-            if attr.capture :
-                f.write('    setup.AddVertexCapture("{}", {}, {});\n'.format(
-                    attr.name, attrOryolType[attr.type], attrOryolName[attr.capture]))
         f.write('    #endif\n');
 
     # add uniform layouts to setup object

@@ -76,8 +76,6 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 //------------------------------------------------------------------------------
 glRenderer::glRenderer() :
 valid(false),
-useCmdBuffer(false),
-useUniformBuffer(false),
 #if !ORYOL_OPENGLES2
 globalVAO(0),
 #endif
@@ -98,16 +96,10 @@ viewPortHeight(0),
 vertexBuffer(0),
 indexBuffer(0),
 program(0)
-#if !ORYOL_OPENGLES2
-,curUniformBuffer(0)
-,transformFeedbackEnabled(false)
-#endif
 {
     this->samplers2D.Fill(0);
     this->samplersCube.Fill(0);
     this->glAttrVBs.Fill(0);
-    this->glUniformBuffers.Fill(0);
-    this->rawUniformBuffers.Fill(nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -124,12 +116,6 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->pointers = ptrs;
     this->gfxSetup = setup;
     this->frameIndex = 0;
-    this->useCmdBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
-    this->useUniformBuffer = glCaps::HasFeature(glCaps::UniformBlocks);
-    if (this->useCmdBuffer) {
-        this->cmdBuffer.setup(setup);
-        Log::Info("glRenderer: using cmdbuffer and global uniform block\n");
-    }
 
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     o_warn("glRenderer: ORYOL_GL_USE_GETATTRIBLOCATION is ON\n");
@@ -142,9 +128,6 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     ORYOL_GL_CHECK_ERROR();
     #endif
 
-    if (this->useUniformBuffer) {
-        this->setupUniformBuffers(gfxSetup);
-    }
     #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
     ::glEnable(GL_PROGRAM_POINT_SIZE);
     ORYOL_GL_CHECK_ERROR();
@@ -166,13 +149,6 @@ glRenderer::discard() {
     this->invalidateTextureState();
     this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
-
-    if (this->useUniformBuffer) {
-        this->discardUniformBuffers();
-    }
-    if (this->useCmdBuffer) {
-        this->cmdBuffer.discard();
-    }
 
     #if !ORYOL_OPENGLES2
     if (glCaps::IsFlavour(glCaps::GL_3_3_CORE)) {
@@ -217,8 +193,6 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
             return glCaps::HasFeature(glCaps::MSAARenderTargets);
         case GfxFeature::PackedVertexFormat_10_2:
             return glCaps::HasFeature(glCaps::PackedVertexFormat_10_2);
-        case GfxFeature::VertexCapture:
-            return glCaps::HasFeature(glCaps::VertexCapture);
         case GfxFeature::MultipleRenderTarget:
             return glCaps::HasFeature(glCaps::MultipleRenderTarget);
         case GfxFeature::Texture3D:
@@ -234,26 +208,17 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 glRenderer::commitFrame() {
     o_assert_dbg(this->valid);
-    if (this->useCmdBuffer) {
-        this->cmdBuffer.flush(this);
-    }
     this->rpValid = false;
     this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
-    this->setCurrentUniformBuffer();
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record) {
+glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.viewport(x, y, width, height, originTopLeft);
-        return;
-    }
 
     // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
     y = originTopLeft ? (this->rpAttrs.FramebufferHeight - (y + height)) : y;
@@ -279,13 +244,8 @@ glRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLef
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft, bool record) {
+glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.scissor(x, y, width, height, originTopLeft);
-        return;
-    }
 
     // flip origin top/bottom if requested (this is a D3D/GL compatibility thing)
     y = originTopLeft ? (this->rpAttrs.FramebufferHeight - (y + height)) : y;
@@ -311,7 +271,7 @@ glRenderer::applyScissorRect(int x, int y, int width, int height, bool originTop
 
 //------------------------------------------------------------------------------
 void
-glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record) {
+glRenderer::beginPass(renderPass* pass, const PassState* passState) {
     o_assert_dbg(this->valid);
     ORYOL_GL_CHECK_ERROR();
 
@@ -321,11 +281,6 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
     else {
         o_assert_dbg(pass->colorTextures[0]);
         this->rpAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
-    }
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.beginPass(pass, passState);
-        return;
     }
 
     o_assert_dbg(nullptr == this->curRenderPass);
@@ -355,7 +310,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
     this->rpValid = true;
 
     // prepare state for clear operations
-    this->applyViewPort(0, 0, this->rpAttrs.FramebufferWidth, this->rpAttrs.FramebufferHeight, false, false);
+    this->applyViewPort(0, 0, this->rpAttrs.FramebufferWidth, this->rpAttrs.FramebufferHeight, false);
     if (this->rasterizerState.ScissorTestEnabled) {
         this->rasterizerState.ScissorTestEnabled = false;
         ::glDisable(GL_SCISSOR_TEST);
@@ -456,13 +411,8 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState, bool record)
 
 //------------------------------------------------------------------------------
 void
-glRenderer::endPass(bool record) {
+glRenderer::endPass() {
     o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.endPass();
-        return;
-    }
 
     // perform the MSAA resolve if necessary
     #if !ORYOL_OPENGLES2
@@ -500,7 +450,7 @@ glRenderer::endPass(bool record) {
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture, bool record) {
+glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
@@ -526,11 +476,6 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     }
     #endif
 
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.drawState(pip, meshes, numMeshes, capture);
-        return;
-    }
-
     // if any of the meshes is still loading, cancel the next draw state
     for (int i = 0; i < numMeshes; i++) {
         if (nullptr == meshes[i]) {
@@ -543,16 +488,6 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     this->curPipeline = pip;
     o_assert_dbg(pip->shd);
 
-    // disable transform feedback if it was enabled in previous draw state
-    #if !ORYOL_OPENGLES2
-    if (this->transformFeedbackEnabled) {
-        ::glEndTransformFeedback();
-        ::glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
-        ORYOL_GL_CHECK_ERROR();
-        this->transformFeedbackEnabled = false;
-    }
-    #endif
-    
     // apply DepthStencilState changes
     if (setup.DepthStencilState != this->depthStencilState) {
     
@@ -768,33 +703,13 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* ca
     }
     #endif
     ORYOL_GL_CHECK_ERROR();
-
-    // apply TransformFeedback state
-    #if !ORYOL_OPENGLES2
-    if (glCaps::HasFeature(glCaps::VertexCapture)) {
-        if (capture) {
-            const auto& mb = capture->buffers[mesh::vb];
-            GLuint glBuf = mb.glBuffers[mb.activeSlot];
-            ::glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, glBuf);
-            ORYOL_GL_CHECK_ERROR();
-            ::glBeginTransformFeedback(glTypes::asGLPrimitiveMode(setup.PrimType));
-            ORYOL_GL_CHECK_ERROR();
-            this->transformFeedbackEnabled = true;
-        }
-    }
-    #endif
 }
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(int baseElementIndex, int numElements, int numInstances, bool record) {
+glRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
     o_assert_dbg(this->valid);
     o_assert_dbg(numInstances >= 1);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.draw(baseElementIndex, numElements, numInstances);
-        return;
-    }
 
     o_assert2_dbg(this->rpValid, "Not inside BeginPass / EndPass!");
     if (nullptr == this->curPipeline) {
@@ -831,14 +746,8 @@ glRenderer::draw(int baseElementIndex, int numElements, int numInstances, bool r
 
 //------------------------------------------------------------------------------
 void
-glRenderer::draw(int primGroupIndex, int numInstances, bool record) {
+glRenderer::draw(int primGroupIndex, int numInstances) {
     o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.drawPrimGroupIndex(primGroupIndex, numInstances);
-        return;
-    }
-
     o_assert2_dbg(this->rpValid, "Not inside BeginPass / EndPass!");
     if (nullptr == this->curPipeline) {
         return;
@@ -852,7 +761,7 @@ glRenderer::draw(int primGroupIndex, int numInstances, bool record) {
         return;
     }
     const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->draw(primGroup.BaseElement, primGroup.NumElements, numInstances, false);
+    this->draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
 }
 
 //------------------------------------------------------------------------------
@@ -1156,22 +1065,13 @@ glRenderer::setupRasterizerState() {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize, bool record) {
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.uniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize);
-        return;
-    }
-
     o_assert_dbg(0 != layoutHash);
     if (!this->curPipeline) {
         // currently no valid draw state set
         return;
     }
-    // this code should never be reached if GL uniform blocks are used
-    // (instead the applyUniformBlockBasePtr function will be called
-    o_assert_dbg(!glCaps::HasFeature(glCaps::UniformBlocks));
 
     // get the uniform layout object for this uniform block
     const shader* shd = this->curPipeline->shd;
@@ -1273,14 +1173,8 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
 
 //------------------------------------------------------------------------------
 void
-glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int numTextures, bool record) {
+glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **textures, int numTextures) {
     o_assert_dbg(this->valid);
-
-    if (this->useCmdBuffer && record) {
-        this->cmdBuffer.textures(bindStage, textures, numTextures);
-        return;
-    }
-
     o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                  ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
     if (nullptr == this->curPipeline) {
@@ -1307,140 +1201,6 @@ glRenderer::applyTextures(ShaderStage::Code bindStage, Oryol::_priv::texture **t
             this->bindTexture(samplerIndex, tex->glTarget, tex->glTextures[tex->activeSlot]);
         }
     }
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::setupUniformBuffers(const GfxSetup& setup) {
-#if !ORYOL_OPENGLES2
-    o_assert_dbg(this->useUniformBuffer);
-
-    ORYOL_GL_CHECK_ERROR();
-    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        GLuint ubo = 0;
-        glGenBuffers(1, &ubo);
-        o_assert_dbg(ubo);
-        glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-        glBufferData(GL_UNIFORM_BUFFER, gfxSetup.GlobalUniformBufferSize, nullptr, GL_STREAM_DRAW);
-        o_assert_dbg(0 != ubo);
-        this->glUniformBuffers[i] = ubo;
-        if (!glCaps::HasFeature(glCaps::MapBuffer)) {
-            o_assert_dbg(nullptr == this->rawUniformBuffers[i]);
-            this->rawUniformBuffers[i] = (uint8_t*) Memory::Alloc(setup.GlobalUniformBufferSize);
-            o_assert_dbg(nullptr != this->rawUniformBuffers[i]);
-        }
-    }
-    ORYOL_GL_CHECK_ERROR();
-    this->setCurrentUniformBuffer();
-#endif
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::discardUniformBuffers() {
-#if !ORYOL_OPENGLES2
-    o_assert_dbg(this->useUniformBuffer);
-
-    ORYOL_GL_CHECK_ERROR();
-    glDeleteBuffers(GfxConfig::MaxInflightFrames, this->glUniformBuffers.begin());
-    this->glUniformBuffers.Fill(0);
-    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        if (this->rawUniformBuffers[i]) {
-            Memory::Free(this->rawUniformBuffers[i]);
-            this->rawUniformBuffers[i] = nullptr;
-        }
-    }
-    ORYOL_GL_CHECK_ERROR();
-#endif
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::updateUniforms(const uint8_t* basePtr, int startOffset, int size) {
-#if !ORYOL_OPENGLES2
-    o_assert_dbg(this->useUniformBuffer);
-    o_assert_dbg(basePtr && (startOffset >= 0));
-    o_assert_dbg(0 != this->curUniformBuffer);
-
-    ORYOL_GL_CHECK_ERROR();
-    if (glCaps::HasFeature(glCaps::MapBuffer)) {
-        ::glUnmapBuffer(GL_UNIFORM_BUFFER);
-    }
-    else {
-        if (size > 0) {
-            ::glBufferSubData(GL_UNIFORM_BUFFER, startOffset, size, basePtr + startOffset);
-        }
-    }
-    ORYOL_GL_CHECK_ERROR();
-#endif
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::setCurrentUniformBuffer() {
-#if !ORYOL_OPENGLES2
-    ORYOL_GL_CHECK_ERROR();
-    int ubIndex = int(this->frameIndex % GfxConfig::MaxInflightFrames);
-    if (this->useUniformBuffer) {
-        this->curUniformBuffer = this->glUniformBuffers[ubIndex];
-        ::glBindBuffer(GL_UNIFORM_BUFFER, this->curUniformBuffer);
-        if (glCaps::HasFeature(glCaps::MapBuffer)) {
-            uint8_t* ptr = (uint8_t*) ::glMapBufferRange(GL_UNIFORM_BUFFER,
-                0, this->gfxSetup.GlobalUniformBufferSize,
-                GL_MAP_WRITE_BIT|GL_MAP_INVALIDATE_BUFFER_BIT|GL_MAP_UNSYNCHRONIZED_BIT);
-            o_assert_dbg(ptr);
-            this->cmdBuffer.setCurrentUniformBuffer(ptr, this->gfxSetup.GlobalUniformBufferSize);
-        }
-        else {
-            this->cmdBuffer.setCurrentUniformBuffer(this->rawUniformBuffers[ubIndex], this->gfxSetup.GlobalUniformBufferSize);
-        }
-    }
-    ORYOL_GL_CHECK_ERROR();
-#endif
-}
-
-//------------------------------------------------------------------------------
-void
-glRenderer::applyUniformBlockOffset(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, int startOffset, int byteSize) {
-#if !ORYOL_OPENGLES2
-    // this method will be called by glCmdBuffer instead of applyUniformBlock if
-    // GL uniform buffers are used
-    o_assert_dbg(this->valid);
-    o_assert_dbg(0 != layoutHash);
-    if (!this->curPipeline) {
-        // currently no valid draw state set
-        return;
-    }
-    // this code should never be reached if GL uniform blocks are NOT used
-    o_assert_dbg(glCaps::HasFeature(glCaps::UniformBlocks));
-
-    // get the uniform layout object for this uniform block
-    const shader* shd = this->curPipeline->shd;
-    o_assert_dbg(shd);
-
-    // check whether the provided struct is type-compatible with the
-    // expected uniform-block-layout, the size-check shouldn't be necessary
-    // since the hash should already bail out, but it doesn't hurt either
-    #if ORYOL_DEBUG
-    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
-    o_assert_dbg(InvalidIndex != ubIndex);
-    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
-    o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
-    o_assert_dbg(layout.ByteSize() == byteSize);
-    #endif
-    #endif
-
-    // bind GL uniform buffer range
-    ORYOL_GL_CHECK_ERROR();
-    GLuint glUBLocation = shd->getUniformBlockLocation(bindStage, bindSlot);
-    if (GL_INVALID_INDEX != glUBLocation) {
-        GLint glUBDataSize = shd->getUniformBlockDataSize(bindStage, bindSlot);
-        o_assert_dbg(glUBDataSize >= byteSize);
-        ::glBindBufferRange(GL_UNIFORM_BUFFER, glUBLocation, this->curUniformBuffer, startOffset, glUBDataSize);
-        ORYOL_GL_CHECK_ERROR();
-    }
-#endif
 }
 
 } // namespace _priv

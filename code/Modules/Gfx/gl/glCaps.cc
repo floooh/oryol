@@ -60,10 +60,6 @@ glCaps::setupLimits(Flavour flav) {
         ::glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &state.intLimits[MaxVertexUniformComponents]);
         ::glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &state.intLimits[MaxFragmentUniformComponents]);
     }
-    if (HasFeature(UniformBlocks)) {
-        ::glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &state.intLimits[MaxUniformBufferBindings]);
-        ::glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &state.intLimits[UniformBufferOffsetAlignment]);
-    }
     #endif
     ORYOL_GL_CHECK_ERROR();
 }
@@ -92,18 +88,15 @@ glCaps::setupFeatures(Flavour flav) {
         else {
             state.features[TextureHalfFloat] = state.features[TextureFloat];
         }
-        state.features[UniformBlocks] = strBuilder.Contains("_uniform_buffer_object");
-        // FIXME: check for EXT_draw_buffers 
+        // FIXME: check for EXT_draw_buffers
     }
     if (flav == GL_3_3_CORE) {
         // GL 3.3 Core
         state.features[InstancedArrays] = true;
         state.features[TextureFloat] = true;
-        state.features[UniformBlocks] = true;
         state.features[MultipleRenderTarget] = true;
         state.features[MSAARenderTargets] = true;
         state.features[PackedVertexFormat_10_2] = true;
-        state.features[VertexCapture] = true;
         state.features[MapBuffer] = true;
         state.features[TextureCompressionDXT] = true;
         state.features[Texture3D] = true;
@@ -112,11 +105,9 @@ glCaps::setupFeatures(Flavour flav) {
     else if (flav == GLES3) {
         state.features[InstancedArrays] = true;
         state.features[TextureFloat] = true;
-        state.features[UniformBlocks] = true;
         state.features[MultipleRenderTarget] = true;
         state.features[MSAARenderTargets] = true;
         state.features[PackedVertexFormat_10_2] = true;
-        state.features[VertexCapture] = true;
         #if !ORYOL_EMSCRIPTEN
         state.features[MapBuffer] = true;
         #endif
@@ -226,13 +217,6 @@ glCaps::printInfo(Flavour flav) {
     if (flav != GLES2) {
         printInt(GL_MAX_VERTEX_UNIFORM_COMPONENTS, "GL_MAX_VERTEX_UNIFORM_COMPONENTS", 1);
         printInt(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS", 1);
-    }
-    if (HasFeature(UniformBlocks)) {
-        printInt(GL_MAX_VERTEX_UNIFORM_BLOCKS, "GL_MAX_VERTEX_UNIFORM_BLOCKS", 1);
-        printInt(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, "GL_MAX_FRAGMENT_UNIFORM_BLOCKS", 1);
-        printInt(GL_MAX_UNIFORM_BLOCK_SIZE, "GL_MAX_UNIFORM_BLOCK_SIZE", 1);
-        printInt(GL_MAX_UNIFORM_BUFFER_BINDINGS, "GL_MAX_UNIFORM_BUFFER_BINDINGS", 1);
-        printInt(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT", 1);
     }
     if (HasFeature(MultipleRenderTarget)) {
         printInt(GL_MAX_COLOR_ATTACHMENTS, "GL_MAX_COLOR_ATTACHMENTS", 1);

@@ -18,7 +18,6 @@
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"
-#include "Gfx/gl/glCmdBuffer.h"
 
 namespace Oryol {
 namespace _priv {
@@ -51,27 +50,25 @@ public:
     const DisplayAttrs& renderPassAttrs() const;
 
     /// begin rendering pass (both ptrs can be nullptr)
-    void beginPass(renderPass* pass, const PassState* passState, bool record=true);
+    void beginPass(renderPass* pass, const PassState* passState);
     /// end current rendering pass
-    void endPass(bool record=true);
+    void endPass();
 
     /// apply viewport
-    void applyViewPort(int x, int y, int width, int height, bool originTopLeft, bool record=true);
+    void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
     /// apply scissor rect
-    void applyScissorRect(int x, int y, int width, int height, bool originTopLeft, bool record=true);
+    void applyScissorRect(int x, int y, int width, int height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture, bool record=true);
+    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block (called after applyDrawState)
-    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize, bool record=true);
-    /// internal version of applyUniformBlock with offset into global uniform buffer
-    void applyUniformBlockOffset(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, int startOffset, int byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
     /// apply a group of textures
-    void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures, bool record=true);
+    void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
 
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex, int numInstances, bool record=true);
+    void draw(int primGroupIndex, int numInstances);
     /// submit a draw call with direct primitive group
-    void draw(int baseElementIndex, int numElements, int numInstances, bool record=true);
+    void draw(int baseElementIndex, int numElements, int numInstances);
 
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);
@@ -97,8 +94,6 @@ public:
     /// bind a texture to a sampler index
     void bindTexture(int samplerIndex, GLenum target, GLuint tex);
 
-    /// update data in per-frame uniform-buffer (called from glCmdBuffer)
-    void updateUniforms(const uint8_t* basePtr, int startOffset, int size);
     /// generate mipmaps for texture
     void generateMipmaps(texture* tex);
     
@@ -109,25 +104,15 @@ private:
     void setupBlendState();
     /// setup rasterizer state
     void setupRasterizerState();
-    /// setup the big per-frame uniform buffers
-    void setupUniformBuffers(const GfxSetup& gfxSetup);
-    /// discard the per-frame uniform buffers
-    void discardUniformBuffers();
     /// apply front/back side stencil state
     void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
-    /// set the current uniform buffer for the current frame
-    void setCurrentUniformBuffer();
 
     bool valid;
-    bool useCmdBuffer;
-    bool useUniformBuffer;
     gfxPointers pointers;
     #if !ORYOL_OPENGLES2
     GLuint globalVAO;
     #endif
     uint64_t frameIndex;
-
-    glCmdBuffer cmdBuffer;
 
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];
@@ -170,12 +155,6 @@ private:
     StaticArray<GLuint, MaxTextureSamplers> samplersCube;
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
-    StaticArray<GLuint, GfxConfig::MaxInflightFrames> glUniformBuffers;
-    StaticArray<uint8_t*, GfxConfig::MaxInflightFrames> rawUniformBuffers;
-    #if !ORYOL_OPENGLES2
-    GLuint curUniformBuffer;
-    bool transformFeedbackEnabled;
-    #endif
 };
 
 //------------------------------------------------------------------------------

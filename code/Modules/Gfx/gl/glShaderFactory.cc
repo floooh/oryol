@@ -46,9 +46,10 @@ glShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
     this->pointers.renderer->invalidateShaderState();
 
-    const bool useUniformBlocks = glCaps::HasFeature(glCaps::UniformBlocks);
-    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    const ShaderLang::Code slang = useUniformBlocks ? ShaderLang::GLSLES3 : ShaderLang::GLSL100;
+    #if ORYOL_OPENGLES2
+    const ShaderLang::Code slang = ShaderLang::GLSL100;
+    #elif ORYOL_OPENGLES3
+    const ShaderLang::Code slang = glCaps::IsFlavour(glCaps::GLES3) ? ShaderLang::GLSLES3 : ShaderLang::GLSL100;
     #elif ORYOL_OPENGL_CORE_PROFILE
     const ShaderLang::Code slang = ShaderLang::GLSL330;
     #else
@@ -87,25 +88,6 @@ glShaderFactory::SetupResource(shader& shd) {
     ORYOL_GL_CHECK_ERROR();
     #endif
 
-    // configure transform feedback varyings
-    #if !ORYOL_OPENGLES2
-    if (glCaps::HasFeature(glCaps::VertexCapture)) {
-        StringAtom outName;
-        VertexFormat::Code outFmt = VertexFormat::InvalidVertexFormat;
-        const char* names[VertexAttr::NumVertexAttrs] = { };
-        int numNames = 0;
-        for (int attr = 0; attr < VertexAttr::NumVertexAttrs; attr++) {
-            if (setup.VertexCapture((VertexAttr::Code)attr, outName, outFmt)) {
-                names[numNames++] = outName.AsCStr();
-            }
-        }
-        if (numNames > 0) {
-            ::glTransformFeedbackVaryings(glProg, numNames, names, GL_INTERLEAVED_ATTRIBS);
-            ORYOL_GL_CHECK_ERROR();
-        }
-    }
-    #endif
-
     // link the program
     ::glLinkProgram(glProg);
     ORYOL_GL_CHECK_ERROR();
@@ -139,39 +121,17 @@ glShaderFactory::SetupResource(shader& shd) {
     shd.glProgram = glProg;
 
     // resolve uniform locations
-    #if !ORYOL_OPENGLES2
-    GLuint glUniformBlockBindPoint = 0;
-    #endif
     this->pointers.renderer->useProgram(glProg);
     const int numUniformBlocks = setup.NumUniformBlocks();
     for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
         const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
         ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
         int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-        #if !ORYOL_OPENGLES2
-        if (useUniformBlocks) {
-            const char* ubName = setup.UniformBlockName(ubIndex).AsCStr();
-            const GLuint glUBIndex = ::glGetUniformBlockIndex(glProg, ubName);
-            if (GL_INVALID_INDEX != glUBIndex) {
-                int glUBDataSize = 0;
-                ::glGetActiveUniformBlockiv(glProg, glUBIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &glUBDataSize);
-                ::glUniformBlockBinding(glProg, glUBIndex, glUniformBlockBindPoint);
-                o_assert_dbg(glUBDataSize > 0);
-                shd.bindUniformBlock(ubBindStage, ubBindSlot, glUniformBlockBindPoint, glUBDataSize);
-                glUniformBlockBindPoint++;
-                ORYOL_GL_CHECK_ERROR();
-            }
-        }
-        else
-        #endif
-        {
-            const int numUniforms = layout.NumComponents();
-            for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-                const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
-                const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-                shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
-            }
-
+        const int numUniforms = layout.NumComponents();
+        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+            const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
+            const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
+            shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
         }
     }
     ORYOL_GL_CHECK_ERROR();

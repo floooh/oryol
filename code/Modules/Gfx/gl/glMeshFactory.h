@@ -17,8 +17,6 @@ class mesh;
 
 class glMeshFactory {
 public:
-    /// constructor
-    glMeshFactory();
     /// destructor
     ~glMeshFactory();
     
@@ -54,7 +52,7 @@ private:
     GLuint createIndexBuffer(const void* indexData, uint32_t indexDataSize, Usage::Code usage);
 
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
     
 } // namespace _priv

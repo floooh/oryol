@@ -43,10 +43,6 @@ public:
     PrimitiveType::Code PrimType;
     /// shader 
     Id Shader;
-    /// enable vertex capture?
-    bool EnableVertexCapture = false;
-    /// vertex layout of vertex capture mesh
-    VertexLayout CaptureLayout;
 };
 
 } // namespace Oryol

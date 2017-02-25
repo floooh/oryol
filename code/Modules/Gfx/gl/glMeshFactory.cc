@@ -14,12 +14,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glMeshFactory::glMeshFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 glMeshFactory::~glMeshFactory() {
     o_assert_dbg(!this->isValid);
 }

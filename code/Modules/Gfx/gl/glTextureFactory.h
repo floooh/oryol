@@ -17,8 +17,6 @@ class texture;
     
 class glTextureFactory {
 public:
-    /// constructor
-    glTextureFactory();
     /// destructor
     ~glTextureFactory();
     
@@ -48,7 +46,7 @@ private:
     ResourceState::Code createTexture(texture& tex, const void* data, int32_t size);
 
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
     
 } // namespace _priv

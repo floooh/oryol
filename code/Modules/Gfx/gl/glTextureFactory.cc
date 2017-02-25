@@ -16,12 +16,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-glTextureFactory::glTextureFactory() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 glTextureFactory::~glTextureFactory() {
     o_assert_dbg(!this->isValid);
 }
