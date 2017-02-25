@@ -17,7 +17,7 @@ emscDisplayMgr* emscDisplayMgr::self = nullptr;
 extern "C" {
 
 // this function can be called from Javascript to enter 'real' fullscreen mode
-void enter_fullscreen() {
+EMSCRIPTEN_KEEPALIVE void enter_fullscreen() {
     EmscriptenFullscreenStrategy fsStrategy = { };
     fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
     fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
@@ -31,7 +31,7 @@ void enter_fullscreen() {
 // this function can be called from Javascript to enter 'soft' fullscreen mode
 static bool soft_fullscreen_active = false;
 
-void enter_soft_fullscreen() {
+EMSCRIPTEN_KEEPALIVE void enter_soft_fullscreen() {
     EmscriptenFullscreenStrategy fsStrategy = { };
     fsStrategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_DEFAULT;
     fsStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
@@ -44,13 +44,13 @@ void enter_soft_fullscreen() {
     Log::Info("enter_soft_fullscreen called!\n");
 }
 
-void leave_soft_fullscreen() {
+EMSCRIPTEN_KEEPALIVE void leave_soft_fullscreen() {
     emscripten_exit_soft_fullscreen();
     soft_fullscreen_active = false;
     Log::Info("leave_soft_fullscreen called!\n");
 }
 
-bool is_soft_fullscreen_active() {
+EMSCRIPTEN_KEEPALIVE bool is_soft_fullscreen_active() {
     return soft_fullscreen_active;
 }
 
