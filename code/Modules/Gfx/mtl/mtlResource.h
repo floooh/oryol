@@ -1,6 +1,6 @@
 #pragma once
 //------------------------------------------------------------------------------
-#include "Gfx/resource/resourceBase.h"
+#include "Gfx/Resource/resourceBase.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/mtl/mtl_decl.h"
 #include "Gfx/Core/GfxConfig.h"
