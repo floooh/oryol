@@ -1,4 +1,7 @@
 .DS_Store
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
 bin/
 vagrant/.vagrant
 doc/html
