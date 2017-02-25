@@ -8,11 +8,11 @@
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Enums.h"
-#include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/BlendState.h"
 #include "Gfx/Core/DepthStencilState.h"
 #include "Gfx/Core/RasterizerState.h"
 #include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/PassState.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Attrs/DisplayAttrs.h"
 #include "Gfx/Attrs/ImageDataAttrs.h"
@@ -27,6 +27,7 @@ class texture;
 class pipeline;
 class mesh;
 class textureBlock;
+class renderPass;
     
 class d3d11Renderer {
 public:
@@ -51,8 +52,10 @@ public:
     /// get the current render target attributes
     const DisplayAttrs& renderTargetAttrs() const;
 
-    /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt, const ClearState& clearState);
+    /// begin rendering pass (both ptrs can be nullptr)
+    void beginPass(renderPass* pass, const PassState* passState);
+    /// end current rendering pass
+    void endPass();
     /// apply viewport
     void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
     /// apply scissor rect
@@ -77,8 +80,6 @@ public:
     void updateIndices(mesh* msh, const void* data, int numBytes);
     /// update texture data
     void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(void* buf, int bufNumBytes);
 
     /// invalidate currently bound mesh state
     void invalidateMeshState();
@@ -89,6 +90,9 @@ public:
     /// invalidate currently bound texture state
     void invalidateTextureState();
 
+    /// generate mipmaps for texture
+    void generateMipmaps(texture* tex);
+
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;
     /// pointer to immediate mode device context
@@ -96,12 +100,13 @@ public:
 
 private:
     bool valid;
-    bool rtValid;
+    bool rpValid;
     int frameIndex;
+    GfxSetup gfxSetup;
     gfxPointers pointers;
-    DisplayAttrs rtAttrs;
+    DisplayAttrs rpAttrs;
 
-    texture* curRenderTarget;
+    renderPass* curRenderPass;
     pipeline* curPipeline;
     mesh* curPrimaryMesh;
 

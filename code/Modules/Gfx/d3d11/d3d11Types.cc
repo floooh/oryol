@@ -27,6 +27,7 @@ d3d11Types::asRenderTargetFormat(PixelFormat::Code pf) {
         case PixelFormat::RGBA8:        return DXGI_FORMAT_R8G8B8A8_UNORM;
         case PixelFormat::RGBA32F:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
         case PixelFormat::RGBA16F:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case PixelFormat::R10G10B10A2:  return DXGI_FORMAT_R10G10B10A2_UNORM;
         case PixelFormat::DEPTH:        return DXGI_FORMAT_D16_UNORM;
         case PixelFormat::DEPTHSTENCIL: return DXGI_FORMAT_D24_UNORM_S8_UINT;
         default:
@@ -45,6 +46,7 @@ d3d11Types::asTextureFormat(PixelFormat::Code pf) {
         case PixelFormat::R5G5B5A1:     return DXGI_FORMAT_B5G5R5A1_UNORM;
         case PixelFormat::RGBA32F:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
         case PixelFormat::RGBA16F:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case PixelFormat::R10G10B10A2:  return DXGI_FORMAT_R10G10B10A2_UNORM;
         case PixelFormat::L8:           return DXGI_FORMAT_R8_UNORM;
         case PixelFormat::DXT1:         return DXGI_FORMAT_BC1_UNORM;
         case PixelFormat::DXT3:         return DXGI_FORMAT_BC2_UNORM;  
@@ -140,18 +142,18 @@ d3d11Types::asSemanticIndex(VertexAttr::Code attr) {
 DXGI_FORMAT
 d3d11Types::asInputElementFormat(VertexFormat::Code fmt) {
     switch (fmt) {
-        case VertexFormat::Float:   return DXGI_FORMAT_R32_FLOAT;
-        case VertexFormat::Float2:  return DXGI_FORMAT_R32G32_FLOAT;
-        case VertexFormat::Float3:  return DXGI_FORMAT_R32G32B32_FLOAT;
-        case VertexFormat::Float4:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
-        case VertexFormat::Byte4:   return DXGI_FORMAT_R8G8B8A8_SINT;
-        case VertexFormat::Byte4N:  return DXGI_FORMAT_R8G8B8A8_SNORM;
-        case VertexFormat::UByte4:  return DXGI_FORMAT_R8G8B8A8_UINT;
-        case VertexFormat::UByte4N: return DXGI_FORMAT_R8G8B8A8_UNORM;
-        case VertexFormat::Short2:  return DXGI_FORMAT_R16G16_SINT;
-        case VertexFormat::Short2N: return DXGI_FORMAT_R16G16_SNORM;
-        case VertexFormat::Short4:  return DXGI_FORMAT_R16G16B16A16_SINT;
-        case VertexFormat::Short4N: return DXGI_FORMAT_R16G16B16A16_SNORM;
+        case VertexFormat::Short2:      return DXGI_FORMAT_R16G16_SINT;
+        case VertexFormat::Float:       return DXGI_FORMAT_R32_FLOAT;
+        case VertexFormat::Float2:      return DXGI_FORMAT_R32G32_FLOAT;
+        case VertexFormat::Float3:      return DXGI_FORMAT_R32G32B32_FLOAT;
+        case VertexFormat::Float4:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case VertexFormat::Byte4:       return DXGI_FORMAT_R8G8B8A8_SINT;
+        case VertexFormat::Byte4N:      return DXGI_FORMAT_R8G8B8A8_SNORM;
+        case VertexFormat::UByte4:      return DXGI_FORMAT_R8G8B8A8_UINT;
+        case VertexFormat::UByte4N:     return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case VertexFormat::Short2N:     return DXGI_FORMAT_R16G16_SNORM;
+        case VertexFormat::Short4:      return DXGI_FORMAT_R16G16B16A16_SINT;
+        case VertexFormat::Short4N:     return DXGI_FORMAT_R16G16B16A16_SNORM;
         default:
             o_error("d3d11Types::asInputElementFormat: invalid vertex format!\n");
             return DXGI_FORMAT_UNKNOWN;

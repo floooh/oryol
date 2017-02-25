@@ -26,9 +26,9 @@ d3d11Renderer::d3d11Renderer() :
 d3d11Device(nullptr),
 d3d11DeviceContext(nullptr),
 valid(false),
-rtValid(false),
+rpValid(false),
 frameIndex(0),
-curRenderTarget(nullptr),
+curRenderPass(nullptr),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 d3d11CurRenderTargetView(nullptr),
@@ -64,6 +64,7 @@ d3d11Renderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert_dbg(!this->valid);
 
     this->valid = true;
+    this->gfxSetup = setup;
     this->pointers = ptrs;
     this->d3d11Device = this->pointers.displayMgr->d3d11Device;
     this->d3d11DeviceContext = this->pointers.displayMgr->d3d11DeviceContext;
@@ -94,7 +95,7 @@ d3d11Renderer::discard() {
     this->curVertexStrides.Fill(0);
     this->curVertexOffsets.Fill(0);
 
-    this->curRenderTarget = nullptr;
+    this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
 
@@ -117,7 +118,7 @@ d3d11Renderer::resetStateCache() {
     o_assert_dbg(this->d3d11DeviceContext);
 
     this->d3d11DeviceContext->ClearState();
-    this->curRenderTarget = nullptr;
+    this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->d3d11CurRenderTargetView = nullptr;
     this->d3d11CurDepthStencilView = nullptr;
@@ -150,6 +151,10 @@ d3d11Renderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::TextureFloat:
         case GfxFeature::Instancing:
         case GfxFeature::OriginTopLeft:
+        case GfxFeature::MSAARenderTargets:
+        case GfxFeature::MultipleRenderTarget:
+        case GfxFeature::Texture3D:
+        case GfxFeature::TextureArray:
             return true;
         default:
             return false;
@@ -160,8 +165,8 @@ d3d11Renderer::queryFeature(GfxFeature::Code feat) const {
 void
 d3d11Renderer::commitFrame() {
     o_assert_dbg(this->valid);
-    this->rtValid = false;
-    this->curRenderTarget = nullptr;
+    this->rpValid = false;
+    this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
     this->frameIndex++;
@@ -170,57 +175,82 @@ d3d11Renderer::commitFrame() {
 //------------------------------------------------------------------------------
 const DisplayAttrs&
 d3d11Renderer::renderTargetAttrs() const {
-    return this->rtAttrs;
+    return this->rpAttrs;
 }
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
+d3d11Renderer::beginPass(renderPass* pass, const PassState* passState) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->d3d11DeviceContext);
 
-    this->invalidateTextureState();
-    if (nullptr == rt) {
-        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+    if (nullptr == pass) {
+        this->rpAttrs = this->pointers.displayMgr->GetDisplayAttrs();
         this->d3d11CurRenderTargetView = this->pointers.displayMgr->d3d11RenderTargetView;
         this->d3d11CurDepthStencilView = this->pointers.displayMgr->d3d11DepthStencilView;
     }
     else {
-        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
-        this->d3d11CurRenderTargetView = rt->d3d11RenderTargetView;
-        this->d3d11CurDepthStencilView = rt->d3d11DepthStencilView;
+        // FIXME
+        /*
+        o_assert_dbg(pass->colorTextures[0]);
+        this->rpAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
+        this->d3d11CurRenderTargetView = pass->d3d11RenderTargetView;
+        this->d3d11CurDepthStencilView = pass->d3d11DepthStencilView;
+        */
     }
+    o_assert_dbg(nullptr == this->curRenderPass);
+    this->curRenderPass = pass;
+    this->rpValid = true;
 
-    this->curRenderTarget = rt;
-    this->rtValid = true;
-    
     // actually set the render targets in the d3d11 device context
     this->d3d11DeviceContext->OMSetRenderTargets(1, &this->d3d11CurRenderTargetView, this->d3d11CurDepthStencilView);
 
     // set viewport to cover whole screen
-    this->applyViewPort(0, 0, this->rtAttrs.FramebufferWidth, this->rtAttrs.FramebufferHeight, true);
+    this->applyViewPort(0, 0, this->rpAttrs.FramebufferWidth, this->rpAttrs.FramebufferHeight, true);
 
     // perform clear action
-    if (clearState.Actions & ClearState::ColorBit) {
-        if (this->d3d11CurRenderTargetView) {
-            const FLOAT* clearColor = glm::value_ptr(clearState.Color);
-            this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
+    if (nullptr == this->curRenderPass) {
+        if (this->gfxSetup.DefaultColorLoadAction == RenderPassLoadAction::Clear) {
+            if (this->d3d11CurRenderTargetView) {
+                const FLOAT* clearColor = nullptr;
+                if (passState) {
+                    clearColor = glm::value_ptr(passState->Color[0]);
+                }
+                else {
+                    clearColor = glm::value_ptr(this->gfxSetup.DefaultClearColor);
+                }
+                this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
+            }
+        }
+        if (this->gfxSetup.DefaultDepthStencilLoadAction == RenderPassLoadAction::Clear) {
+            if (this->d3d11CurDepthStencilView) {
+                const UINT f = D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL;
+                const FLOAT d = passState ? passState->Depth : this->gfxSetup.DefaultClearDepth;
+                const UINT8 s = passState ? passState->Stencil : this->gfxSetup.DefaultClearStencil;
+                this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, f, d, s);
+            }
         }
     }
-    if (clearState.Actions & ClearState::DepthStencilBits) {
-        if (this->d3d11CurDepthStencilView) {
-            UINT d3d11ClearFlags = 0;
-            if (clearState.Actions & ClearState::DepthBit) {
-                d3d11ClearFlags |= D3D11_CLEAR_DEPTH;
-            }
-            if (clearState.Actions & ClearState::StencilBit) {
-                d3d11ClearFlags |= D3D11_CLEAR_STENCIL;
-            }
-            const FLOAT d = clearState.Depth;
-            const UINT8 s = clearState.Stencil;
-            this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, d3d11ClearFlags, d, s);
+    else {
+        o_error("FIXME!\n");
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::endPass() {
+    o_assert_dbg(this->valid);
+
+    const renderPass* rp = this->curRenderPass;
+    if (rp) {
+        if ((rp->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
+            (rp->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve))
+        {
+            o_error("FIXME!\n");
         }
     }
+    this->curRenderPass = nullptr;
+    this->rpValid = false;
 }
 
 //------------------------------------------------------------------------------
@@ -230,7 +260,7 @@ d3d11Renderer::applyViewPort(int x, int y, int width, int height, bool originTop
 
     D3D11_VIEWPORT vp;
     vp.TopLeftX = (FLOAT) x;
-    vp.TopLeftY = (FLOAT) (originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
+    vp.TopLeftY = (FLOAT) (originTopLeft ? y : (this->rpAttrs.FramebufferHeight - (y + height)));
     vp.Width    = (FLOAT) width;
     vp.Height   = (FLOAT) height;
     vp.MinDepth = 0.0f;
@@ -245,9 +275,9 @@ d3d11Renderer::applyScissorRect(int x, int y, int width, int height, bool origin
 
     D3D11_RECT rect;
     rect.left = x;
-    rect.top = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
+    rect.top = originTopLeft ? y : this->rpAttrs.FramebufferHeight - (y + height);
     rect.right = x + width;
-    rect.bottom = originTopLeft ? (y + height) : (this->rtAttrs.FramebufferHeight - y);
+    rect.bottom = originTopLeft ? (y + height) : (this->rpAttrs.FramebufferHeight - y);
     this->d3d11DeviceContext->RSSetScissorRects(1, &rect);
 }
 
@@ -269,10 +299,24 @@ d3d11Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(pip->d3d11DepthStencilState);
     o_assert_dbg(pip->d3d11RasterizerState);
     o_assert_dbg(pip->d3d11BlendState);
-    o_assert2(pip->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2(pip->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
-    o_assert2(pip->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
-
+    #if ORYOL_DEBUG
+    o_assert2(pip->Setup.BlendState.ColorFormat == this->rpAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2(pip->Setup.BlendState.DepthFormat == this->rpAttrs.DepthPixelFormat, "DepthFormat in BlendState must match current render target!\n");
+    o_assert2(pip->Setup.RasterizerState.SampleCount == this->rpAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+    if (this->curRenderPass) {
+        for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            const texture* tex = this->curRenderPass->colorTextures[i];
+            if (tex) {
+                o_assert2(pip->Setup.BlendState.ColorFormat == tex->textureAttrs.ColorFormat, "ColorFormat in BlendState must match MRT color attachments!\n");
+                o_assert2(pip->Setup.RasterizerState.SampleCount == tex->textureAttrs.SampleCount, "SampleCount in RasterizerState must match MRT color attachments!\n");
+            }
+        }
+        const texture* dsTex = this->curRenderPass->depthStencilTexture;
+        if (dsTex) {
+            o_assert2(pip->Setup.BlendState.DepthFormat == dsTex->textureAttrs.DepthFormat, "DepthFormat in BlendState must match depth/stencil attachment!\n");
+        }
+    }
+    #endif
     this->curPipeline = pip;
     this->curPrimaryMesh = meshes[0];
     o_assert_dbg(this->curPrimaryMesh);
@@ -455,7 +499,7 @@ d3d11Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, in
 void
 d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(this->d3d11DeviceContext);
-    o_assert2_dbg(this->rtValid, "No render target set!\n");
+    o_assert2_dbg(this->rpValid, "No render target set!\n");
     if (nullptr == this->curPipeline) {
         return;
     }
@@ -493,7 +537,7 @@ d3d11Renderer::draw(int primGroupIndex) {
 void
 d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rtValid, "No render target set!");
+    o_assert2_dbg(this->rpValid, "No render target set!");
     if (nullptr == this->curPipeline) {
         return;
     }
@@ -619,12 +663,6 @@ d3d11Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttr
 }
 
 //------------------------------------------------------------------------------
-void 
-d3d11Renderer::readPixels(void* buf, int bufNumBytes) {
-    o_error("d3d11Renderer::readPixels() NOT IMPLEMENTED!\n");
-}
-
-//------------------------------------------------------------------------------
 void
 d3d11Renderer::invalidateMeshState() {
     o_assert_dbg(this->d3d11DeviceContext);
@@ -698,6 +736,12 @@ d3d11Renderer::invalidateTextureState() {
     this->d3d11CurPSSRVs.Fill(nullptr);
     this->d3d11CurVSSamplers.Fill(nullptr);
     this->d3d11CurPSSamplers.Fill(nullptr);
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11Renderer::generateMipmaps(texture* tex) {
+    o_error("FIXME!");
 }
 
 } // namespace _priv
