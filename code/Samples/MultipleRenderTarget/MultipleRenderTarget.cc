@@ -207,7 +207,6 @@ MultipleRenderTargetApp::computeMVP(float ax, float ay, const glm::vec3& pos) {
 //------------------------------------------------------------------------------
 AppState::Code
 MultipleRenderTargetApp::notSupported() {
-    // print a warning if vertex-capture is not supported by platform
     #if ORYOL_EMSCRIPTEN
     const char* msg = "This demo needs WebGL2\n";
     #else

@@ -393,7 +393,7 @@ mtlRenderer::endPass() {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture) {
+mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(this->valid);
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));

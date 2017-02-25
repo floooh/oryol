@@ -57,7 +57,7 @@ public:
     /// apply scissor rect
     void applyScissorRect(int x, int y, int width, int height, bool originTopLeft);
     /// apply draw state
-    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes, mesh* capture);
+    void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
     void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
     /// apply a texture block
