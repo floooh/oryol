@@ -1,4 +1,5 @@
 .DS_Store
+.vscode/
 bin/
 vagrant/.vagrant
 doc/html
