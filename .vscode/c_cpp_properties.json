@@ -5,7 +5,9 @@
             "includePath": [
                 "/usr/include",
                 "/usr/local/include",
-                "../fips-sdks/osx/emsdk_portable/emscripten/incoming/system/include"
+                "../fips-sdks/osx/emsdk_portable/emscripten/incoming/system/include",
+                "../fips-zlib/zlib",
+                "../fips-glm/glm"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
