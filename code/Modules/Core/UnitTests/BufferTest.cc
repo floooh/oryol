@@ -88,7 +88,7 @@ TEST(BufferTest) {
 
     Buffer buf3;
     const char* str = "Hello wonderful world!";
-    buf3.Add((const uint8_t*)str, std::strlen(str)+1);
+    buf3.Add((const uint8_t*)str, int(std::strlen(str))+1);
     CHECK(0 == buf3.Remove(0, 0));
     CHECK(std::strcmp((const char*)buf3.Data(), str) == 0);
     CHECK(buf3.Size() == 23);
@@ -107,7 +107,7 @@ TEST(BufferTest) {
     CHECK(std::strcmp((const char*)buf3.Data(), "worl") == 0);
 
     Buffer buf4;
-    buf4.Add((const uint8_t*)str, std::strlen(str)+1);
+    buf4.Add((const uint8_t*)str, int(std::strlen(str))+1);
     CHECK(6 == buf4.Remove(0, 6));
     CHECK(std::strcmp((const char*)buf4.Data(), "wonderful world!") == 0);
 }
