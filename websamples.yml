@@ -88,6 +88,11 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/TestInput/TestInput.jpg
   src: TestInput/TestInput.cc
+- name: NativeTexture
+  desc: Demonstrates native 3D-API texture usage
+  type: emscripten,pnacl,android
+  image: /Users/floh/projects/oryol/code/Samples/NativeTexture/NativeTexture.jpg
+  src: NativeTexture/NativeTexture.cc
 - name: ResourceStress
   desc: Resource loading stresstest
   type: emscripten,pnacl,android
