@@ -120,9 +120,9 @@ emscInputMgr::update()
 			continue;
 		}
 		//this->gamepad[i].values[GamepadGizmo::A] = gamepadState->digitalButton[0];
-		this->gamepad[i].pressed  = (gamepadState.digitalButton[0] << GamepadGizmo::A);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[1] << GamepadGizmo::B);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[2] << GamepadGizmo::X);
+		this->gamepad[i].pressed  = (gamepadState.digitalButton[0] << GamepadGizmo::X);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[1] << GamepadGizmo::A);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[2] << GamepadGizmo::B);
 		this->gamepad[i].pressed |= (gamepadState.digitalButton[3] << GamepadGizmo::Y);
 		this->gamepad[i].pressed |= (gamepadState.digitalButton[4] << GamepadGizmo::LeftBumper);
 		this->gamepad[i].pressed |= (gamepadState.digitalButton[5] << GamepadGizmo::RightBumper);
@@ -139,8 +139,12 @@ emscInputMgr::update()
 		this->gamepad[i].pressed |= (gamepadState.digitalButton[16] << GamepadGizmo::DPadLeft);
 		this->gamepad[i].pressed |= (gamepadState.digitalButton[17] << GamepadGizmo::DPadRight);
 
-
-
+		this->gamepad[i].values[GamepadGizmo::LeftStick].x = gamepadState.axis[0];
+		this->gamepad[i].values[GamepadGizmo::LeftStick].y = gamepadState.axis[1];
+		this->gamepad[i].values[GamepadGizmo::RightStick].x = gamepadState.axis[2];
+		this->gamepad[i].values[GamepadGizmo::LeftTrigger].x = gamepadState.axis[3]; // PS4 -> left trigger
+		this->gamepad[i].values[GamepadGizmo::RightTrigger].x = gamepadState.axis[4]; // PS4 -> right trigger
+		this->gamepad[i].values[GamepadGizmo::RightStick].y = gamepadState.axis[5];
 	}
 }
 
