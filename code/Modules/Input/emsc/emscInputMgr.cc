@@ -33,6 +33,7 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->touchpad.attached = true;
     this->sensors.attached = true;
     this->setupCallbacks();
+    this->setupGamepads();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
@@ -85,6 +86,62 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_devicemotion_callback(0, true, 0);
     emscripten_set_deviceorientation_callback(0, true, 0);
     emscripten_set_gamepaddisconnected_callback(this, true, emscGamepadDisconnected);
+}
+
+/// gamepad
+void
+emscInputMgr::setupGamepads()
+{
+	int gamepadsAvailable = emscripten_get_num_gamepads();
+
+	// TODO: Check if gamepadsAvailable <= MaxNumGamepads
+	for (int i = 0; i < gamepadsAvailable; ++i)
+	{
+		this->gamepad[i].attached = true;
+	}
+}
+
+//------------------------------------------------------------------------------
+void
+emscInputMgr::update()
+{
+	inputMgrBase::update();
+
+	int gamepadsAvailable = emscripten_get_num_gamepads();
+	EMSCRIPTEN_RESULT result = EMSCRIPTEN_RESULT_FAILED;
+	EmscriptenGamepadEvent gamepadState;
+
+	for (int i = 0; i < gamepadsAvailable; ++i)
+	{
+		result = emscripten_get_gamepad_status(i, &gamepadState);
+		// TODO: check gamepadState validity
+		if (EMSCRIPTEN_RESULT_SUCCESS != result)
+		{
+			continue;
+		}
+		//this->gamepad[i].values[GamepadGizmo::A] = gamepadState->digitalButton[0];
+		this->gamepad[i].pressed  = (gamepadState.digitalButton[0] << GamepadGizmo::A);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[1] << GamepadGizmo::B);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[2] << GamepadGizmo::X);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[3] << GamepadGizmo::Y);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[4] << GamepadGizmo::LeftBumper);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[5] << GamepadGizmo::RightBumper);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[6] << GamepadGizmo::LeftTrigger);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[7] << GamepadGizmo::RightTrigger);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[8] << GamepadGizmo::Start);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[9] << GamepadGizmo::Back);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[10] << GamepadGizmo::LeftStick); // PS4 -> left stick click
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[11] << GamepadGizmo::RightStick); // PS4 -> right stick click
+//		this->gamepad[i].pressed |= (gamepadState.digitalButton[12] << GamepadGizmo::DPadUp); // PS4 -> round PS button
+//		this->gamepad[i].pressed |= (gamepadState.digitalButton[13] << GamepadGizmo::DPadDown); // PS4 -> touch sensor click
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[14] << GamepadGizmo::DPadUp);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[15] << GamepadGizmo::DPadDown);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[16] << GamepadGizmo::DPadLeft);
+		this->gamepad[i].pressed |= (gamepadState.digitalButton[17] << GamepadGizmo::DPadRight);
+
+
+
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -281,7 +338,7 @@ EM_BOOL
 emscInputMgr::emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData)
 {
 	emscInputMgr* self = (emscInputMgr*) userData;
-	self->gamepad[0].attached = true;
+	self->gamepad[e->index].attached = true;
 	return true;
 }
 

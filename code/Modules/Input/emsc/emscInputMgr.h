@@ -23,6 +23,8 @@ public:
     void setup(const InputSetup& setup);
     /// discard the input manager
     void discard();
+    /// polling for the gamepad
+    void update();
 
 private:
     /// setup the key mapping table
@@ -35,6 +37,9 @@ private:
     Key::Code mapKey(unsigned long html5KeyCode) const;
     /// map HTML5 mouse button code to Oryol mouse button
     MouseButton::Code mapMouseButton(unsigned short html5Btn) const;
+    /// gamepad
+    void setupGamepads();
+
 
     /// update mouse pointer lock state
     static bool updatePointerLockMode(PointerLockMode::Code lockMode);

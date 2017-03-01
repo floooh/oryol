@@ -23,6 +23,8 @@ public:
     bool AccelerometerEnabled = true;
     /// gyrometer enabled
     bool GyrometerEnabled = true;
+    /// gamepad polling
+    bool PollingRequired = false;
 };
     
 } // namespace Oryol

@@ -24,6 +24,8 @@ public:
     static void Discard();
     /// check if Input module is valid
     static bool IsValid();
+    /// polling
+    static void Update();
     
     /// input event callback function
     typedef _priv::inputDispatcher::inputEventCallback InputEventCallback;

@@ -34,6 +34,14 @@ Input::IsValid() {
 }
 
 //------------------------------------------------------------------------------
+void
+Input::Update()
+{
+	state->inputManager.update();
+}
+
+
+//------------------------------------------------------------------------------
 Input::CallbackId
 Input::SubscribeEvents(InputEventCallback cb) {
     o_assert_dbg(state);
