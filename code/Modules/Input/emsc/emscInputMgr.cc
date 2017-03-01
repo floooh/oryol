@@ -107,7 +107,10 @@ emscInputMgr::update()
 {
 	inputMgrBase::update();
 
-	int gamepadsAvailable = emscripten_get_num_gamepads();
+    uint32_t down = 0;
+    uint32_t up = 0;
+    uint32_t pressed = 0;
+    int gamepadsAvailable = emscripten_get_num_gamepads();
 	EMSCRIPTEN_RESULT result = EMSCRIPTEN_RESULT_FAILED;
 	EmscriptenGamepadEvent gamepadState;
 
@@ -119,25 +122,61 @@ emscInputMgr::update()
 		{
 			continue;
 		}
-		//this->gamepad[i].values[GamepadGizmo::A] = gamepadState->digitalButton[0];
-		this->gamepad[i].pressed  = (gamepadState.digitalButton[0] << GamepadGizmo::X);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[1] << GamepadGizmo::A);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[2] << GamepadGizmo::B);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[3] << GamepadGizmo::Y);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[4] << GamepadGizmo::LeftBumper);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[5] << GamepadGizmo::RightBumper);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[6] << GamepadGizmo::LeftTrigger);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[7] << GamepadGizmo::RightTrigger);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[8] << GamepadGizmo::Start);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[9] << GamepadGizmo::Back);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[10] << GamepadGizmo::LeftStick); // PS4 -> left stick click
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[11] << GamepadGizmo::RightStick); // PS4 -> right stick click
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[12] << GamepadGizmo::DPadUp); // PS4 -> round PS button
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[13] << GamepadGizmo::DPadDown); // PS4 -> touch sensor click
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[14] << GamepadGizmo::DPadUp);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[15] << GamepadGizmo::DPadDown);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[16] << GamepadGizmo::DPadLeft);
-		this->gamepad[i].pressed |= (gamepadState.digitalButton[17] << GamepadGizmo::DPadRight);
+
+		down = 0;
+		up = 0;
+		pressed = 0;
+		this->gamepad[i].down = 0;
+		this->gamepad[i].up = 0;
+
+		pressed  = (gamepadState.digitalButton[0] << GamepadGizmo::X);
+		pressed |= (gamepadState.digitalButton[1] << GamepadGizmo::A);
+		pressed |= (gamepadState.digitalButton[2] << GamepadGizmo::B);
+		pressed |= (gamepadState.digitalButton[3] << GamepadGizmo::Y);
+		pressed |= (gamepadState.digitalButton[4] << GamepadGizmo::LeftBumper);
+		pressed |= (gamepadState.digitalButton[5] << GamepadGizmo::RightBumper);
+		pressed |= (gamepadState.digitalButton[6] << GamepadGizmo::LeftTrigger);
+		pressed |= (gamepadState.digitalButton[7] << GamepadGizmo::RightTrigger);
+		pressed |= (gamepadState.digitalButton[8] << GamepadGizmo::Start);
+		pressed |= (gamepadState.digitalButton[9] << GamepadGizmo::Back);
+		pressed |= (gamepadState.digitalButton[10] << GamepadGizmo::LeftStick); // PS4 -> left stick click
+		pressed |= (gamepadState.digitalButton[11] << GamepadGizmo::RightStick); // PS4 -> right stick click
+//		pressed |= (gamepadState.digitalButton[12] << GamepadGizmo::DPadUp); // PS4 -> round PS button
+//		pressed |= (gamepadState.digitalButton[13] << GamepadGizmo::DPadDown); // PS4 -> touch sensor click
+
+		// If changed...
+		GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
+		for (int j = 0; j < 12; ++j)
+		{
+			gizmoCode = static_cast<GamepadGizmo::Code>(j);
+			if (!((pressed & gizmoCode) && (this->gamepad[i].pressed & gizmoCode)))
+			{
+				// If currently pressed, must be down
+				if (pressed & gizmoCode)
+				{
+					down &= gizmoCode;
+				}
+				else // must be up
+				{
+					up &= gizmoCode;
+				}
+			}
+		}
+
+		this->gamepad[i].down = down;
+		this->gamepad[i].up = up;
+		this->gamepad[i].pressed = pressed;
+
+		// TODO: Where are the DPad values...?
+//		this->gamepad[i].pressed |= (gamepadState.digitalButton[14] << GamepadGizmo::DPadUp);
+//		this->gamepad[i].pressed |= (gamepadState.digitalButton[15] << GamepadGizmo::DPadDown);
+//		this->gamepad[i].pressed |= (gamepadState.digitalButton[16] << GamepadGizmo::DPadLeft);
+//		this->gamepad[i].pressed |= (gamepadState.digitalButton[17] << GamepadGizmo::DPadRight);
+
+//		this->gamepad[i].values[GamepadGizmo::DPadUp].x = gamepadState.analogButton[0];
+//		this->gamepad[i].pressed |= (gamepadState.analogButton[0] << GamepadGizmo::DPadDown);
+//		this->gamepad[i].pressed |= (gamepadState.analogButton[14] << GamepadGizmo::DPadLeft);
+//		this->gamepad[i].pressed |= (gamepadState.analogButton[17] << GamepadGizmo::DPadRight);
 
 		this->gamepad[i].values[GamepadGizmo::LeftStick].x = gamepadState.axis[0];
 		this->gamepad[i].values[GamepadGizmo::LeftStick].y = gamepadState.axis[1];
