@@ -5,6 +5,7 @@
 #include "emscInputMgr.h"
 #include "Core/Core.h"
 #include "Core/Time/Clock.h"
+#include "Core/Log.h"
 #include "glm/glm.hpp"
 
 namespace Oryol {
@@ -58,6 +59,7 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
+    emscripten_set_gamepadconnected_callback(this, true, emscGamepadConnected);
     if (this->inputSetup.AccelerometerEnabled) {
         emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
     }
@@ -82,6 +84,7 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
     emscripten_set_devicemotion_callback(0, true, 0);
     emscripten_set_deviceorientation_callback(0, true, 0);
+    emscripten_set_gamepaddisconnected_callback(this, true, emscGamepadDisconnected);
 }
 
 //------------------------------------------------------------------------------
@@ -270,6 +273,26 @@ emscInputMgr::emscDeviceOrientation(int eventType, const EmscriptenDeviceOrienta
     self->sensors.yawPitchRoll.z = glm::radians(e->alpha);
 
     return true;
+}
+
+/// gamepad
+//typedef EM_BOOL (*em_gamepad_callback_func)(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+EM_BOOL
+emscInputMgr::emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData)
+{
+	emscInputMgr* self = (emscInputMgr*) userData;
+	self->gamepad[0].attached = true;
+	return true;
+}
+
+/// gamepad
+//typedef EM_BOOL (*em_gamepad_callback_func)(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+EM_BOOL
+emscInputMgr::emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData)
+{
+	emscInputMgr* self = (emscInputMgr*) userData;
+	self->gamepad[0].attached = false;
+	return true;
 }
 
 //------------------------------------------------------------------------------

@@ -58,6 +58,12 @@ private:
     static EM_BOOL emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData);
     /// device orientation callback
     static EM_BOOL emscDeviceOrientation(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData);
+    /// gamepad
+    //typedef EM_BOOL (*em_gamepad_callback_func)(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+    static EM_BOOL emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData);
+    /// gamepad
+    //typedef EM_BOOL (*em_gamepad_callback_func)(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+    static EM_BOOL emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData);
 
     static const int MaxNumKeys = 256;
     RunLoop::Id runLoopId;

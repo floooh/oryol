@@ -28,6 +28,7 @@ private:
     void printKeyboardState();
     void printTouchpadState();
     void printSensorState();
+    void printGamepadState();
     glm::vec4 getClearColor();
     void updateView();
     void reset();
@@ -271,6 +272,21 @@ TestInputApp::printSensorState() {
         Dbg::Print("\n\n\r SENSORS NOT ATTACHED");
     }
 }
+void
+TestInputApp::printGamepadState()
+{
+	int gamePadIndex = 0;
+	if (Input::GamepadAttached(gamePadIndex))
+	{
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r GAMEPAD STATUS:\n\n\r");
+	}
+	else
+	{
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::Print("\n\n\r GAMEPAD NOT ATTACHED");
+	}
+}
 
 //------------------------------------------------------------------------------
 glm::vec4
@@ -395,6 +411,7 @@ TestInputApp::OnRunning() {
     this->printKeyboardState();
     this->printTouchpadState();
     this->printSensorState();
+    this->printGamepadState();
     this->handleKeyboardInput();
     this->handleMouseInput();
     this->handleTouchInput();
