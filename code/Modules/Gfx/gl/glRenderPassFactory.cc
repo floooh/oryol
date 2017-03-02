@@ -61,7 +61,6 @@ attachFramebufferRenderbuffers(const renderPass& rp) {
         if (colorTex) {
             const GLuint glRenderBuf = colorTex->glMSAARenderbuffer;
             o_assert_dbg(glRenderBuf);
-            ::glBindRenderbuffer(GL_RENDERBUFFER, glRenderBuf);
             ::glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_RENDERBUFFER, glRenderBuf);
         }
     }
