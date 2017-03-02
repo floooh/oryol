@@ -78,10 +78,7 @@ TestInputApp::OnInit() {
         Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     }
 
-    InputSetup setup;
-    setup.PollingRequired = true;
-
-    Input::Setup(setup);
+    Input::Setup();
     Input::SetPointerLockHandler([this](const InputEvent& event) -> PointerLockMode::Code {
         if (event.Button == MouseButton::Left) {
             if (event.Type == InputEvent::MouseButtonDown) {
