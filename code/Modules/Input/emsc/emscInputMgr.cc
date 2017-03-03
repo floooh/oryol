@@ -7,6 +7,11 @@
 #include "Core/Time/Clock.h"
 #include "Core/Log.h"
 #include "glm/glm.hpp"
+#include <emscripten.h>
+
+extern "C" {
+  extern void my_js();
+}
 
 namespace Oryol {
 namespace _priv {
@@ -95,7 +100,7 @@ emscInputMgr::setupGamepads()
 	int gamepadsAvailable = emscripten_get_num_gamepads();
 
 	// TODO: Check if gamepadsAvailable <= MaxNumGamepads
-	for (int i = 0; i < gamepadsAvailable; ++i)
+	for (int i = 0; i < gamepadsAvailable && i < 4; ++i)
 	{
 		this->gamepad[i].attached = true;
 	}
@@ -149,16 +154,19 @@ emscInputMgr::update()
 		for (int j = 0; j < 12; ++j)
 		{
 			gizmoCode = static_cast<GamepadGizmo::Code>(j);
-			if (!((pressed & gizmoCode) && (this->gamepad[i].pressed & gizmoCode)))
+			if (!(this->gamepad[i].pressed & gizmoCode) && // not previously pressed
+				(pressed & gizmoCode)) // pressed now
 			{
 				// If currently pressed, must be down
 				if (pressed & gizmoCode)
 				{
 					down &= gizmoCode;
+					emscripten_run_script("console.log('down')");
 				}
 				else // must be up
 				{
 					up &= gizmoCode;
+					emscripten_run_script("console.log('up')");
 				}
 			}
 		}
