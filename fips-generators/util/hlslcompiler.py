@@ -10,7 +10,10 @@ import platform
 import os
 import sys
 import genutil as util
-import _winreg
+if sys.version_info[0] < 3:
+    import _winreg as winreg
+else:
+    import winreg
 
 #-------------------------------------------------------------------------------
 def findFxc() :
@@ -27,10 +30,10 @@ def findFxc() :
 
     # first get the preferred kit name (either 8.1 or 10, are there others?)
     try :
-        with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows Kits\\Installed Roots') as key :
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows Kits\\Installed Roots') as key :
             for kit in ['KitsRoot10', 'KitsRoot81'] :
                 try :
-                    fxcPath, _ = _winreg.QueryValueEx(key, kit)
+                    fxcPath, _ = winreg.QueryValueEx(key, kit)
                     fxcPath += fxcSubPath
                     if os.path.isfile(fxcPath) :
                         return fxcPath
@@ -58,7 +61,7 @@ def writeFile(f, lines) :
     Write an array of lines to a file.
     '''
     for line in lines :
-        f.write(str.encode(line.content + '\n'))
+        f.write(line.content + '\n')
 
 #-------------------------------------------------------------------------------
 def callFxc(cmd) :
