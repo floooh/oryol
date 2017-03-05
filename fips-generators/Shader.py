@@ -1914,7 +1914,7 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
     if isGLSL[slVersion] :
         # GLSL source code is directly inlined for runtime-compilation
         f.write('#if ORYOL_OPENGL\n')
-        f.write('const char* {}_{}_src = \n'.format(shd.name, slVersion))
+        f.write('static const char* {}_{}_src = \n'.format(shd.name, slVersion))
         for line in shd.generatedSource[slVersion] :
             f.write('"{}\\n"\n'.format(line.content))
         f.write(';\n')

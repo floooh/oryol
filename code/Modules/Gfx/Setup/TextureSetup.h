@@ -17,7 +17,7 @@ namespace Oryol {
 class TextureSetup {
 public:
     /// default constructor (workaround for gcc)
-    TextureSetup() { };
+    TextureSetup();
     /// asynchronously load from file
     static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
@@ -46,11 +46,15 @@ public:
     static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup as array render target
     static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
+    static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
 
     /// return true if texture should be setup from a file
     bool ShouldSetupFromFile() const;
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;
+    /// return true if texture should be setup from native texture handles
+    bool ShouldSetupFromNativeTexture() const;
     /// return true if texture should be created empty
     bool ShouldSetupEmpty() const;
     /// return true if render target has depth
@@ -85,12 +89,17 @@ public:
     /// resource placeholder
     Id Placeholder;
 
+    /// optional: native texture handle (only on platforms which support GfxFeature::NativeTextures)
+    static const int MaxNumNativeHandles = 2;
+    StaticArray<intptr_t, MaxNumNativeHandles> NativeHandle;
+
     /// optional image surface offsets and sizes
     ImageDataAttrs ImageData;
 
 private:
     bool setupFromFile = false;
     bool setupFromPixelData = false;
+    bool setupFromNativeHandle = false;
     bool setupEmpty = false;
     bool hasMipMaps = false;
 };

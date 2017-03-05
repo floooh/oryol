@@ -33,8 +33,10 @@ public:
     
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
-    /// emscripten callback when canvas size has changed
+    /// emscripten callback when canvas size has changed (for soft-fullscreen)
     static EM_BOOL emscCanvasSizeChanged(int eventType, const void* reserved, void* userData);
+    /// emscripten callback when window size has changed (for HTMLUseCanvasSize)
+    static EM_BOOL emscWindowSizeChanged(int eventType, const EmscriptenUiEvent* uiEvent, void* userData);
 
     static emscDisplayMgr* self;
     int storedCanvasWidth;

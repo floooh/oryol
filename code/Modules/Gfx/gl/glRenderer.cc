@@ -168,6 +168,19 @@ glRenderer::isValid() const {
 }
 
 //------------------------------------------------------------------------------
+void
+glRenderer::resetStateCache() {
+    o_assert_dbg(this->valid);
+
+    this->setupDepthStencilState();
+    this->setupBlendState();
+    this->setupRasterizerState();
+    this->invalidateMeshState();
+    this->invalidateShaderState();
+    this->invalidateTextureState();
+}
+
+//------------------------------------------------------------------------------
 bool
 glRenderer::queryFeature(GfxFeature::Code feat) const {
     o_assert_dbg(this->valid);
@@ -188,6 +201,7 @@ glRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::Instancing:
             return glCaps::HasFeature(glCaps::InstancedArrays);
         case GfxFeature::OriginBottomLeft:
+        case GfxFeature::NativeTexture:
             return true;
         case GfxFeature::MSAARenderTargets:
             return glCaps::HasFeature(glCaps::MSAARenderTargets);

@@ -67,22 +67,23 @@ glTextureFactory::DestroyResource(texture& tex) {
     o_assert_dbg(this->isValid);
     
     this->pointers.renderer->invalidateTextureState();
+    if (!tex.nativeHandles) {
+        for (auto& glTex : tex.glTextures) {
+            if (0 != glTex) {
+                ::glDeleteTextures(1, &glTex);
+                ORYOL_GL_CHECK_ERROR();
+            }
+        }
+    }
     if (0 != tex.glMSAARenderbuffer) {
         ::glDeleteRenderbuffers(1, &tex.glMSAARenderbuffer);
         ORYOL_GL_CHECK_ERROR();
-    }
-    for (auto& glTex : tex.glTextures) {
-        if (0 != glTex) {
-            ::glDeleteTextures(1, &glTex);
-            ORYOL_GL_CHECK_ERROR();
-        }
     }
     if (0 != tex.glDepthRenderbuffer) {
         ::glDeleteRenderbuffers(1, &tex.glDepthRenderbuffer);
         ORYOL_GL_CHECK_ERROR();
     }
-
-    tex.Clear();
+   tex.Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -175,102 +176,110 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
         o_assert_dbg(setup.ImageData.NumFaces > 0);
     }
     #endif
-    const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
     const GLenum glTexImageInternalFormat = glTypes::asGLTexImageInternalFormat(setup.ColorFormat);
-    const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
-    const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
-    const uint8_t* srcPtr = (const uint8_t*) data;
-    for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
+    const GLenum glTextureTarget = glTypes::asGLTextureTarget(setup.Type);
+    if (tex.Setup.ShouldSetupFromNativeTexture()) {
+        // existing native GL texture object provided
+        tex.nativeHandles = true;
+        tex.glTextures[0] = (GLuint) tex.Setup.NativeHandle[0];
+        tex.glTextures[1] = (GLuint) tex.Setup.NativeHandle[1];
+    }
+    else {
+        // create GL texture objects
+        const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
+        const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
+        const uint8_t* srcPtr = (const uint8_t*) data;
+        for (int slotIndex = 0; slotIndex < tex.numSlots; slotIndex++) {
 
-        tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
-        this->setupTextureParams(setup, glTextureTarget, tex.glTextures[slotIndex]);
+            tex.glTextures[slotIndex] = this->glGenAndBindTexture(glTextureTarget);
+            this->setupTextureParams(setup, glTextureTarget, tex.glTextures[slotIndex]);
 
-        const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
-        for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-            GLenum glImgTarget;
-            if (TextureType::TextureCube == setup.Type) {
-                glImgTarget = glTypes::asGLCubeFaceTarget(faceIndex);
-            }
-            else {
-                glImgTarget = glTextureTarget;
-            }
-            for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
-                GLvoid* mipDataPtr = nullptr;
-                int mipDataSize = 0;
-                if (srcPtr) {
-                    if (mipIndex < setup.ImageData.NumMipMaps) {
-                        mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
-                        mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
-                        o_assert_dbg(mipDataSize > 0);
-                    }
+            const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+            for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+                GLenum glImgTarget;
+                if (TextureType::TextureCube == setup.Type) {
+                    glImgTarget = glTypes::asGLCubeFaceTarget(faceIndex);
                 }
-                int mipWidth = setup.Width >> mipIndex;
-                if (mipWidth == 0) {
-                    mipWidth = 1;
+                else {
+                    glImgTarget = glTextureTarget;
                 }
-                int mipHeight = setup.Height >> mipIndex;
-                if (mipHeight == 0) {
-                    mipHeight = 1;
+                for (int mipIndex = 0; mipIndex < setup.NumMipMaps; mipIndex++) {
+                    GLvoid* mipDataPtr = nullptr;
+                    int mipDataSize = 0;
+                    if (srcPtr) {
+                        if (mipIndex < setup.ImageData.NumMipMaps) {
+                            mipDataPtr = (GLvoid*)(srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]);
+                            mipDataSize = setup.ImageData.Sizes[faceIndex][mipIndex];
+                            o_assert_dbg(mipDataSize > 0);
+                        }
+                    }
+                    int mipWidth = setup.Width >> mipIndex;
+                    if (mipWidth == 0) {
+                        mipWidth = 1;
+                    }
+                    int mipHeight = setup.Height >> mipIndex;
+                    if (mipHeight == 0) {
+                        mipHeight = 1;
+                    }
+                    if ((TextureType::Texture2D == setup.Type) || (TextureType::TextureCube == setup.Type)) {
+                        if (isCompressed) {
+                            ::glCompressedTexImage2D(glImgTarget,
+                                                    mipIndex,
+                                                    glTexImageInternalFormat,
+                                                    mipWidth, mipHeight,
+                                                    0,
+                                                    mipDataSize, mipDataPtr);
+                            ORYOL_GL_CHECK_ERROR();
+                        }
+                        else {
+                            const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
+                            ::glTexImage2D(glImgTarget,
+                                        mipIndex,
+                                        glTexImageInternalFormat,
+                                        mipWidth, mipHeight,
+                                        0,
+                                        glTexImageFormat,
+                                        glTexImageType,
+                                        mipDataPtr);
+                            ORYOL_GL_CHECK_ERROR();
+                        }
+                    }
+                    #if !ORYOL_OPENGLES2
+                    else if ((TextureType::Texture3D == setup.Type) || (TextureType::TextureArray == setup.Type)) {
+                        int mipDepth = setup.Depth >> mipIndex;
+                        if (mipDepth == 0) {
+                            mipDepth = 1;
+                        }
+                        if (isCompressed) {
+                            ::glCompressedTexImage3D(glImgTarget,
+                                                    mipIndex,
+                                                    glTexImageInternalFormat,
+                                                    mipWidth, mipHeight, mipDepth,
+                                                    0,
+                                                    mipDataSize, mipDataPtr);
+                            ORYOL_GL_CHECK_ERROR();
+                        }
+                        else {
+                            const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
+                            ::glTexImage3D(glImgTarget,
+                                        mipIndex,
+                                        glTexImageInternalFormat,
+                                        mipWidth, mipHeight, mipDepth,
+                                        0,
+                                        glTexImageFormat,
+                                        glTexImageType,
+                                        mipDataPtr);
+                            ORYOL_GL_CHECK_ERROR();
+                        }
+                    }
+                    #endif
                 }
-                if ((TextureType::Texture2D == setup.Type) || (TextureType::TextureCube == setup.Type)) {
-                    if (isCompressed) {
-                        ::glCompressedTexImage2D(glImgTarget,
-                                                 mipIndex,
-                                                 glTexImageInternalFormat,
-                                                 mipWidth, mipHeight,
-                                                 0,
-                                                 mipDataSize, mipDataPtr);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
-                    else {
-                        const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-                        ::glTexImage2D(glImgTarget,
-                                       mipIndex,
-                                       glTexImageInternalFormat,
-                                       mipWidth, mipHeight,
-                                       0,
-                                       glTexImageFormat,
-                                       glTexImageType,
-                                       mipDataPtr);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
-                }
-                #if !ORYOL_OPENGLES2
-                else if ((TextureType::Texture3D == setup.Type) || (TextureType::TextureArray == setup.Type)) {
-                    int mipDepth = setup.Depth >> mipIndex;
-                    if (mipDepth == 0) {
-                        mipDepth = 1;
-                    }
-                    if (isCompressed) {
-                        ::glCompressedTexImage3D(glImgTarget,
-                                                 mipIndex,
-                                                 glTexImageInternalFormat,
-                                                 mipWidth, mipHeight, mipDepth,
-                                                 0,
-                                                 mipDataSize, mipDataPtr);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
-                    else {
-                        const GLenum glTexImageType = glTypes::asGLTexImageType(setup.ColorFormat);
-                        ::glTexImage3D(glImgTarget,
-                                       mipIndex,
-                                       glTexImageInternalFormat,
-                                       mipWidth, mipHeight, mipDepth,
-                                       0,
-                                       glTexImageFormat,
-                                       glTexImageType,
-                                       mipDataPtr);
-                        ORYOL_GL_CHECK_ERROR();
-                    }
-                }
-                #endif
             }
         }
     }
 
     // additional render target stuff
     if (setup.RenderTarget) {
-
         // create MSAA renderbuffer
         #if !ORYOL_OPENGLES2
         const bool msaa = (setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets);

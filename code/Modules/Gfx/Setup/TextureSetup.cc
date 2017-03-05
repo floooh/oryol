@@ -7,6 +7,11 @@
 namespace Oryol {
 
 //------------------------------------------------------------------------------
+TextureSetup::TextureSetup() {
+    NativeHandle.Fill(0);
+}
+
+//------------------------------------------------------------------------------
 TextureSetup
 TextureSetup::FromFile(const class Locator& loc, Id placeholder) {
     TextureSetup setup;
@@ -161,6 +166,28 @@ TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt
 
 //------------------------------------------------------------------------------
 TextureSetup
+TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1) {
+    o_assert_dbg(w > 0);
+    o_assert_dbg(h > 0);
+    o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
+    o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
+    o_assert_dbg(h0 != 0);
+
+    TextureSetup setup;
+    setup.setupFromNativeHandle = true;
+    setup.Type = type;
+    setup.Width = w;
+    setup.Height = h;
+    setup.NumMipMaps = numMipMaps;
+    setup.ColorFormat = fmt;
+    setup.TextureUsage = usage;
+    setup.NativeHandle[0] = h0;
+    setup.NativeHandle[1] = h1;
+    return setup;
+}
+
+//------------------------------------------------------------------------------
+TextureSetup
 TextureSetup::EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (layers > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
@@ -246,6 +273,12 @@ TextureSetup::RenderTargetArray(int w, int h, int layers, PixelFormat::Code colo
     setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
+}
+
+//------------------------------------------------------------------------------
+bool
+TextureSetup::ShouldSetupFromNativeTexture() const {
+    return this->setupFromNativeHandle;
 }
 
 //------------------------------------------------------------------------------

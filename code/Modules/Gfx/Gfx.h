@@ -120,6 +120,8 @@ public:
 
     /// commit (and display) the current frame
     static void CommitFrame();
+    /// reset the native 3D-API state-cache
+    static void ResetStateCache();
 
     /// direct access to resource container (private interface for resource loaders)
     static _priv::gfxResourceContainer& resource();

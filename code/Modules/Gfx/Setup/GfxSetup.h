@@ -61,6 +61,11 @@ public:
     /// default clear stencil value
     uint8_t DefaultClearStencil = 0;
 
+    /// if true, ignore own size and instead track size of an HTML element (emscripten only)
+    bool HtmlTrackElementSize = false;
+    /// name of the HTML element to track (default: #canvas)
+    String HtmlElement = "#canvas";
+    
     /// tweak resource pool size for a rendering resource type
     void SetPoolSize(GfxResourceType::Code type, int poolSize);
     /// get resource pool size for a rendering resource type

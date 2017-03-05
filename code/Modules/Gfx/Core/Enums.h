@@ -773,6 +773,7 @@ public:
         MultipleRenderTarget,       ///< support for MRT offscreen rendering
         Texture3D,                  ///< support for 3D textures
         TextureArray,               ///< support for array textures
+        NativeTexture,              ///< can work with externally created texture objects
 
         NumFeatures,
         InvalidFeature

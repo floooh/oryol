@@ -12,8 +12,8 @@ from tools import texexport
 
 # what to build
 BuildEmscripten = True
-BuildPNaCl = False 
-BuildWasm = False
+BuildPNaCl = True 
+BuildWasm = True
 ExportAssets = True
 ExtensionSamples = False
 

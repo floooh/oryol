@@ -335,6 +335,14 @@ Gfx::CommitFrame() {
 
 //------------------------------------------------------------------------------
 void
+Gfx::ResetStateCache() {
+    o_trace_scoped(Gfx_ResetStateCache);
+    o_assert_dbg(IsValid());
+    state->renderer.resetStateCache();
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::UpdateVertices(const Id& id, const void* data, int numBytes) {
     o_trace_scoped(Gfx_UpdateVertices);
     o_assert_dbg(IsValid());

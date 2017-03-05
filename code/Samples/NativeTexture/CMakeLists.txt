@@ -1,0 +1,7 @@
+fips_begin_app(NativeTexture windowed)
+    fips_vs_warning_level(3)
+    fips_files(NativeTexture.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx Dbg Assets)
+    oryol_add_web_sample(NativeTexture "Demonstrates native 3D-API texture usage" "emscripten,pnacl,android" NativeTexture.jpg "NativeTexture/NativeTexture.cc")
+fips_end_app()
