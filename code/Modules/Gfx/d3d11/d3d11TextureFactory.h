@@ -36,18 +36,14 @@ public:
 private:
     /// setup TextureAttrs of tex
     void setupTextureAttrs(texture& tex);
-    /// create a render target texture
-    ResourceState::Code createRenderTarget(texture& tex);
-    /// create a texture from pixel data in memory
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int size);
-    /// create an empty texture (cannot be immutable)
-    ResourceState::Code createEmptyTexture(texture& tex);
+    /// create a texture with or without associated data
+    ResourceState::Code createTexture(texture& tex, const void* data, int32_t size);
     /// create d3d11 sampler state object in texture
     ID3D11SamplerState* createSamplerState(const texture& tex);
     /// create d3d11 shader-resource-view object
-    ID3D11ShaderResourceView* createShaderResourceView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
+    ID3D11ShaderResourceView* createShaderResourceView(const texture& tex, ID3D11Resource* d3d11Tex, DXGI_FORMAT d3d11Format);
     /// create d3d11 render-target-view object
-    ID3D11RenderTargetView* createRenderTargetView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
+    ID3D11RenderTargetView* createRenderTargetView(const texture& tex, ID3D11Resource* d3d11Tex, DXGI_FORMAT d3d11Format);
     /// create d3d11 depth-stencil-view object
     ID3D11DepthStencilView* createDepthStencilView(const texture& tex, ID3D11Texture2D* d3d11Tex, const D3D11_TEXTURE2D_DESC* texDesc);
 

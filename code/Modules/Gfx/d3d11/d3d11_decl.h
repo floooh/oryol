@@ -16,7 +16,9 @@ struct DXGI_SWAP_CHAIN_DESC1;
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
+struct ID3D11Resource;
 struct ID3D11Texture2D;
+struct ID3D11Texture3D;
 struct ID3D11ShaderResourceView;
 struct ID3D11RenderTargetView;
 struct ID3D11DepthStencilView;
