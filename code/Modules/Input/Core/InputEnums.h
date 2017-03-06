@@ -32,29 +32,29 @@ struct PointerLockMode {
 /// gamepad buttons, triggers, sticks
 struct GamepadGizmo {
     enum Code {
-        A = 0,
-        B,
-        X,
-        Y,
+        A 				= (1 << 0),
+        B 				= (1 << 1),
+        X 				= (1 << 2),
+        Y 				= (1 << 3),
         
-        Start,
-        Back,
+        Start 			= (1 << 4),
+        Back 			= (1 << 5),
         
-        RightBumper,
-        LeftBumper,
+        RightBumper 	= (1 << 6),
+        LeftBumper 		= (1 << 7),
         
-        DPadLeft,
-        DPadRight,
-        DPadUp,
-        DPadDown,
+        DPadLeft 		= (1 << 8),
+        DPadRight 		= (1 << 9),
+        DPadUp 			= (1 << 10),
+        DPadDown 		= (1 << 11),
         
-        LeftTrigger,
-        RightTrigger,
-        LeftStick,
-        RightStick,
+        LeftTrigger		= (1 << 12),
+        RightTrigger	= (1 << 13),
+        LeftStick		= (1 << 14),
+        RightStick		= (1 << 15),
         
-        NumGamepadGizmos,
-        InvalidGamepadGizmo,
+        NumGamepadGizmos		= (1 << 16),
+        InvalidGamepadGizmo		= (1 << 17)
     };
 };
 
