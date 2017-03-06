@@ -209,100 +209,98 @@ emscInputMgr::update()
 		if (gamepadState.digitalButton[0])
 		{
 			pressed |= GamepadGizmo::X;
-			emscripten_run_script("console.log('GamepadGizmo::X')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[0], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::X')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[0], pressed);
 		}
 		if (gamepadState.digitalButton[1])
 		{
 			pressed |= GamepadGizmo::A;
-			emscripten_run_script("console.log('GamepadGizmo::A')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[1], pressed);
-
+//			emscripten_run_script("console.log('GamepadGizmo::A')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[1], pressed);
 		}
 		if (gamepadState.digitalButton[2])
 		{
 			pressed |= GamepadGizmo::B;
-			emscripten_run_script("console.log('GamepadGizmo::B')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[2], pressed);
-
+//			emscripten_run_script("console.log('GamepadGizmo::B')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[2], pressed);
 		}
 		if (gamepadState.digitalButton[3])
 		{
 			pressed |= GamepadGizmo::Y;
-			emscripten_run_script("console.log('GamepadGizmo::Y')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[3], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::Y')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[3], pressed);
 		}
 		if (gamepadState.digitalButton[4])
 		{
 			pressed |= GamepadGizmo::LeftBumper;
-			emscripten_run_script("console.log('GamepadGizmo::LeftBumper')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[3], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::LeftBumper')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[3], pressed);
 		}
 		if (gamepadState.digitalButton[5])
 		{
 			pressed |= GamepadGizmo::RightBumper;
-			emscripten_run_script("console.log('GamepadGizmo::RightBumper')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[5], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::RightBumper')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[5], pressed);
 		}
 		if (gamepadState.digitalButton[6])
 		{
 			pressed |= GamepadGizmo::LeftTrigger;
-			emscripten_run_script("console.log('GamepadGizmo::LeftTrigger')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[6], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::LeftTrigger')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[6], pressed);
 		}
 		if (gamepadState.digitalButton[7])
 		{
 			pressed |= GamepadGizmo::RightTrigger;
-			emscripten_run_script("console.log('GamepadGizmo::RightTrigger')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[7], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::RightTrigger')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[7], pressed);
 		}
 		if (gamepadState.digitalButton[8])
 		{
 			pressed |= GamepadGizmo::Start;
-			emscripten_run_script("console.log('GamepadGizmo::Start')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[8], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::Start')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[8], pressed);
 		}
 		if (gamepadState.digitalButton[9])
 		{
 			pressed |= GamepadGizmo::Back;
-			emscripten_run_script("console.log('GamepadGizmo::Back')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[9], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::Back')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[9], pressed);
 		}
 		if (gamepadState.digitalButton[10])
 		{
 			pressed |= GamepadGizmo::LeftStick;
-			emscripten_run_script("console.log('GamepadGizmo::LeftStick')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[10], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::LeftStick')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[10], pressed);
 		}
 		if (gamepadState.digitalButton[11])
 		{
 			pressed |= GamepadGizmo::RightStick;
-			emscripten_run_script("console.log('GamepadGizmo::RightStick')");
-			EM_ASM_({
-			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-			}, gamepadState.digitalButton[11], pressed);
+//			emscripten_run_script("console.log('GamepadGizmo::RightStick')");
+//			EM_ASM_({
+//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
+//			}, gamepadState.digitalButton[11], pressed);
 		}
 
 		GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
@@ -316,7 +314,7 @@ emscInputMgr::update()
 				if (pressed & gizmoCode)
 				{
 					down |= gizmoCode;
-					emscripten_run_script("console.log('down')");
+//					emscripten_run_script("console.log('down')");
 				}
 			}
 			// If it was previously pressed...
@@ -326,7 +324,7 @@ emscInputMgr::update()
 				if (!(pressed & gizmoCode))
 				{
 					up |= gizmoCode;
-					emscripten_run_script("console.log('up')");
+//					emscripten_run_script("console.log('up')");
 				}
 			}
 		}
