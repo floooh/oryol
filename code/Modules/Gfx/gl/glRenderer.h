@@ -69,7 +69,7 @@ public:
 
     /// submit a draw call with primitive group index in current mesh
     void draw(int primGroupIndex, int numInstances);
-    /// submit a draw call with direct primitive group
+    /// submit a draw call with element range
     void draw(int baseElementIndex, int numElements, int numInstances);
 
     /// update vertex data
