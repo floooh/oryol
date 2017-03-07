@@ -15,8 +15,6 @@ class renderPass;
 
 class renderPassFactoryBase {
 public:
-    /// constructor
-    renderPassFactoryBase();
     /// destructor
     ~renderPassFactoryBase();
 
@@ -33,7 +31,7 @@ public:
 
 protected:
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 
 private:
     /// check render-pass for valid configuration

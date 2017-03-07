@@ -77,8 +77,8 @@ d3d11TextureFactory::DestroyResource(texture& tex) {
     if (tex.d3d11SamplerState) {
         tex.d3d11SamplerState->Release();
     }
-    if (tex.d3d11DepthBufferTexture) {
-        tex.d3d11DepthBufferTexture->Release();
+    if (tex.d3d11DepthStencilTexture) {
+        tex.d3d11DepthStencilTexture->Release();
     }
     tex.Clear();
 }
@@ -110,7 +110,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     o_assert_dbg(!tex.d3d11Texture3D);
     o_assert_dbg(!tex.d3d11ShaderResourceView);
     o_assert_dbg(!tex.d3d11SamplerState);
-    o_assert_dbg(!tex.d3d11DepthBufferTexture);
+    o_assert_dbg(!tex.d3d11DepthStencilTexture);
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(!setup.ShouldSetupFromNativeTexture());
@@ -235,9 +235,9 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         dsDesc.SampleDesc.Count = setup.SampleCount;
         dsDesc.SampleDesc.Quality = 0;
         dsDesc.MiscFlags = 0;
-        hr = this->d3d11Device->CreateTexture2D(&dsDesc, nullptr, &tex.d3d11DepthBufferTexture);
+        hr = this->d3d11Device->CreateTexture2D(&dsDesc, nullptr, &tex.d3d11DepthStencilTexture);
         o_assert(SUCCEEDED(hr));
-        o_assert_dbg(nullptr != tex.d3d11DepthBufferTexture);
+        o_assert_dbg(nullptr != tex.d3d11DepthStencilTexture);
     }
 
     // create sampler object

@@ -100,7 +100,7 @@ d3d11Texture::~d3d11Texture() {
     o_assert_dbg(nullptr == this->d3d11Texture2D);
     o_assert_dbg(nullptr == this->d3d11ShaderResourceView);
     o_assert_dbg(nullptr == this->d3d11SamplerState);
-    o_assert_dbg(nullptr == this->d3d11DepthBufferTexture);
+    o_assert_dbg(nullptr == this->d3d11DepthStencilTexture);
 }
 
 //------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ d3d11Texture::Clear() {
     this->d3d11Texture2D = nullptr;
     this->d3d11ShaderResourceView = nullptr;
     this->d3d11SamplerState = nullptr;
-    this->d3d11DepthBufferTexture = nullptr;
+    this->d3d11DepthStencilTexture = nullptr;
 }
 
 //==============================================================================

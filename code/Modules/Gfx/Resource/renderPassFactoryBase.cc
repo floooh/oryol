@@ -11,12 +11,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-renderPassFactoryBase::renderPassFactoryBase() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 renderPassFactoryBase::~renderPassFactoryBase() {
     o_assert_dbg(!this->isValid);
 }

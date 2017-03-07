@@ -109,8 +109,8 @@ public:
     ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
     /// d3d11 sampler state object
     ID3D11SamplerState* d3d11SamplerState = nullptr;
-    /// d3d11 depth buffer texture (if render target with depth buffer)
-    ID3D11Texture2D* d3d11DepthBufferTexture = nullptr;
+    /// d3d11 depth-stencil texture (if render target with depth buffer)
+    ID3D11Texture2D* d3d11DepthStencilTexture = nullptr;
 };
 
 //------------------------------------------------------------------------------
