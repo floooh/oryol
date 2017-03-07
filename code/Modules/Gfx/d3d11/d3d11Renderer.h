@@ -49,8 +49,8 @@ public:
     bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame
     void commitFrame();
-    /// get the current render target attributes
-    const DisplayAttrs& renderTargetAttrs() const;
+    /// get the current render pass attributes
+    const DisplayAttrs& renderPassAttrs() const;
 
     /// begin rendering pass (both ptrs can be nullptr)
     void beginPass(renderPass* pass, const PassState* passState);
@@ -67,13 +67,9 @@ public:
     /// apply a textures
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex);
-    /// submit a draw call with direct primitive group
-    void draw(const PrimitiveGroup& primGroup);
-    /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int primGroupIndex, int numInstances);
-    /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    void draw(int primGroupIndex, int numInstances);
+    /// submit a draw call with element range
+    void draw(int baseElementIndex, int numElements, int numInstances);
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);
     /// update index data

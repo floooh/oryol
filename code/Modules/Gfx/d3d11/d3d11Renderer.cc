@@ -174,7 +174,7 @@ d3d11Renderer::commitFrame() {
 
 //------------------------------------------------------------------------------
 const DisplayAttrs&
-d3d11Renderer::renderTargetAttrs() const {
+d3d11Renderer::renderPassAttrs() const {
     return this->rpAttrs;
 }
 
@@ -497,8 +497,9 @@ d3d11Renderer::applyTextures(ShaderStage::Code bindStage, texture** textures, in
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
+d3d11Renderer::draw(int baseElementIndex, int numElements, int numInstances) {
     o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(numInstances >= 1);
     o_assert2_dbg(this->rpValid, "No render target set!\n");
     if (nullptr == this->curPipeline) {
         return;
@@ -507,16 +508,26 @@ d3d11Renderer::draw(const PrimitiveGroup& primGroup) {
     o_assert_dbg(msh);
     const IndexType::Code indexType = msh->indexBufferAttrs.Type;
     if (indexType != IndexType::None) {
-        this->d3d11DeviceContext->DrawIndexed(primGroup.NumElements, primGroup.BaseElement, 0);
+        if (numInstances == 1) {
+            this->d3d11DeviceContext->DrawIndexed(numElements, baseElementIndex, 0);
+        }
+        else {
+            this->d3d11DeviceContext->DrawIndexedInstanced(numElements, numInstances, baseElementIndex, 0, 0);
+        }
     }
     else {
-        this->d3d11DeviceContext->Draw(primGroup.NumElements, primGroup.BaseElement);        
+        if (numInstances == 1) {
+            this->d3d11DeviceContext->Draw(numElements, baseElementIndex);
+        }
+        else {
+            this->d3d11DeviceContext->DrawInstanced(numElements, numInstances, baseElementIndex, 0);
+        }
     }
 }
 
 //------------------------------------------------------------------------------
 void 
-d3d11Renderer::draw(int primGroupIndex) {
+d3d11Renderer::draw(int primGroupIndex, int numInstances) {
     o_assert_dbg(this->valid);
     if (nullptr == this->curPipeline) {
         return;
@@ -530,45 +541,7 @@ d3d11Renderer::draw(int primGroupIndex) {
         return;
     }
     const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->draw(primGroup);
-}
-
-//------------------------------------------------------------------------------
-void
-d3d11Renderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
-    o_assert_dbg(this->valid);
-    o_assert2_dbg(this->rpValid, "No render target set!");
-    if (nullptr == this->curPipeline) {
-        return;
-    }
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    const IndexType::Code indexType = msh->indexBufferAttrs.Type;
-    if (indexType != IndexType::None) {
-        this->d3d11DeviceContext->DrawIndexedInstanced(primGroup.NumElements, numInstances, primGroup.BaseElement, 0, 0);
-    }
-    else {
-        this->d3d11DeviceContext->DrawInstanced(primGroup.NumElements, numInstances, 0, 0);
-    }
-}
-
-//------------------------------------------------------------------------------
-void 
-d3d11Renderer::drawInstanced(int primGroupIndex, int numInstances) {
-    o_assert_dbg(this->valid);
-    if (nullptr == this->curPipeline) {
-        return;
-    }
-    const mesh* msh = this->curPrimaryMesh;
-    o_assert_dbg(msh);
-    if (primGroupIndex >= msh->numPrimGroups) {
-        // this may happen if trying to render a placeholder which doesn't
-        // have as many materials as the original mesh, anyway, this isn't
-        // a serious error
-        return;
-    }
-    const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->drawInstanced(primGroup, numInstances);
+    this->draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
 }
 
 //------------------------------------------------------------------------------
