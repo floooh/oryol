@@ -124,7 +124,7 @@ d3d11RenderPass::~d3d11RenderPass() {
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
         o_assert(nullptr == this->d3d11RenderTargetViews[i]);
     }
-    o_assert(this->d3d11DepthStencilView);
+    o_assert(nullptr == this->d3d11DepthStencilView);
     #endif
 }
 
