@@ -337,15 +337,15 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
         if (PixelFormat::IsDepthFormat(this->rpAttrs.DepthPixelFormat)) {
             passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
             passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(dsAtt.LoadAction);
-            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : dsAtt.DepthClearValue;
+            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : dsAtt.ClearDepth;
         }
         else if (PixelFormat::IsDepthStencilFormat(this->rpAttrs.DepthPixelFormat)) {
             passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
             passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(dsAtt.LoadAction);
-            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : dsAtt.DepthClearValue;
+            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : dsAtt.ClearDepth;
             passDesc.stencilAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
             passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(dsAtt.LoadAction);
-            passDesc.stencilAttachment.clearStencil = passState ? passState->Depth : dsAtt.StencilClearValue;
+            passDesc.stencilAttachment.clearStencil = passState ? passState->Stencil : dsAtt.ClearStencil;
         }
     }
     else {
