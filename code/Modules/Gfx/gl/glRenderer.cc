@@ -381,9 +381,9 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState) {
                 #if ORYOL_OPENGLES2 || ORYOL_OPENGLES3
                 ::glClearDepthf(passState ? passState->Depth : dsAtt.DepthClearValue);
                 #else
-                ::glClearDepth(passState ? passState->Depth : dsAtt.DepthClearValue);
+                ::glClearDepth(passState ? passState->Depth : dsAtt.ClearDepth);
                 #endif
-                ::glClearStencil(passState ? passState->Stencil : dsAtt.StencilClearValue);
+                ::glClearStencil(passState ? passState->Stencil : dsAtt.ClearStencil);
             }
             if (0 != clearMask) {
                 ::glClear(clearMask);
@@ -413,7 +413,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState) {
                     ORYOL_GL_CHECK_ERROR();
                 }
                 else {
-                    ::glClearBufferfi(GL_DEPTH_STENCIL, 0, att.DepthClearValue, att.StencilClearValue);
+                    ::glClearBufferfi(GL_DEPTH_STENCIL, 0, att.ClearDepth, att.ClearStencil);
                     ORYOL_GL_CHECK_ERROR();
                 }
             }

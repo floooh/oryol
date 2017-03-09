@@ -12,6 +12,9 @@
 
 using namespace Oryol;
 
+static const int TexWidth = 32;
+static const int TexHeight = 32;
+
 class DynGenMipMap : public App {
 public:
     /// on init frame method
@@ -23,8 +26,6 @@ public:
 
     Shader::VSParams computeShaderParams();
 
-    static const int TexWidth = 32;
-    static const int TexHeight = 32;
     bool mipEnabled = true;
     Id mipTexture;
     Id noMipTexture;
