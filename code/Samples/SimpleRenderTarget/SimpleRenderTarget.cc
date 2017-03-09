@@ -56,7 +56,9 @@ SimpleRenderTargetApp::OnInit() {
     }
     Id rtTexture = Gfx::CreateResource(rtSetup);
     auto rpSetup = RenderPassSetup::From(rtTexture, rtTexture);
-    rpSetup.StoreAction = RenderPassStoreAction::Resolve;
+    if (Gfx::QueryFeature(GfxFeature::MSAARenderTargets)) {
+        rpSetup.StoreAction = RenderPassStoreAction::Resolve;
+    }
     this->renderPass = Gfx::CreateResource(rpSetup);
 
     // create a donut mesh, shader and pipeline object

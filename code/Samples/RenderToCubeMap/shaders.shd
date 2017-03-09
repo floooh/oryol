@@ -23,12 +23,12 @@ _func vec3 light(vec3 baseColor, vec3 eyeVec, vec3 normal, vec3 lightVec) {
     float r_dot_v = max(dot(r, eyeVec), 0.0);
     float spec = pow(r_dot_v, specPower) * n_dot_l;
 
-    return baseColor * (diff+ambient) + vec3(spec);
+    return baseColor * (diff+ambient) + vec3(spec,spec,spec);
 }
 
 _func vec3 gamma(vec3 c) {
     float p = 1.0/2.2;
-    return pow(c, vec3(p));
+    return pow(c, vec3(p,p,p));
 }
 @end
 

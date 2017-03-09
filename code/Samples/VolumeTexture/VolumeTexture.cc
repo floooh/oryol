@@ -50,9 +50,9 @@ VolumeTextureApp::OnInit() {
         for (int y = 0; y < dim; y++) {
             p.x = 0.0f;
             for (int x = 0; x < dim; x++) {
-                data[x][y][z][0] = glm::simplex(p * 1.0f) * 255;
-                data[x][y][z][1] = glm::simplex(p * 1.2f) * 255;
-                data[x][y][z][2] = glm::simplex(p * 1.4f) * 255;
+                data[x][y][z][0] = uint8_t(glm::simplex(p * 1.0f) * 255.0f);
+                data[x][y][z][1] = uint8_t(glm::simplex(p * 1.2f) * 255.0f);
+                data[x][y][z][2] = uint8_t(glm::simplex(p * 1.4f) * 255.0f);
                 data[x][y][z][3] = 0;
                 p.x += 1.0f / dim;
             }
@@ -142,8 +142,8 @@ VolumeTextureApp::notSupported() {
     #else
     const char* msg = "This demo needs 3D texture support\n";
     #endif
-    uint8_t x = (Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2;
-    uint8_t y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
+    uint8_t x = uint8_t((Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2);
+    uint8_t y = uint8_t(Gfx::DisplayAttrs().FramebufferHeight/16/2);
     Gfx::BeginPass(PassState(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     Dbg::CursorPos(x, y);
