@@ -80,6 +80,9 @@ d3d11TextureFactory::DestroyResource(texture& tex) {
     if (tex.d3d11DepthStencilTexture) {
         tex.d3d11DepthStencilTexture->Release();
     }
+    if (tex.d3d11MSAATexture2D) {
+        tex.d3d11MSAATexture2D->Release();
+    }
     tex.Clear();
 }
 
@@ -111,6 +114,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     o_assert_dbg(!tex.d3d11ShaderResourceView);
     o_assert_dbg(!tex.d3d11SamplerState);
     o_assert_dbg(!tex.d3d11DepthStencilTexture);
+    o_assert_dbg(!tex.d3d11MSAATexture2D);
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(!setup.ShouldSetupFromNativeTexture());
@@ -130,7 +134,6 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         // setup 'initial data' if data is provided
         D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
         if (data) {
-            // FIXME
             o_assert_dbg(setup.Type != TextureType::TextureArray);
             const int maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
             D3D11_SUBRESOURCE_DATA subResourceData[maxNumSubResourceData] = { 0 };
@@ -158,28 +161,44 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         if (TextureType::TextureArray == setup.Type) {
             texDesc.ArraySize = setup.Depth;
         }
+        else if (TextureType::TextureCube == setup.Type) {
+            texDesc.ArraySize = 6;
+        }
         else {
             texDesc.ArraySize = 1;
         }
         if (setup.RenderTarget) {
-            texDesc.Format = d3d11Types::asRenderTargetFormat(setup.ColorFormat);
+            texDesc.Format = tex.d3d11ColorFormat = d3d11Types::asRenderTargetFormat(setup.ColorFormat);
             o_assert2_dbg(texDesc.Format != DXGI_FORMAT_UNKNOWN, "Invalid render target pixel format!");
             texDesc.Usage = D3D11_USAGE_DEFAULT;
             texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET;
             texDesc.CPUAccessFlags = 0;
         }
         else {
-            texDesc.Format = d3d11Types::asTextureFormat(setup.ColorFormat);
-            o_assert2_dbg(texDesc.Format != DXGI_FORMAT_UNKNOWN, "Invalid texture pixel format!");
+            texDesc.Format = tex.d3d11ColorFormat = d3d11Types::asTextureFormat(setup.ColorFormat);
+            if (DXGI_FORMAT_UNKNOWN == texDesc.Format) {
+                o_warn("d3d11TextureFactory: texture pixel format not supported in D3D11\n");
+                return ResourceState::Failed;
+            }
             texDesc.Usage = d3d11Types::asResourceUsage(setup.TextureUsage);
             texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
             texDesc.CPUAccessFlags = d3d11Types::asResourceCPUAccessFlag(setup.TextureUsage);
         }
-        texDesc.SampleDesc.Count = setup.SampleCount;
+        texDesc.SampleDesc.Count = 1; 
         texDesc.SampleDesc.Quality = 0;
         texDesc.MiscFlags = setup.Type == TextureType::TextureCube ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
         hr = this->d3d11Device->CreateTexture2D(&texDesc, pInitialData, &tex.d3d11Texture2D);
         o_assert(SUCCEEDED(hr));
+        
+        // also create an MSAA texture?
+        if (setup.SampleCount > 1) {
+            texDesc.SampleDesc.Count = setup.SampleCount;
+            texDesc.SampleDesc.Quality = 0;
+            hr = this->d3d11Device->CreateTexture2D(&texDesc, pInitialData, &tex.d3d11MSAATexture2D);
+            o_assert(SUCCEEDED(hr));
+        }
+        
+        // shader-resource-view (always on the non-MSAA texture)
         tex.d3d11ShaderResourceView = this->createShaderResourceView(tex, tex.d3d11Texture2D, texDesc.Format);
         o_assert(tex.d3d11ShaderResourceView);
     }
@@ -195,14 +214,14 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         texDesc.Depth = setup.Depth;
         texDesc.MipLevels = setup.NumMipMaps;
         if (setup.RenderTarget) {
-            texDesc.Format = d3d11Types::asRenderTargetFormat(setup.ColorFormat);
+            texDesc.Format = tex.d3d11ColorFormat = d3d11Types::asRenderTargetFormat(setup.ColorFormat);
             o_assert2_dbg(texDesc.Format != DXGI_FORMAT_UNKNOWN, "Invalid render target color pixel format!");
             texDesc.Usage = D3D11_USAGE_DEFAULT;
             texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
             texDesc.CPUAccessFlags = 0;
         }
         else {
-            texDesc.Format = d3d11Types::asTextureFormat(setup.ColorFormat);
+            texDesc.Format = tex.d3d11ColorFormat = d3d11Types::asTextureFormat(setup.ColorFormat);
             o_assert2_dbg(texDesc.Format != DXGI_FORMAT_UNKNOWN, "Invalid texture pixel format!");
             texDesc.Usage = d3d11Types::asResourceUsage(setup.TextureUsage);
             texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -215,8 +234,8 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         o_assert(tex.d3d11ShaderResourceView);
     }
 
-    // additional render target objects
-    if (setup.RenderTarget) {
+    // optional depth-stencil-buffer texture
+    if (setup.RenderTarget && (setup.DepthFormat != PixelFormat::InvalidPixelFormat)) {
         o_assert_dbg(setup.TextureUsage == Usage::Immutable);
     
         // create depth-buffer-texture
@@ -245,6 +264,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     o_assert(tex.d3d11SamplerState);
 
     // fill texture attributes
+    o_assert_dbg(DXGI_FORMAT_UNKNOWN != tex.d3d11ColorFormat);
     this->setupTextureAttrs(tex);
 
     // and done
@@ -259,8 +279,6 @@ d3d11TextureFactory::createShaderResourceView(const texture& tex, ID3D11Resource
     switch (tex.Setup.Type) {
         case TextureType::Texture2D:
             shdResViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-            // NOTE: this may also be a multisampled render target texture, in this case,
-            // the following values are ignored
             shdResViewDesc.Texture2D.MostDetailedMip = 0;
             shdResViewDesc.Texture2D.MipLevels = tex.Setup.NumMipMaps;
             break;

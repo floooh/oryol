@@ -39,7 +39,7 @@ d3d11RenderPassFactory::SetupResource(renderPass& rp) {
 
     renderPassFactoryBase::SetupResource(rp);
     o_assert_dbg(rp.colorTextures[0]);
-    const bool isMSAA = rp.colorTextures[0]->Setup.SampleCount > 0;
+    const bool isMSAA = rp.colorTextures[0]->Setup.SampleCount > 1;
 
     // create render-target-view objects
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
@@ -48,7 +48,13 @@ d3d11RenderPassFactory::SetupResource(renderPass& rp) {
         if (colorTex) {
             D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = { };
             ID3D11Resource* d3d11Res = nullptr;
-            if (colorTex->d3d11Texture2D) {
+            if (colorTex->d3d11MSAATexture2D) {
+                d3d11Res = colorTex->d3d11MSAATexture2D;
+                D3D11_TEXTURE2D_DESC texDesc = { };
+                colorTex->d3d11MSAATexture2D->GetDesc(&texDesc);
+                rtvDesc.Format = texDesc.Format;
+            }
+            else if (colorTex->d3d11Texture2D) {
                 d3d11Res = colorTex->d3d11Texture2D;
                 D3D11_TEXTURE2D_DESC texDesc = { };
                 colorTex->d3d11Texture2D->GetDesc(&texDesc);

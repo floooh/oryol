@@ -105,9 +105,10 @@ private:
     renderPass* curRenderPass;
     pipeline* curPipeline;
     mesh* curPrimaryMesh;
-
-    ID3D11RenderTargetView* d3d11CurRenderTargetView;
-    ID3D11DepthStencilView* d3d11CurDepthStencilView;
+    
+    int numRTVs;
+    StaticArray<ID3D11RenderTargetView*, GfxConfig::MaxNumColorAttachments> d3d11CurRTVs;
+    ID3D11DepthStencilView* d3d11CurDSV;
     ID3D11RasterizerState* d3d11CurRasterizerState;
     ID3D11DepthStencilState* d3d11CurDepthStencilState;
     ID3D11BlendState* d3d11CurBlendState;

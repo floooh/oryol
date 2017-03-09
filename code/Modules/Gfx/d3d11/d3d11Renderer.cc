@@ -31,8 +31,8 @@ frameIndex(0),
 curRenderPass(nullptr),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
-d3d11CurRenderTargetView(nullptr),
-d3d11CurDepthStencilView(nullptr),
+numRTVs(0),
+d3d11CurDSV(nullptr),
 d3d11CurRasterizerState(nullptr),
 d3d11CurDepthStencilState(nullptr),
 d3d11CurBlendState(nullptr),
@@ -42,6 +42,7 @@ d3d11CurVertexShader(nullptr),
 d3d11CurPixelShader(nullptr),
 d3d11CurPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED),
 curStencilRef(0xFFFF) {
+    this->d3d11CurRTVs.Fill(nullptr);
     this->d3d11CurVSCBs.Fill(nullptr);
     this->d3d11CurPSCBs.Fill(nullptr);
     this->d3d11CurVBs.Fill(nullptr);
@@ -75,8 +76,9 @@ void
 d3d11Renderer::discard() {
     o_assert_dbg(this->valid);
 
-    this->d3d11CurRenderTargetView = nullptr;
-    this->d3d11CurDepthStencilView = nullptr;
+    this->numRTVs = 0;
+    this->d3d11CurRTVs.Fill(nullptr);
+    this->d3d11CurDSV = nullptr;
     this->d3d11CurRasterizerState = nullptr;
     this->d3d11CurDepthStencilState = nullptr;
     this->d3d11CurBlendState = nullptr;
@@ -120,8 +122,9 @@ d3d11Renderer::resetStateCache() {
     this->d3d11DeviceContext->ClearState();
     this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
-    this->d3d11CurRenderTargetView = nullptr;
-    this->d3d11CurDepthStencilView = nullptr;
+    this->numRTVs = 0;
+    this->d3d11CurRTVs.Fill(nullptr);
+    this->d3d11CurDSV = nullptr;
     this->d3d11CurDepthStencilState = nullptr;
     this->d3d11CurRasterizerState = nullptr;
     this->d3d11CurBlendState = nullptr;
@@ -184,26 +187,36 @@ d3d11Renderer::beginPass(renderPass* pass, const PassState* passState) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->d3d11DeviceContext);
 
+    // don't keep texture binding across passes, bound texture might be render targets!
+    this->invalidateTextureState();
+    this->d3d11CurRTVs.Fill(nullptr);
     if (nullptr == pass) {
         this->rpAttrs = this->pointers.displayMgr->GetDisplayAttrs();
-        this->d3d11CurRenderTargetView = this->pointers.displayMgr->d3d11RenderTargetView;
-        this->d3d11CurDepthStencilView = this->pointers.displayMgr->d3d11DepthStencilView;
+        this->numRTVs = 1;
+        this->d3d11CurRTVs[0] = this->pointers.displayMgr->d3d11RenderTargetView;
+        this->d3d11CurDSV = this->pointers.displayMgr->d3d11DepthStencilView;
     }
     else {
-        // FIXME
-        /*
         o_assert_dbg(pass->colorTextures[0]);
         this->rpAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
-        this->d3d11CurRenderTargetView = pass->d3d11RenderTargetView;
-        this->d3d11CurDepthStencilView = pass->d3d11DepthStencilView;
-        */
+        int i;
+        for (i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            if (pass->d3d11RenderTargetViews[i]) {
+                this->d3d11CurRTVs[i] = pass->d3d11RenderTargetViews[i];
+            }
+            else {
+                break;
+            }
+        }
+        this->numRTVs = i;
+        this->d3d11CurDSV = pass->d3d11DepthStencilView; 
     }
     o_assert_dbg(nullptr == this->curRenderPass);
     this->curRenderPass = pass;
     this->rpValid = true;
 
     // actually set the render targets in the d3d11 device context
-    this->d3d11DeviceContext->OMSetRenderTargets(1, &this->d3d11CurRenderTargetView, this->d3d11CurDepthStencilView);
+    this->d3d11DeviceContext->OMSetRenderTargets(this->numRTVs, &(this->d3d11CurRTVs[0]), this->d3d11CurDSV);
 
     // set viewport to cover whole screen
     this->applyViewPort(0, 0, this->rpAttrs.FramebufferWidth, this->rpAttrs.FramebufferHeight, true);
@@ -211,28 +224,40 @@ d3d11Renderer::beginPass(renderPass* pass, const PassState* passState) {
     // perform clear action
     if (nullptr == this->curRenderPass) {
         if (this->gfxSetup.DefaultColorLoadAction == RenderPassLoadAction::Clear) {
-            if (this->d3d11CurRenderTargetView) {
-                const FLOAT* clearColor = nullptr;
-                if (passState) {
-                    clearColor = glm::value_ptr(passState->Color[0]);
-                }
-                else {
-                    clearColor = glm::value_ptr(this->gfxSetup.DefaultClearColor);
-                }
-                this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRenderTargetView, clearColor);
+            if (this->d3d11CurRTVs[0]) {
+                const FLOAT* c = passState ? glm::value_ptr(passState->Color[0]):glm::value_ptr(this->gfxSetup.DefaultClearColor);
+                this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[0], c);
             }
         }
         if (this->gfxSetup.DefaultDepthStencilLoadAction == RenderPassLoadAction::Clear) {
-            if (this->d3d11CurDepthStencilView) {
+            if (this->d3d11CurDSV) {
                 const UINT f = D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL;
                 const FLOAT d = passState ? passState->Depth : this->gfxSetup.DefaultClearDepth;
                 const UINT8 s = passState ? passState->Stencil : this->gfxSetup.DefaultClearStencil;
-                this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDepthStencilView, f, d, s);
+                this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDSV, f, d, s);
             }
         }
     }
     else {
-        o_error("FIXME!\n");
+        for (int i = 0; i < this->numRTVs; i++) {
+            const auto& att = pass->Setup.ColorAttachments[i];
+            if (this->d3d11CurRTVs[i]) {
+                if (att.LoadAction == RenderPassLoadAction::Clear) {
+                    const FLOAT* c = passState ? glm::value_ptr(passState->Color[i]):glm::value_ptr(att.ClearColor);
+                    this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[0], c);
+                }
+            }
+            else {
+                break;
+            }
+        }
+        const auto& att = pass->Setup.DepthStencilAttachment;
+        if (this->d3d11CurDSV && (att.LoadAction == RenderPassLoadAction::Clear)) {
+            const UINT f = D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL;
+            const FLOAT d = passState ? passState->Depth : att.ClearDepth;
+            const UINT8 s = passState ? passState->Stencil : att.ClearStencil;
+            this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDSV, f, d, s);
+        }
     }
 }
 
@@ -246,7 +271,19 @@ d3d11Renderer::endPass() {
         if ((rp->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
             (rp->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve))
         {
-            o_error("FIXME!\n");
+            // perform MSAA resolve on offscreen render targets
+            for (int i = 0; i < this->numRTVs; i++) {
+                texture* colorTex = rp->colorTextures[i];
+                const auto& att = rp->Setup.ColorAttachments[i];
+                o_assert_dbg(colorTex->d3d11MSAATexture2D && colorTex->d3d11Texture2D);
+                UINT subres = D3D11CalcSubresource(att.Level, att.Level, colorTex->textureAttrs.NumMipMaps);
+                this->d3d11DeviceContext->ResolveSubresource(
+                    colorTex->d3d11Texture2D,       // pDstResource
+                    subres,                         // DstSubresource
+                    colorTex->d3d11MSAATexture2D,   // pSrcResource
+                    subres,                         // SrcSubresource
+                    colorTex->d3d11ColorFormat);
+            }
         }
     }
     this->curRenderPass = nullptr;

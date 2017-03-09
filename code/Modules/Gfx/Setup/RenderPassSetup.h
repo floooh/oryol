@@ -40,8 +40,8 @@ public:
     struct DepthStencilAttachment {
         Id Texture;
         RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        float DepthClearValue = 1.0f;
-        uint8_t StencilClearValue = 0;
+        float ClearDepth = 1.0f;
+        uint8_t ClearStencil = 0;
     };
     struct DepthStencilAttachment DepthStencilAttachment;
 

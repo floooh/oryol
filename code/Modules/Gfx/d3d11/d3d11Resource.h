@@ -111,6 +111,10 @@ public:
     ID3D11SamplerState* d3d11SamplerState = nullptr;
     /// d3d11 depth-stencil texture (if render target with depth buffer)
     ID3D11Texture2D* d3d11DepthStencilTexture = nullptr;
+    /// d3d11 MSAA texture (optional)
+    ID3D11Texture2D* d3d11MSAATexture2D = nullptr;
+    /// d3d11 color texture format
+    DXGI_FORMAT d3d11ColorFormat = (DXGI_FORMAT) 0;   // DXGI_FORMAT_UNKNOWN
 };
 
 //------------------------------------------------------------------------------
