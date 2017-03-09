@@ -379,7 +379,7 @@ glRenderer::beginPass(renderPass* pass, const PassState* passState) {
             if (pass->depthStencilTexture && (dsAtt.LoadAction == RenderPassLoadAction::Clear)) {
                 clearMask |= GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT;
                 #if ORYOL_OPENGLES2 || ORYOL_OPENGLES3
-                ::glClearDepthf(passState ? passState->Depth : dsAtt.DepthClearValue);
+                ::glClearDepthf(passState ? passState->Depth : dsAtt.ClearDepth);
                 #else
                 ::glClearDepth(passState ? passState->Depth : dsAtt.ClearDepth);
                 #endif
