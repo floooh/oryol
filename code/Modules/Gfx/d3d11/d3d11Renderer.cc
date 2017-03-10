@@ -244,7 +244,7 @@ d3d11Renderer::beginPass(renderPass* pass, const PassState* passState) {
             if (this->d3d11CurRTVs[i]) {
                 if (att.LoadAction == RenderPassLoadAction::Clear) {
                     const FLOAT* c = passState ? glm::value_ptr(passState->Color[i]):glm::value_ptr(att.ClearColor);
-                    this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[0], c);
+                    this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[i], c);
                 }
             }
             else {
