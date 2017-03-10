@@ -82,16 +82,14 @@ d3d11MeshFactory::createBuffer(const void* data, uint32_t dataSize, uint32_t d3d
     o_assert_dbg(this->d3d11Device);
     o_assert_dbg((D3D11_BIND_VERTEX_BUFFER == d3d11BindFlags) || (D3D11_BIND_INDEX_BUFFER == d3d11BindFlags));
 
-    D3D11_BUFFER_DESC desc;
-    Memory::Clear(&desc, sizeof(desc));
+    D3D11_BUFFER_DESC desc = { };
     desc.ByteWidth = dataSize;
     desc.Usage = d3d11Types::asResourceUsage(usage);
     desc.BindFlags = d3d11BindFlags;
     desc.CPUAccessFlags = d3d11Types::asResourceCPUAccessFlag(usage);
 
     D3D11_SUBRESOURCE_DATA* initDataPtr = nullptr;
-    D3D11_SUBRESOURCE_DATA initData;
-    Memory::Clear(&initData, sizeof(initData));
+    D3D11_SUBRESOURCE_DATA initData = { };
     if (data) {
         initData.pSysMem = data;
         initDataPtr = &initData;
