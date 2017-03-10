@@ -184,6 +184,9 @@ slMacros = {
         '_position': '_oPosition',
         '_pointsize': '_oPointSize',
         '_color': '_oColor',
+        '_color1': '_oColor1',
+        '_color2': '_oColor2',
+        '_color3': '_oColor3',
         '_const': 'static const',
         '_func': '',
         'vec2': 'float2',
@@ -193,8 +196,10 @@ slMacros = {
         'mat3': 'float3x3',
         'mat4': 'float4x4',
         'tex2D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
+        'tex3D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'texCUBE(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
+        'tex3Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
@@ -1152,8 +1157,13 @@ class HLSLGenerator :
         lines.append(Line('    TextureCube t;'))
         lines.append(Line('    SamplerState s;'))
         lines.append(Line('};'))
+        lines.append(Line('class _tex3d {'))
+        lines.append(Line('    Texture3D t;'))
+        lines.append(Line('    SamplerState s;'))
+        lines.append(Line('};'))
         lines.append(Line('#define sampler2D _tex2d'))
         lines.append(Line('#define samplerCube _texcube'))
+        lines.append(Line('#define sampler3D _tex3d'))
         lines.append(Line('#endif'))
         return lines
 
@@ -1165,6 +1175,8 @@ class HLSLGenerator :
             for tex in tb.textures :
                 if tex.type == 'sampler2D':
                     texType = 'Texture2D'
+                elif tex.type == 'sampler3D':
+                    texType = 'Texture3D'
                 else :
                     texType = 'TextureCube'
                 lines.append(Line('{} _t_{} : register(t{});'.format(texType, tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
@@ -1197,6 +1209,10 @@ class HLSLGenerator :
                         tex.filePath, tex.lineNumber))
                 elif tex.type == 'samplerCube' :
                     lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                        tex.name, tex.name, tex.name, tex.name, tex.name),
+                        tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler3D':
+                    lines.append(Line('_tex3d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
                         tex.name, tex.name, tex.name, tex.name, tex.name),
                         tex.filePath, tex.lineNumber))
         return lines
@@ -1263,6 +1279,12 @@ class HLSLGenerator :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
         lines.append(Line('in float4 _fragcoord : SV_Position,'))
+        if fs.hasColor1:
+            lines.append(Line('out vec4 _oColor1 : SV_TARGET1,'))
+        if fs.hasColor2:
+            lines.append(Line('out vec4 _oColor2 : SV_TARGET2,'))
+        if fs.hasColor3:
+            lines.append(Line('out vec4 _oColor3 : SV_TARGET3,'))
         lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
