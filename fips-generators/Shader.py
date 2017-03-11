@@ -1249,7 +1249,7 @@ class HLSLGenerator :
             lines.append(Line(l, output.filePath, output.lineNumber))
         if vs.hasPointSize :
             lines.append(Line('out float _oPointSize : PSIZE,'))
-        lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines.append(Line('out vec4 _oPosition : SV_Position) {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1280,12 +1280,12 @@ class HLSLGenerator :
             lines.append(Line(l, input.filePath, input.lineNumber))
         lines.append(Line('in float4 _fragcoord : SV_Position,'))
         if fs.hasColor1:
-            lines.append(Line('out vec4 _oColor1 : SV_TARGET1,'))
+            lines.append(Line('out vec4 _oColor1 : SV_Target1,'))
         if fs.hasColor2:
-            lines.append(Line('out vec4 _oColor2 : SV_TARGET2,'))
+            lines.append(Line('out vec4 _oColor2 : SV_Target2,'))
         if fs.hasColor3:
-            lines.append(Line('out vec4 _oColor3 : SV_TARGET3,'))
-        lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
+            lines.append(Line('out vec4 _oColor3 : SV_Target3,'))
+        lines.append(Line('out vec4 _oColor : SV_Target) {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
