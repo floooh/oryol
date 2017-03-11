@@ -35,32 +35,15 @@ d3d11MeshFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-d3d11MeshFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
-d3d11MeshFactory::SetupResource(mesh& msh) {
+d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    if (msh.Setup.ShouldSetupEmpty()) {
-        return this->createBuffers(msh, nullptr, 0);
-    }
-    else if (msh.Setup.ShouldSetupFullScreenQuad()) {
+    if (msh.Setup.ShouldSetupFullScreenQuad()) {
         return this->createFullscreenQuad(msh);
     }
     else {
-        o_error("d3d11MeshFactory::SetupResource(): don't know how to create mesh!");
-        return ResourceState::InvalidState;
+        return this->createBuffers(msh, data, size);
     }
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int size) {
-    o_assert_dbg(msh.Setup.ShouldSetupFromData());
-    return this->createBuffers(msh, data, size);
 }
 
 //------------------------------------------------------------------------------

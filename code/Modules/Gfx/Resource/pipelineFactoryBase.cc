@@ -37,12 +37,6 @@ pipelineFactoryBase::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-pipelineFactoryBase::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 pipelineFactoryBase::SetupResource(pipeline& pip) {
     o_assert_dbg(this->isValid);

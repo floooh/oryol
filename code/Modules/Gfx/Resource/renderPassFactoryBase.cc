@@ -49,9 +49,6 @@ renderPassFactoryBase::SetupResource(renderPass& rp) {
         rp.depthStencilTexture = this->pointers.texturePool->Lookup(id);
         o_assert_dbg(rp.depthStencilTexture && (ResourceState::Valid == rp.depthStencilTexture->State));
     }
-    #if ORYOL_DEBUG
-    this->validateRenderPass(rp);
-    #endif
     return ResourceState::Valid;
 }
 
@@ -60,69 +57,6 @@ void
 renderPassFactoryBase::DestroyResource(renderPass& rp) {
     rp.Clear();
 }
-
-//------------------------------------------------------------------------------
-#if ORYOL_DEBUG
-void
-renderPassFactoryBase::validateRenderPass(const renderPass& rp) {
-
-    // check that at least one color attachment texture is defined
-    // and that there are no 'holes' if there are multiple attachments
-    bool continuous = true;
-    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
-        if (rp.colorTextures[i]) {
-            if (!continuous) {
-                o_error("invalid render pass: must have continuous color attachments!\n");
-            }
-        }
-        else {
-            if (0 == i) {
-                o_error("invalid render pass: must have color attachment at slot 0!\n");
-            }
-            continuous = false;
-        }
-    }
-
-    // check that all render targets have the required params
-    const int w = rp.colorTextures[0]->textureAttrs.Width;
-    const int h = rp.colorTextures[0]->textureAttrs.Height;
-    const int sampleCount = rp.colorTextures[0]->textureAttrs.SampleCount;
-    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
-        const texture* tex = rp.colorTextures[i];
-        if (tex) {
-            const auto& attrs = tex->textureAttrs;
-            if ((attrs.Width != w) || (attrs.Height != h)) {
-                o_error("invalid render pass: all color attachments must have the same size!\n");
-            }
-            if (attrs.SampleCount != sampleCount) {
-                o_error("invalid render pass: all color attachments must have same sample-count!\n");
-            }
-            if (attrs.TextureUsage != Usage::Immutable) {
-                o_error("invalid render pass: color attachments must have immutable usage!\n");
-            }
-            if (!tex->Setup.RenderTarget) {
-                o_error("invalid render pass: color attachment must have been setup as render target!\n");
-            }
-        }
-    }
-    const texture* dsTex = rp.depthStencilTexture;
-    if (dsTex) {
-        const auto& attrs = dsTex->textureAttrs;
-        if ((attrs.Width != w) || (attrs.Height != h)) {
-            o_error("invalid render pass: depth-stencil attachment must have same size as color attachments!\n");
-        }
-        if (attrs.SampleCount != sampleCount) {
-            o_error("invalid render pass: depth-stencil attachment must have sample sample-count as color attachments!\n");
-        }
-        if (attrs.TextureUsage != Usage::Immutable) {
-            o_error("invalid render pass: depth attachment must have immutable usage!\n");
-        }
-        if (!dsTex->Setup.RenderTarget) {
-            o_error("invalid render pass: depth attachment must have been setup as render target!\n");
-        }
-    }
-}
-#endif
 
 } // namespace _priv
 } // namespace Oryol

@@ -41,8 +41,6 @@ protected:
     bool isValid() const;
     /// peek top of label stack
     ResourceLabel peekLabel() const;
-    /// return true if currently on main thread
-    bool isMainThread() const;
     
     Array<ResourceLabel> labelStack;
     _priv::resourceRegistry registry;

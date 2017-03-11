@@ -128,13 +128,21 @@ public:
 
 private:
     #if ORYOL_DEBUG
+    /// validate texture setup params
+    static void validateTextureSetup(const TextureSetup& setup, const void* data, int size);
+    /// validate mesh setup params
+    static void validateMeshSetup(const MeshSetup& setup, const void* data, int size);
+    /// validate pipeline setup params
+    static void validatePipelineSetup(const PipelineSetup& setup);
+    /// validate render pass setup params
+    static void validateRenderPassSetup(const RenderPassSetup& setup);
+    /// validate shader setup params
+    static void validateShaderSetup(const ShaderSetup& setup);
     /// validate mesh binding
     static void validateMeshes(_priv::pipeline* pip, _priv::mesh** meshes, int numMeshes);
     /// validate texture binding
     static void validateTextures(ShaderStage::Code stage, _priv::pipeline* pip, _priv::texture** textures, int numTextures);
     #endif
-    /// private generic apply texture block method
-    template<class T> static void applyTextureBlock(const T& tb);
 
     struct _state {
         class GfxSetup gfxSetup;
@@ -160,7 +168,7 @@ Gfx::ApplyUniformBlock(const T& ub) {
 template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer.Create(setup);
+    return CreateResource(setup, nullptr, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -168,7 +176,7 @@ template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup, const Buffer& data) {
     o_assert_dbg(IsValid());
     o_assert_dbg(!data.Empty());
-    return state->resourceContainer.Create(setup, data.Data(), data.Size());
+    return CreateResource(setup, data.Data(), data.Size());
 }
 
 //------------------------------------------------------------------------------
@@ -176,15 +184,6 @@ template<class SETUP> inline Id
 Gfx::CreateResource(const SetupAndData<SETUP>& setupAndData) {
     o_assert_dbg(IsValid());
     return CreateResource(setupAndData.Setup, setupAndData.Data);
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup, const void* data, int size) {
-    o_assert_dbg(IsValid());
-    o_assert_dbg(nullptr != data);
-    o_assert_dbg(size > 0);
-    return state->resourceContainer.Create(setup, data, size);
 }
 
 } // namespace Oryol

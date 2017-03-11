@@ -67,11 +67,11 @@ public:
     /// use as render target?
     bool RenderTarget = false;
     /// width in pixels
-    int Width = 0;
+    int Width = 1;
     /// height in pixels
-    int Height = 0;
+    int Height = 1;
     /// depth/layers in pixels (for 3D and Array textures)
-    int Depth = 0;
+    int Depth = 1;
     /// number of mipmaps (default is 1, only for FromPixelData)
     int NumMipMaps = 1;
     /// the color pixel format

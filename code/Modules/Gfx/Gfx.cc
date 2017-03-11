@@ -479,4 +479,200 @@ Gfx::validateTextures(ShaderStage::Code stage, pipeline* pip, texture** textures
 }
 #endif
 
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validateTextureSetup(const TextureSetup& setup, const void* data, int size) {
+    o_assert((setup.NumMipMaps > 0) && (setup.NumMipMaps <= GfxConfig::MaxNumTextureMipMaps));
+    o_assert((setup.Width >= 1) && (setup.Height >= 1) && (setup.Depth >= 1));
+    if (data) {
+        o_assert(size > 0);
+        o_assert(setup.TextureUsage == Usage::Immutable);
+        o_assert(setup.ImageData.NumMipMaps > 0);
+        o_assert(setup.ImageData.NumFaces > 0);
+    }
+    if (setup.Type == TextureType::Texture2D) {
+        o_assert(setup.Depth == 1);
+    }
+    if (setup.Type == TextureType::TextureArray) {
+        o_assert(setup.Depth <= GfxConfig::MaxNumTextureArraySlices);
+    }
+    if (setup.Type == TextureType::Texture3D) {
+        o_assert(!setup.RenderTarget);
+    }
+    if (setup.RenderTarget) {
+        o_assert(setup.TextureUsage == Usage::Immutable);
+        o_assert(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
+        if (setup.DepthFormat != PixelFormat::InvalidPixelFormat) {
+            o_assert(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
+        }
+    }
+    else {
+        o_assert(setup.SampleCount == 1);
+        o_assert(setup.DepthFormat == PixelFormat::InvalidPixelFormat);
+    }
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validateMeshSetup(const MeshSetup& setup, const void* data, int size) {
+    o_assert(setup.ShouldSetupFullScreenQuad() || (setup.VertexUsage != Usage::InvalidUsage) || (setup.IndexUsage != Usage::InvalidUsage));
+    if (setup.NumVertices > 0) {
+        o_assert(!setup.Layout.Empty());
+        if (setup.VertexUsage == Usage::Immutable) {
+            o_assert(data && (size > 0));
+            o_assert((setup.DataVertexOffset >= 0) && (setup.DataVertexOffset < size));
+        }
+    }
+    if (setup.NumIndices > 0) {
+        o_assert((setup.IndicesType == IndexType::Index16) || (setup.IndicesType == IndexType::Index32));
+        if (setup.IndexUsage == Usage::Immutable) {
+            o_assert(data && (size > 0));
+            o_assert((setup.DataIndexOffset >= 0) && (setup.DataIndexOffset < size));
+        }
+    }
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validatePipelineSetup(const PipelineSetup& setup) {
+    o_assert(setup.PrimType != PrimitiveType::InvalidPrimitiveType);
+    o_assert(setup.Shader.IsValid());
+    bool anyLayoutValid = false;
+    for (const auto& layout : setup.Layouts) {
+        if (!layout.Empty()) {
+            anyLayoutValid = true;
+            break;
+        }
+    }
+    o_assert(anyLayoutValid);
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validateRenderPassSetup(const RenderPassSetup& setup) {
+    // check that at least one color attachment texture is defined
+    // and that there are no 'holes' if there are multiple attachments
+    bool continuous = true;
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        if (setup.ColorAttachments[i].Texture.IsValid()) {
+            if (!continuous) {
+                o_error("invalid render pass: must have continuous color attachments!\n");
+            }
+        }
+        else {
+            if (0 == i) {
+                o_error("invalid render pass: must have color attachment at slot 0!\n");
+            }
+            continuous = false;
+        }
+    }
+
+    // check that all render targets have the required params
+    const texture* t0 = state->resourceContainer.lookupTexture(setup.ColorAttachments[0].Texture);
+    o_assert(t0);
+    const int w = t0->textureAttrs.Width;
+    const int h = t0->textureAttrs.Height;
+    const int sampleCount = t0->textureAttrs.SampleCount;
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        const texture* tex = state->resourceContainer.lookupTexture(setup.ColorAttachments[i].Texture);
+        if (tex) {
+            const auto& attrs = tex->textureAttrs;
+            if ((attrs.Width != w) || (attrs.Height != h)) {
+                o_error("invalid render pass: all color attachments must have the same size!\n");
+            }
+            if (attrs.SampleCount != sampleCount) {
+                o_error("invalid render pass: all color attachments must have same sample-count!\n");
+            }
+            if (attrs.TextureUsage != Usage::Immutable) {
+                o_error("invalid render pass: color attachments must have immutable usage!\n");
+            }
+            if (!tex->Setup.RenderTarget) {
+                o_error("invalid render pass: color attachment must have been setup as render target!\n");
+            }
+        }
+    }
+    const texture* dsTex = state->resourceContainer.lookupTexture(setup.DepthStencilAttachment.Texture);
+    if (dsTex) {
+        const auto& attrs = dsTex->textureAttrs;
+        if ((attrs.Width != w) || (attrs.Height != h)) {
+            o_error("invalid render pass: depth-stencil attachment must have same size as color attachments!\n");
+        }
+        if (attrs.SampleCount != sampleCount) {
+            o_error("invalid render pass: depth-stencil attachment must have sample sample-count as color attachments!\n");
+        }
+        if (attrs.TextureUsage != Usage::Immutable) {
+            o_error("invalid render pass: depth attachment must have immutable usage!\n");
+        }
+        if (!dsTex->Setup.RenderTarget) {
+            o_error("invalid render pass: depth attachment must have been setup as render target!\n");
+        }
+    }
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+Gfx::validateShaderSetup(const ShaderSetup& setup) {
+    // hmm, FIXME
+}
+#endif
+
+//------------------------------------------------------------------------------
+template<> Id
+Gfx::CreateResource(const TextureSetup& setup, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    #if ORYOL_DEBUG
+    validateTextureSetup(setup, data, size);
+    #endif
+    return state->resourceContainer.Create(setup, data, size);
+}
+
+//------------------------------------------------------------------------------
+template<> Id
+Gfx::CreateResource(const MeshSetup& setup, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    #if ORYOL_DEBUG
+    validateMeshSetup(setup, data, size);
+    #endif
+    return state->resourceContainer.Create(setup, data, size);
+}
+
+//------------------------------------------------------------------------------
+template<> Id
+Gfx::CreateResource(const ShaderSetup& setup, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    #if ORYOL_DEBUG
+    validateShaderSetup(setup);
+    #endif
+    return state->resourceContainer.Create(setup, nullptr, 0);
+}
+
+//------------------------------------------------------------------------------
+template<> Id
+Gfx::CreateResource(const PipelineSetup& setup, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    #if ORYOL_DEBUG
+    validatePipelineSetup(setup);
+    #endif
+    return state->resourceContainer.Create(setup, nullptr, 0);
+}
+
+//------------------------------------------------------------------------------
+template<> Id
+Gfx::CreateResource(const RenderPassSetup& setup, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    #if ORYOL_DEBUG
+    validateRenderPassSetup(setup);
+    #endif
+    return state->resourceContainer.Create(setup, nullptr, 0);
+}
+
 } // namespace Oryol

@@ -32,6 +32,8 @@ public:
     static const int MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
     /// max number of texture faces
     static const int MaxNumTextureFaces = 6;
+    /// max number of texture array slices
+    static const int MaxNumTextureArraySlices = 128;
     /// max number of texture mipmaps
     static const int MaxNumTextureMipMaps = 12;
     /// maximum number of components in uniform block layout

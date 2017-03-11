@@ -34,12 +34,6 @@ d3d11ShaderFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-d3d11ShaderFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 d3d11ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);

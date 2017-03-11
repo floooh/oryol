@@ -22,8 +22,6 @@ public:
     void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
-    /// return true if factory is valid
-    bool IsValid() const;
     /// setup renderpass resource
     ResourceState::Code SetupResource(renderPass& rp);
     /// destroy renderpass resource
@@ -32,12 +30,6 @@ public:
 protected:
     gfxPointers pointers;
     bool isValid = false;
-
-private:
-    /// check render-pass for valid configuration
-    #if ORYOL_DEBUG
-    static void validateRenderPass(const renderPass& rp);
-    #endif
 };
 
 } // namespace _priv

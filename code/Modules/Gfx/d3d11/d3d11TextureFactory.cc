@@ -15,6 +15,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 d3d11TextureFactory::~d3d11TextureFactory() {
     o_assert_dbg(!this->isValid);
+    o_assert_dbg(!this->subResourceData);
 }
 
 //------------------------------------------------------------------------------
@@ -24,38 +25,26 @@ d3d11TextureFactory::Setup(const gfxPointers& ptrs) {
     this->isValid = true;
     this->pointers = ptrs;
     this->d3d11Device = this->pointers.renderer->d3d11Device;
+    this->subResourceData = (D3D11_SUBRESOURCE_DATA*) Memory::Alloc(sizeof(D3D11_SUBRESOURCE_DATA) * maxNumSubResourceData);
 }
 
 //------------------------------------------------------------------------------
 void
 d3d11TextureFactory::Discard() {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(this->subResourceData);
 
     this->isValid = false;
     this->pointers = gfxPointers();
     this->d3d11Device = nullptr;
-}
-
-//------------------------------------------------------------------------------
-bool
-d3d11TextureFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-d3d11TextureFactory::SetupResource(texture& tex) {
-    o_assert_dbg(this->isValid);
-    o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
-    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
-    return this->createTexture(tex, nullptr, 0);
+    Memory::Free(this->subResourceData);
+    this->subResourceData = nullptr;
 }
 
 //------------------------------------------------------------------------------
 ResourceState::Code
 d3d11TextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(!tex.Setup.RenderTarget);
     return this->createTexture(tex, data, size);
 }
 
@@ -110,6 +99,7 @@ d3d11TextureFactory::setupTextureAttrs(texture& tex) {
 ResourceState::Code
 d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     o_assert_dbg(this->d3d11Device);
+    o_assert_dbg(this->subResourceData);
     o_assert_dbg(!tex.d3d11Texture2D);
     o_assert_dbg(!tex.d3d11Texture3D);
     o_assert_dbg(!tex.d3d11ShaderResourceView);
@@ -119,30 +109,19 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
 
     const TextureSetup& setup = tex.Setup;
     o_assert_dbg(!setup.ShouldSetupFromNativeTexture());
-    o_assert_dbg(setup.NumMipMaps > 0);
-    #if ORYOL_DEBUG
-    // initialize with data only allowed for immutable textures
-    if (data) {
-        o_assert(setup.TextureUsage == Usage::Immutable);
-        o_assert(setup.ImageData.NumMipMaps > 0);
-        o_assert(setup.ImageData.NumFaces > 0);
-    }
-    #endif
 
     // subresourcedata array if initial data is provided
-    const int maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
-    D3D11_SUBRESOURCE_DATA subResourceData[maxNumSubResourceData] = { };
     D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
     if (data) {
         const uint8_t* srcPtr = (const uint8_t*)data;
-        const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+        const int numSlices = setup.Type==TextureType::TextureCube ? 6:(setup.Type==TextureType::TextureArray ? setup.Depth:1);
         const int numMipMaps = setup.NumMipMaps;
         int subResourceDataIndex = 0;
-        for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+        for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
             for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {
                 o_assert_dbg(subResourceDataIndex < maxNumSubResourceData);
-                D3D11_SUBRESOURCE_DATA& subResData = subResourceData[subResourceDataIndex];
-                subResData.pSysMem = srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]; 
+                D3D11_SUBRESOURCE_DATA& subResData = this->subResourceData[subResourceDataIndex];
+                subResData.pSysMem = srcPtr + setup.ImageData.Offsets[sliceIndex][mipIndex]; 
                 const int mipWidth = std::max(setup.Width >> mipIndex, 1);
                 const int mipHeight = std::max(setup.Height >> mipIndex, 1);
                 subResData.SysMemPitch = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
@@ -155,7 +134,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
                 }
             }
         }
-        pInitialData = subResourceData;
+        pInitialData = this->subResourceData;
     }
 
     // create the color texture
@@ -240,11 +219,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
 
     // optional depth-stencil-buffer texture
     if (setup.RenderTarget && (setup.DepthFormat != PixelFormat::InvalidPixelFormat)) {
-        o_assert_dbg(setup.TextureUsage == Usage::Immutable);
-    
         // create depth-buffer-texture
-        o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
-        o_assert_dbg(setup.DepthFormat != PixelFormat::None);
         D3D11_TEXTURE2D_DESC dsDesc = {};
         dsDesc.Width = setup.Width;
         dsDesc.Height = setup.Height;

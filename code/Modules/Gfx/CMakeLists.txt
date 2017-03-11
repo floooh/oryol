@@ -62,8 +62,7 @@ fips_begin_module(Gfx)
         factory.h
         pipelineFactoryBase.cc pipelineFactoryBase.h
         renderPassFactoryBase.cc renderPassFactoryBase.h
-        gfxResourceContainerBase.cc gfxResourceContainerBase.h
-        gfxResourceContainer.h 
+        gfxResourceContainer.h gfxResourceContainer.cc 
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
     )
