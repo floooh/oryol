@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 78
+Version = 79
 
 import os
 import sys
@@ -576,6 +576,7 @@ class Shader(Snippet) :
         self.hasColor1 = False
         self.hasColor2 = False
         self.hasColor3 = False
+        self.hasFragCoord = False
 
     def dump(self) :
         Snippet.dump(self)
@@ -660,6 +661,7 @@ class Parser :
         self.regexColor1 = re.compile('^{}_color1{}$'.format(rx_str, rx_str))
         self.regexColor2 = re.compile('^{}_color2{}$'.format(rx_str, rx_str))
         self.regexColor3 = re.compile('^{}_color3{}$'.format(rx_str, rx_str))
+        self.regexFragCoord = re.compile('^{}_fragcoord{}$'.format(rx_str, rx_str))
 
     #---------------------------------------------------------------------------
     def stripComments(self, line) :
@@ -958,6 +960,8 @@ class Parser :
                 self.current.hasColor2 = True
             if self.regexColor3.match(line) :
                 self.current.hasColor3 = True
+            if self.regexFragCoord.match(line) :
+                self.current.hasFragCoord = True
 
     #---------------------------------------------------------------------------
     def parseLine(self, line) :
@@ -1278,7 +1282,8 @@ class HLSLGenerator :
         for input in fs.inputs :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
-        lines.append(Line('in float4 _fragcoord : SV_Position,'))
+        if fs.hasFragCoord:
+            lines.append(Line('in float4 _fragcoord : SV_Position,'))
         if fs.hasColor1:
             lines.append(Line('out vec4 _oColor1 : SV_Target1,'))
         if fs.hasColor2:
@@ -1521,7 +1526,8 @@ class MetalGenerator :
             lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
         lines.append(Line('fragment {}_fs_out_t {}('.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genFuncArgs(fs, lines)
-        lines.append(Line('float4 _fragcoord [[position]],'))
+        if fs.hasFragCoord:
+            lines.append(Line('float4 _fragcoord [[position]],'))
         lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines.append(Line('{}_fs_out_t _fo_color;'.format(fs.name)))
         lines = self.genLocalTexObjects(fs, lines)
