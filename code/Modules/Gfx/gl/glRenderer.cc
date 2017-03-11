@@ -891,17 +891,6 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
 
 //------------------------------------------------------------------------------
 void
-glRenderer::generateMipmaps(texture* tex) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nullptr != tex);
-    ::glBindTexture(tex->glTarget, tex->glTextures[tex->activeSlot]);
-    ::glGenerateMipmap(tex->glTarget);
-    ORYOL_GL_CHECK_ERROR();
-    this->invalidateTextureState();
-}
-
-//------------------------------------------------------------------------------
-void
 glRenderer::invalidateMeshState() {
     o_assert_dbg(this->valid);
 

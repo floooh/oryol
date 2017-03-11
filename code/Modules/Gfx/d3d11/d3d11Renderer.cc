@@ -748,11 +748,5 @@ d3d11Renderer::invalidateTextureState() {
     this->d3d11CurPSSamplers.Fill(nullptr);
 }
 
-//------------------------------------------------------------------------------
-void
-d3d11Renderer::generateMipmaps(texture* tex) {
-    o_error("FIXME!");
-}
-
 } // namespace _priv
 } // namespace Oryol

@@ -28,7 +28,6 @@ mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
 curRenderCmdEncoder(nil),
-curBlitCmdEncoder(nil),
 curUniformBufferPtr(nullptr),
 curUniformBufferOffset(0) {
     // empty
@@ -130,12 +129,6 @@ mtlRenderer::commitFrame() {
 
     this->rpValid = false;
 
-    // finish any outstanding genmipmaps
-    if (nil != this->curBlitCmdEncoder) {
-        [this->curBlitCmdEncoder endEncoding];
-        this->curBlitCmdEncoder = nil;
-    }
-
     // commit the global uniform buffer updates
     #if ORYOL_MACOS
     [this->uniformBuffers[this->curFrameRotateIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
@@ -234,16 +227,6 @@ mtlRenderer::checkCreateCommandBuffer() {
         this->releaseQueue.garbageCollect(this->frameIndex);
         // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
-    }
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::checkCreateBlitCommandEncoder() {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nil != this->curCommandBuffer);
-    if (nil == this->curBlitCmdEncoder) {
-        this->curBlitCmdEncoder = [this->curCommandBuffer blitCommandEncoder];
     }
 }
 
@@ -363,12 +346,6 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
             passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(this->gfxSetup.DefaultDepthStencilLoadAction);
             passDesc.stencilAttachment.clearStencil = passState ? passState->Stencil : this->gfxSetup.DefaultClearStencil;
         }
-    }
-
-    // if a blit command encoder exists, finish encoding now and get rid of it
-    if (nil != this->curBlitCmdEncoder) {
-        [this->curBlitCmdEncoder endEncoding];
-        this->curBlitCmdEncoder = nil;
     }
 
     // create command encoder for this render pass
@@ -656,16 +633,6 @@ texRotateActiveSlot(texture* tex, int frameIndex) {
     if (++tex->activeSlot >= tex->numSlots) {
         tex->activeSlot = 0;
     }
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::generateMipmaps(texture* tex) {
-    o_assert_dbg(this->valid);
-    o_assert_dbg(nil == this->curRenderCmdEncoder); // must be called outside pass
-    this->checkCreateCommandBuffer();
-    this->checkCreateBlitCommandEncoder();
-    [this->curBlitCmdEncoder generateMipmapsForTexture:tex->mtlTextures[tex->activeSlot]];
 }
 
 //------------------------------------------------------------------------------

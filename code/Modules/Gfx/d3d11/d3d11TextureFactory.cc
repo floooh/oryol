@@ -114,8 +114,8 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
     if (data) {
         const uint8_t* srcPtr = (const uint8_t*)data;
-        const int numSlices = setup.Type==TextureType::TextureCube ? 6:(setup.Type==TextureType::TextureArray ? setup.Depth:1);
-        const int numMipMaps = setup.NumMipMaps;
+        const int numSlices = setup.Type==TextureType::TextureCube ? setup.ImageData.NumFaces:(setup.Type==TextureType::TextureArray ? setup.Depth:1);
+        const int numMipMaps = setup.ImageData.NumMipMaps;
         int subResourceDataIndex = 0;
         for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
             for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {

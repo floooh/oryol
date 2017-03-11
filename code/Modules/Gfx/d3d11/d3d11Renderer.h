@@ -86,9 +86,6 @@ public:
     /// invalidate currently bound texture state
     void invalidateTextureState();
 
-    /// generate mipmaps for texture
-    void generateMipmaps(texture* tex);
-
     /// pointer to d3d11 device
     ID3D11Device* d3d11Device;
     /// pointer to immediate mode device context

@@ -96,9 +96,6 @@ public:
     /// bind a texture to a sampler index
     void bindTexture(int samplerIndex, GLenum target, GLuint tex);
 
-    /// generate mipmaps for texture
-    void generateMipmaps(texture* tex);
-    
 private:
     /// setup the initial depth-stencil-state
     void setupDepthStencilState();

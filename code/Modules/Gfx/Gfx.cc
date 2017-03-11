@@ -373,18 +373,6 @@ Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsets
 
 //------------------------------------------------------------------------------
 void
-Gfx::GenerateMipmaps(const Id& id) {
-    o_trace_scoped(Gfx_GenerateMipmaps);
-    o_assert_dbg(IsValid());
-    o_assert_dbg(!state->inPass);
-    state->gfxFrameInfo.NumGenerateMipmaps++;
-    texture* tex = state->resourceContainer.lookupTexture(id);
-    o_assert_dbg(tex->Setup.NumMipMaps > 1);
-    state->renderer.generateMipmaps(tex);
-}
-
-//------------------------------------------------------------------------------
-void
 Gfx::Draw(int primGroupIndex, int numInstances) {
     o_trace_scoped(Gfx_Draw);
     o_assert_dbg(IsValid());
@@ -488,8 +476,13 @@ Gfx::validateTextureSetup(const TextureSetup& setup, const void* data, int size)
     if (data) {
         o_assert(size > 0);
         o_assert(setup.TextureUsage == Usage::Immutable);
-        o_assert(setup.ImageData.NumMipMaps > 0);
-        o_assert(setup.ImageData.NumFaces > 0);
+        o_assert(setup.ImageData.NumMipMaps == setup.NumMipMaps);
+        if (setup.Type == TextureType::TextureCube) {
+            o_assert(setup.ImageData.NumFaces == 6);
+        }
+        else {
+            o_assert(setup.ImageData.NumFaces == 1);
+        }
     }
     if (setup.Type == TextureType::Texture2D) {
         o_assert(setup.Depth == 1);
