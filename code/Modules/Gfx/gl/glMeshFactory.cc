@@ -42,25 +42,14 @@ glMeshFactory::IsValid() const {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glMeshFactory::SetupResource(mesh& msh) {
+glMeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    if (msh.Setup.ShouldSetupEmpty()) {
-        return this->createEmptyMesh(msh);
-    }
-    else if (msh.Setup.ShouldSetupFullScreenQuad()) {
+    if (msh.Setup.ShouldSetupFullScreenQuad()) {
         return this->createFullscreenQuad(msh);
     }
     else {
-        o_error("glMeshFactory::SetupResource(): don't know how to create mesh!");
-        return ResourceState::InvalidState;
+        return this->createMesh(msh, data, size);
     }
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-glMeshFactory::SetupResource(mesh& msh, const void* data, int size) {
-    o_assert_dbg(msh.Setup.ShouldSetupFromData());
-    return this->createFromData(msh, data, size);
 }
 
 //------------------------------------------------------------------------------
@@ -79,45 +68,19 @@ glMeshFactory::DestroyResource(mesh& mesh) {
 }
 
 //------------------------------------------------------------------------------
-/**
- NOTE: this method can be called with a nullptr for vertexData, in this case
- an empty GL buffer object will be created with the requested size.
-*/
 GLuint
-glMeshFactory::createVertexBuffer(const void* vertexData, uint32_t vertexDataSize, Usage::Code usage) {
-    o_assert_dbg(vertexDataSize > 0);
-    
+glMeshFactory::createBuffer(GLenum type, const void* data, uint32_t dataSize, Usage::Code usage) {
+    o_assert_dbg((type == GL_ARRAY_BUFFER) || (type == GL_ELEMENT_ARRAY_BUFFER));
     this->pointers.renderer->invalidateMeshState();
-    GLuint vb = 0;
-    ::glGenBuffers(1, &vb);
+    GLuint buf = 0;
+    ::glGenBuffers(1, &buf);
     ORYOL_GL_CHECK_ERROR();
-    o_assert_dbg(0 != vb);
-    this->pointers.renderer->bindVertexBuffer(vb);
-    ::glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, glTypes::asGLBufferUsage(usage));
-    ORYOL_GL_CHECK_ERROR();
-    this->pointers.renderer->invalidateMeshState();
-    return vb;
-}
-
-//------------------------------------------------------------------------------
-/**
- NOTE: this method can be called with a nullptr for indexData, in this case
- an empty GL buffer object will be created with the requested size.
-*/
-GLuint
-glMeshFactory::createIndexBuffer(const void* indexData, uint32_t indexDataSize, Usage::Code usage) {
-    o_assert_dbg(indexDataSize > 0);
-    
-    this->pointers.renderer->invalidateMeshState();
-    GLuint ib = 0;
-    ::glGenBuffers(1, &ib);
-    ORYOL_GL_CHECK_ERROR();
-    o_assert_dbg(0 != ib);
-    this->pointers.renderer->bindIndexBuffer(ib);
-    ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indexData, glTypes::asGLBufferUsage(usage));
+    o_assert_dbg(0 != buf);
+    ::glBindBuffer(type, buf);
+    ::glBufferData(type, dataSize, data, glTypes::asGLBufferUsage(usage));
     ORYOL_GL_CHECK_ERROR();
     this->pointers.renderer->invalidateMeshState();
-    return ib;
+    return buf;
 }
 
 //------------------------------------------------------------------------------
@@ -164,8 +127,8 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     // create vertex and index buffer
     o_assert_dbg(1 == mesh.buffers[mesh::vb].numSlots);
     o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
-    mesh.buffers[mesh::vb].glBuffers[0] = this->createVertexBuffer(vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
-    mesh.buffers[mesh::ib].glBuffers[0] = this->createIndexBuffer(indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
+    mesh.buffers[mesh::vb].glBuffers[0] = this->createBuffer(GL_ARRAY_BUFFER, vertices, sizeof(vertices), mesh.vertexBufferAttrs.BufferUsage);
+    mesh.buffers[mesh::ib].glBuffers[0] = this->createBuffer(GL_ELEMENT_ARRAY_BUFFER, indices, sizeof(indices), mesh.indexBufferAttrs.BufferUsage);
 
     return ResourceState::Valid;
 }
@@ -196,47 +159,14 @@ glMeshFactory::setupPrimGroups(mesh& msh) {
         msh.primGroups[i] = msh.Setup.PrimitiveGroup(i);
     }
 }
+
 //------------------------------------------------------------------------------
 ResourceState::Code
-glMeshFactory::createEmptyMesh(mesh& mesh) {
-    o_assert_dbg(0 == mesh.buffers[mesh::vb].glBuffers[0]);
-    o_assert_dbg(0 == mesh.buffers[mesh::ib].glBuffers[0]);
-
-    this->setupAttrs(mesh);
-    this->setupPrimGroups(mesh);
-    const auto& vbAttrs = mesh.vertexBufferAttrs;
-    const auto& ibAttrs = mesh.indexBufferAttrs;
-
-    // create vertex buffer(s)
-    if (mesh.Setup.NumVertices > 0) {
-        const int vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
-        mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
-        for (uint8_t slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
-            mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
-        }
-    }
-
-    // create optional index buffer(s)
-    if (IndexType::None != ibAttrs.Type) {
-        mesh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
-        const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
-        for (uint8_t slotIndex = 0; slotIndex < mesh.buffers[mesh::ib].numSlots; slotIndex++) {
-            mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createIndexBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
-        }
-    }
-
-    return ResourceState::Valid;
-}
-    
-//------------------------------------------------------------------------------
-ResourceState::Code
-glMeshFactory::createFromData(mesh& mesh, const void* data, int size) {
+glMeshFactory::createMesh(mesh& mesh, const void* data, int size) {
     o_assert_dbg(0 == mesh.buffers[mesh::vb].glBuffers[0]);
     o_assert_dbg(0 == mesh.buffers[mesh::ib].glBuffers[0]);
     o_assert_dbg(1 == mesh.buffers[mesh::vb].numSlots);
     o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
-    o_assert_dbg(nullptr != data);
-    o_assert_dbg(size > 0);
 
     this->setupAttrs(mesh);
     this->setupPrimGroups(mesh);
@@ -249,12 +179,13 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int size) {
         const int vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
         mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
         const uint8_t* vertices = nullptr;
-        if (InvalidIndex != mesh.Setup.DataVertexOffset) {
+        if (ptr) {
+            o_assert_dbg(mesh.Setup.DataVertexOffset >= 0);
             vertices = ptr + mesh.Setup.DataVertexOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
         for (uint8_t slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
-            mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createVertexBuffer(vertices, vbSize, vbAttrs.BufferUsage);
+            mesh.buffers[mesh::vb].glBuffers[slotIndex] = this->createBuffer(GL_ARRAY_BUFFER, vertices, vbSize, vbAttrs.BufferUsage);
             o_assert_dbg(0 != mesh.buffers[mesh::vb].glBuffers[slotIndex]);
         }
     }
@@ -264,12 +195,13 @@ glMeshFactory::createFromData(mesh& mesh, const void* data, int size) {
         const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         mesh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
         const uint8_t* indices = nullptr;
-        if (InvalidIndex != mesh.Setup.DataIndexOffset) {
+        if (ptr) {
+            o_assert_dbg(mesh.Setup.DataIndexOffset >= 0);
             indices = ptr + mesh.Setup.DataIndexOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
         for (uint8_t slotIndex = 0; slotIndex < mesh.buffers[mesh::ib].numSlots; slotIndex++) {
-            mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createIndexBuffer(indices, ibSize, ibAttrs.BufferUsage);
+            mesh.buffers[mesh::ib].glBuffers[slotIndex] = this->createBuffer(GL_ELEMENT_ARRAY_BUFFER, indices, ibSize, ibAttrs.BufferUsage);
             o_assert_dbg(0 != mesh.buffers[mesh::ib].glBuffers[slotIndex]);
         }
     }

@@ -44,20 +44,8 @@ glTextureFactory::IsValid() const {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-glTextureFactory::SetupResource(texture& tex) {
-    o_assert_dbg(this->isValid);
-    o_assert_dbg(!tex.Setup.ShouldSetupFromPixelData());
-    o_assert_dbg(!tex.Setup.ShouldSetupFromFile());
-
-    return this->createTexture(tex, nullptr, 0);
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
 glTextureFactory::SetupResource(texture& tex, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(!tex.Setup.RenderTarget);
-
     return this->createTexture(tex, data, size);
 }
 

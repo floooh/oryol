@@ -27,8 +27,6 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource
-    ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
     ResourceState::Code SetupResource(texture& tex, const void* data, int32_t size);
     /// discard the resource
