@@ -34,14 +34,10 @@ sampler2DArray tex Texture
 @in vec3 uv0
 @in vec3 uv1
 @in vec3 uv2
-#if ORYOL_GLSL || ORYOL_METALSL
     vec4 c0 = tex2DArray(tex, uv0);
     vec4 c1 = tex2DArray(tex, uv1);
     vec4 c2 = tex2DArray(tex, uv2);
     _color = vec4(c0.xyz + c1.xyz + c2.xyz, 1.0);
-#else
-    _color = vec4(1.0, 0.0, 1.0, 1.0);
-#endif
 @end
 
 @program Shader vs fs

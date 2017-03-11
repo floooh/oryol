@@ -114,23 +114,29 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
     if (data) {
         const uint8_t* srcPtr = (const uint8_t*)data;
-        const int numSlices = setup.Type==TextureType::TextureCube ? setup.ImageData.NumFaces:(setup.Type==TextureType::TextureArray ? setup.Depth:1);
+        const int numFaces = setup.Type==TextureType::TextureCube ? 6:1;
+        const int numSlices = setup.Type==TextureType::TextureArray ? setup.Depth:1;
+        const int sliceSize = size / numSlices;
+        o_assert_dbg((numSlices * sliceSize) == size);
         const int numMipMaps = setup.ImageData.NumMipMaps;
         int subResourceDataIndex = 0;
-        for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
-            for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {
-                o_assert_dbg(subResourceDataIndex < maxNumSubResourceData);
-                D3D11_SUBRESOURCE_DATA& subResData = this->subResourceData[subResourceDataIndex];
-                subResData.pSysMem = srcPtr + setup.ImageData.Offsets[sliceIndex][mipIndex]; 
-                const int mipWidth = std::max(setup.Width >> mipIndex, 1);
-                const int mipHeight = std::max(setup.Height >> mipIndex, 1);
-                subResData.SysMemPitch = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
-                if (setup.Type == TextureType::Texture3D) {
-                    const int mipDepth = std::max(setup.Depth >> mipIndex, 1);
-                    subResData.SysMemSlicePitch = PixelFormat::ImagePitch(setup.ColorFormat, mipWidth, mipHeight);
-                }
-                else {
-                    subResData.SysMemSlicePitch = 0;
+        for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+            for (int sliceIndex = 0; sliceIndex < numSlices; sliceIndex++) {
+                int sliceOffset = sliceIndex * sliceSize;
+                for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {
+                    o_assert_dbg(subResourceDataIndex < maxNumSubResourceData);
+                    D3D11_SUBRESOURCE_DATA& subResData = this->subResourceData[subResourceDataIndex];
+                    subResData.pSysMem = srcPtr + sliceOffset + setup.ImageData.Offsets[faceIndex][mipIndex]; 
+                    const int mipWidth = std::max(setup.Width >> mipIndex, 1);
+                    const int mipHeight = std::max(setup.Height >> mipIndex, 1);
+                    subResData.SysMemPitch = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
+                    if (setup.Type == TextureType::Texture3D) {
+                        const int mipDepth = std::max(setup.Depth >> mipIndex, 1);
+                        subResData.SysMemSlicePitch = PixelFormat::ImagePitch(setup.ColorFormat, mipWidth, mipHeight);
+                    }
+                    else {
+                        subResData.SysMemSlicePitch = 0;
+                    }
                 }
             }
         }

@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 79
+Version = 81
 
 import os
 import sys
@@ -197,9 +197,11 @@ slMacros = {
         'mat4': 'float4x4',
         'tex2D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'tex3D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
+        'tex2DArray(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'texCUBE(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
         'tex3Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
+        'tex2DArrayvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
@@ -1165,9 +1167,14 @@ class HLSLGenerator :
         lines.append(Line('    Texture3D t;'))
         lines.append(Line('    SamplerState s;'))
         lines.append(Line('};'))
+        lines.append(Line('class _tex2darray {'))
+        lines.append(Line('    Texture2DArray t;'))
+        lines.append(Line('    SamplerState s;'))
+        lines.append(Line('};'))
         lines.append(Line('#define sampler2D _tex2d'))
         lines.append(Line('#define samplerCube _texcube'))
         lines.append(Line('#define sampler3D _tex3d'))
+        lines.append(Line('#define sampler2DArray _tx2darray'))
         lines.append(Line('#endif'))
         return lines
 
@@ -1179,6 +1186,8 @@ class HLSLGenerator :
             for tex in tb.textures :
                 if tex.type == 'sampler2D':
                     texType = 'Texture2D'
+                elif tex.type == 'sampler2DArray':
+                    texType = 'Texture2DArray'
                 elif tex.type == 'sampler3D':
                     texType = 'Texture3D'
                 else :
@@ -1213,6 +1222,10 @@ class HLSLGenerator :
                         tex.filePath, tex.lineNumber))
                 elif tex.type == 'samplerCube' :
                     lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                        tex.name, tex.name, tex.name, tex.name, tex.name),
+                        tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler2DArray' :
+                    lines.append(Line('_tex2darray {}; {}.t=_t_{}; {}.s=_s_{};'.format(
                         tex.name, tex.name, tex.name, tex.name, tex.name),
                         tex.filePath, tex.lineNumber))
                 elif tex.type == 'sampler3D':
