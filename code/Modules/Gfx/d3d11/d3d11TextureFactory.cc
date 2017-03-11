@@ -7,6 +7,7 @@
 #include "Gfx/d3d11/d3d11types.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resource.h"
+#include <algorithm> // for std::max
 
 namespace Oryol {
 namespace _priv {
@@ -128,31 +129,38 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
     #endif
 
-    // create the color texture
-    HRESULT hr;
-    if (setup.Type != TextureType::Texture3D) {
-        // setup 'initial data' if data is provided
-        D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
-        if (data) {
-            o_assert_dbg(setup.Type != TextureType::TextureArray);
-            const int maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
-            D3D11_SUBRESOURCE_DATA subResourceData[maxNumSubResourceData] = { 0 };
-            const uint8_t* srcPtr = (const uint8_t*)data;
-            const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
-            const int numMipMaps = setup.NumMipMaps;
-            int subResourceDataIndex = 0;
-            for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
-                for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {
-                    o_assert_dbg(subResourceDataIndex < maxNumSubResourceData);
-                    D3D11_SUBRESOURCE_DATA& subResData = subResourceData[subResourceDataIndex];
-                    subResData.pSysMem = srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex];
-                    subResData.SysMemPitch = PixelFormat::RowPitch(setup.ColorFormat, setup.Width >> mipIndex);
+    // subresourcedata array if initial data is provided
+    const int maxNumSubResourceData = GfxConfig::MaxNumTextureFaces * GfxConfig::MaxNumTextureMipMaps;
+    D3D11_SUBRESOURCE_DATA subResourceData[maxNumSubResourceData] = { };
+    D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
+    if (data) {
+        const uint8_t* srcPtr = (const uint8_t*)data;
+        const int numFaces = setup.Type == TextureType::TextureCube ? 6 : 1;
+        const int numMipMaps = setup.NumMipMaps;
+        int subResourceDataIndex = 0;
+        for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
+            for (int mipIndex = 0; mipIndex < numMipMaps; mipIndex++, subResourceDataIndex++) {
+                o_assert_dbg(subResourceDataIndex < maxNumSubResourceData);
+                D3D11_SUBRESOURCE_DATA& subResData = subResourceData[subResourceDataIndex];
+                subResData.pSysMem = srcPtr + setup.ImageData.Offsets[faceIndex][mipIndex]; 
+                const int mipWidth = std::max(setup.Width >> mipIndex, 1);
+                const int mipHeight = std::max(setup.Height >> mipIndex, 1);
+                subResData.SysMemPitch = PixelFormat::RowPitch(setup.ColorFormat, mipWidth);
+                if (setup.Type == TextureType::Texture3D) {
+                    const int mipDepth = std::max(setup.Depth >> mipIndex, 1);
+                    subResData.SysMemSlicePitch = PixelFormat::ImagePitch(setup.ColorFormat, mipWidth, mipHeight);
+                }
+                else {
                     subResData.SysMemSlicePitch = 0;
                 }
             }
-            pInitialData = subResourceData;
         }
+        pInitialData = subResourceData;
+    }
 
+    // create the color texture
+    HRESULT hr;
+    if (setup.Type != TextureType::Texture3D) {
         // setup texture desc for 2D texture
         D3D11_TEXTURE2D_DESC texDesc = { };
         texDesc.Width = setup.Width;
@@ -204,10 +212,6 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
     else {
         // 3D texture
-        D3D11_SUBRESOURCE_DATA* pInitialData = nullptr;
-        // FIXME: initial data
-        o_assert_dbg(!data);
-
         D3D11_TEXTURE3D_DESC texDesc = { };
         texDesc.Width = setup.Width;
         texDesc.Height = setup.Height;
