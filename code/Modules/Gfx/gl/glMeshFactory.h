@@ -34,7 +34,7 @@ public:
     
     /// helper method to setup a mesh object as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
-    /// create from data
+    /// create mesh
     ResourceState::Code createMesh(mesh& mesh, const void* data, int size);
     
 private:

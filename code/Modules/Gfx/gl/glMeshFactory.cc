@@ -69,15 +69,16 @@ glMeshFactory::DestroyResource(mesh& mesh) {
 
 //------------------------------------------------------------------------------
 GLuint
-glMeshFactory::createBuffer(GLenum type, const void* data, uint32_t dataSize, Usage::Code usage) {
+glMeshFactory::createBuffer(GLenum type, const void* data, uint32_t bufSize, Usage::Code usage) {
     o_assert_dbg((type == GL_ARRAY_BUFFER) || (type == GL_ELEMENT_ARRAY_BUFFER));
+    o_assert_dbg(bufSize > 0);
     this->pointers.renderer->invalidateMeshState();
     GLuint buf = 0;
     ::glGenBuffers(1, &buf);
     ORYOL_GL_CHECK_ERROR();
     o_assert_dbg(0 != buf);
     ::glBindBuffer(type, buf);
-    ::glBufferData(type, dataSize, data, glTypes::asGLBufferUsage(usage));
+    ::glBufferData(type, bufSize, data, glTypes::asGLBufferUsage(usage));
     ORYOL_GL_CHECK_ERROR();
     this->pointers.renderer->invalidateMeshState();
     return buf;
