@@ -46,26 +46,14 @@ mtlMeshFactory::IsValid() const {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlMeshFactory::SetupResource(mesh& msh) {
+mtlMeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    if (msh.Setup.ShouldSetupEmpty()) {
-        return this->createEmptyMesh(msh);
-    }
-    else if (msh.Setup.ShouldSetupFullScreenQuad()) {
+    if (msh.Setup.ShouldSetupFullScreenQuad()) {
         return this->createFullscreenQuad(msh);
     }
     else {
-        o_error("mtlMeshFactory::SetupResource(): don't know how to create mesh!\n");
-        return ResourceState::InvalidState;
+        return this->createMesh(msh, data, size);
     }
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-mtlMeshFactory::SetupResource(mesh& msh, const void* data, int size) {
-    o_assert_dbg(this->isValid);
-    o_assert_dbg(msh.Setup.ShouldSetupFromData());
-    return this->createFromData(msh, data, size);
 }
 
 //------------------------------------------------------------------------------
@@ -86,16 +74,15 @@ mtlMeshFactory::DestroyResource(mesh& msh) {
     NOTE: data pointer can be a nullptr
 */
 id<MTLBuffer>
-mtlMeshFactory::createBuffer(const void* data, uint32 dataSize, Usage::Code usage) {
-    o_assert_dbg(dataSize > 0);
-
+mtlMeshFactory::createBuffer(const void* data, uint32 bufSize, Usage::Code usage) {
+    o_assert_dbg(bufSize > 0);
     MTLResourceOptions options = mtlTypes::asBufferResourceOptions(usage);
     id<MTLBuffer> buf;
     if (data) {
-        buf = [this->pointers.renderer->mtlDevice newBufferWithBytes:data length:dataSize options:options];
+        buf = [this->pointers.renderer->mtlDevice newBufferWithBytes:data length:bufSize options:options];
     }
     else {
-        buf = [this->pointers.renderer->mtlDevice newBufferWithLength:dataSize options:options];
+        buf = [this->pointers.renderer->mtlDevice newBufferWithLength:bufSize options:options];
     }
     return buf;
 }
@@ -129,45 +116,11 @@ mtlMeshFactory::setupPrimGroups(mesh& msh) {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-mtlMeshFactory::createEmptyMesh(mesh& msh) {
-    o_assert_dbg(nil == msh.buffers[mesh::vb].mtlBuffers[0]);
-    o_assert_dbg(nil == msh.buffers[mesh::ib].mtlBuffers[0]);
-    o_assert_dbg(0 < msh.Setup.NumVertices);
-
-    this->setupAttrs(msh);
-    this->setupPrimGroups(msh);
-
-    // create vertex buffer(s)
-    const auto& vbAttrs = msh.vertexBufferAttrs;
-    const int vbSize = msh.Setup.NumVertices * msh.Setup.Layout.ByteSize();
-    msh.buffers[mesh::vb].numSlots = Usage::Immutable == vbAttrs.BufferUsage ? 1 : 2;
-    for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::vb].numSlots; slotIndex++) {
-        msh.buffers[mesh::vb].mtlBuffers[slotIndex] = this->createBuffer(nullptr, vbSize, vbAttrs.BufferUsage);
-        o_assert_dbg(nil != msh.buffers[mesh::vb].mtlBuffers[slotIndex]);
-    }
-
-    // create optional index buffer(s)
-    const auto& ibAttrs = msh.indexBufferAttrs;
-    if (IndexType::None != ibAttrs.Type) {
-        msh.buffers[mesh::ib].numSlots = Usage::Immutable == ibAttrs.BufferUsage ? 1 : 2;
-        const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
-        for (uint8_t slotIndex = 0; slotIndex < msh.buffers[mesh::ib].numSlots; slotIndex++) {
-            msh.buffers[mesh::ib].mtlBuffers[slotIndex] = this->createBuffer(nullptr, ibSize, ibAttrs.BufferUsage);
-        }
-    }
-
-    return ResourceState::Valid;
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-mtlMeshFactory::createFromData(mesh& msh, const void* data, int size) {
+mtlMeshFactory::createMesh(mesh& msh, const void* data, int size) {
     o_assert_dbg(nil == msh.buffers[mesh::vb].mtlBuffers[0]);
     o_assert_dbg(nil == msh.buffers[mesh::ib].mtlBuffers[0]);
     o_assert_dbg(1 == msh.buffers[mesh::vb].numSlots);
     o_assert_dbg(1 == msh.buffers[mesh::ib].numSlots);
-    o_assert_dbg(nullptr != data);
-    o_assert_dbg(size > 0);
 
     this->setupAttrs(msh);
     this->setupPrimGroups(msh);
@@ -179,7 +132,8 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int size) {
         const int vbSize = vbAttrs.NumVertices * msh.Setup.Layout.ByteSize();
         msh.buffers[mesh::vb].numSlots = Usage::Immutable == vbAttrs.BufferUsage ? 1 : 2;
         const uint8* vertices = nullptr;
-        if (InvalidIndex != msh.Setup.DataVertexOffset) {
+        if (data) {
+            o_assert((msh.Setup.DataVertexOffset >= 0) && (size > 0));
             vertices = ptr + msh.Setup.DataVertexOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
@@ -195,7 +149,8 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int size) {
         const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         msh.buffers[mesh::ib].numSlots = Usage::Immutable == ibAttrs.BufferUsage ? 1 : 2;
         const uint8* indices = nullptr;
-        if (InvalidIndex != msh.Setup.DataIndexOffset) {
+        if (data) {
+            o_assert((msh.Setup.DataIndexOffset >= 0) && (size > 0));
             indices = ptr + msh.Setup.DataIndexOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
@@ -206,7 +161,6 @@ mtlMeshFactory::createFromData(mesh& msh, const void* data, int size) {
     }
     return ResourceState::Valid;
 }
-
 
 //------------------------------------------------------------------------------
 ResourceState::Code

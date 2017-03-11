@@ -29,8 +29,6 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource
-    ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
     ResourceState::Code SetupResource(mesh& mesh, const void* data, int size);
     /// discard the resource
@@ -38,10 +36,8 @@ public:
 
     /// helper method to setup mesh as fullscreen quad
     ResourceState::Code createFullscreenQuad(mesh& mesh);
-    /// helper method to create empty mesh
-    ResourceState::Code createEmptyMesh(mesh& mesh);
-    /// create mesh from data
-    ResourceState::Code createFromData(mesh& mesh, const void* data, int size);
+    /// create mesh
+    ResourceState::Code createMesh(mesh& mesh, const void* data, int size);
 
 private:
     /// setup vertex/index buffer attrs structs in the mesh
