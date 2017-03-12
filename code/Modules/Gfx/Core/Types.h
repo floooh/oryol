@@ -33,18 +33,8 @@ public:
         NumIndexTypes,
         InvalidIndexType = 0xFFFFFFFF
     };
-
     /// get byte size of index type
-    static int ByteSize(IndexType::Code c) {
-        switch (c) {
-            case None:      return 0;
-            case Index16:   return 2;
-            case Index32:   return 4;
-            default:
-                o_error("IndexType::ByteSize() called with invalid type!\n");
-                return 0;
-        }
-    }
+    static int ByteSize(IndexType::Code c);
 };
 
 //------------------------------------------------------------------------------
@@ -139,288 +129,33 @@ public:
     /// return true for valid render target color formats
     /// FIXME: hmm according to GLES3 spec, the float formats
     /// are not renderable... does this need a separate extension?
-    static bool IsValidRenderTargetColorFormat(Code c) {
-        switch (c) {
-            case RGBA8:
-            case R10G10B10A2:
-            case RGBA32F:
-            case RGBA16F:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsValidRenderTargetColorFormat(Code c);
     /// return true for valid render target depth formats
-    static bool IsValidRenderTargetDepthFormat(Code c) {
-        switch (c) {
-            case DEPTH:
-            case DEPTHSTENCIL:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsValidRenderTargetDepthFormat(Code c);
     /// return true for valid color texture formats
-    static bool IsValidTextureColorFormat(Code c) {
-        switch (c) {
-            case DEPTH:
-            case DEPTHSTENCIL:
-                return false;
-            default:
-                return true;
-        }
-    }
+    static bool IsValidTextureColorFormat(Code c);
     /// return true for valid depth texture formats
-    static bool IsValidTextureDepthFormat(Code c) {
-        switch (c) {
-            case DEPTH:
-            case DEPTHSTENCIL:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsValidTextureDepthFormat(Code c);
     /// test if the pixel format is a pure depth format (not a depth/stencil format)
-    static bool IsDepthFormat(Code c) {
-        return DEPTH == c;
-    }
+    static bool IsDepthFormat(Code c);
     /// test if the pixel format is a depth/stencil format
-    static bool IsDepthStencilFormat(Code c) {
-        return DEPTHSTENCIL == c;
-    }
+    static bool IsDepthStencilFormat(Code c);
     /// return true if the pixel format is a compressed format
-    static bool IsCompressedFormat(Code c) {
-        switch (c) {
-            case DXT1:
-            case DXT3:
-            case DXT5:
-            case PVRTC2_RGB:
-            case PVRTC4_RGB:
-            case PVRTC2_RGBA:
-            case PVRTC4_RGBA:
-            case ETC2_RGB8:
-            case ETC2_SRGB8:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsCompressedFormat(Code c);
     /// return true if this is a PVRTC-compressed format
-    static bool IsPVRTC(Code c) {
-        switch (c) {
-            case PVRTC2_RGB:
-            case PVRTC4_RGB:
-            case PVRTC2_RGBA:
-            case PVRTC4_RGBA:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsPVRTC(Code c);
     /// return true if this is a DXT-compressed format
-    static bool IsDXT(Code c) {
-        switch (c) {
-            case DXT1:
-            case DXT3:
-            case DXT5:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsDXT(Code c);
     /// return true if this is an ETC-compressed format
-    static bool IsETC2(Code c) {
-        switch (c) {
-            case ETC2_RGB8:
-            case ETC2_SRGB8:
-                return true;
-            default:
-                return false;
-        }
-    }
+    static bool IsETC2(Code c);
     /// get byte size of pixel format
-    static int ByteSize(Code c) {
-        switch (c) {
-            case RGBA32F:
-                return 16;
-            case RGBA16F:
-                return 8;
-            case RGBA8:
-            case R10G10B10A2:
-            case R32F:
-                return 4;
-            case RGB8:
-                return 3;
-            case R5G6B5:
-            case R5G5B5A1:
-            case RGBA4:
-            case R16F:
-                return 2;
-            case L8:
-                return 1;
-            case DEPTH:
-                // NOTE: this is not true on all platform!
-                return 2;
-            case DEPTHSTENCIL:
-                return 4;
-            default:
-                o_error("PixelFormat::ByteSize(): cannot get byte size for compressed format!\n");
-                return 0;
-        }
-    }
+    static int ByteSize(Code c);
     /// get number of bits in a pixel format channel (only for non-compressed formats and non-depth formats!)
-    static int8_t NumBits(Code pixelFormat, PixelChannel::Bits channel) {
-        switch (pixelFormat) {
-            case RGBA32F:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
-                    return 32;
-                }
-                break;
-            case RGBA16F:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
-                    return 16;
-                }
-                break;
-            case R32F:
-                if (PixelChannel::Red == channel) {
-                    return 32;
-                }
-                break;
-            case R16F:
-                if (PixelChannel::Red == channel) {
-                    return 16;
-                }
-                break;
-            case R10G10B10A2:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel)) {
-                    return 10;
-                }
-                else if (PixelChannel::Alpha == channel) {
-                    return 2;
-                }
-                break;
-            case RGBA8:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
-                    return 8;
-                }
-                break;
-            case RGB8:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel)) {
-                    return 8;
-                }
-                break;
-            case R5G6B5:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Blue == channel)) {
-                    return 5;
-                }
-                else if (PixelChannel::Green == channel) {
-                    return 6;
-                }
-                break;
-            case R5G5B5A1:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel)) {
-                    return 5;
-                }
-                else if (PixelChannel::Alpha == channel) {
-                    return 1;
-                }
-                break;
-            case RGBA4:
-                if ((PixelChannel::Red == channel) || (PixelChannel::Green == channel) || (PixelChannel::Blue == channel) || (PixelChannel::Alpha == channel)) {
-                    return 4;
-                }
-                break;
-            case L8:
-                if (PixelChannel::Red == channel) {
-                    return 8;
-                }
-                break;
-            case DEPTH:
-                // NOTE: this is not true on all platforms!
-                if (PixelChannel::Depth == channel) {
-                    return 16;
-                }
-                break;
-            case DEPTHSTENCIL:
-                if (PixelChannel::Depth == channel) {
-                    return 24;
-                }
-                else if (PixelChannel::Stencil == channel) {
-                    return 8;
-                }
-                break;
-            default:
-                break;
-        }
-        // fallthrough: unsupported combination
-        return 0;
-    }
+    static int8_t NumBits(Code pixelFormat, PixelChannel::Bits channel);
     /// compute row-pitch (distance in bytes from one row of data to next)
-    static int RowPitch(PixelFormat::Code fmt, int width) {
-        int pitch;
-        switch (fmt) {
-            case PixelFormat::DXT1:
-            case PixelFormat::ETC2_RGB8:
-            case PixelFormat::ETC2_SRGB8:
-                pitch = ((width + 3) / 4) * 8;
-                pitch = pitch < 8 ? 8 : pitch;
-                break;
-            case PixelFormat::DXT3:
-            case PixelFormat::DXT5:
-                pitch = ((width + 3) / 4) * 16;
-                pitch = pitch < 16 ? 16 : pitch;
-                break;
-            case PixelFormat::PVRTC4_RGB:
-            case PixelFormat::PVRTC4_RGBA:
-                {
-                    const int blockSize = 4*4;
-                    const int bpp = 4;
-                    int widthBlocks = width / 4;
-                    widthBlocks = widthBlocks < 2 ? 2 : widthBlocks;
-                    pitch = widthBlocks * ((blockSize * bpp) / 8);
-                }
-                break;
-            case PixelFormat::PVRTC2_RGB:
-            case PixelFormat::PVRTC2_RGBA:
-                {
-                    const int blockSize = 8 * 4;
-                    const int bpp = 2;
-                    int widthBlocks = width / 4;
-                    widthBlocks = widthBlocks < 2 ? 2 : widthBlocks;
-                    pitch = widthBlocks * ((blockSize * bpp) / 8);
-                }
-                break;
-            default:
-                pitch = width * PixelFormat::ByteSize(fmt);
-                break;
-        }
-        return pitch;
-    }
+    static int RowPitch(PixelFormat::Code fmt, int width);
     /// compute image-pitch (distance in bytes from one image to next)
-    static int ImagePitch(PixelFormat::Code fmt, int width, int height) {
-        int numRows = 0;
-        switch (fmt) {
-            case PixelFormat::DXT1:
-            case PixelFormat::ETC2_RGB8:
-            case PixelFormat::ETC2_SRGB8:
-            case PixelFormat::DXT3:
-            case PixelFormat::DXT5:
-            case PixelFormat::PVRTC4_RGB:
-            case PixelFormat::PVRTC4_RGBA:
-            case PixelFormat::PVRTC2_RGB:
-            case PixelFormat::PVRTC2_RGBA:
-                numRows = ((height + 3) / 4);
-                break;
-            default:
-                numRows = height;
-                break;
-        }
-        if (numRows < 1) {
-            numRows = 1;
-        }
-        const int pitch = numRows * RowPitch(fmt, width);
-        return pitch;
-    }
+    static int ImagePitch(PixelFormat::Code fmt, int width, int height);
 };
 
 //------------------------------------------------------------------------------
@@ -442,20 +177,8 @@ public:
         NumPrimitiveTypes,
         InvalidPrimitiveType = 0xFFFFFFFF,
     };
-
     /// convert primitive type to string
-    static const char* ToString(PrimitiveType::Code c) {
-        switch (c) {
-            case Points:        return "Points";
-            case Lines:         return "Lines";
-            case LineStrip:     return "LineStrip";
-            case Triangles:     return "Triangles";
-            case TriangleStrip: return "TriangleStrip";
-            default:
-                o_error("PrimitiveType::ToString(): invalid value!\n");
-                return 0;
-        }
-    }
+    static const char* ToString(PrimitiveType::Code c);
 };
 
 //------------------------------------------------------------------------------
@@ -624,29 +347,7 @@ public:
     };
 
     /// convert to string
-    static const char* ToString(Code c) {
-        switch (c) {
-            case Position:  return "position";
-            case Normal:    return "normal";
-            case TexCoord0: return "texcoord0";
-            case TexCoord1: return "texcoord1";
-            case TexCoord2: return "texcoord2";
-            case TexCoord3: return "texcoord3";
-            case Tangent:   return "tangent";
-            case Binormal:  return "binormal";
-            case Weights:   return "weights";
-            case Indices:   return "indices";
-            case Color0:    return "color0";
-            case Color1:    return "color1";
-            case Instance0: return "instance0";
-            case Instance1: return "instance1";
-            case Instance2: return "instance2";
-            case Instance3: return "instance3";
-            default:
-                o_error("VertexAttr::ToString(): invalid value!\n");
-                return nullptr;
-        }
-    }
+    static const char* ToString(Code c);
 };
 
 //------------------------------------------------------------------------------
@@ -684,56 +385,9 @@ public:
     };
 
     /// get the byte size of a vertex format code
-    static int ByteSize(Code c) {
-        switch (c) {
-            case Float:
-                return 4;
-            case Float2:
-                return 8;
-            case Float3:
-                return 12;
-            case Float4:
-                return 16;
-            case Byte4:
-            case Byte4N:
-            case UByte4:
-            case UByte4N:
-            case Short2:
-            case Short2N:
-            case Int10_2N:
-            case UInt10_2N:
-                return 4;
-            case Short4:
-            case Short4N:
-                return 8;
-            default:
-                o_error("VertexFormat::ByteSize() called with invalid format!\n");
-                return 0;
-        }
-    }
-
+    static int ByteSize(Code c);
     // convert to string
-    static const char* ToString(Code c) {
-        switch (c) {
-            case Float:     return "Float";
-            case Float2:    return "Float2";
-            case Float3:    return "Float3";
-            case Float4:    return "Float4";
-            case Byte4:     return "Byte4";
-            case Byte4N:    return "Byte4N";
-            case UByte4:    return "UByte4";
-            case UByte4N:   return "Ubyte4N";
-            case Short2:    return "Short2";
-            case Short2N:   return "Short2N";
-            case Short4:    return "Short4";
-            case Short4N:   return "Short4N";
-            case Int10_2N:  return "Int10_2N";
-            case UInt10_2N: return "Int10_2N";
-            default:
-                o_error("VertexFormat::ToString(): invalid value!\n");
-                return nullptr;
-        }
-    }
+    static const char* ToString(Code c);
 };
 
 //------------------------------------------------------------------------------
@@ -937,24 +591,8 @@ public:
         NumUniformTypes,
         InvalidUniformType,
     };
-
     /// get the byte size of a uniform type, see GL std140 layout spec for details
-    static int ByteSize(Code c, int numElements) {
-        switch (c) {
-            case Float:     return numElements * sizeof(float);
-            case Vec2:      return numElements * 2 * sizeof(float);
-            case Vec3:      return numElements * 4 * sizeof(float); // NOT A BUG
-            case Vec4:      return numElements * 4 * sizeof(float);
-            case Mat2:      return numElements * 2 * 2 * sizeof(float);
-            case Mat3:      return numElements * 3 * 3 * sizeof(float); // FIXME!
-            case Mat4:      return numElements * 4 * 4 * sizeof(float);
-            case Int:       return numElements * sizeof(int);
-            case Bool:      return numElements * sizeof(int);
-            default:
-                o_error("invalid scalar uniform type code!\n");
-                return 0;
-        }
-    };
+    static int ByteSize(Code c, int numElements);
 };
 
 //------------------------------------------------------------------------------
@@ -982,15 +620,11 @@ public:
 */
 class PrimitiveGroup {
 public:
-    int BaseElement;
-    int NumElements;
+    int BaseElement = 0;
+    int NumElements = 0;
 
     /// default constructor
-    PrimitiveGroup() :
-        BaseElement(0),
-        NumElements(0) {
-        // empty
-    }
+    PrimitiveGroup() {};
     /// construct for indexed or non-indexed
     PrimitiveGroup(int baseElement, int numElements) :
         BaseElement(baseElement),
@@ -1060,22 +694,7 @@ public:
     };
 
     /// constructor
-    BlendState() {
-        static_assert(sizeof(BlendState) == 8, "sizeof(BlendState) is not 8, bitfield packing problem?");
-        this->Hash = 0;
-        this->BlendEnabled = false;
-        this->SrcFactorRGB = BlendFactor::One;
-        this->DstFactorRGB = BlendFactor::Zero;
-        this->OpRGB = BlendOperation::Add;
-        this->SrcFactorAlpha = BlendFactor::One;
-        this->DstFactorAlpha = BlendFactor::Zero;
-        this->OpAlpha = BlendOperation::Add;
-        this->ColorWriteMask = PixelChannel::RGBA;
-        this->ColorFormat = PixelFormat::RGBA8;
-        this->DepthFormat = PixelFormat::DEPTHSTENCIL;
-        this->MRTCount = 1;
-    };
-    
+    BlendState();
     /// equality
     bool operator==(const BlendState& rhs) const {
         return this->Hash == rhs.Hash;
@@ -1094,7 +713,6 @@ public:
 */
 class StencilState {
 public:
-
     union {
         #pragma pack(push, 1)
         struct {
@@ -1106,17 +724,8 @@ public:
         #pragma pack(pop)
         uint16_t Hash;
     };
-
     /// constructor
-    StencilState() {
-        static_assert(sizeof(StencilState) == 2, "sizeof(StencilState) is not 2, bitfield packing problem?");
-        this->Hash = 0;
-        this->FailOp = StencilOp::Keep;
-        this->DepthFailOp = StencilOp::Keep;
-        this->PassOp = StencilOp::Keep;
-        this->CmpFunc = CompareFunc::Always;
-    }
-    
+    StencilState();
     /// equality
     bool operator==(const StencilState& rhs) const {
         return this->Hash == rhs.Hash;
@@ -1157,31 +766,12 @@ public:
         };
         uint32_t Hash;
     };
-
     /// constructor
-    DepthStencilState() {
-        static_assert(sizeof(DepthStencilState) == 8, "sizeof(DepthStencilState) is not 8, bitfield packing problem?");
-        this->Hash = 0;
-        this->DepthCmpFunc = CompareFunc::Always;
-        this->DepthWriteEnabled = false;
-        this->StencilEnabled = false;
-        this->StencilReadMask = 0xFF;
-        this->StencilWriteMask = 0xFF;
-        this->StencilRef = 0;
-    };
-
+    DepthStencilState();
     /// equality
-    bool operator==(const DepthStencilState& rhs) const {
-        return (this->Hash == rhs.Hash) &&
-               (this->StencilFront == rhs.StencilFront) &&
-               (this->StencilBack == rhs.StencilBack);
-    };
+    bool operator==(const DepthStencilState& rhs) const;
     /// inequality
-    bool operator!=(const DepthStencilState& rhs) const {
-        return (this->Hash != rhs.Hash) ||
-               (this->StencilFront != rhs.StencilFront) ||
-               (this->StencilBack != rhs.StencilBack);
-    }
+    bool operator!=(const DepthStencilState& rhs) const;
 };
 
 //------------------------------------------------------------------------------
@@ -1206,19 +796,8 @@ public:
         #pragma pack(pop)
         uint16_t Hash;
     };
-
     /// constructor
-    RasterizerState() {
-        static_assert(sizeof(RasterizerState) == 2, "sizeof(RasterizerState) is not 4, bitfield packing problem?");
-        this->Hash = 0;
-        this->CullFaceEnabled = false;
-        this->DepthOffsetEnabled = false;
-        this->ScissorTestEnabled = false;
-        this->DitherEnabled = true;
-        this->AlphaToCoverageEnabled = false;
-        this->CullFace = Face::Back;
-        this->SampleCount = 1;
-    }
+    RasterizerState();
     /// equality
     bool operator==(const RasterizerState& rhs) const {
         return this->Hash == rhs.Hash;
@@ -1254,17 +833,8 @@ public:
         #pragma pack(pop)
         uint16_t Hash;
     };
-
     /// constructor
-    SamplerState() {
-        static_assert(sizeof(SamplerState) == 2, "sizeof(SamplerState) is not 2, bitfield packing problem?");
-        this->Hash = 0;
-        this->WrapU = TextureWrapMode::Repeat;
-        this->WrapV = TextureWrapMode::Repeat;
-        this->WrapW = TextureWrapMode::Repeat;
-        this->MagFilter = TextureFilterMode::Nearest;
-        this->MinFilter = TextureFilterMode::Nearest;
-    };
+    SamplerState();
     /// equality
     bool operator==(const SamplerState& rhs) const {
         return this->Hash == rhs.Hash;
@@ -1284,35 +854,18 @@ public:
 class PassState {
 public:
     /// default constructor
-    PassState() : Depth(1.0f), Stencil(0) {
-        for (auto& c : this->Color) {
-            c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        }
-    };
+    PassState();
     /// construct with clear color (all attachment to same color), optional depth/stencil
-    PassState(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0) {
-        for (auto& c : this->Color) {
-            c = color;
-        }
-        this->Depth = depth;
-        this->Stencil = stencil;
-    }
+    PassState(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0);
     /// construct with MRT clear colors
-    PassState(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0) {
-        int i = 0;
-        for (const auto& c : colors) {
-            this->Color[i++] = c;
-        }
-        this->Depth = depth;
-        this->Stencil = stencil;
-    }
+    PassState(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
 
     /// override clear colors
     StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;
     /// override clear depth value
-    float Depth;
+    float Depth = 1.0f;
     /// override clear-stencil value
-    uint8_t Stencil;
+    uint8_t Stencil = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -1374,18 +927,12 @@ public:
         /// construct from vertex attr and format
         Component(VertexAttr::Code attr, VertexFormat::Code fmt) : Attr(attr), Format(fmt) { }
         /// return true if valid (attr and format set)
-        bool IsValid() const {
-            return (VertexAttr::InvalidVertexAttr != this->Attr);
-        }
+        bool IsValid() const;
         /// clear the component (unset attr and format)
-        void Clear() {
-            this->Attr = VertexAttr::InvalidVertexAttr;
-            this->Format = VertexFormat::InvalidVertexFormat;
-        }
+        void Clear();
         /// get byte size of component
-        int ByteSize() const {
-            return VertexFormat::ByteSize(this->Format);
-        }
+        int ByteSize() const;
+
         VertexAttr::Code Attr = VertexAttr::InvalidVertexAttr;
         VertexFormat::Code Format = VertexFormat::InvalidVertexFormat;
     };
@@ -1397,69 +944,29 @@ public:
     uint8_t StepRate = 1;
 
     /// constructor
-    VertexLayout() {
-        this->Clear();
-    }
+    VertexLayout();
     /// clear the vertex layout, chainable
-    VertexLayout& Clear() {
-        this->StepFunction = VertexStepFunction::PerVertex;
-        this->StepRate = 1;
-        this->numComps = 0;
-        this->byteSize = 0;
-        this->attrCompIndices.Fill(InvalidIndex);
-        this->byteOffsets.Fill(0);
-        return *this;
-    }
+    VertexLayout& Clear();
     /// return true if layout is empty
-    bool Empty() const {
-        return 0 == this->numComps;
-    }
+    bool Empty() const;
     /// add a component
-    VertexLayout& Add(const Component& comp) {
-        o_assert_dbg(this->numComps < GfxConfig::MaxNumVertexLayoutComponents);
-        o_assert_dbg(InvalidIndex == this->attrCompIndices[comp.Attr]);
-        this->comps[this->numComps] = comp;
-        this->attrCompIndices[comp.Attr] = this->numComps;
-        this->byteOffsets[this->numComps] = this->byteSize;
-        this->byteSize += comp.ByteSize();
-        o_assert_dbg(this->byteSize < 248);
-        this->numComps++;
-        return *this;
-    }
+    VertexLayout& Add(const Component& comp);
     /// add component by name and format
-    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format) {
-        return this->Add(Component(attr, format));
-    }
+    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
     /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
-    VertexLayout& EnableInstancing() {
-        this->StepFunction = VertexStepFunction::PerInstance;
-        this->StepRate = 1;
-        return *this;
-    }
+    VertexLayout& EnableInstancing();
     /// get number of components
-    int NumComponents() const {
-        return this->numComps;
-    }
+    int NumComponents() const;
     /// get component at index
-    const Component& ComponentAt(int index) const {
-        return this->comps[index];
-    }
+    const Component& ComponentAt(int index) const;
     /// get component index by vertex attribute, return InvalidIndex if layout doesn't include attr
-    int ComponentIndexByVertexAttr(VertexAttr::Code attr) const {
-        return this->attrCompIndices[attr];
-    }
+    int ComponentIndexByVertexAttr(VertexAttr::Code attr) const;
     /// get byte size of vertex (aka stride)
-    int ByteSize() const {
-        return this->byteSize;
-    }
+    int ByteSize() const;
     /// get byte offset of a component
-    int ComponentByteOffset(int componentIndex) const {
-        return this->byteOffsets[componentIndex];
-    }
+    int ComponentByteOffset(int componentIndex) const;
     /// test if the layout contains a specific vertex attribute
-    bool Contains(VertexAttr::Code attr) const {
-        return InvalidIndex != this->ComponentIndexByVertexAttr(attr);
-    }
+    bool Contains(VertexAttr::Code attr) const;
 private:
     StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents> comps;
     StaticArray<uint8_t, GfxConfig::MaxNumVertexLayoutComponents> byteOffsets;
@@ -1482,52 +989,28 @@ public:
         /// default constructor
         Component() {};
         /// construct from name, type and bindSlot
-        Component(const StringAtom& name, TextureType::Code type, int bindSlot) :
-            Name(name), Type(type), BindSlot(bindSlot) { }
+        Component(const StringAtom& name, TextureType::Code type, int bindSlot);
         /// return true if the component is valid
-        bool IsValid() const {
-            return this->Name.IsValid();
-        }
+        bool IsValid() const;
+
         StringAtom Name; 
         TextureType::Code Type = TextureType::InvalidTextureType;
         int BindSlot = InvalidIndex;
     };
     /// clear the texture layout
-    void Clear() {
-        this->comps.Fill(Component());
-        this->numComps = 0;
-    }
+    void Clear();
     /// return true if the layout is empty
-    bool Empty() const {
-        return 0 == this->numComps;
-    }
+    bool Empty() const;
     /// add a component to the layout
-    TextureBlockLayout& Add(const Component& comp) {
-        this->comps[this->numComps++] = comp;
-        return *this;
-    }
+    TextureBlockLayout& Add(const Component& comp);
     /// add a component to the layout
-    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int bindSlot) {
-        this->comps[this->numComps++] = Component(name, type, bindSlot);
-        return *this;
-    }
+    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int bindSlot);
     /// get number of components in the layout
-    int NumComponents() const {
-        return this->numComps;
-    }
+    int NumComponents() const;
     /// find component index with matching bind slot, InvalidIndex if not match
-    int ComponentIndexForBindSlot(int bindSlot) const {
-        for (int i = 0; i < this->numComps; i++) {
-            if (this->comps[i].BindSlot == bindSlot) {
-                return i;
-            }
-        }
-        return InvalidIndex;
-    }
+    int ComponentIndexForBindSlot(int bindSlot) const;
     /// get component at index
-    const Component& ComponentAt(int index) const {
-        return this->comps[index];
-    }
+    const Component& ComponentAt(int index) const;
 private:
     int numComps = 0;
     StaticArray<Component, GfxConfig::MaxNumTextureBlockLayoutComponents> comps;
@@ -1550,64 +1033,34 @@ public:
         /// default constructor
         Component() {}
         /// construct from name, type and number
-        Component(const StringAtom& name, UniformType::Code type, int num=1):
-            Name(name), Type(type), Num(num) {
-            o_assert_dbg(this->Name.IsValid());
-            o_assert_dbg(this->Type < UniformType::NumUniformTypes);
-        }
+        Component(const StringAtom& name, UniformType::Code type, int num=1);
         /// return true if the component is valid
-        bool IsValid() const {
-            return this->Name.IsValid();
-        }
+        bool IsValid() const;
         /// compute the byte size of the component
-        int ByteSize() const {
-            return UniformType::ByteSize(this->Type, this->Num);
-        }
+        int ByteSize() const;
+
         StringAtom Name; 
         UniformType::Code Type = UniformType::InvalidUniformType;
         int Num = 1;
     };
-    /// clear the uniform layout
-    void Clear() {
-        this->comps.Fill(Component());
-        this->byteOffsets.Fill(0);
-        this->numComps = 0;
-        this->byteSize = 0;
-    }
-    /// return true if the layout is empty
-    bool Empty() const {
-        return 0 == this->numComps;
-    }
     /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
     uint32_t TypeHash = 0;
+    /// clear the uniform layout
+    void Clear();
+    /// return true if the layout is empty
+    bool Empty() const;
     /// add a uniform component to the layout
-    UniformBlockLayout& Add(const Component& comp) {
-        this->comps[this->numComps] = comp;
-        this->byteOffsets[this->numComps] = this->byteSize;
-        this->byteSize += comp.ByteSize();
-        this->numComps++;
-        return *this;
-    }
+    UniformBlockLayout& Add(const Component& comp);
     /// add a scalar uniform component to the layout
-    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int numElements=1) {
-        return this->Add(Component(name, type, numElements));
-    }
+    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int numElements=1);
     /// get number of components in the layout
-    int NumComponents() const {
-        return this->numComps;
-    }
+    int NumComponents() const;
     /// get component at index
-    const Component& ComponentAt(int componentIndex) const {
-        return this->comps[componentIndex];
-    }
+    const Component& ComponentAt(int componentIndex) const;
     /// get the overall byte size of the uniform layout
-    int ByteSize() const {
-        return this->byteSize;
-    }
+    int ByteSize() const;
     /// get byte offset of a component
-    int ComponentByteOffset(int componentIndex) const {
-        return this->byteOffsets[componentIndex];
-    }
+    int ComponentByteOffset(int componentIndex) const;
 private:
     int numComps = 0;
     int byteSize = 0;
@@ -1686,21 +1139,7 @@ struct DisplayAttrs {
     String WindowTitle;
 
     /// init a DisplayAttrs object from a TextureAttrs object
-    static DisplayAttrs FromTextureAttrs(const TextureAttrs& texAttrs) {
-        DisplayAttrs dispAttrs;
-        dispAttrs.WindowWidth = texAttrs.Width;
-        dispAttrs.WindowHeight = texAttrs.Height;
-        dispAttrs.WindowPosX = 0;
-        dispAttrs.WindowPosY = 0;
-        dispAttrs.FramebufferWidth = texAttrs.Width;
-        dispAttrs.FramebufferHeight = texAttrs.Height;
-        dispAttrs.ColorPixelFormat = texAttrs.ColorFormat;
-        dispAttrs.DepthPixelFormat = texAttrs.DepthFormat;
-        dispAttrs.SampleCount = texAttrs.SampleCount;
-        dispAttrs.Windowed = false;
-        dispAttrs.SwapInterval = 1;
-        return dispAttrs;
-    };
+    static DisplayAttrs FromTextureAttrs(const TextureAttrs& texAttrs);
 };
 
 //------------------------------------------------------------------------------
@@ -1736,15 +1175,7 @@ public:
 class ImageDataAttrs {
 public:
     /// constructor
-    ImageDataAttrs() {
-        for (auto& offsets : this->Offsets) {
-            offsets.Fill(0);
-        }
-        for (auto& sizes : this->Sizes) {
-            sizes.Fill(0);
-        }
-    };
-
+    ImageDataAttrs();
     /// number of faces
     int NumFaces = 0;
     /// number of mipmaps
@@ -1763,15 +1194,13 @@ public:
 */
 struct IndexBufferAttrs {
     /// number of indices in the index buffer
-    int NumIndices{0};
+    int NumIndices = 0;
     /// type of indices (16-bit or 32-bit)
-    IndexType::Code Type{IndexType::InvalidIndexType};
+    IndexType::Code Type = IndexType::InvalidIndexType;
     /// buffer usage hint
-    Usage::Code BufferUsage{Usage::InvalidUsage};
+    Usage::Code BufferUsage = Usage::InvalidUsage;
     /// computes the byte size of index buffer data
-    int ByteSize() const {
-        return NumIndices * IndexType::ByteSize(Type);
-    };
+    int ByteSize() const;
 };
 
 //------------------------------------------------------------------------------
@@ -1788,9 +1217,7 @@ struct VertexBufferAttrs {
     /// buffer usage hint
     Usage::Code BufferUsage = Usage::InvalidUsage;
     /// computes the byte size of the contained vertex buffer data
-    int ByteSize() const {
-        return NumVertices * Layout.ByteSize();
-    }
+    int ByteSize() const;
 };
 
 //------------------------------------------------------------------------------
@@ -1809,37 +1236,13 @@ struct VertexBufferAttrs {
 class GfxSetup {
 public:
     /// shortcut for windowed mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Window(int width, int height, String windowTitle) {
-        o_assert_dbg((width > 0) && (height > 0));
-        GfxSetup setup;
-        setup.Width    = width;
-        setup.Height   = height;
-        setup.Windowed = true;
-        setup.Title    = windowTitle;
-        return setup;
-    }
+    static GfxSetup Window(int width, int height, String windowTitle);
     /// shortcut for fullscreen mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Fullscreen(int width, int height, String windowTitle) {
-        o_assert_dbg((width > 0) && (height > 0));
-        GfxSetup setup;
-        setup.Width    = width;
-        setup.Height   = height;
-        setup.Windowed = false;
-        setup.Title    = windowTitle;
-        return setup;
-    }
+    static GfxSetup Fullscreen(int width, int height, String windowTitle);
     /// shortcut for windowed mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup WindowMSAA4(int width, int height, String windowTitle) {
-        GfxSetup setup = Window(width, height, windowTitle);
-        setup.SampleCount = 4;
-        return setup;
-    }
+    static GfxSetup WindowMSAA4(int width, int height, String windowTitle);
     /// shortcut for fullscreen mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup FullscreenMSAA4(int width, int height, String windowTitle) {
-        GfxSetup setup = Fullscreen(width, height, windowTitle);
-        setup.SampleCount = 4;
-        return setup;
-    }
+    static GfxSetup FullscreenMSAA4(int width, int height, String windowTitle);
     /// canvas width
     int Width = 640;
     /// canvas height
@@ -1887,29 +1290,9 @@ public:
     /// max number of ApplyDrawState per frame (only relevant on some platforms)
     int MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
     /// get DisplayAttrs object initialized to setup values
-    DisplayAttrs GetDisplayAttrs() const {
-        DisplayAttrs attrs;
-        attrs.WindowWidth       = this->Width;
-        attrs.WindowHeight      = this->Height;
-        attrs.WindowPosX        = 0;
-        attrs.WindowPosY        = 0;
-        attrs.FramebufferWidth  = this->Width;
-        attrs.FramebufferHeight = this->Height;
-        attrs.ColorPixelFormat  = this->ColorFormat;
-        attrs.DepthPixelFormat  = this->DepthFormat;
-        attrs.SampleCount       = this->SampleCount;
-        attrs.Windowed          = this->Windowed;
-        attrs.WindowTitle       = this->Title;
-        attrs.SwapInterval      = this->SwapInterval;
-        return attrs;
-    }
+    DisplayAttrs GetDisplayAttrs() const;
     /// default constructor
-    GfxSetup() {
-        for (int i = 0; i < GfxResourceType::NumResourceTypes; i++) {
-            ResourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
-            ResourceThrottling[i] = 0;    // unthrottled
-        }
-    }
+    GfxSetup();
 };
 
 //------------------------------------------------------------------------------
@@ -1921,83 +1304,29 @@ public:
 class MeshSetup {
 public:
     /// asynchronously load from file
-    static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId()) {
-        MeshSetup setup;
-        setup.VertexUsage = Usage::Immutable;
-        setup.IndexUsage = Usage::Immutable;
-        setup.Locator = loc;
-        setup.Placeholder = placeholder;
-        setup.setupFromFile = true;
-        return setup;
-    }
+    static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId());
     /// setup from from data in memory
-    static MeshSetup FromData(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable) {
-        MeshSetup setup;
-        setup.VertexUsage = vertexUsage;
-        setup.IndexUsage = indexUsage;
-        setup.setupFromData = true;
-        return setup;
-    }
+    static MeshSetup FromData(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
     /// setup from data in memory with blueprint
-    static MeshSetup FromData(const MeshSetup& blueprint) {
-        MeshSetup setup(blueprint);
-        setup.setupFromData = true;
-        return setup;
-    }
+    static MeshSetup FromData(const MeshSetup& blueprint);
     /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup Empty(int numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage) {
-        o_assert_dbg(numVertices > 0);
-        MeshSetup setup;
-        setup.setupEmpty = true;
-        setup.VertexUsage = vertexUsage;
-        setup.IndexUsage = indexUsage;
-        setup.NumVertices = numVertices;
-        setup.NumIndices = numIndices;
-        setup.IndicesType = indexType;
-        setup.DataVertexOffset = InvalidIndex;
-        setup.DataIndexOffset = InvalidIndex;
-        return setup;
-    }
+    static MeshSetup Empty(int numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
     /// setup a fullscreen quad mesh
-    static MeshSetup FullScreenQuad(bool flipV=false) {
-        MeshSetup setup;
-        setup.setupFullScreenQuad = true;
-        setup.FullScreenQuadFlipV = flipV;
-        setup.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
-        setup.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-        return setup;
-    }
+    static MeshSetup FullScreenQuad(bool flipV=false);
     /// check if should load asynchronously
-    bool ShouldSetupFromFile() const {
-        return this->setupFromFile;
-    }
+    bool ShouldSetupFromFile() const;
     /// check if should setup from data in memory
-    bool ShouldSetupFromData() const {
-        return this->setupFromData;
-    }
+    bool ShouldSetupFromData() const;
     /// check if should setup empty mesh
-    bool ShouldSetupEmpty() const {
-        return this->setupEmpty;
-    }
+    bool ShouldSetupEmpty() const;
     /// check if should setup fullscreen quad mesh
-    bool ShouldSetupFullScreenQuad() const {
-        return this->setupFullScreenQuad;
-    }
+    bool ShouldSetupFullScreenQuad() const;
     /// add a primitive group (required for CreateEmpty)
-    void AddPrimitiveGroup(const PrimitiveGroup& primGroup) {
-        o_assert(this->setupEmpty || this->setupFromData);
-        o_assert(this->numPrimGroups < GfxConfig::MaxNumPrimGroups);
-        this->primGroups[this->numPrimGroups++] = primGroup;
-    }
+    void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
     /// get number of primitive groups
-    int NumPrimitiveGroups() const {
-        return this->numPrimGroups;
-    }
+    int NumPrimitiveGroups() const;
     /// get primitive group at index
-    const class PrimitiveGroup& PrimitiveGroup(int index) const {
-        o_assert_range(index, GfxConfig::MaxNumPrimGroups);
-        return this->primGroups[index];
-    }
+    const class PrimitiveGroup& PrimitiveGroup(int index) const;
     /// vertex-data usage
     Usage::Code VertexUsage = Usage::InvalidUsage;
     /// index-data usage
@@ -2038,20 +1367,9 @@ private:
 class PipelineSetup {
 public:
     /// construct from shader
-    static PipelineSetup FromShader(const Id& shd) {
-        o_assert_dbg(shd.IsValid());
-        PipelineSetup setup;
-        setup.Shader = shd;
-        return setup;
-    }
+    static PipelineSetup FromShader(const Id& shd);
     /// construct from vertex layout and shader
-    static PipelineSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd) {
-        o_assert_dbg(!layout.Empty() && shd.IsValid());
-        PipelineSetup setup;
-        setup.Layouts[0] = layout;
-        setup.Shader = shd;
-        return setup;
-    }
+    static PipelineSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd);
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// blend state (GLES3.0 doesn't allow separate MRT blend state
@@ -2079,22 +1397,9 @@ public:
 class RenderPassSetup {
 public:
     /// construct from single render target textures, and option depth-stencil texture
-    static RenderPassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId()) {
-        RenderPassSetup setup;
-        setup.ColorAttachments[0].Texture = colorTexture;
-        setup.DepthStencilAttachment.Texture = depthStencilTexture;
-        return setup;
-    }
+    static RenderPassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
     /// construct from MRT render target textures, and option depth-stencil texture
-    static RenderPassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId()) {
-        RenderPassSetup setup;
-        int i = 0;
-        for (const auto& id : colorTextures) {
-            setup.ColorAttachments[i++].Texture = id;
-        }
-        setup.DepthStencilAttachment.Texture = depthStencilTexture;
-        return setup;
-    }
+    static RenderPassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// 1..N color attachments
@@ -2134,153 +1439,57 @@ public:
     /// the resource locator
     class Locator Locator = Locator::NonShared();
     /// set shader program from vertex- and fragment-shader sources
-    void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
-        o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
-        this->program.vsSources[slang] = vsSource;
-        this->program.fsSources[slang] = fsSource;
-    }
+    void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// set shader program from precompiled shader byte code
-    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes) {
-        o_assert_dbg(vsByteCode && (vsNumBytes > 0));
-        o_assert_dbg(fsByteCode && (fsNumBytes > 0));
-        this->program.vsByteCode[slang].ptr = vsByteCode;
-        this->program.vsByteCode[slang].size = vsNumBytes;
-        this->program.fsByteCode[slang].ptr = fsByteCode;
-        this->program.fsByteCode[slang].size = fsNumBytes;
-    }
+    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes);
     /// set shader program from a metal-style shader library
-    void SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc) {
-        o_assert_dbg(ShaderLang::Metal == slang);
-        o_assert_dbg(vsFunc && fsFunc);
-        this->program.vsFuncs[slang] = vsFunc;
-        this->program.fsFuncs[slang] = fsFunc;
-    }
+    void SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc);
     /// set vertex shader input layout
-    void SetInputLayout(const VertexLayout& vsInputLayout) {
-        this->program.vsInputLayout = vsInputLayout;
-    }
+    void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
-    void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot) {
-        o_assert_dbg(name.IsValid());
-        o_assert_dbg(!layout.Empty());
-        o_assert_dbg(0 != layout.TypeHash);
-        o_assert_dbg(bindSlot >= 0);
-        uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
-        entry.name = name;
-        entry.layout = layout;
-        entry.bindStage = bindStage;
-        entry.bindSlot = bindSlot;
-    }
+    void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture block
-    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage) {
-        o_assert_dbg(name.IsValid());
-        textureBlockEntry& entry = this->textureBlocks[this->numTextureBlocks++];
-        entry.name = name;
-        entry.layout = layout;
-        entry.bindStage = bindStage;
-    }
+    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage);
     /// set metal-style library byte code
-    void SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes) {
-        o_assert_dbg(ShaderLang::Metal == slang);
-        o_assert_dbg(nullptr != byteCode);
-        o_assert_dbg(numBytes > 0);
-        this->libraryByteCode = byteCode;
-        this->libraryByteCodeSize = numBytes;
-    }
+    void SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes);
     /// get metal-style library byte code
-    void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-        o_assert_dbg(ShaderLang::Metal == slang);
-        outPtr = this->libraryByteCode;
-        outSize = this->libraryByteCodeSize;
-    }
+    void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
     /// get the vertex shader input layout
-    const VertexLayout& InputLayout() const {
-        return this->program.vsInputLayout;
-    }
+    const VertexLayout& InputLayout() const;
     /// get program vertex shader source (only valid if setup from sources)
-    const String& VertexShaderSource(ShaderLang::Code slang) const {
-        return this->program.vsSources[slang];
-    }
+    const String& VertexShaderSource(ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
-    const String& FragmentShaderSource(ShaderLang::Code slang) const {
-        return this->program.fsSources[slang];
-    }
+    const String& FragmentShaderSource(ShaderLang::Code slang) const;
     /// get program vertex shader byte code, returns nullptr if no byte code exists
-    void VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-        outPtr = this->program.vsByteCode[slang].ptr;
-        outSize = this->program.vsByteCode[slang].size;
-    }
+    void VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
     /// get program fragment shader byte code, returns nullptr if no byte code exists
-    void FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-        outPtr = this->program.fsByteCode[slang].ptr;
-        outSize = this->program.fsByteCode[slang].size;
-    }
+    void FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
     /// get vertex shader name (if using metal-style shader library
-    const String& VertexShaderFunc(ShaderLang::Code slang) const {
-        o_assert_dbg(ShaderLang::Metal == slang);
-        return this->program.vsFuncs[slang];
-    }
+    const String& VertexShaderFunc(ShaderLang::Code slang) const;
     /// get fragment shader name (if using metal-style shader library
-    const String& FragmentShaderFunc(ShaderLang::Code slang) const {
-        o_assert_dbg(ShaderLang::Metal == slang);
-        return this->program.fsFuncs[slang];
-    }
+    const String& FragmentShaderFunc(ShaderLang::Code slang) const;
     /// get number of uniform blocks
-    int NumUniformBlocks() const {
-        return this->numUniformBlocks;
-    }
+    int NumUniformBlocks() const;
     /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
-    int UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
-        for (int i = 0; i < this->numUniformBlocks; i++) {
-            const auto& entry = this->uniformBlocks[i];
-            if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
-                return i;
-            }
-        }
-        return InvalidIndex;
-    }
+    int UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
     /// get uniform block name at index
-    const StringAtom& UniformBlockName(int index) const {
-        return this->uniformBlocks[index].name;
-    }
+    const StringAtom& UniformBlockName(int index) const;
     /// get uniform block layout at index
-    const class UniformBlockLayout& UniformBlockLayout(int index) const {
-        return this->uniformBlocks[index].layout;
-    }
+    const class UniformBlockLayout& UniformBlockLayout(int index) const;
     /// get uniform block shader stage at index
-    ShaderStage::Code UniformBlockBindStage(int index) const {
-        return this->uniformBlocks[index].bindStage;
-    }
+    ShaderStage::Code UniformBlockBindStage(int index) const;
     /// get uniform block bind slot at index
-    int UniformBlockBindSlot(int index) const {
-        return this->uniformBlocks[index].bindSlot;
-    }
+    int UniformBlockBindSlot(int index) const;
     /// get number of texture blocks
-    int NumTextureBlocks() const {
-        return this->numTextureBlocks;
-    }
+    int NumTextureBlocks() const;
     /// find texture block index by bind stage (return InvalidIndex if not found)
-    int TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
-        for (int i = 0; i < this->numTextureBlocks; i++) {
-            const auto& entry = this->textureBlocks[i];
-            if (entry.bindStage == bindStage) {
-                return i;
-            }
-        }
-        return InvalidIndex;
-    }
+    int TextureBlockIndexByStage(ShaderStage::Code bindStage) const;
     /// get texture block name at index
-    const StringAtom& TextureBlockName(int index) const {
-        return this->textureBlocks[index].name;
-    }
+    const StringAtom& TextureBlockName(int index) const;
     /// get texture block layout at index
-    const class TextureBlockLayout& TextureBlockLayout(int index) const {
-        return this->textureBlocks[index].layout;
-    }
+    const class TextureBlockLayout& TextureBlockLayout(int index) const;
     /// get texture block shader stage at index
-    ShaderStage::Code TextureBlockBindStage(int index) const {
-        return this->textureBlocks[index].bindStage;
-    }
+    ShaderStage::Code TextureBlockBindStage(int index) const;
 private:
     struct programEntry {
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
@@ -2325,245 +1534,45 @@ private:
 class TextureSetup {
 public:
     /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId()) {
-        TextureSetup setup;
-        setup.setupFromFile = true;
-        setup.Locator = loc;
-        setup.Placeholder = placeholder;
-        return setup;
-    }
+    static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
     /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId()) {
-        TextureSetup setup(blueprint);
-        setup.setupFromFile = true;
-        setup.Locator = loc;
-        setup.Placeholder = placeholder;
-        return setup;
-    }
+    static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup 2D texture from raw pixel data
-    static TextureSetup FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupFromPixelData = true;
-        setup.Type = TextureType::Texture2D;
-        setup.Width = w;
-        setup.Height = h;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.ImageData.NumFaces = 1;
-        setup.ImageData.NumMipMaps = numMipMaps;
-        return setup;
-    }
+    static TextureSetup FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup cube texture from raw pixel data
-    static TextureSetup FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupFromPixelData = true;
-        setup.Type = TextureType::TextureCube;
-        setup.Width = w;
-        setup.Height = h;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.ImageData.NumFaces = 6;
-        setup.ImageData.NumMipMaps = numMipMaps;
-        return setup;
-    }
+    static TextureSetup FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     //// setup 3D texture from raw pixel data
-    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0) && (d > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupFromPixelData = true;
-        setup.Type = TextureType::Texture3D;
-        setup.Width = w;
-        setup.Height = h;
-        setup.Depth = d;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.ImageData.NumFaces = 1;
-        setup.ImageData.NumMipMaps = numMipMaps;
-        return setup;
-    }
+    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup array texture from raw pixel data
-    static TextureSetup FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0) && (layers > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupFromPixelData = true;
-        setup.Type = TextureType::TextureArray;
-        setup.Width = w;
-        setup.Height = h;
-        setup.Depth = layers;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.ImageData.NumFaces = 1;
-        setup.ImageData.NumMipMaps = numMipMaps;
-        return setup;
-    }
+    static TextureSetup FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup empty 2D texture
-    static TextureSetup Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupEmpty = true;
-        setup.Type = TextureType::Texture2D;
-        setup.Width = w;
-        setup.Height = h;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.TextureUsage = usage;
-        return setup;
-    }
+    static TextureSetup Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty cube texture
-    static TextureSetup EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupEmpty = true;
-        setup.Type = TextureType::TextureCube;
-        setup.Width = w;
-        setup.Height = h;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.TextureUsage = usage;
-        return setup;
-    }
+    static TextureSetup EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty 3D texture
-    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0) && (d > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupEmpty = true;
-        setup.Type = TextureType::Texture3D;
-        setup.Width = w;
-        setup.Height = h;
-        setup.Depth = d;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.TextureUsage = usage;
-        return setup;
-    }
+    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup empty array texture
-    static TextureSetup EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup()) {
-        o_assert_dbg((w > 0) && (h > 0) && (layers > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        TextureSetup setup(blueprint);
-        setup.setupEmpty = true;
-        setup.Type = TextureType::TextureArray;
-        setup.Width = w;
-        setup.Height = h;
-        setup.Depth = layers;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.TextureUsage = usage;
-        return setup;
-    }
+    static TextureSetup EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup as 2D render target
-    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None) {
-        o_assert_dbg((w > 0) && (h > 0));
-        TextureSetup setup;
-        setup.Type = TextureType::Texture2D;
-        setup.RenderTarget = true;
-        setup.Width = w;
-        setup.Height = h;
-        setup.ColorFormat = colorFmt;
-        setup.DepthFormat = depthFmt;
-        setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-        setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-        return setup;
-    }
+    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup as cube render target
-    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None) {
-        o_assert_dbg((w > 0) && (h > 0));
-        TextureSetup setup;
-        setup.Type = TextureType::TextureCube;
-        setup.RenderTarget = true;
-        setup.Width = w;
-        setup.Height = h;
-        setup.ColorFormat = colorFmt;
-        setup.DepthFormat = depthFmt;
-        setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-        setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-        return setup;
-    }
+    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup as 3D render target
-    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None) {
-        o_assert_dbg((w > 0) && (h > 0));
-        TextureSetup setup;
-        setup.Type = TextureType::Texture3D;
-        setup.RenderTarget = true;
-        setup.Width = w;
-        setup.Height = h;
-        setup.Depth = d;
-        setup.ColorFormat = colorFmt;
-        setup.DepthFormat = depthFmt;
-        setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-        setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-        return setup;
-    }
+    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup as array render target
-    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None) {
-        o_assert_dbg((w > 0) && (h > 0));
-        TextureSetup setup;
-        setup.Type = TextureType::TextureArray;
-        setup.RenderTarget = true;
-        setup.Width = w;
-        setup.Height = h;
-        setup.Depth = layers;
-        setup.ColorFormat = colorFmt;
-        setup.DepthFormat = depthFmt;
-        setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-        setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-        return setup;
-    }
+    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
-    static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0) {
-        o_assert_dbg((w > 0) && (h > 0));
-        o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
-        o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-        o_assert_dbg(h0 != 0);
-        TextureSetup setup;
-        setup.setupFromNativeHandle = true;
-        setup.Type = type;
-        setup.Width = w;
-        setup.Height = h;
-        setup.NumMipMaps = numMipMaps;
-        setup.ColorFormat = fmt;
-        setup.TextureUsage = usage;
-        setup.NativeHandle[0] = h0;
-        setup.NativeHandle[1] = h1;
-        return setup;
-    }
+    static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
     /// return true if texture should be setup from a file
-    bool ShouldSetupFromFile() const {
-        return this->setupFromFile;
-    }
+    bool ShouldSetupFromFile() const;
     /// return true if texture should be setup from raw pixel data
-    bool ShouldSetupFromPixelData() const {
-        return this->setupFromPixelData;
-    }
+    bool ShouldSetupFromPixelData() const;
     /// return true if texture should be setup from native texture handles
-    bool ShouldSetupFromNativeTexture() const {
-        return this->setupFromNativeHandle;
-    }
+    bool ShouldSetupFromNativeTexture() const;
     /// return true if texture should be created empty
-    bool ShouldSetupEmpty() const {
-        return this->setupEmpty;
-    }
+    bool ShouldSetupEmpty() const;
     /// return true if render target has depth
-    bool HasDepth() const {
-        return this->DepthFormat != PixelFormat::InvalidPixelFormat;
-    }
+    bool HasDepth() const;
     /// intended usage
     Usage::Code TextureUsage = Usage::Immutable;
     /// texture type
@@ -2596,9 +1605,7 @@ public:
     /// optional image surface offsets and sizes
     ImageDataAttrs ImageData;
     /// default constructor 
-    TextureSetup() {
-        NativeHandle.Fill(0);
-    }
+    TextureSetup();
 private:
     bool setupFromFile = false;
     bool setupFromPixelData = false;

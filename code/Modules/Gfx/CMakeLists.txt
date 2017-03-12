@@ -27,7 +27,7 @@ fips_begin_module(Gfx)
     fips_dir(Core)
     fips_files(
         displayMgrBase.cc displayMgrBase.h
-        Types.h
+        Types.cc Types.h
         displayMgr.h
         renderer.h
         gfxPointers.h
