@@ -74,31 +74,9 @@ GLenum glRenderer::mapCullFace[Face::NumFaceCodes] = {
 };
 
 //------------------------------------------------------------------------------
-glRenderer::glRenderer() :
-valid(false),
-#if !ORYOL_OPENGLES2
-globalVAO(0),
-#endif
-frameIndex(0),
-rpValid(false),
-curRenderPass(nullptr),
-curPipeline(nullptr),
-curPrimaryMesh(nullptr),
-scissorX(0),
-scissorY(0),
-scissorWidth(0),
-scissorHeight(0),
-blendColor(1.0f, 1.0f, 1.0f, 1.0f),
-viewPortX(0),
-viewPortY(0),
-viewPortWidth(0),
-viewPortHeight(0),
-vertexBuffer(0),
-indexBuffer(0),
-program(0)
-{
-    this->samplers2D.Fill(0);
-    this->samplersCube.Fill(0);
+glRenderer::glRenderer() {
+    this->blendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    this->samplers.Fill(0);
     this->glAttrVBs.Fill(0);
 }
 
@@ -954,10 +932,8 @@ glRenderer::useProgram(GLuint prog) {
 void
 glRenderer::invalidateTextureState() {
     o_assert_dbg(this->valid);
-
     for (int i = 0; i < MaxTextureSamplers; i++) {
-        this->samplers2D[i] = 0;
-        this->samplersCube[i] = 0;
+        this->samplers[i] = 0;
     }
 }
     
@@ -973,9 +949,8 @@ glRenderer::bindTexture(int samplerIndex, GLenum target, GLuint tex) {
                  (target == GL_TEXTURE_3D) || (target == GL_TEXTURE_2D_ARRAY));
     #endif
 
-    GLuint* samplers = (GL_TEXTURE_2D == target) ? this->samplers2D.begin() : this->samplersCube.begin();
-    if (tex != samplers[samplerIndex]) {
-        samplers[samplerIndex] = tex;
+    if (tex != this->samplers[samplerIndex]) {
+        this->samplers[samplerIndex] = tex;
         ::glActiveTexture(GL_TEXTURE0 + samplerIndex);
         ORYOL_GL_CHECK_ERROR();
         ::glBindTexture(target, tex);

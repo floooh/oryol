@@ -106,12 +106,12 @@ private:
     /// apply front/back side stencil state
     void applyStencilState(const DepthStencilState& state, const DepthStencilState& curState, GLenum glFace);
 
-    bool valid;
+    bool valid = false;
     gfxPointers pointers;
     #if !ORYOL_OPENGLES2
-    GLuint globalVAO;
+    GLuint globalVAO = 0;
     #endif
-    uint64_t frameIndex;
+    uint64_t frameIndex = 0;
 
     static GLenum mapCompareFunc[CompareFunc::NumCompareFuncs];
     static GLenum mapStencilOp[StencilOp::NumStencilOperations];
@@ -119,39 +119,37 @@ private:
     static GLenum mapBlendOp[BlendOperation::NumBlendOperations];
     static GLenum mapCullFace[Face::NumFaceCodes];
 
-    bool rpValid;
+    bool rpValid = false;
     DisplayAttrs rpAttrs;
     GfxSetup gfxSetup;
     
     // high-level state cache
-    renderPass* curRenderPass;
-    pipeline* curPipeline;
-    mesh* curPrimaryMesh;
+    renderPass* curRenderPass = nullptr;
+    pipeline* curPipeline = nullptr;
+    mesh* curPrimaryMesh = nullptr;
 
     // GL state cache
     BlendState blendState;
     DepthStencilState depthStencilState;
     RasterizerState rasterizerState;
 
-    GLint scissorX;
-    GLint scissorY;
-    GLsizei scissorWidth;
-    GLsizei scissorHeight;
+    GLint scissorX = 0;
+    GLint scissorY = 0;
+    GLsizei scissorWidth = 0;
+    GLsizei scissorHeight = 0;
+    GLint viewPortX = 0;
+    GLint viewPortY = 0;
+    GLsizei viewPortWidth = 0;
+    GLsizei viewPortHeight = 0;
     
     glm::vec4 blendColor;
     
-    GLint viewPortX;
-    GLint viewPortY;
-    GLsizei viewPortWidth;
-    GLsizei viewPortHeight;
-    
-    GLuint vertexBuffer;
-    GLuint indexBuffer;
-    GLuint program;
+    GLuint vertexBuffer = 0;
+    GLuint indexBuffer = 0;
+    GLuint program = 0;
     
     static const int MaxTextureSamplers = 16;
-    StaticArray<GLuint, MaxTextureSamplers> samplers2D;
-    StaticArray<GLuint, MaxTextureSamplers> samplersCube;
+    StaticArray<GLuint, MaxTextureSamplers> samplers;
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
 };
