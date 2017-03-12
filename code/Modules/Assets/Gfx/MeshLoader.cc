@@ -5,6 +5,7 @@
 #include "MeshLoader.h"
 #include "Assets/Gfx/OmshParser.h"
 #include "Gfx/Gfx.h"
+#include "Gfx/Resource/gfxResourceContainer.h"
 #include "IO/IO.h"
 
 namespace Oryol {
@@ -38,7 +39,7 @@ MeshLoader::Cancel() {
 //------------------------------------------------------------------------------
 Id
 MeshLoader::Start() {
-    this->resId = Gfx::resource().prepareAsync(this->setup);
+    this->resId = Gfx::resource()->prepareAsync(this->setup);
     this->ioRequest = IO::LoadFile(setup.Locator.Location());
     return this->resId;
 }
@@ -72,15 +73,15 @@ MeshLoader::Continue() {
                 // destroyed at this point, if this happens, initAsync will
                 // silently fail and return ResourceState::InvalidState
                 // (the same for failedAsync)
-                result = Gfx::resource().initAsync(this->resId, meshSetup, data, numBytes);
+                result = Gfx::resource()->initAsync(this->resId, meshSetup, data, numBytes);
             }
             else {
-                result = Gfx::resource().failedAsync(this->resId);
+                result = Gfx::resource()->failedAsync(this->resId);
             }
         }
         else {
             // IO had failed
-            result = Gfx::resource().failedAsync(this->resId);
+            result = Gfx::resource()->failedAsync(this->resId);
         }
         this->ioRequest = nullptr;
     }

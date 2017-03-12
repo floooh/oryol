@@ -9,14 +9,21 @@
     @brief Gfx module facade
 */
 #include "Core/RunLoop.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Core/Types.h"
-#include "Gfx/Core/renderer.h"
+#include "Resource/ResourceLabel.h"
+#include "Resource/Core/ResourceLoader.h"
 #include "Resource/Core/SetupAndData.h"
-#include "glm/vec4.hpp"
+#include "Resource/ResourceInfo.h"
+#include "Resource/ResourcePoolInfo.h"
 
 namespace Oryol {
+
+namespace _priv {
+class gfxResourceContainer;
+class pipeline;
+class texture;
+class mesh;
+}
     
 class Gfx {
 public:
@@ -31,9 +38,9 @@ public:
     static bool QuitRequested();
 
     /// event handler callback typedef
-    typedef _priv::displayMgrBase::eventHandler EventHandler;
+    typedef std::function<void(const GfxEvent&)> EventHandler;
     /// event handler id typedef
-    typedef _priv::displayMgrBase::eventHandlerId EventHandlerId;
+    typedef unsigned int EventHandlerId;
     /// subscribe to display events
     static EventHandlerId Subscribe(EventHandler handler);
     /// unsubscribe from display events
@@ -116,7 +123,7 @@ public:
     static void ResetStateCache();
 
     /// direct access to resource container (private interface for resource loaders)
-    static _priv::gfxResourceContainer& resource();
+    static _priv::gfxResourceContainer* resource();
 
 private:
     #if ORYOL_DEBUG
@@ -135,25 +142,14 @@ private:
     /// validate texture binding
     static void validateTextures(ShaderStage::Code stage, _priv::pipeline* pip, _priv::texture** textures, int numTextures);
     #endif
-
-    struct _state {
-        class GfxSetup gfxSetup;
-        GfxFrameInfo gfxFrameInfo;
-        RunLoop::Id runLoopId = RunLoop::InvalidId;
-        _priv::displayMgr displayManager;
-        class _priv::renderer renderer;
-        _priv::gfxResourceContainer resourceContainer;
-        bool inPass = false;
-    };
-    static _state* state;
+    /// apply uniform block, non-template version
+    static void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
 };
 
 //------------------------------------------------------------------------------
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
-    o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumApplyUniformBlock++;
-    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8_t*) &ub, sizeof(ub));
+    applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8_t*)&ub, sizeof(ub));
 }
 
 //------------------------------------------------------------------------------

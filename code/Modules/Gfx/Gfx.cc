@@ -5,18 +5,30 @@
 #include "Gfx.h"
 #include "Core/Core.h"
 #include "Gfx/Core/gfxPointers.h"
+#include "Gfx/Core/displayMgr.h"
+#include "Gfx/Resource/gfxResourceContainer.h"
+#include "Gfx/Core/renderer.h"
 
 namespace Oryol {
 
 using namespace _priv;
 
-Gfx::_state* Gfx::state = nullptr;
+struct _gfx_state {
+    class GfxSetup gfxSetup;
+    GfxFrameInfo gfxFrameInfo;
+    RunLoop::Id runLoopId = RunLoop::InvalidId;
+    _priv::displayMgr displayManager;
+    class _priv::renderer renderer;
+    _priv::gfxResourceContainer resourceContainer;
+    bool inPass = false;
+};
+static _gfx_state* state = nullptr;
 
 //------------------------------------------------------------------------------
 void
 Gfx::Setup(const class GfxSetup& setup) {
     o_assert_dbg(!IsValid());
-    state = Memory::New<_state>();
+    state = Memory::New<_gfx_state>();
     state->gfxSetup = setup;
 
     gfxPointers pointers;
@@ -297,10 +309,10 @@ Gfx::DestroyResources(ResourceLabel label) {
 }
 
 //------------------------------------------------------------------------------
-_priv::gfxResourceContainer&
+_priv::gfxResourceContainer*
 Gfx::resource() {
     o_assert_dbg(IsValid());
-    return state->resourceContainer;
+    return &(state->resourceContainer);
 }
 
 //------------------------------------------------------------------------------
@@ -666,6 +678,14 @@ Gfx::CreateResource(const RenderPassSetup& setup, const void* data, int size) {
     validateRenderPassSetup(setup);
     #endif
     return state->resourceContainer.Create(setup, nullptr, 0);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+    o_assert_dbg(IsValid());
+    state->gfxFrameInfo.NumApplyUniformBlock++;
+    state->renderer.applyUniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize);
 }
 
 } // namespace Oryol
