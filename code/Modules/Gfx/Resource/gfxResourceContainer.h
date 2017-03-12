@@ -7,16 +7,13 @@
 */
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
-#include "Core/Containers/KeyValuePair.h"
+#include "Resource/Core/ResourceLoader.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
 #include "Gfx/Core/Types.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/factory.h"
-#include "Gfx/Resource/MeshLoaderBase.h"
-#include "Gfx/Resource/TextureLoaderBase.h"
 #include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {

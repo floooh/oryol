@@ -2,6 +2,7 @@
 set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # cmake options
+option(ORYOL_SAMPLES "Build Oryol samples" ON)
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/data/" CACHE STRING "Sample data URL")
 option(ORYOL_DEBUG_SHADERS "Enable/disable debug info for shaders" OFF)
 if (FIPS_MACOS OR FIPS_LINUX OR FIPS_ANDROID)
@@ -209,3 +210,10 @@ macro(oryol_shader shd)
     fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE ARGS ${args})
 endmacro()
 
+#-------------------------------------------------------------------------------
+#   Add a sample to the samples webpage 
+#
+file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
+macro(oryol_add_web_sample name desc type image src)
+    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
+endmacro()
