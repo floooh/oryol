@@ -24,11 +24,11 @@ gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->pendingLoaders.Reserve(128);
     this->destroyQueue.Reserve(128);
 
-    this->meshPool.Setup(GfxResourceType::Mesh, setup.PoolSize(GfxResourceType::Mesh));
-    this->shaderPool.Setup(GfxResourceType::Shader, setup.PoolSize(GfxResourceType::Shader));
-    this->texturePool.Setup(GfxResourceType::Texture, setup.PoolSize(GfxResourceType::Texture));
-    this->pipelinePool.Setup(GfxResourceType::Pipeline, setup.PoolSize(GfxResourceType::Pipeline));
-    this->renderPassPool.Setup(GfxResourceType::RenderPass, setup.PoolSize(GfxResourceType::RenderPass));
+    this->meshPool.Setup(GfxResourceType::Mesh, setup.ResourcePoolSize[GfxResourceType::Mesh]);
+    this->shaderPool.Setup(GfxResourceType::Shader, setup.ResourcePoolSize[GfxResourceType::Shader]);
+    this->texturePool.Setup(GfxResourceType::Texture, setup.ResourcePoolSize[GfxResourceType::Texture]);
+    this->pipelinePool.Setup(GfxResourceType::Pipeline, setup.ResourcePoolSize[GfxResourceType::Pipeline]);
+    this->renderPassPool.Setup(GfxResourceType::RenderPass, setup.ResourcePoolSize[GfxResourceType::RenderPass]);
 
     this->meshFactory.Setup(this->pointers);
     this->shaderFactory.Setup(this->pointers);

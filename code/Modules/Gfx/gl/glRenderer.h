@@ -7,7 +7,6 @@
 #include "Core/Types.h"
 #include "Gfx/Core/Types.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"

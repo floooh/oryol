@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief wraps allocations from descriptor heaps
 */
-#include "Gfx/Setup/GfxSetup.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Resource/Id.h"
 #include "Core/Containers/Queue.h"

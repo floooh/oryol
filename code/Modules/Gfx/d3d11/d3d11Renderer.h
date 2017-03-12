@@ -8,7 +8,6 @@
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Types.h"
-#include "Gfx/Setup/GfxSetup.h"
 #include <glm/vec4.hpp>
 #include "Gfx/d3d11/d3d11_decl.h"
 #include "Gfx/Core/gfxPointers.h"

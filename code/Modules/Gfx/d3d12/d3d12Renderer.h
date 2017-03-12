@@ -7,7 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Setup/GfxSetup.h"
+#include "Gfx/Setup/Types.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/Core/ClearState.h"
 #include "Gfx/Core/PrimitiveGroup.h"

@@ -6,12 +6,6 @@
 */
 #include "Resource/Core/resourceBase.h"
 #include "Gfx/Core/Types.h"
-#include "Gfx/Setup/ShaderSetup.h"
-#include "Gfx/Setup/PipelineSetup.h"
-#include "Gfx/Setup/TextureSetup.h"
-#include "Gfx/Setup/MeshSetup.h"
-#include "Gfx/Setup/RenderPassSetup.h"
-#include "Core/Containers/StaticArray.h"
 
 namespace Oryol {
 namespace _priv {

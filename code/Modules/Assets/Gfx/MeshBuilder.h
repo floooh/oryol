@@ -38,7 +38,6 @@
 */
 #include "Core/Types.h"
 #include "Gfx/Core/Types.h"
-#include "Gfx/Setup/MeshSetup.h"
 #include "Assets/Gfx/VertexWriter.h"
 #include "Resource/Core/SetupAndData.h"
 

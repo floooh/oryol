@@ -296,13 +296,6 @@ the size and pixel format of a texture, or how many vertices and indices are in
 a mesh. They are the same concept as the DESC structures in D3D, or the
 Descriptor objects in Metal.
 
-Each resource type has it's own Setup class:
-
-* [DrawStateSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/DrawStateSetup.h)
-* [MeshSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/MeshSetup.h)
-* [TextureSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/TextureSetup.h)
-* [ShaderSetup](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Setup/ShaderSetup.h)
-
 #### Resource Sharing
 
 Resource sharing means that attempting to create an identical resource multiple times 

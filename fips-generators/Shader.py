@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 81
+Version = 82
 
 import os
 import sys
@@ -1864,7 +1864,7 @@ def writeHeaderTop(f, shdLib) :
     f.write('/*  #version:{}#\n'.format(Version))
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
-    f.write('#include "Gfx/Setup/ShaderSetup.h"\n')
+    f.write('#include "Gfx/Core/Types.h"\n')
     f.write('#include "glm/vec2.hpp"\n')
     f.write('#include "glm/vec3.hpp"\n')
     f.write('#include "glm/vec4.hpp"\n')

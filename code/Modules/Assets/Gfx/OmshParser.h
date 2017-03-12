@@ -43,7 +43,7 @@
         TriangleFan = 6,
     }
 */
-#include "Gfx/Setup/MeshSetup.h"
+#include "Gfx/Core/Types.h"
 
 namespace Oryol {
 

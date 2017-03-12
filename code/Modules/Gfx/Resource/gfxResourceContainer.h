@@ -12,7 +12,7 @@
 #include "Core/Containers/KeyValuePair.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
-#include "Gfx/Setup/GfxSetup.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Resource/factory.h"
 #include "Gfx/Resource/MeshLoaderBase.h"

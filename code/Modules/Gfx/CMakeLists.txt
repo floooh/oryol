@@ -45,15 +45,6 @@ fips_begin_module(Gfx)
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
     )
-    fips_dir(Setup)
-    fips_files(
-        PipelineSetup.cc PipelineSetup.h
-        GfxSetup.cc GfxSetup.h
-        MeshSetup.cc MeshSetup.h
-        ShaderSetup.cc ShaderSetup.h
-        TextureSetup.cc TextureSetup.h
-        RenderPassSetup.cc RenderPassSetup.h
-    )
     if (ORYOL_OPENGL)
         fips_dir(gl)
         fips_files(

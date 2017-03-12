@@ -55,10 +55,10 @@ ResourceStressApp::OnInit() {
     // setup Gfx system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol Resource Stress Test");
     gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-    gfxSetup.SetPoolSize(GfxResourceType::Mesh, MaxNumObjects + 32);
-    gfxSetup.SetPoolSize(GfxResourceType::Texture, MaxNumObjects + 32);
-    gfxSetup.SetPoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32);
-    gfxSetup.SetPoolSize(GfxResourceType::Shader, 4);
+    gfxSetup.ResourcePoolSize[GfxResourceType::Mesh] = MaxNumObjects + 32;
+    gfxSetup.ResourcePoolSize[GfxResourceType::Texture] = MaxNumObjects + 32;
+    gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] = MaxNumObjects + 32;
+    gfxSetup.ResourcePoolSize[GfxResourceType::Shader] = 4;
     Gfx::Setup(gfxSetup);
     
     // setup debug text rendering

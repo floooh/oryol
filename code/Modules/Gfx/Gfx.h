@@ -11,7 +11,6 @@
 #include "Core/RunLoop.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
-#include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/Types.h"
 #include "Gfx/Core/renderer.h"
 #include "Resource/Core/SetupAndData.h"

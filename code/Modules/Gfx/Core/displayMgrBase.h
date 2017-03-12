@@ -7,7 +7,6 @@
     
     @see displayMgr
 */
-#include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Core/Types.h"
 #include "Core/Containers/Map.h"
 #include "Gfx/Core/gfxPointers.h"

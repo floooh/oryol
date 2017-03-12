@@ -6,7 +6,7 @@
     @brief base class for Gfx mesh loaders
 */
 #include "Resource/Core/ResourceLoader.h"
-#include "Gfx/Setup/MeshSetup.h"
+#include "Gfx/Core/Types.h"
 #include <functional>
 
 namespace Oryol {

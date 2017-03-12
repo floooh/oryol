@@ -17,7 +17,6 @@
 #include "Core/Containers/Queue.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 #include "Gfx/Core/Types.h"
-#include "Gfx/Setup/TextureSetup.h"
 
 namespace Oryol {
 namespace _priv {

@@ -57,7 +57,7 @@ AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(1024, 768, "Oryol Blend Sample");
-    gfxSetup.SetPoolSize(GfxResourceType::Pipeline, 512);
+    gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] =  512;
     Gfx::Setup(gfxSetup);
 
     // create pipeline object for a patterned background

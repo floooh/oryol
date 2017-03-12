@@ -9,7 +9,6 @@
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/Types.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/Resource/resource.h"
 #include "glm/vec4.hpp"
 #include "Gfx/Core/GfxConfig.h"
