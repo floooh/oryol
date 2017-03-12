@@ -24,35 +24,14 @@ endif() # ORYOL_OPENGL
 fips_begin_module(Gfx)
     fips_vs_warning_level(3)
     fips_files(Gfx.cc Gfx.h)
-    fips_dir(Attrs)
-    fips_files(
-        DisplayAttrs.h
-        IndexBufferAttrs.h
-        TextureAttrs.h
-        VertexBufferAttrs.h
-        ImageDataAttrs.h
-    )
     fips_dir(Core)
     fips_files(
         displayMgrBase.cc displayMgrBase.h
-        BlendState.h
-        PassState.h
-        DrawState.h
-        DepthStencilState.h
-        SamplerState.h
-        Enums.h
-        PrimitiveGroup.h
-        RasterizerState.h
-        StencilState.h
-        VertexLayout.cc VertexLayout.h
-        UniformBlockLayout.cc UniformBlockLayout.h
-        TextureBlockLayout.cc TextureBlockLayout.h
+        Types.h
         displayMgr.h
         renderer.h
         gfxPointers.h
         GfxConfig.h
-        GfxEvent.h
-        GfxFrameInfo.h
     )
     fips_dir(Resource)
     fips_files(

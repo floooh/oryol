@@ -5,15 +5,8 @@
     @brief OpenGL wrapper and state cache
 */
 #include "Core/Types.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/BlendState.h"
-#include "Gfx/Core/DepthStencilState.h"
-#include "Gfx/Core/RasterizerState.h"
-#include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/PassState.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
-#include "Gfx/Attrs/ImageDataAttrs.h"
 #include "Gfx/Setup/GfxSetup.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"

@@ -8,10 +8,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
-#include "Gfx/Core/BlendState.h"
-#include "Gfx/Core/DepthStencilState.h"
-#include "Gfx/Core/RasterizerState.h"
-#include "Gfx/Core/VertexLayout.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "glm/vec4.hpp"
 

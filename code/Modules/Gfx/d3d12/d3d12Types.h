@@ -6,10 +6,8 @@
     @brief D3D12 enum conversion helpers
 */
 #include "Core/Types.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/SamplerState.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Setup/TextureSetup.h"
-#include "Gfx/Attrs/TextureAttrs.h"
 #include "Gfx/d3d12/d3d12_decl.h"
 
 namespace Oryol {

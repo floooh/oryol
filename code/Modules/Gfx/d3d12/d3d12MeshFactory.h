@@ -7,7 +7,7 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/Types.h"
 
 namespace Oryol {
 namespace _priv {

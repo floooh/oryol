@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "ShaderSetup.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/Types.h"
 
 namespace Oryol {
 

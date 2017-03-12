@@ -13,10 +13,8 @@
     @see Gfx, DisplayAttrs
 */
 #include "Core/Containers/Array.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/GfxConfig.h"
-#include "Gfx/Core/PassState.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
 
 namespace Oryol {
     

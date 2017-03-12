@@ -7,7 +7,7 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {

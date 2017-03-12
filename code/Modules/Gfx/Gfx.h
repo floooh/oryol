@@ -12,12 +12,8 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/gfxResourceContainer.h"
 #include "Gfx/Setup/GfxSetup.h"
-#include "Gfx/Core/PassState.h"
-#include "Gfx/Core/DrawState.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Core/GfxFrameInfo.h"
 #include "Resource/Core/SetupAndData.h"
 #include "glm/vec4.hpp"
 

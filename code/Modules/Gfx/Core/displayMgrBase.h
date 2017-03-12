@@ -8,10 +8,9 @@
     @see displayMgr
 */
 #include "Gfx/Setup/GfxSetup.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
+#include "Gfx/Core/Types.h"
 #include "Core/Containers/Map.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/GfxEvent.h"
 #include <functional>
 
 namespace Oryol {

@@ -11,10 +11,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Resource/Locator.h"
 #include "Resource/Id.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/UniformBlockLayout.h"
-#include "Gfx/Core/TextureBlockLayout.h"
-#include "Gfx/Core/VertexLayout.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {

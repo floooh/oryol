@@ -7,9 +7,7 @@
 */
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/VertexLayout.h"
-#include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Core/GfxConfig.h"
 
 namespace Oryol {

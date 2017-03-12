@@ -536,10 +536,6 @@ Vertex component packing uses less memory space and bandwidth when
 pulling vertices into the vertex shader, so it should be always preferrable over
 unpacked vertex data.
 
-See also:
-- [Gfx/Core/VertexLayout.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/VertexLayout.h)
-- [PackedNormals sample](https://github.com/floooh/oryol/blob/master/code/Samples/PackedNormals/PackedNormals.cc)
-
 
 ##### PrimitiveType and PrimitiveGroups
 
@@ -560,10 +556,6 @@ One mesh can only have a single primitive type, even though it may have
 multiple primitive groups. This limitation was brought in by D3D12, where the
 basic primitive type (triangles, lines or points) is part of the pipeline state
 object.
-
-See also:
-- [Gfx/Core/PrimitiveGroup.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/PrimitiveGroup.h)
-- [Gfx/Core/Enums.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/Enums.h)
 
 ##### Creating Meshes
 
@@ -713,8 +705,7 @@ All texture objects have the following properties:
   3D textures haven't been implemented yet
 * the number of mipmaps: either one, or a complete mipmap chain
 * type: for 2D, 3D or Cube textures
-* a pixel format: see the PixelFormat class in
-  [Gfx/Core/Enums.h](https://github.com/floooh/oryol/blob/master/code/Modules/Gfx/Core/Enums.h)
+* a pixel format
 * a usage hint: for static vs dynamically updated textures
 * a resource Locator for resource sharing, for texture loaded from disk, this
   is also the file URL

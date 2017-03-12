@@ -1,12 +1,18 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file Gfx/Core/Enums.h
-    @brief Gfx module enums
+    @file Gfx/Core/Types.h
+    @brief public Gfx types 
 */
 #include "Core/Types.h"
 #include "Core/Assertion.h"
+#include "Core/String/String.h"
+#include "Core/String/StringAtom.h"
 #include "Resource/Id.h"
+#include "Resource/Locator.h"
+#include "Core/Containers/StaticArray.h"
+#include "Gfx/Core/GfxConfig.h"
+#include "glm/vec4.hpp"
 
 namespace Oryol {
 
@@ -966,6 +972,34 @@ public:
 
 //------------------------------------------------------------------------------
 /**
+    @class Oryol::PrimitiveGroup
+    @ingroup Gfx
+    @brief describes a group of primitives to be rendered
+    
+    A PrimitiveGroup object describes a range of primitive elements in
+    a mesh, where elements are either vertices or indices.
+*/
+class PrimitiveGroup {
+public:
+    int BaseElement;
+    int NumElements;
+
+    /// default constructor
+    PrimitiveGroup() :
+        BaseElement(0),
+        NumElements(0) {
+        // empty
+    }
+    /// construct for indexed or non-indexed
+    PrimitiveGroup(int baseElement, int numElements) :
+        BaseElement(baseElement),
+        NumElements(numElements) {
+        // empty
+    }
+};
+
+//------------------------------------------------------------------------------
+/**
     @class Oryol::RenderPassLoadAction
     @ingroup Gfx
     @brief action to perform at start of a render pass
@@ -993,6 +1027,769 @@ public:
         Resolve,            // only perform an MSAA resolve into resolve target
         StoreAndResolve,    // preserve render target and perform MSAA resolve
     };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::BlendState
+    @ingroup Gfx
+    @brief describe alpha blending state
+*/
+class BlendState {
+public:
+    union {
+        #pragma pack(push,1)
+        struct {
+            uint64_t BlendEnabled:1;
+            BlendFactor::Code SrcFactorRGB:5;
+            BlendFactor::Code DstFactorRGB:5;
+            BlendOperation::Code OpRGB:3;
+            BlendFactor::Code SrcFactorAlpha:5;
+            BlendFactor::Code DstFactorAlpha:5;
+            BlendOperation::Code OpAlpha:3;
+            PixelChannel::Mask ColorWriteMask:4;
+            PixelFormat::Code ColorFormat : 5;
+            PixelFormat::Code ColorFormat3 : 5;
+            PixelFormat::Code DepthFormat : 5;
+            uint64_t MRTCount : 3;
+        };
+        #pragma pack(pop)
+        /// hash code from merged state
+        uint64_t Hash;
+    };
+
+    /// constructor
+    BlendState() {
+        static_assert(sizeof(BlendState) == 8, "sizeof(BlendState) is not 8, bitfield packing problem?");
+        this->Hash = 0;
+        this->BlendEnabled = false;
+        this->SrcFactorRGB = BlendFactor::One;
+        this->DstFactorRGB = BlendFactor::Zero;
+        this->OpRGB = BlendOperation::Add;
+        this->SrcFactorAlpha = BlendFactor::One;
+        this->DstFactorAlpha = BlendFactor::Zero;
+        this->OpAlpha = BlendOperation::Add;
+        this->ColorWriteMask = PixelChannel::RGBA;
+        this->ColorFormat = PixelFormat::RGBA8;
+        this->DepthFormat = PixelFormat::DEPTHSTENCIL;
+        this->MRTCount = 1;
+    };
+    
+    /// equality
+    bool operator==(const BlendState& rhs) const {
+        return this->Hash == rhs.Hash;
+    };
+    /// inequality
+    bool operator!=(const BlendState& rhs) const {
+        return this->Hash != rhs.Hash;
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::StencilState
+    @ingroup Gfx
+    @brief holds stencil-buffer render state for one face side
+*/
+class StencilState {
+public:
+
+    union {
+        #pragma pack(push, 1)
+        struct {
+            StencilOp::Code FailOp : 4;
+            StencilOp::Code DepthFailOp : 4;
+            StencilOp::Code PassOp : 4;
+            CompareFunc::Code CmpFunc : 4;
+        };
+        #pragma pack(pop)
+        uint16_t Hash;
+    };
+
+    /// constructor
+    StencilState() {
+        static_assert(sizeof(StencilState) == 2, "sizeof(StencilState) is not 2, bitfield packing problem?");
+        this->Hash = 0;
+        this->FailOp = StencilOp::Keep;
+        this->DepthFailOp = StencilOp::Keep;
+        this->PassOp = StencilOp::Keep;
+        this->CmpFunc = CompareFunc::Always;
+    }
+    
+    /// equality
+    bool operator==(const StencilState& rhs) const {
+        return this->Hash == rhs.Hash;
+    };
+    /// inequality
+    bool operator!=(const StencilState& rhs) const {
+        return this->Hash != rhs.Hash;
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::DepthStencilState
+    @ingroup Gfx
+    @brief holds the complete depth and stencil render state
+*/
+class DepthStencilState {
+public:
+    /// front-side stencil state
+    StencilState StencilFront;
+    /// back-side stencil state
+    StencilState StencilBack;
+    /// common depth-stencil state
+    union {
+        struct {
+            /// depth compare-function
+            CompareFunc::Code DepthCmpFunc:5;
+            /// depth write enabled flag
+            uint16_t DepthWriteEnabled:1;
+            /// stencil-enabled flag
+            uint16_t StencilEnabled:1;
+            /// stencil read-mask
+            uint16_t StencilReadMask : 8;
+            /// stencil write-mask
+            uint16_t StencilWriteMask : 8;
+            /// stencil-ref value
+            uint16_t StencilRef : 8;
+        };
+        uint32_t Hash;
+    };
+
+    /// constructor
+    DepthStencilState() {
+        static_assert(sizeof(DepthStencilState) == 8, "sizeof(DepthStencilState) is not 8, bitfield packing problem?");
+        this->Hash = 0;
+        this->DepthCmpFunc = CompareFunc::Always;
+        this->DepthWriteEnabled = false;
+        this->StencilEnabled = false;
+        this->StencilReadMask = 0xFF;
+        this->StencilWriteMask = 0xFF;
+        this->StencilRef = 0;
+    };
+
+    /// equality
+    bool operator==(const DepthStencilState& rhs) const {
+        return (this->Hash == rhs.Hash) &&
+               (this->StencilFront == rhs.StencilFront) &&
+               (this->StencilBack == rhs.StencilBack);
+    };
+    /// inequality
+    bool operator!=(const DepthStencilState& rhs) const {
+        return (this->Hash != rhs.Hash) ||
+               (this->StencilFront != rhs.StencilFront) ||
+               (this->StencilBack != rhs.StencilBack);
+    }
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::RasterizerState
+    @ingroup Gfx
+    @brief rasterizer state flags
+*/
+class RasterizerState {
+public:
+    union {
+        #pragma pack(push,1)
+        struct {
+            uint16_t CullFaceEnabled : 1;
+            uint16_t DepthOffsetEnabled : 1;
+            uint16_t ScissorTestEnabled : 1;
+            uint16_t DitherEnabled : 1;
+            uint16_t AlphaToCoverageEnabled : 1;
+            Face::Code CullFace : 3;
+            uint16_t SampleCount : 4;
+        };
+        #pragma pack(pop)
+        uint16_t Hash;
+    };
+
+    /// constructor
+    RasterizerState() {
+        static_assert(sizeof(RasterizerState) == 2, "sizeof(RasterizerState) is not 4, bitfield packing problem?");
+        this->Hash = 0;
+        this->CullFaceEnabled = false;
+        this->DepthOffsetEnabled = false;
+        this->ScissorTestEnabled = false;
+        this->DitherEnabled = true;
+        this->AlphaToCoverageEnabled = false;
+        this->CullFace = Face::Back;
+        this->SampleCount = 1;
+    }
+    /// equality
+    bool operator==(const RasterizerState& rhs) const {
+        return this->Hash == rhs.Hash;
+    };
+    /// inequality
+    bool operator!=(const RasterizerState& rhs) const {
+        return this->Hash != rhs.Hash;
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::SamplerState
+    @ingroup Gfx
+    @brief wrap texture sampler state
+*/
+class SamplerState {
+public:
+    union {
+        #pragma pack(push, 1)
+        struct {
+            /// texture-wrap mode for u-axis
+            TextureWrapMode::Code WrapU : 2;
+            /// texture-wrap mode for v-axis
+            TextureWrapMode::Code WrapV : 2;
+            /// texture-wrap mode for w-axis
+            TextureWrapMode::Code WrapW : 2;
+            /// magnification filter
+            TextureFilterMode::Code MagFilter : 3;
+            /// minification filter
+            TextureFilterMode::Code MinFilter : 3;
+        };
+        #pragma pack(pop)
+        uint16_t Hash;
+    };
+
+    /// constructor
+    SamplerState() {
+        static_assert(sizeof(SamplerState) == 2, "sizeof(SamplerState) is not 2, bitfield packing problem?");
+        this->Hash = 0;
+        this->WrapU = TextureWrapMode::Repeat;
+        this->WrapV = TextureWrapMode::Repeat;
+        this->WrapW = TextureWrapMode::Repeat;
+        this->MagFilter = TextureFilterMode::Nearest;
+        this->MinFilter = TextureFilterMode::Nearest;
+    };
+    /// equality
+    bool operator==(const SamplerState& rhs) const {
+        return this->Hash == rhs.Hash;
+    };
+    /// inequality
+    bool operator!=(const SamplerState& rhs) const {
+        return this->Hash != rhs.Hash;
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::PassState
+    @ingroup Gfx
+    @brief describes override parameters for Gfx::BeginPass()
+*/
+class PassState {
+public:
+    /// default constructor
+    PassState() : Depth(1.0f), Stencil(0) {
+        for (auto& c : this->Color) {
+            c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+    };
+    /// construct with clear color (all attachment to same color), optional depth/stencil
+    PassState(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0) {
+        for (auto& c : this->Color) {
+            c = color;
+        }
+        this->Depth = depth;
+        this->Stencil = stencil;
+    }
+    /// construct with MRT clear colors
+    PassState(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0) {
+        int i = 0;
+        for (const auto& c : colors) {
+            this->Color[i++] = c;
+        }
+        this->Depth = depth;
+        this->Stencil = stencil;
+    }
+
+    /// override clear colors
+    StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;
+    /// override clear depth value
+    float Depth;
+    /// override clear-stencil value
+    uint8_t Stencil;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::DrawState
+    @brief state required to issue draw calls
+    
+    The DrawState struct contains state required to issue draw calls
+    with the exception of shader uniforms:
+    
+    - 1 pipeline state object
+    - 1..4 mesh objects
+    - 0..N textures for the vertex shader stage
+    - 0..N textures for the fragment shader stage
+*/
+struct DrawState {
+    /// the pipeline state object
+    Id Pipeline;
+    /// input meshes
+    StaticArray<Id, GfxConfig::MaxNumInputMeshes> Mesh;
+    /// vertex shader stage textures
+    StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
+    /// fragment shader stage textures
+    StaticArray<Id, GfxConfig::MaxNumFragmentTextures> FSTexture;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxFrameInfo
+    @brief per-frame stats of the Gfx module
+*/
+struct GfxFrameInfo {
+    int NumPasses = 0;
+    int NumApplyViewPort = 0;
+    int NumApplyScissorRect = 0;
+    int NumApplyDrawState = 0;
+    int NumApplyUniformBlock = 0;
+    int NumUpdateVertices = 0;
+    int NumUpdateIndices = 0;
+    int NumUpdateTextures = 0;
+    int NumDraw = 0;
+    int NumDrawInstanced = 0;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::VertexLayout
+    @ingroup Gfx
+    @brief describes the data layout of a vertex in a vertex buffer
+*/
+class VertexLayout {
+public:
+    /// a component in a vertex layout
+    #pragma pack(push,1)
+    class Component {
+    public:
+        /// default constructor
+        Component() {};
+        /// construct from vertex attr and format
+        Component(VertexAttr::Code attr, VertexFormat::Code fmt) : Attr(attr), Format(fmt) { }
+        /// return true if valid (attr and format set)
+        bool IsValid() const {
+            return (VertexAttr::InvalidVertexAttr != this->Attr);
+        }
+        /// clear the component (unset attr and format)
+        void Clear() {
+            this->Attr = VertexAttr::InvalidVertexAttr;
+            this->Format = VertexFormat::InvalidVertexFormat;
+        }
+        /// get byte size of component
+        int ByteSize() const {
+            return VertexFormat::ByteSize(this->Format);
+        }
+        VertexAttr::Code Attr = VertexAttr::InvalidVertexAttr;
+        VertexFormat::Code Format = VertexFormat::InvalidVertexFormat;
+    };
+    #pragma pack(pop)
+
+    /// the vertex step function, used for instancing, default is 'PerVertex'
+    VertexStepFunction::Code StepFunction = VertexStepFunction::PerVertex;
+    /// the vertex step rate, used for instancing
+    uint8_t StepRate = 1;
+
+    /// constructor
+    VertexLayout() {
+        this->Clear();
+    }
+    /// clear the vertex layout, chainable
+    VertexLayout& Clear() {
+        this->StepFunction = VertexStepFunction::PerVertex;
+        this->StepRate = 1;
+        this->numComps = 0;
+        this->byteSize = 0;
+        this->attrCompIndices.Fill(InvalidIndex);
+        this->byteOffsets.Fill(0);
+        return *this;
+    }
+    /// return true if layout is empty
+    bool Empty() const {
+        return 0 == this->numComps;
+    }
+    /// add a component
+    VertexLayout& Add(const Component& comp) {
+        o_assert_dbg(this->numComps < GfxConfig::MaxNumVertexLayoutComponents);
+        o_assert_dbg(InvalidIndex == this->attrCompIndices[comp.Attr]);
+        this->comps[this->numComps] = comp;
+        this->attrCompIndices[comp.Attr] = this->numComps;
+        this->byteOffsets[this->numComps] = this->byteSize;
+        this->byteSize += comp.ByteSize();
+        o_assert_dbg(this->byteSize < 248);
+        this->numComps++;
+        return *this;
+    }
+    /// add component by name and format
+    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format) {
+        return this->Add(Component(attr, format));
+    }
+    /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
+    VertexLayout& EnableInstancing() {
+        this->StepFunction = VertexStepFunction::PerInstance;
+        this->StepRate = 1;
+        return *this;
+    }
+    /// get number of components
+    int NumComponents() const {
+        return this->numComps;
+    }
+    /// get component at index
+    const Component& ComponentAt(int index) const {
+        return this->comps[index];
+    }
+    /// get component index by vertex attribute, return InvalidIndex if layout doesn't include attr
+    int ComponentIndexByVertexAttr(VertexAttr::Code attr) const {
+        return this->attrCompIndices[attr];
+    }
+    /// get byte size of vertex (aka stride)
+    int ByteSize() const {
+        return this->byteSize;
+    }
+    /// get byte offset of a component
+    int ComponentByteOffset(int componentIndex) const {
+        return this->byteOffsets[componentIndex];
+    }
+    /// test if the layout contains a specific vertex attribute
+    bool Contains(VertexAttr::Code attr) const {
+        return InvalidIndex != this->ComponentIndexByVertexAttr(attr);
+    }
+private:
+    StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents> comps;
+    StaticArray<uint8_t, GfxConfig::MaxNumVertexLayoutComponents> byteOffsets;
+    StaticArray<int8_t, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
+    int8_t numComps = 0;
+    uint8_t byteSize = 0;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::TextureBlockLayout
+    @ingroup Gfx
+    @brief describes the name, type and bindSlot of a group of related textures
+*/
+class TextureBlockLayout {
+public:
+    /// a TextureBlockLayout component describes a single texture entry
+    class Component {
+    public:
+        /// default constructor
+        Component() {};
+        /// construct from name, type and bindSlot
+        Component(const StringAtom& name, TextureType::Code type, int bindSlot) :
+            Name(name), Type(type), BindSlot(bindSlot) { }
+        /// return true if the component is valid
+        bool IsValid() const {
+            return this->Name.IsValid();
+        }
+        StringAtom Name; 
+        TextureType::Code Type = TextureType::InvalidTextureType;
+        int BindSlot = InvalidIndex;
+    };
+    /// clear the texture layout
+    void Clear() {
+        this->comps.Fill(Component());
+        this->numComps = 0;
+    }
+    /// return true if the layout is empty
+    bool Empty() const {
+        return 0 == this->numComps;
+    }
+    /// add a component to the layout
+    TextureBlockLayout& Add(const Component& comp) {
+        this->comps[this->numComps++] = comp;
+        return *this;
+    }
+    /// add a component to the layout
+    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int bindSlot) {
+        this->comps[this->numComps++] = Component(name, type, bindSlot);
+        return *this;
+    }
+    /// get number of components in the layout
+    int NumComponents() const {
+        return this->numComps;
+    }
+    /// find component index with matching bind slot, InvalidIndex if not match
+    int ComponentIndexForBindSlot(int bindSlot) const {
+        for (int i = 0; i < this->numComps; i++) {
+            if (this->comps[i].BindSlot == bindSlot) {
+                return i;
+            }
+        }
+        return InvalidIndex;
+    }
+    /// get component at index
+    const Component& ComponentAt(int index) const {
+        return this->comps[index];
+    }
+private:
+    int numComps = 0;
+    StaticArray<Component, GfxConfig::MaxNumTextureBlockLayoutComponents> comps;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::UniformBlockLayout
+    @ingroup Gfx
+    @brief describes the layout of an uniform block
+
+    A UniformBlockLayout describes the names and types of a group of
+    related shader uniforms.
+*/
+class UniformBlockLayout {
+public:
+    /// a UniformBlockLayout component describes a single uniform in the uniform block
+    class Component {
+    public:
+        /// default constructor
+        Component() {}
+        /// construct from name, type and number
+        Component(const StringAtom& name, UniformType::Code type, int num=1):
+            Name(name), Type(type), Num(num) {
+            o_assert_dbg(this->Name.IsValid());
+            o_assert_dbg(this->Type < UniformType::NumUniformTypes);
+        }
+        /// return true if the component is valid
+        bool IsValid() const {
+            return this->Name.IsValid();
+        }
+        /// compute the byte size of the component
+        int ByteSize() const {
+            return UniformType::ByteSize(this->Type, this->Num);
+        }
+        StringAtom Name; 
+        UniformType::Code Type = UniformType::InvalidUniformType;
+        int Num = 1;
+    };
+    /// clear the uniform layout
+    void Clear() {
+        this->comps.Fill(Component());
+        this->byteOffsets.Fill(0);
+        this->numComps = 0;
+        this->byteSize = 0;
+    }
+    /// return true if the layout is empty
+    bool Empty() const {
+        return 0 == this->numComps;
+    }
+    /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
+    uint32_t TypeHash = 0;
+    /// add a uniform component to the layout
+    UniformBlockLayout& Add(const Component& comp) {
+        this->comps[this->numComps] = comp;
+        this->byteOffsets[this->numComps] = this->byteSize;
+        this->byteSize += comp.ByteSize();
+        this->numComps++;
+        return *this;
+    }
+    /// add a scalar uniform component to the layout
+    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int numElements=1) {
+        return this->Add(Component(name, type, numElements));
+    }
+    /// get number of components in the layout
+    int NumComponents() const {
+        return this->numComps;
+    }
+    /// get component at index
+    const Component& ComponentAt(int componentIndex) const {
+        return this->comps[componentIndex];
+    }
+    /// get the overall byte size of the uniform layout
+    int ByteSize() const {
+        return this->byteSize;
+    }
+    /// get byte offset of a component
+    int ComponentByteOffset(int componentIndex) const {
+        return this->byteOffsets[componentIndex];
+    }
+private:
+    int numComps = 0;
+    int byteSize = 0;
+    StaticArray<Component, GfxConfig::MaxNumUniformBlockLayoutComponents> comps;
+    StaticArray<int, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::TextureAttrs
+    @ingroup Gfx
+    @brief holds the public attributes of a Texture object
+    
+    @todo: describe TextureAttrs
+*/
+struct TextureAttrs {
+    /// texture locator (usually the URL of the texture file)
+    class Locator Locator;
+    /// the texture type (2D, 3D, cube...)
+    TextureType::Code Type = TextureType::InvalidTextureType;
+    /// the RGBA pixel format of texture data
+    PixelFormat::Code ColorFormat = PixelFormat::InvalidPixelFormat;
+    /// optional depth format (only used for render target textures)
+    PixelFormat::Code DepthFormat = PixelFormat::InvalidPixelFormat;
+    /// optional sample count (only used for MSAA render target textures)
+    int SampleCount = 1;
+    /// texture usage hint
+    Usage::Code TextureUsage = Usage::InvalidUsage;
+    /// width of top-level mipmap in pixels
+    int Width = 0;
+    /// height of top-level mipmap in pixels
+    int Height = 0;
+    /// depth of top-level mipmap in pixels (only used for 3D textures)
+    int Depth = 0;
+    /// number of mipmaps (1 for 'no child mipmaps')
+    int NumMipMaps = 1;
+    /// true if this is a render target texture
+    bool IsRenderTarget = false;
+    /// true if this render target texture has an attached depth buffer
+    bool HasDepthBuffer = false;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::DisplayAttrs
+    @ingroup Gfx
+    @brief actual display attributes
+    
+    Holds the properties of the current display, these can be 
+    different from the display setup parameters.
+*/
+struct DisplayAttrs {
+    /// window width (including window chrome)
+    int WindowWidth = 0;
+    /// window height (including window chrome)
+    int WindowHeight = 0;
+    /// x-position of window
+    int WindowPosX = 0;
+    /// y-position of window
+    int WindowPosY = 0;
+    /// width of framebuffer associated with window
+    int FramebufferWidth = 0;
+    /// height of framebuffer associated with window
+    int FramebufferHeight = 0;
+    /// framebuffer pixel format
+    PixelFormat::Code ColorPixelFormat = PixelFormat::RGBA8;
+    /// depth buffer pixel format (PixelFormat::None if no depth buffer)
+    PixelFormat::Code DepthPixelFormat = PixelFormat::DEPTHSTENCIL;
+    /// number of multisample-anti-aliasing samples
+    int SampleCount = 1;
+    /// indicates windowed or fullscreen mode
+    bool Windowed = true;
+    /// vsync swap interval (0 means: no vsync)
+    int SwapInterval = 1;
+    /// window title as UTF-8
+    String WindowTitle;
+
+    /// init a DisplayAttrs object from a TextureAttrs object
+    static DisplayAttrs FromTextureAttrs(const TextureAttrs& texAttrs) {
+        DisplayAttrs dispAttrs;
+        dispAttrs.WindowWidth = texAttrs.Width;
+        dispAttrs.WindowHeight = texAttrs.Height;
+        dispAttrs.WindowPosX = 0;
+        dispAttrs.WindowPosY = 0;
+        dispAttrs.FramebufferWidth = texAttrs.Width;
+        dispAttrs.FramebufferHeight = texAttrs.Height;
+        dispAttrs.ColorPixelFormat = texAttrs.ColorFormat;
+        dispAttrs.DepthPixelFormat = texAttrs.DepthFormat;
+        dispAttrs.SampleCount = texAttrs.SampleCount;
+        dispAttrs.Windowed = false;
+        dispAttrs.SwapInterval = 1;
+        return dispAttrs;
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxEvent
+    @brief an event from the Gfx module
+    
+    Subscribe to GfxEvents with the Gfx::Subscribe() method.
+*/
+class GfxEvent {
+public:
+    /// event types
+    enum Type {
+        DisplayModified,
+
+        NumTypes,
+        InvalidType
+    };
+    /// default constructor
+    GfxEvent();
+    /// constructor with arguments
+    GfxEvent(Type type, const DisplayAttrs& attrs) : Type(type), DisplayAttrs(attrs) { }
+
+    enum Type Type = InvalidType;
+    struct DisplayAttrs DisplayAttrs;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::ImageDataAttrs
+    @brief describe offsets and sizes of image surfaces
+*/
+class ImageDataAttrs {
+public:
+    /// constructor
+    ImageDataAttrs() {
+        for (auto& offsets : this->Offsets) {
+            offsets.Fill(0);
+        }
+        for (auto& sizes : this->Sizes) {
+            sizes.Fill(0);
+        }
+    };
+
+    /// number of faces
+    int NumFaces = 0;
+    /// number of mipmaps
+    int NumMipMaps = 0;
+    /// pixel data mipmap image offsets
+    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Offsets;
+    /// pixel data mipmap image sizes
+    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Sizes;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::IndexBufferAttrs
+    @ingroup Gfx
+    @brief attributes of an index buffer
+*/
+struct IndexBufferAttrs {
+    /// number of indices in the index buffer
+    int NumIndices{0};
+    /// type of indices (16-bit or 32-bit)
+    IndexType::Code Type{IndexType::InvalidIndexType};
+    /// buffer usage hint
+    Usage::Code BufferUsage{Usage::InvalidUsage};
+    /// computes the byte size of index buffer data
+    int ByteSize() const {
+        return NumIndices * IndexType::ByteSize(Type);
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::VertexBufferAttrs
+    @ingroup Gfx
+    @brief attributes of one vertex buffer
+*/
+struct VertexBufferAttrs {
+    /// number of vertices in the vertex buffer
+    int NumVertices = 0;
+    /// describes the vertex layout of a vertex in the buffer
+    VertexLayout Layout;
+    /// buffer usage hint
+    Usage::Code BufferUsage = Usage::InvalidUsage;
+    /// computes the byte size of the contained vertex buffer data
+    int ByteSize() const {
+        return NumVertices * Layout.ByteSize();
+    }
 };
 
 } // namespace Oryol

@@ -1,15 +1,17 @@
 #pragma once
+//------------------------------------------------------------------------------
+/**
+    @file Gfx/Resource/resourceBase.h
+    @brief Gfx module resource classes
+*/
 #include "Resource/Core/resourceBase.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/Setup/ShaderSetup.h"
 #include "Gfx/Setup/PipelineSetup.h"
 #include "Gfx/Setup/TextureSetup.h"
 #include "Gfx/Setup/MeshSetup.h"
 #include "Gfx/Setup/RenderPassSetup.h"
-#include "Gfx/Attrs/TextureAttrs.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Attrs/VertexBufferAttrs.h"
-#include "Gfx/Attrs/IndexBufferAttrs.h"
-#include "Gfx/Core/PrimitiveGroup.h"
 
 namespace Oryol {
 namespace _priv {

@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/String.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/Types.h"
 #include "Gfx/gl/gl_impl.h"
 #include <array>
 

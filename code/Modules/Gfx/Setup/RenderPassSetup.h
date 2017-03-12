@@ -7,7 +7,7 @@
 */
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/GfxConfig.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/Types.h"
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "glm/vec4.hpp"
