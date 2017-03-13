@@ -64,6 +64,7 @@ private:
     glm::mat4 invView;
     bool pointerLock = false;
     String lastCaptured;
+    int selectedGamepadIndex = 0;
 };
 OryolMain(TestInputApp);
 
@@ -318,26 +319,24 @@ TestInputApp::printGamepadState(int gamepadIndex)
         Dbg::PrintF(" RightStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick).y);
         Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftTrigger).x);
         Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightTrigger).x);
-
-//        Dbg::PrintF(" DPadUp.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::DPadUp).x);
 	}
-//	else
-//	{
-//        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-//        Dbg::Print("\n\n\r GAMEPAD NOT ATTACHED");
-//	}
-}
-void
-TestInputApp::printGamepadsState()
-{
-	// FIXME
-	int MaxNumGamepads = 4;
-
-	for(int i = 0; i < MaxNumGamepads; ++i)
+	else
 	{
-		printGamepadState(i);
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::PrintF("\n\n\r GAMEPAD %d NOT ATTACHED", gamepadIndex);
 	}
 }
+//void
+//TestInputApp::printGamepadsState()
+//{
+//	// FIXME
+//	int MaxNumGamepads = 4;
+//
+//	for(int i = 0; i < MaxNumGamepads; ++i)
+//	{
+//		printGamepadState(i);
+//	}
+//}
 
 //------------------------------------------------------------------------------
 glm::vec4
@@ -399,6 +398,19 @@ TestInputApp::handleKeyboardInput() {
             }
             if (Input::KeyPressed(Key::Down)) {
                 this->pointOfInterest += glm::vec3(this->invView[1]) * movePerFrame;
+            }
+            // select gamepad
+            if (Input::KeyPressed(Key::N1)) {
+            	this->selectedGamepadIndex = 0;
+            }
+            else if (Input::KeyPressed(Key::N2)) {
+            	this->selectedGamepadIndex = 1;
+            }
+            else if (Input::KeyPressed(Key::N3)) {
+            	this->selectedGamepadIndex = 2;
+            }
+            else if (Input::KeyPressed(Key::N4)) {
+            	this->selectedGamepadIndex = 3;
             }
         }
     }
@@ -464,7 +476,8 @@ TestInputApp::OnRunning() {
     this->printKeyboardState();
     this->printTouchpadState();
     this->printSensorState();
-    this->printGamepadsState();
+    //this->printGamepadsState();
+    this->printGamepadState(selectedGamepadIndex);
     this->handleKeyboardInput();
     this->handleMouseInput();
     this->handleTouchInput();

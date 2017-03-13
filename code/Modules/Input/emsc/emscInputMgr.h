@@ -39,6 +39,7 @@ private:
     MouseButton::Code mapMouseButton(unsigned short html5Btn) const;
     /// gamepad
     void setupGamepads();
+    void updateGamepadsAttached(int& gamepadsAttached);
 
 
     /// update mouse pointer lock state

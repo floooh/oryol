@@ -106,6 +106,23 @@ emscInputMgr::setupGamepads()
 	}
 }
 
+void
+emscInputMgr::updateGamepadsAttached(int& gamepadsAttached)
+{
+	//int gamepadsAttached = emscripten_get_num_gamepads();
+	gamepadsAttached = emscripten_get_num_gamepads();
+
+	// TODO: Check if gamepadsAttached <= MaxNumGamepads
+	int i = 0;
+	for(; i < 4; ++i)
+	{
+		this->gamepad[i].attached = false;
+	}
+	for (i = 0; i < gamepadsAttached && i < 4; ++i)
+	{
+		this->gamepad[i].attached = true;
+	}
+}
 //------------------------------------------------------------------------------
 void
 emscInputMgr::update()
@@ -114,14 +131,17 @@ emscInputMgr::update()
 
 	inputMgrBase::update();
 
+	int gamepadsAttached = 0;
     uint32_t down = 0;
     uint32_t up = 0;
     uint32_t pressed = 0;
-    int gamepadsAvailable = emscripten_get_num_gamepads();
 	EMSCRIPTEN_RESULT result = EMSCRIPTEN_RESULT_FAILED;
 	EmscriptenGamepadEvent gamepadState;
 
-	for (int i = 0; i < gamepadsAvailable; ++i)
+    //int gamepadsAvailable = emscripten_get_num_gamepads();
+
+    updateGamepadsAttached(gamepadsAttached);
+	for (int i = 0; i < gamepadsAttached; ++i)
 	{
 		memset(&gamepadState, 0, sizeof(gamepadState));
 		result = emscripten_get_gamepad_status(i, &gamepadState);
@@ -557,7 +577,7 @@ EM_BOOL
 emscInputMgr::emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData)
 {
 	emscInputMgr* self = (emscInputMgr*) userData;
-	self->gamepad[0].attached = false;
+	self->gamepad[e->index].attached = false;
 	return true;
 }
 
