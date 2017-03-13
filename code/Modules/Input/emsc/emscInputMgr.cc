@@ -38,7 +38,6 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->touchpad.attached = true;
     this->sensors.attached = true;
     this->setupCallbacks();
-    this->setupGamepads();
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
@@ -93,19 +92,7 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_gamepaddisconnected_callback(this, true, emscGamepadDisconnected);
 }
 
-/// gamepad
-void
-emscInputMgr::setupGamepads()
-{
-	int gamepadsAvailable = emscripten_get_num_gamepads();
-
-	// TODO: Check if gamepadsAvailable <= MaxNumGamepads
-	for (int i = 0; i < gamepadsAvailable && i < 4; ++i)
-	{
-		this->gamepad[i].attached = true;
-	}
-}
-
+//------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepadsAttached(int& gamepadsAttached)
 {
@@ -123,6 +110,7 @@ emscInputMgr::updateGamepadsAttached(int& gamepadsAttached)
 		this->gamepad[i].attached = true;
 	}
 }
+
 //------------------------------------------------------------------------------
 void
 emscInputMgr::update()
@@ -138,8 +126,6 @@ emscInputMgr::update()
 	EMSCRIPTEN_RESULT result = EMSCRIPTEN_RESULT_FAILED;
 	EmscriptenGamepadEvent gamepadState;
 
-    //int gamepadsAvailable = emscripten_get_num_gamepads();
-
     updateGamepadsAttached(gamepadsAttached);
 	for (int i = 0; i < gamepadsAttached; ++i)
 	{
@@ -151,74 +137,6 @@ emscInputMgr::update()
 			continue;
 		}
 
-		// Attempt #1 ignoring gamepadDevice::onButtonDown/Up etc.
-#if 0
-		down = 0;
-		up = 0;
-		pressed = 0;
-		this->gamepad[i].down = 0;
-		this->gamepad[i].up = 0;
-
-		pressed  = (gamepadState.digitalButton[0] << GamepadGizmo::X);
-		pressed |= (gamepadState.digitalButton[1] << GamepadGizmo::A);
-		pressed |= (gamepadState.digitalButton[2] << GamepadGizmo::B);
-		pressed |= (gamepadState.digitalButton[3] << GamepadGizmo::Y);
-		pressed |= (gamepadState.digitalButton[4] << GamepadGizmo::LeftBumper);
-		pressed |= (gamepadState.digitalButton[5] << GamepadGizmo::RightBumper);
-		pressed |= (gamepadState.digitalButton[6] << GamepadGizmo::LeftTrigger);
-		pressed |= (gamepadState.digitalButton[7] << GamepadGizmo::RightTrigger);
-		pressed |= (gamepadState.digitalButton[8] << GamepadGizmo::Start);
-		pressed |= (gamepadState.digitalButton[9] << GamepadGizmo::Back);
-		pressed |= (gamepadState.digitalButton[10] << GamepadGizmo::LeftStick); // PS4 -> left stick click
-		pressed |= (gamepadState.digitalButton[11] << GamepadGizmo::RightStick); // PS4 -> right stick click
-//		pressed |= (gamepadState.digitalButton[12] << GamepadGizmo::DPadUp); // PS4 -> round PS button
-//		pressed |= (gamepadState.digitalButton[13] << GamepadGizmo::DPadDown); // PS4 -> touch sensor click
-
-		// If changed...
-		GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
-		for (int j = 0; j < 12; ++j)
-		{
-			gizmoCode = static_cast<GamepadGizmo::Code>(j);
-			if (!(this->gamepad[i].pressed & gizmoCode) && // not previously pressed
-				(pressed & gizmoCode)) // pressed now
-			{
-				// If currently pressed, must be down
-				if (pressed & gizmoCode)
-				{
-					down &= gizmoCode;
-					emscripten_run_script("console.log('down')");
-				}
-				else // must be up
-				{
-					up &= gizmoCode;
-					emscripten_run_script("console.log('up')");
-				}
-			}
-		}
-
-		this->gamepad[i].down = down;
-		this->gamepad[i].up = up;
-		this->gamepad[i].pressed = pressed;
-
-		// TODO: Where are the DPad values...?
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[14] << GamepadGizmo::DPadUp);
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[15] << GamepadGizmo::DPadDown);
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[16] << GamepadGizmo::DPadLeft);
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[17] << GamepadGizmo::DPadRight);
-
-//		this->gamepad[i].values[GamepadGizmo::DPadUp].x = gamepadState.analogButton[0];
-//		this->gamepad[i].pressed |= (gamepadState.analogButton[0] << GamepadGizmo::DPadDown);
-//		this->gamepad[i].pressed |= (gamepadState.analogButton[14] << GamepadGizmo::DPadLeft);
-//		this->gamepad[i].pressed |= (gamepadState.analogButton[17] << GamepadGizmo::DPadRight);
-
-		this->gamepad[i].values[GamepadGizmo::LeftStick].x = gamepadState.axis[0];
-		this->gamepad[i].values[GamepadGizmo::LeftStick].y = gamepadState.axis[1];
-		this->gamepad[i].values[GamepadGizmo::RightStick].x = gamepadState.axis[2];
-		this->gamepad[i].values[GamepadGizmo::LeftTrigger].x = gamepadState.axis[3]; // PS4 -> left trigger
-		this->gamepad[i].values[GamepadGizmo::RightTrigger].x = gamepadState.axis[4]; // PS4 -> right trigger
-		this->gamepad[i].values[GamepadGizmo::RightStick].y = gamepadState.axis[5];
-#endif
-
 		// Attempt #2 using onButtonDown/Up etc.
 		down = 0;
 		up = 0;
@@ -226,101 +144,57 @@ emscInputMgr::update()
 		this->gamepad[i].down = 0;
 		this->gamepad[i].up = 0;
 
+		// NOTE: The following maps to a PS4 DualShock 4 controller
+		// - digitalButton[12] is the PS button
+		// - digitalButton[13] is the touch sensor click
+
 		if (gamepadState.digitalButton[0])
 		{
 			pressed |= GamepadGizmo::X;
-//			emscripten_run_script("console.log('GamepadGizmo::X')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[0], pressed);
 		}
 		if (gamepadState.digitalButton[1])
 		{
 			pressed |= GamepadGizmo::A;
-//			emscripten_run_script("console.log('GamepadGizmo::A')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[1], pressed);
 		}
 		if (gamepadState.digitalButton[2])
 		{
 			pressed |= GamepadGizmo::B;
-//			emscripten_run_script("console.log('GamepadGizmo::B')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[2], pressed);
 		}
 		if (gamepadState.digitalButton[3])
 		{
 			pressed |= GamepadGizmo::Y;
-//			emscripten_run_script("console.log('GamepadGizmo::Y')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[3], pressed);
 		}
 		if (gamepadState.digitalButton[4])
 		{
 			pressed |= GamepadGizmo::LeftBumper;
-//			emscripten_run_script("console.log('GamepadGizmo::LeftBumper')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[3], pressed);
 		}
 		if (gamepadState.digitalButton[5])
 		{
 			pressed |= GamepadGizmo::RightBumper;
-//			emscripten_run_script("console.log('GamepadGizmo::RightBumper')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[5], pressed);
 		}
 		if (gamepadState.digitalButton[6])
 		{
 			pressed |= GamepadGizmo::LeftTrigger;
-//			emscripten_run_script("console.log('GamepadGizmo::LeftTrigger')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[6], pressed);
 		}
 		if (gamepadState.digitalButton[7])
 		{
 			pressed |= GamepadGizmo::RightTrigger;
-//			emscripten_run_script("console.log('GamepadGizmo::RightTrigger')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[7], pressed);
 		}
 		if (gamepadState.digitalButton[8])
 		{
 			pressed |= GamepadGizmo::Start;
-//			emscripten_run_script("console.log('GamepadGizmo::Start')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[8], pressed);
 		}
 		if (gamepadState.digitalButton[9])
 		{
 			pressed |= GamepadGizmo::Back;
-//			emscripten_run_script("console.log('GamepadGizmo::Back')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[9], pressed);
 		}
 		if (gamepadState.digitalButton[10])
 		{
 			pressed |= GamepadGizmo::LeftStick;
-//			emscripten_run_script("console.log('GamepadGizmo::LeftStick')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[10], pressed);
 		}
 		if (gamepadState.digitalButton[11])
 		{
 			pressed |= GamepadGizmo::RightStick;
-//			emscripten_run_script("console.log('GamepadGizmo::RightStick')");
-//			EM_ASM_({
-//			  Module.print('digitalButton: ' + $0 + ' pressed is: ' + $1);
-//			}, gamepadState.digitalButton[11], pressed);
 		}
 
 		GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
@@ -334,7 +208,6 @@ emscInputMgr::update()
 				if (pressed & gizmoCode)
 				{
 					down |= gizmoCode;
-//					emscripten_run_script("console.log('down')");
 				}
 			}
 			// If it was previously pressed...
@@ -344,31 +217,21 @@ emscInputMgr::update()
 				if (!(pressed & gizmoCode))
 				{
 					up |= gizmoCode;
-//					emscripten_run_script("console.log('up')");
 				}
 			}
 		}
+
+		// TODO: Where are the DPad values...?
 
 		this->gamepad[i].down = down;
 		this->gamepad[i].up = up;
 		this->gamepad[i].pressed = pressed;
 
-		// TODO: Where are the DPad values...?
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[14] << GamepadGizmo::DPadUp);
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[15] << GamepadGizmo::DPadDown);
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[16] << GamepadGizmo::DPadLeft);
-//		this->gamepad[i].pressed |= (gamepadState.digitalButton[17] << GamepadGizmo::DPadRight);
-
-//		this->gamepad[i].values[GamepadGizmo::DPadUp].x = gamepadState.analogButton[0];
-//		this->gamepad[i].pressed |= (gamepadState.analogButton[0] << GamepadGizmo::DPadDown);
-//		this->gamepad[i].pressed |= (gamepadState.analogButton[14] << GamepadGizmo::DPadLeft);
-//		this->gamepad[i].pressed |= (gamepadState.analogButton[17] << GamepadGizmo::DPadRight);
-
 		this->gamepad[i].values[GamepadGizmo::LeftStick].x = gamepadState.axis[0];
 		this->gamepad[i].values[GamepadGizmo::LeftStick].y = gamepadState.axis[1];
 		this->gamepad[i].values[GamepadGizmo::RightStick].x = gamepadState.axis[2];
-		this->gamepad[i].values[GamepadGizmo::LeftTrigger].x = gamepadState.axis[3]; // PS4 -> left trigger
-		this->gamepad[i].values[GamepadGizmo::RightTrigger].x = gamepadState.axis[4]; // PS4 -> right trigger
+		this->gamepad[i].values[GamepadGizmo::LeftTrigger].x = gamepadState.axis[3];
+		this->gamepad[i].values[GamepadGizmo::RightTrigger].x = gamepadState.axis[4];
 		this->gamepad[i].values[GamepadGizmo::RightStick].y = gamepadState.axis[5];
 	}
 }

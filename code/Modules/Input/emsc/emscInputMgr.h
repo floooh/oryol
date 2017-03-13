@@ -37,8 +37,7 @@ private:
     Key::Code mapKey(unsigned long html5KeyCode) const;
     /// map HTML5 mouse button code to Oryol mouse button
     MouseButton::Code mapMouseButton(unsigned short html5Btn) const;
-    /// gamepad
-    void setupGamepads();
+    /// poll the gamepads currently attached
     void updateGamepadsAttached(int& gamepadsAttached);
 
 
