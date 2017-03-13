@@ -51,7 +51,6 @@ public:
 inline bool
 gamepadDevice::buttonPressed(GamepadGizmo::Code btn) const {
     o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    //return 0 != (this->pressed & (1<<btn));
     return 0 != (this->pressed & btn);
 }
 
@@ -59,7 +58,6 @@ gamepadDevice::buttonPressed(GamepadGizmo::Code btn) const {
 inline bool
 gamepadDevice::buttonDown(GamepadGizmo::Code btn) const {
     o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    //return 0 != (this->down & (1<<btn));
     return 0 != (this->down & btn);
 }
 
@@ -67,7 +65,6 @@ gamepadDevice::buttonDown(GamepadGizmo::Code btn) const {
 inline bool
 gamepadDevice::buttonUp(GamepadGizmo::Code btn) const {
     o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    //return 0 != (this->up & (1<<btn));
     return 0 != (this->up & btn);
 }
 
