@@ -6,7 +6,7 @@
     @brief Metal implementation of meshFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/mtl/mtl_decl.h"
 

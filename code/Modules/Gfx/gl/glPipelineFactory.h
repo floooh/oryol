@@ -7,7 +7,7 @@
 */
 #include "Gfx/Resource/pipelineFactoryBase.h"
 #include "Gfx/gl/gl_decl.h"
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 
 namespace Oryol {
 namespace _priv {

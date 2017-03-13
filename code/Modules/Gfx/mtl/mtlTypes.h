@@ -7,7 +7,7 @@
     
     NOTE: only include this file from a Objective-C(++) file!
 */
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 #if !defined(__OBJC__)

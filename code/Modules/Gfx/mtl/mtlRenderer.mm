@@ -6,7 +6,7 @@
 #include "mtlTypes.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Resource/resource.h"
 
 namespace Oryol {

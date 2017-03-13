@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 #include "Gfx/Resource/resourceBase.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/gl/gl_decl.h"
 #include "Gfx/gl/glVertexAttr.h"
 

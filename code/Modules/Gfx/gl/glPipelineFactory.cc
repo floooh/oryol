@@ -7,7 +7,7 @@
 #include "Gfx/gl/gl_impl.h"
 #include "Gfx/gl/glTypes.h"
 #include "Gfx/Resource/resource.h"
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/renderer.h"
 
 namespace Oryol {
