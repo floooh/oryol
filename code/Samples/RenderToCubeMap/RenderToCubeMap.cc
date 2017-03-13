@@ -75,10 +75,10 @@ RenderToCubeMapApp::OnInit() {
     this->cubeMap = Gfx::CreateResource(cubeMapSetup);
 
     // create 6 render passes, one per cubemap face
-    auto rpSetup = RenderPassSetup::From(this->cubeMap, this->cubeMap);
-    rpSetup.ColorAttachments[0].ClearColor = ClearColor;
+    auto rpSetup = PassSetup::From(this->cubeMap, this->cubeMap);
+    rpSetup.DefaultAction = PassAction::ClearAll(ClearColor);
     for (int faceIndex = 0; faceIndex < NumFaces; faceIndex++) {
-        rpSetup.ColorAttachments[0].Face = faceIndex;
+        rpSetup.ColorAttachments[0].Slice = faceIndex;
         this->passes[faceIndex] = Gfx::CreateResource(rpSetup);
     }
 
@@ -168,7 +168,7 @@ RenderToCubeMapApp::OnRunning() {
     }
 
     // render the main view
-    Gfx::BeginPass(PassState(ClearColor));
+    Gfx::BeginPass(PassAction::ClearAll(ClearColor));
 
     // draw the environment shapes
     const glm::vec3 eyePos = glm::euclidean(this->polar) * distance;

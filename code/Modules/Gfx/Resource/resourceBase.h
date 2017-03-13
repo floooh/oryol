@@ -78,7 +78,7 @@ public:
     @brief base class for render-pass implementations
 */
 class texture;
-class renderPassBase : public resourceBase<RenderPassSetup> {
+class renderPassBase : public resourceBase<PassSetup> {
 public:
     /// constructor
     renderPassBase();

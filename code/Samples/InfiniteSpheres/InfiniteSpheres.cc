@@ -29,7 +29,7 @@ private:
         Id pass;
     } passInfo[2];
     Shader::VSParams vsParams;
-    PassState passState = PassState(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    PassAction passAction = PassAction::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -55,7 +55,7 @@ InfiniteSpheresApp::OnInit() {
     for (int i = 0; i < 2; i++) {
         Id tex = Gfx::CreateResource(rtSetup);
         this->passInfo[i].texture = tex;
-        auto rpSetup = RenderPassSetup::From(tex, tex);
+        auto rpSetup = PassSetup::From(tex, tex);
         this->passInfo[i].pass = Gfx::CreateResource(rpSetup);
     }
 
@@ -121,7 +121,7 @@ InfiniteSpheresApp::OnRunning() {
     // ...and again to display
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
-    Gfx::BeginPass(this->passState);
+    Gfx::BeginPass(this->passAction);
     this->displayDrawState.FSTexture[Textures::Texture] = this->passInfo[index0].texture;
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);

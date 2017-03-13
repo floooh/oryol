@@ -107,7 +107,7 @@ Gfx::DisplayAttrs() {
 
 //------------------------------------------------------------------------------
 const DisplayAttrs&
-Gfx::RenderPassAttrs() {
+Gfx::PassAttrs() {
     o_assert_dbg(IsValid());
     return state->renderer.renderPassAttrs();
 }
@@ -126,17 +126,17 @@ Gfx::BeginPass() {
     o_assert_dbg(!state->inPass);
     state->inPass = true;
     state->gfxFrameInfo.NumPasses++;
-    state->renderer.beginPass(nullptr, nullptr);
+    state->renderer.beginPass(nullptr, &state->gfxSetup.DefaultPassAction);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::BeginPass(const PassState& passState) {
+Gfx::BeginPass(const PassAction& action) {
     o_assert_dbg(IsValid());
     o_assert_dbg(!state->inPass);
     state->inPass = true;
     state->gfxFrameInfo.NumPasses++;
-    state->renderer.beginPass(nullptr, &passState);
+    state->renderer.beginPass(nullptr, &action);
 }
 
 //------------------------------------------------------------------------------
@@ -148,19 +148,19 @@ Gfx::BeginPass(const Id& id) {
     state->gfxFrameInfo.NumPasses++;
     renderPass* pass = state->resourceContainer.lookupRenderPass(id);
     o_assert_dbg(pass);
-    state->renderer.beginPass(pass, nullptr);
+    state->renderer.beginPass(pass, &pass->Setup.DefaultAction);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::BeginPass(const Id& id, const PassState& passState) {
+Gfx::BeginPass(const Id& id, const PassAction& passAction) {
     o_assert_dbg(IsValid());
     o_assert_dbg(!state->inPass);
     state->inPass = true;
     state->gfxFrameInfo.NumPasses++;
     renderPass* pass = state->resourceContainer.lookupRenderPass(id);
     o_assert_dbg(pass);
-    state->renderer.beginPass(pass, &passState);
+    state->renderer.beginPass(pass, &passAction);
 }
 
 //------------------------------------------------------------------------------
@@ -561,7 +561,7 @@ Gfx::validatePipelineSetup(const PipelineSetup& setup) {
 //------------------------------------------------------------------------------
 #if ORYOL_DEBUG
 void
-Gfx::validateRenderPassSetup(const RenderPassSetup& setup) {
+Gfx::validatePassSetup(const PassSetup& setup) {
     // check that at least one color attachment texture is defined
     // and that there are no 'holes' if there are multiple attachments
     bool continuous = true;
@@ -603,7 +603,7 @@ Gfx::validateRenderPassSetup(const RenderPassSetup& setup) {
             }
         }
     }
-    const texture* dsTex = state->resourceContainer.lookupTexture(setup.DepthStencilAttachment.Texture);
+    const texture* dsTex = state->resourceContainer.lookupTexture(setup.DepthStencilTexture);
     if (dsTex) {
         const auto& attrs = dsTex->textureAttrs;
         if ((attrs.Width != w) || (attrs.Height != h)) {
@@ -672,10 +672,10 @@ Gfx::CreateResource(const PipelineSetup& setup, const void* data, int size) {
 
 //------------------------------------------------------------------------------
 template<> Id
-Gfx::CreateResource(const RenderPassSetup& setup, const void* data, int size) {
+Gfx::CreateResource(const PassSetup& setup, const void* data, int size) {
     o_assert_dbg(IsValid());
     #if ORYOL_DEBUG
-    validateRenderPassSetup(setup);
+    validatePassSetup(setup);
     #endif
     return state->resourceContainer.Create(setup, nullptr, 0);
 }

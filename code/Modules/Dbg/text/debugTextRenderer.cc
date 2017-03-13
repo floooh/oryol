@@ -130,8 +130,8 @@ debugTextRenderer::drawTextBuffer() {
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
         DbgTextShader::VSParams vsParams;
-        const float w = 8.0f / Gfx::RenderPassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / Gfx::RenderPassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
+        const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
 
         Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
@@ -218,9 +218,9 @@ debugTextRenderer::setupTextPipeline() {
     // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
     // for different render targets and quickly select them before
     // text rendering
-    ps.BlendState.ColorFormat = Gfx::RenderPassAttrs().ColorPixelFormat;
-    ps.BlendState.DepthFormat = Gfx::RenderPassAttrs().DepthPixelFormat;
-    ps.RasterizerState.SampleCount = Gfx::RenderPassAttrs().SampleCount;
+    ps.BlendState.ColorFormat = Gfx::PassAttrs().ColorPixelFormat;
+    ps.BlendState.DepthFormat = Gfx::PassAttrs().DepthPixelFormat;
+    ps.RasterizerState.SampleCount = Gfx::PassAttrs().SampleCount;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 }
 

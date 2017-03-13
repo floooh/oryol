@@ -248,7 +248,7 @@ gfxResourceContainer::Create(const PipelineSetup& setup, const void* /*data*/, i
 
 //------------------------------------------------------------------------------
 template<> Id
-gfxResourceContainer::Create(const RenderPassSetup& setup, const void* /*data*/, int /*size*/) {
+gfxResourceContainer::Create(const PassSetup& setup, const void* /*data*/, int /*size*/) {
     o_assert_dbg(this->isValid());
 
     Id resId = this->registry.Lookup(setup.Locator);

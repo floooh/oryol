@@ -43,8 +43,8 @@ public:
     /// get the current render pass attributes
     const DisplayAttrs& renderPassAttrs() const;
 
-    /// begin rendering pass (both ptrs can be nullptr)
-    void beginPass(renderPass* pass, const PassState* passState);
+    /// begin rendering pass (pass can be nullptr for default framebuffer)
+    void beginPass(renderPass* pass, const PassAction* action);
     /// end current rendering pass
     void endPass();
 

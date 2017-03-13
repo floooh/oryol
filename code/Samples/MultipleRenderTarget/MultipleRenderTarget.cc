@@ -46,7 +46,7 @@ OryolMain(MultipleRenderTargetApp);
 AppState::Code
 MultipleRenderTargetApp::OnInit() {
     auto gfxSetup = GfxSetup::WindowMSAA4(DisplayWidth, DisplayHeight, "Oryol MRT Sample");
-    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    gfxSetup.DefaultPassAction = PassAction::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
 
@@ -70,11 +70,11 @@ MultipleRenderTargetApp::OnInit() {
     // create a render pass which uses the 3 texture we just created
     // as color attachments, and the first texture as depth-stencil buffer
     // FIXME: depth-stencil should be its own texture!
-    auto passSetup = RenderPassSetup::From({ rt0, rt1, rt2 }, rt0);
-    passSetup.ColorAttachments[0].ClearColor = glm::vec4(0.25f, 0.0f, 0.0f, 1.0f);
-    passSetup.ColorAttachments[1].ClearColor = glm::vec4(0.0f, 0.25f, 0.0f, 1.0f);
-    passSetup.ColorAttachments[2].ClearColor = glm::vec4(0.0f, 0.0f, 0.25f, 1.0f);
-    passSetup.StoreAction = RenderPassStoreAction::Resolve;
+    auto passSetup = PassSetup::From({ rt0, rt1, rt2 }, rt0);
+    passSetup.DefaultAction
+        .ColorClear(0, glm::vec4(0.25f, 0.0f, 0.0f, 1.0f))
+        .ColorClear(1, glm::vec4(0.0f, 0.25f, 0.0f, 1.0f))
+        .ColorClear(2, glm::vec4(0.0f, 0.0f, 0.25f, 1.0f));
     this->mrtPass = Gfx::CreateResource(passSetup);
 
     // create a mesh with 2 shapes, a box and a plane
@@ -176,7 +176,7 @@ MultipleRenderTargetApp::OnRunning() {
     Gfx::Draw();
 
     // render the final plane which samples from all 3 offscreen rendertarget textures
-    const auto& rpAttrs = Gfx::RenderPassAttrs();
+    const auto& rpAttrs = Gfx::PassAttrs();
     Gfx::ApplyViewPort(0, 0, rpAttrs.FramebufferWidth, rpAttrs.FramebufferHeight);
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->displayParams);
@@ -214,7 +214,7 @@ MultipleRenderTargetApp::notSupported() {
     #endif
     uint8_t x = uint8_t((Gfx::DisplayAttrs().FramebufferWidth/16 - strlen(msg))/2);
     uint8_t y = uint8_t(Gfx::DisplayAttrs().FramebufferHeight/16/2);
-    Gfx::BeginPass(PassState(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    Gfx::BeginPass(PassAction::ClearAll(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     Dbg::CursorPos(x, y);
     Dbg::Print(msg);

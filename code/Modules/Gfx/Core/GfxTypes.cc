@@ -502,29 +502,76 @@ SamplerState::SamplerState() {
 }
 
 //------------------------------------------------------------------------------
-PassState::PassState() {
+PassAction::PassAction() {
     for (auto& c : this->Color) {
         c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     }
 }
 
 //------------------------------------------------------------------------------
-PassState::PassState(const glm::vec4& color, float depth, uint8_t stencil) {
-    for (auto& c : this->Color) {
-        c = color;
-    }
-    this->Depth = depth;
-    this->Stencil = stencil;
+PassAction PassAction::ClearAll(const glm::vec4& c, float d, uint8_t s) {
+    PassAction p;
+    p.Color.Fill(c);
+    p.Depth = d;
+    p.Stencil = s;
+    return p;
 }
 
 //------------------------------------------------------------------------------
-PassState::PassState(std::initializer_list<glm::vec4> colors, float depth, uint8_t stencil) {
+PassAction PassAction::ClearAll(std::initializer_list<glm::vec4> colors, float d, uint8_t s) {
+    PassAction p;
     int i = 0;
     for (const auto& c : colors) {
-        this->Color[i++] = c;
+        p.Color[i++] = c;
     }
-    this->Depth = depth;
-    this->Stencil = stencil;
+    p.Depth = d;
+    p.Stencil = s;
+    return p;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::ColorClear(int index, const glm::vec4& color) {
+    this->Color[index] = color;
+    this->Flags &= ~((ClearC0|LoadC0)<<index);
+    this->Flags |= ClearC0<<index; 
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::DepthStencilClear(float d, uint8_t s) {
+    this->Depth = d;
+    this->Stencil = s;
+    this->Flags &= ~(ClearDS|LoadDS);
+    this->Flags |= ClearDS;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::ColorDontCare(int index) {
+    o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
+    this->Flags &= ~((ClearC0|LoadC0)<<index);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::DepthStencilDontCare() {
+    this->Flags &= ~(ClearDS|LoadDS);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::ColorLoad(int index) {
+    o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
+    this->Flags &= ~((ClearC0|LoadC0)<<index);
+    this->Flags |= LoadC0<<index;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::DepthStencilLoad() {
+    this->Flags &= ~(ClearDS|LoadDS);
+    this->Flags |= LoadDS;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -943,21 +990,21 @@ PipelineSetup PipelineSetup::FromLayoutAndShader(const VertexLayout& layout, con
 }
 
 //------------------------------------------------------------------------------
-RenderPassSetup RenderPassSetup::From(Id colorTexture, Id depthStencilTexture) {
-    RenderPassSetup setup;
+PassSetup PassSetup::From(Id colorTexture, Id depthStencilTexture) {
+    PassSetup setup;
     setup.ColorAttachments[0].Texture = colorTexture;
-    setup.DepthStencilAttachment.Texture = depthStencilTexture;
+    setup.DepthStencilTexture = depthStencilTexture;
     return setup;
 }
 
 //------------------------------------------------------------------------------
-RenderPassSetup RenderPassSetup::From(std::initializer_list<Id> colorTextures, Id depthStencilTexture) {
-    RenderPassSetup setup;
+PassSetup PassSetup::From(std::initializer_list<Id> colorTextures, Id depthStencilTexture) {
+    PassSetup setup;
     int i = 0;
     for (const auto& id : colorTextures) {
         setup.ColorAttachments[i++].Texture = id;
     }
-    setup.DepthStencilAttachment.Texture = depthStencilTexture;
+    setup.DepthStencilTexture = depthStencilTexture;
     return setup;
 }
 

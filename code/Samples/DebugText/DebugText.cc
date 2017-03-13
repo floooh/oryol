@@ -48,7 +48,7 @@ DebugTextApp::OnRunning() {
 AppState::Code
 DebugTextApp::OnInit() {
     auto gfxSetup = GfxSetup::Window(800, 600, "Oryol DebugText Sample");
-    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    gfxSetup.DefaultPassAction = PassAction::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));

@@ -54,7 +54,7 @@ ResourceStressApp::OnInit() {
 
     // setup Gfx system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol Resource Stress Test");
-    gfxSetup.DefaultClearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    gfxSetup.DefaultPassAction = PassAction::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     gfxSetup.ResourcePoolSize[GfxResourceType::Mesh] = MaxNumObjects + 32;
     gfxSetup.ResourcePoolSize[GfxResourceType::Texture] = MaxNumObjects + 32;
     gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] = MaxNumObjects + 32;

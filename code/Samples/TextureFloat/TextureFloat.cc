@@ -48,8 +48,8 @@ TextureFloatApp::OnInit() {
     rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     Id rt = Gfx::CreateResource(rtSetup);
-    auto passSetup = RenderPassSetup::From(rt);
-    passSetup.ColorAttachments[0].LoadAction = RenderPassLoadAction::DontCare;
+    auto passSetup = PassSetup::From(rt);
+    passSetup.DefaultAction.ColorDontCare(0);
     this->renderPass = Gfx::CreateResource(passSetup);
 
     // fullscreen mesh, we'll reuse this several times

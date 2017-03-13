@@ -25,8 +25,8 @@ private:
     DrawState displayDrawState;
     OffscreenShader::VSParams offscreenParams;
     DisplayShader::VSParams displayVSParams;
-    PassState offscreenPassState = PassState(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
-    PassState displayPassState = PassState(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
+    PassAction offscreenPassState = PassAction::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    PassAction displayPassState = PassAction::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -55,10 +55,7 @@ SimpleRenderTargetApp::OnInit() {
         Log::Info("Using MSAA4 render target\n");
     }
     Id rtTexture = Gfx::CreateResource(rtSetup);
-    auto rpSetup = RenderPassSetup::From(rtTexture, rtTexture);
-    if (Gfx::QueryFeature(GfxFeature::MSAARenderTargets)) {
-        rpSetup.StoreAction = RenderPassStoreAction::Resolve;
-    }
+    auto rpSetup = PassSetup::From(rtTexture, rtTexture);
     this->renderPass = Gfx::CreateResource(rpSetup);
 
     // create a donut mesh, shader and pipeline object

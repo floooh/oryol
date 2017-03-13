@@ -635,37 +635,6 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::RenderPassLoadAction
-    @ingroup Gfx
-    @brief action to perform at start of a render pass
-*/
-class RenderPassLoadAction {
-public:
-    enum Code {
-        DontCare,       // initial content of render target is undefined
-        Load,           // previous content of render target is preserved
-        Clear,          // render target pixels are initialized to a value
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::RenderPassStoreAction
-    @ingroup Gfx
-    @brief action to perform at end of render pass
-*/
-class RenderPassStoreAction {
-public:
-    enum Code {
-        DontCare,           // content of render target is left undefined
-        Store,              // content of render target is preserved
-        Resolve,            // only perform an MSAA resolve into resolve target
-        StoreAndResolve,    // preserve render target and perform MSAA resolve
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::BlendState
     @ingroup Gfx
     @brief describe alpha blending state
@@ -847,18 +816,30 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::PassState
+    @class Oryol::PassAction
     @ingroup Gfx
-    @brief describes override parameters for Gfx::BeginPass()
+    @brief what happens at BeginPass() 
 */
-class PassState {
+class PassAction {
 public:
-    /// default constructor
-    PassState();
-    /// construct with clear color (all attachment to same color), optional depth/stencil
-    PassState(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0);
-    /// construct with MRT clear colors
-    PassState(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
+    /// default constructor, set all actions to 'clear with default values'
+    PassAction();
+    /// clear all surfaces with given values
+    static PassAction ClearAll(const glm::vec4& color=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float depth=1.0f, uint8_t stencil=0);
+    /// clear all surfaces with individual colors
+    static PassAction ClearAll(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
+    /// clear a single surface to a color
+    PassAction& ColorClear(int index, const glm::vec4& color);
+    /// clear depth-stencil surface  
+    PassAction& DepthStencilClear(float depth=1.0f, uint8_t stencil=0); 
+    /// set a color surface to 'dont care' (initial content is undefined)
+    PassAction& ColorDontCare(int index);
+    /// set depth-stencil initial state to 'dont care'
+    PassAction& DepthStencilDontCare();
+    /// initialize color surface with its previus content
+    PassAction& ColorLoad(int index);
+    /// initialize depth-stencil surface with its previous content
+    PassAction& DepthStencilLoad();
 
     /// override clear colors
     StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;
@@ -866,6 +847,23 @@ public:
     float Depth = 1.0f;
     /// override clear-stencil value
     uint8_t Stencil = 0;
+
+    /// action bits (not set: don't care)
+    enum Action {
+        ClearC0 = (1<<0),
+        ClearC1 = (1<<1),
+        ClearC2 = (1<<2),
+        ClearC3 = (1<<3),
+
+        LoadC0  = (1<<4),
+        LoadC1  = (1<<5),
+        LoadC2  = (1<<6),
+        LoadC3  = (1<<7),
+
+        ClearDS = (1<<8),
+        LoadDS  = (1<<9),
+    };
+    uint16_t Flags = ClearC0|ClearC1|ClearC2|ClearC3|ClearDS;
 };
 
 //------------------------------------------------------------------------------
@@ -1261,16 +1259,8 @@ public:
     String Title = "Oryol";
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
-    /// color load action for the default-render-pass
-    RenderPassLoadAction::Code DefaultColorLoadAction = RenderPassLoadAction::Clear;
-    /// depth buffer load action for the default-render-pass
-    RenderPassLoadAction::Code DefaultDepthStencilLoadAction = RenderPassLoadAction::Clear;
-    /// default clear color
-    glm::vec4 DefaultClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    /// default clear depth value
-    float DefaultClearDepth = 1.0f;
-    /// default clear stencil value
-    uint8_t DefaultClearStencil = 0;
+    /// default clear values (or dont care)
+    PassAction DefaultPassAction;
     /// if true, ignore own size and instead track size of an HTML element (emscripten only)
     bool HtmlTrackElementSize = false;
     /// name of the HTML element to track (default: #canvas)
@@ -1390,38 +1380,29 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::RenderPassSetup
+    @class Oryol::PassSetup
     @ingroup Gfx
-    @brief setup attributes for RenderPass resource
+    @brief setup attributes for render pass resource
 */
-class RenderPassSetup {
+class PassSetup {
 public:
     /// construct from single render target textures, and option depth-stencil texture
-    static RenderPassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
+    static PassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
     /// construct from MRT render target textures, and option depth-stencil texture
-    static RenderPassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
+    static PassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// 1..N color attachments
     struct ColorAttachment {
         Id Texture;
-        uint16_t Level = 0;     ///< mipmap-level
-        uint16_t Layer = 0;     ///< layer (for 3D- or 2D-array-textures)
-        uint16_t Face = 0;      ///< cubemap face
-        RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        glm::vec4 ClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        uint16_t MipLevel = 0;  ///< mipmap-level
+        uint16_t Slice = 0;     ///< 2D-array-slice, 3D-depth-slice or cubemap face
     };
     StaticArray<ColorAttachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
     /// optional depth-stencil attachment
-    struct DepthStencilAttachment {
-        Id Texture;
-        RenderPassLoadAction::Code LoadAction = RenderPassLoadAction::Clear;
-        float ClearDepth = 1.0f;
-        uint8_t ClearStencil = 0;
-    };
-    struct DepthStencilAttachment DepthStencilAttachment;
-    /// what to do in Gfx::EndPass (preserve or drop content, MSAA resolve)
-    RenderPassStoreAction::Code StoreAction = RenderPassStoreAction::Store;
+    Id DepthStencilTexture;
+    /// default pass action, if no PassAction provided in BeginPass
+    PassAction DefaultAction;
 };
 
 //------------------------------------------------------------------------------

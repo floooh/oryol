@@ -51,7 +51,7 @@ public:
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
     /// get the current render pass attributes (default or offscreen)
-    static const struct DisplayAttrs& RenderPassAttrs();
+    static const struct DisplayAttrs& PassAttrs();
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
 
@@ -88,11 +88,11 @@ public:
     /// begin rendering to default render pass
     static void BeginPass();
     /// begin rendering to default render pass with override clear values
-    static void BeginPass(const PassState& passState);
+    static void BeginPass(const PassAction& action);
     /// begin offscreen rendering
     static void BeginPass(const Id& id);
     /// begin offscreen rendering with override clear colors
-    static void BeginPass(const Id& id, const PassState& passState);
+    static void BeginPass(const Id& id, const PassAction& action);
     /// finish rendering to current pass
     static void EndPass();
 
@@ -134,7 +134,7 @@ private:
     /// validate pipeline setup params
     static void validatePipelineSetup(const PipelineSetup& setup);
     /// validate render pass setup params
-    static void validateRenderPassSetup(const RenderPassSetup& setup);
+    static void validatePassSetup(const PassSetup& setup);
     /// validate shader setup params
     static void validateShaderSetup(const ShaderSetup& setup);
     /// validate mesh binding

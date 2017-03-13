@@ -28,14 +28,14 @@ attachFramebufferTextures(const renderPass& rp) {
                                              GL_COLOR_ATTACHMENT0+i,
                                              GL_TEXTURE_2D,
                                              glTex,
-                                             att.Level);
+                                             att.MipLevel);
                     break;
                 case TextureType::TextureCube:
                     ::glFramebufferTexture2D(GL_FRAMEBUFFER,
                                              GL_COLOR_ATTACHMENT0+i,
-                                             glTypes::asGLCubeFaceTarget(att.Face),
+                                             glTypes::asGLCubeFaceTarget(att.Slice),
                                              glTex,
-                                             att.Level);
+                                             att.MipLevel);
                     break;
                 default:
                     #if !ORYOL_OPENGLES2
@@ -43,8 +43,8 @@ attachFramebufferTextures(const renderPass& rp) {
                     ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
                                                 GL_COLOR_ATTACHMENT0,
                                                 glTex,
-                                                att.Level,
-                                                att.Layer);
+                                                att.MipLevel,
+                                                att.Slice);
                     #endif
                     break;
             }
@@ -152,14 +152,14 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
                                                  GL_COLOR_ATTACHMENT0,
                                                  GL_TEXTURE_2D,
                                                  glTex,
-                                                 att.Level);
+                                                 att.MipLevel);
                         break;
                     case TextureType::TextureCube:
                         ::glFramebufferTexture2D(GL_FRAMEBUFFER,
                                                  GL_COLOR_ATTACHMENT0,
-                                                 glTypes::asGLCubeFaceTarget(att.Face),
+                                                 glTypes::asGLCubeFaceTarget(att.Slice),
                                                  glTex,
-                                                 att.Level);
+                                                 att.MipLevel);
                         break;
                     default:
                         #if !ORYOL_OPENGLES2
@@ -167,8 +167,8 @@ glRenderPassFactory::SetupResource(renderPass& rp) {
                         ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
                                                     GL_COLOR_ATTACHMENT0,
                                                     glTex,
-                                                    att.Level,
-                                                    att.Layer);
+                                                    att.MipLevel,
+                                                    att.Slice);
                         #endif
                         break;
                 }

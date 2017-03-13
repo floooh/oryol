@@ -44,7 +44,7 @@ renderPassFactoryBase::SetupResource(renderPass& rp) {
         }
     }
     o_assert_dbg(nullptr == rp.depthStencilTexture);
-    Id id = rp.Setup.DepthStencilAttachment.Texture;
+    Id id = rp.Setup.DepthStencilTexture;
     if (id.IsValid()) {
         rp.depthStencilTexture = this->pointers.texturePool->Lookup(id);
         o_assert_dbg(rp.depthStencilTexture && (ResourceState::Valid == rp.depthStencilTexture->State));

@@ -83,8 +83,8 @@ GPUParticlesApp::OnInit() {
     particleTextureSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     for (int i = 0; i < 2; i++) {
         this->particleBuffer[i].texture = Gfx::CreateResource(particleTextureSetup);
-        auto particlePassSetup = RenderPassSetup::From(this->particleBuffer[i].texture);
-        particlePassSetup.ColorAttachments[0].LoadAction = RenderPassLoadAction::DontCare;
+        auto particlePassSetup = PassSetup::From(this->particleBuffer[i].texture);
+        particlePassSetup.DefaultAction.ColorDontCare(0);
         this->particleBuffer[i].pass = Gfx::CreateResource(particlePassSetup);
     }
 
