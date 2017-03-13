@@ -249,7 +249,7 @@ debugTextRenderer::convertStringToVertices(const String& str) {
     const int numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
     const char* ptr = str.AsCStr();
     for (int charIndex = 0; charIndex < numChars; charIndex++) {
-        uchar c = (uchar) ptr[charIndex];
+        unsigned char c = (uchar) ptr[charIndex];
         
         // control character?
         if (c < 0x20) {
@@ -280,10 +280,10 @@ debugTextRenderer::convertStringToVertices(const String& str) {
                         else if (escCode == 2) {
                             // change color
                             o_assert((charIndex + 5) < numChars);
-                            uchar r = (uchar) ptr[charIndex + 2];
-                            uchar g = (uchar) ptr[charIndex + 3];
-                            uchar b = (uchar) ptr[charIndex + 4];
-                            uchar a = (uchar) ptr[charIndex + 5];
+                            uint8_t r = (uint8_t) ptr[charIndex + 2];
+                            uint8_t g = (uint8_t) ptr[charIndex + 3];
+                            uint8_t b = (uint8_t) ptr[charIndex + 4];
+                            uint8_t a = (uint8_t) ptr[charIndex + 5];
                             charIndex += 5;
                             rgba = (a<<24) | (b << 16) | (g << 8) | (r);
                         }

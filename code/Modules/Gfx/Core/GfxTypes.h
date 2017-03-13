@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file Gfx/Core/Types.h
+    @file Gfx/Core/GfxTypes.h
     @brief public Gfx types 
 */
 #include "Core/Types.h"

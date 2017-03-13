@@ -6,7 +6,7 @@
     @brief efficiently write packed vertex components
 */
 #include "Core/Types.h"
-#include "Gfx/Core/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 
 namespace Oryol {
     

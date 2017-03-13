@@ -2,7 +2,7 @@
 //  Gfx/Core/Types.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Types.h"
+#include "GfxTypes.h"
 
 namespace Oryol {
 
