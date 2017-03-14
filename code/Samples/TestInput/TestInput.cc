@@ -12,6 +12,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/polar_coordinates.hpp"
 #include "shaders.h"
+#include <float.h>
 
 using namespace Oryol;
 
@@ -36,6 +37,7 @@ private:
     void handleKeyboardInput();
     void handleMouseInput();
     void handleTouchInput();
+    void handleGamepadInput(int gamepadIndex);
     
     const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
     const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
@@ -434,6 +436,35 @@ TestInputApp::handleTouchInput() {
 
 //------------------------------------------------------------------------------
 void
+TestInputApp::handleGamepadInput(int gamepadIndex)
+{
+    static const float rotatePerFrame = 0.025f;
+    static const float movePerFrame = 0.025f;
+
+    const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStick);
+    const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick);
+
+    if ((leftStick.x > FLT_EPSILON) || (leftStick.x < -FLT_EPSILON))
+    {
+    	this->pointOfInterest -= leftStick.x * glm::vec3(this->invView[0]) * movePerFrame;;
+    }
+    if ((leftStick.y > FLT_EPSILON) || (leftStick.y < -FLT_EPSILON))
+    {
+    	this->pointOfInterest += leftStick.y * glm::vec3(this->invView[1]) * movePerFrame;;
+    }
+
+    if ((rightStick.x > FLT_EPSILON) || (rightStick.x < -FLT_EPSILON))
+    {
+    	this->polar.y -= rightStick.x * rotatePerFrame;
+    }
+    if ((rightStick.y > FLT_EPSILON) || (rightStick.y < -FLT_EPSILON))
+    {
+    	this->polar.x += rightStick.y * glm::clamp(this->polar.x + rotatePerFrame, this->minLatitude, this->maxLatitude);;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 TestInputApp::drawCube() {
     Shader::VSParams vsParams;
     vsParams.ModelViewProjection = this->proj * this->view;
@@ -457,6 +488,7 @@ TestInputApp::OnRunning() {
     this->handleKeyboardInput();
     this->handleMouseInput();
     this->handleTouchInput();
+    this->handleGamepadInput(selectedGamepadIndex);
     this->updateView();
     
     // draw frame
