@@ -480,11 +480,15 @@ TestInputApp::OnRunning() {
     this->printKeyboardState();
     this->printTouchpadState();
     this->printSensorState();
+#if ORYOL_EMSCRIPTEN
     this->printGamepadState(selectedGamepadIndex);
+#endif
     this->handleKeyboardInput();
     this->handleMouseInput();
     this->handleTouchInput();
+#if ORYOL_EMSCRIPTEN
     this->handleGamepadInput(selectedGamepadIndex);
+#endif
     this->updateView();
     
     // draw frame
