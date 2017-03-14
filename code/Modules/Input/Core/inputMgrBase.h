@@ -34,7 +34,8 @@ public:
     void discard();
     /// return true if the input manager has been setup
     bool isValid() const;
-    /// polling if required
+    // TODO: Review if this should only be called via flag in InputSetup
+    /// update for usage with gamepad polling
     void update();
     /// reset input devices (usually called by RunLoop at end of frame)
     void reset();

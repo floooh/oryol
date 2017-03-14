@@ -35,8 +35,8 @@ Input::IsValid() {
 
 //------------------------------------------------------------------------------
 void
-Input::Update()
-{
+Input::Update() {
+	o_assert_dbg(state);
 	state->inputManager.update();
 }
 

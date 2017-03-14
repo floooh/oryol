@@ -37,9 +37,8 @@ private:
     Key::Code mapKey(unsigned long html5KeyCode) const;
     /// map HTML5 mouse button code to Oryol mouse button
     MouseButton::Code mapMouseButton(unsigned short html5Btn) const;
-    /// poll the gamepads currently attached
+    /// check to see the gamepads currently attached
     void updateGamepadsAttached(int& gamepadsAttached);
-
 
     /// update mouse pointer lock state
     static bool updatePointerLockMode(PointerLockMode::Code lockMode);
@@ -63,11 +62,9 @@ private:
     static EM_BOOL emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData);
     /// device orientation callback
     static EM_BOOL emscDeviceOrientation(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData);
-    /// gamepad
-    //typedef EM_BOOL (*em_gamepad_callback_func)(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+    /// gamepad callback when connected
     static EM_BOOL emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData);
-    /// gamepad
-    //typedef EM_BOOL (*em_gamepad_callback_func)(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+    /// gamepad callback when disconnected
     static EM_BOOL emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData);
 
     static const int MaxNumKeys = 256;

@@ -20,16 +20,16 @@ pressed(0) {
 void
 gamepadDevice::onButtonDown(GamepadGizmo::Code btn) {
     o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    this->down |= (1<<btn);
-    this->pressed |= (1<<btn);
+    this->down |= btn;
+    this->pressed |= btn;
 }
 
 //------------------------------------------------------------------------------
 void
 gamepadDevice::onButtonUp(GamepadGizmo::Code btn) {
     o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    this->up |= (1<<btn);
-    this->pressed &= ~(1<<btn);
+    this->up |= btn;
+    this->pressed &= ~btn;
 }
 
 //------------------------------------------------------------------------------

@@ -279,11 +279,10 @@ TestInputApp::printSensorState() {
 void
 TestInputApp::printGamepadState(int gamepadIndex)
 {
-	// TODO: range check incoming gamepadIndex against maximum game pads and zero
+	// TODO: range check incoming gamepadIndex against maximum num game pads and zero
 	//assert(gamepadIndex >= 0 && gamepadIndex < GamePad::NUM)
 
-	if (Input::GamepadAttached(gamepadIndex))
-	{
+	if (Input::GamepadAttached(gamepadIndex)) {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::PrintF("\n\n\r GAMEPAD %d STATUS:\n\n\r", gamepadIndex);
         Dbg::TextColor(glm::vec4(1.0f));
@@ -310,8 +309,7 @@ TestInputApp::printGamepadState(int gamepadIndex)
         Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftTrigger).x);
         Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightTrigger).x);
 	}
-	else
-	{
+	else {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::PrintF("\n\n\r GAMEPAD %d NOT ATTACHED", gamepadIndex);
 	}
@@ -435,32 +433,30 @@ TestInputApp::handleTouchInput() {
 }
 
 //------------------------------------------------------------------------------
-void
-TestInputApp::handleGamepadInput(int gamepadIndex)
-{
-    static const float rotatePerFrame = 0.025f;
-    static const float movePerFrame = 0.025f;
+void TestInputApp::handleGamepadInput(int gamepadIndex) {
+	static const float rotatePerFrame = 0.025f;
+	static const float movePerFrame = 0.025f;
 
-    const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStick);
-    const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick);
+	const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStick);
+	const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick);
 
-    if ((leftStick.x > FLT_EPSILON) || (leftStick.x < -FLT_EPSILON))
-    {
-    	this->pointOfInterest -= leftStick.x * glm::vec3(this->invView[0]) * movePerFrame;;
-    }
-    if ((leftStick.y > FLT_EPSILON) || (leftStick.y < -FLT_EPSILON))
-    {
-    	this->pointOfInterest += leftStick.y * glm::vec3(this->invView[1]) * movePerFrame;;
-    }
+	if ((leftStick.x > FLT_EPSILON) ||
+		(leftStick.x < -FLT_EPSILON)) {
+		this->pointOfInterest -= leftStick.x * glm::vec3(this->invView[0]) * movePerFrame;
+	}
+	if ((leftStick.y > FLT_EPSILON) ||
+		(leftStick.y < -FLT_EPSILON)) {
+		this->pointOfInterest += leftStick.y * glm::vec3(this->invView[1]) * movePerFrame;
+	}
 
-    if ((rightStick.x > FLT_EPSILON) || (rightStick.x < -FLT_EPSILON))
-    {
-    	this->polar.y -= rightStick.x * rotatePerFrame;
-    }
-    if ((rightStick.y > FLT_EPSILON) || (rightStick.y < -FLT_EPSILON))
-    {
-    	this->polar.x += rightStick.y * glm::clamp(this->polar.x + rotatePerFrame, this->minLatitude, this->maxLatitude);;
-    }
+	if ((rightStick.x > FLT_EPSILON) ||
+		(rightStick.x < -FLT_EPSILON)) {
+		this->polar.y -= rightStick.x * rotatePerFrame;
+	}
+	if ((rightStick.y > FLT_EPSILON) ||
+		(rightStick.y < -FLT_EPSILON)) {
+		this->polar.x += rightStick.y * glm::clamp(this->polar.x + rotatePerFrame, this->minLatitude, this->maxLatitude);
+	}
 }
 
 //------------------------------------------------------------------------------

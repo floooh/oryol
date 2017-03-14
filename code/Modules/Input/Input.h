@@ -24,7 +24,8 @@ public:
     static void Discard();
     /// check if Input module is valid
     static bool IsValid();
-    /// polling
+    // TODO: Review if this is the best place to do gamepad polling
+    /// required for gamepad polling
     static void Update();
     
     /// input event callback function

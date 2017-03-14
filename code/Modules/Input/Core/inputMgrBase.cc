@@ -45,8 +45,7 @@ inputMgrBase::isValid() const {
 
 //------------------------------------------------------------------------------
 void
-inputMgrBase::update()
-{
+inputMgrBase::update() {
 
 }
 
