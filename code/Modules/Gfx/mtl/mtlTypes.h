@@ -57,10 +57,8 @@ public:
     static MTLIndexType asIndexType(IndexType::Code c);
     /// convert primitive type
     static MTLPrimitiveType asPrimitiveType(PrimitiveType::Code c);
-    /// convert pass-load-action
-    static MTLLoadAction asLoadAction(RenderPassLoadAction::Code c);
-    /// convert pass-store-action
-    static MTLStoreAction asStoreAction(RenderPassStoreAction::Code c);
+    /// convert render pass load action from PassAction flags
+    static MTLLoadAction asLoadAction(const PassAction* action, int colorIndex, bool depthStencil);
 };
 
 } // namespace _priv

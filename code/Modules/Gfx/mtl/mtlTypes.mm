@@ -329,22 +329,30 @@ mtlTypes::asPrimitiveType(PrimitiveType::Code c) {
 
 //------------------------------------------------------------------------------
 MTLLoadAction
-mtlTypes::asLoadAction(RenderPassLoadAction::Code c) {
-    switch (c) {
-        case RenderPassLoadAction::DontCare: return MTLLoadActionDontCare;
-        case RenderPassLoadAction::Load: return MTLLoadActionLoad;
-        case RenderPassLoadAction::Clear: return MTLLoadActionClear;
+mtlTypes::asLoadAction(const PassAction* action, int colorIndex, bool depthStencil) {
+    o_assert_dbg(action);
+    o_assert_range_dbg(colorIndex, GfxConfig::MaxNumColorAttachments);
+    if (depthStencil) {
+        if (action->Flags & PassAction::ClearDS) {
+            return MTLLoadActionClear;
+        }
+        else if (action->Flags & PassAction::LoadDS) {
+            return MTLLoadActionLoad;
+        }
+        else {
+            return MTLLoadActionDontCare;
+        }
     }
-}
-
-//------------------------------------------------------------------------------
-MTLStoreAction
-mtlTypes::asStoreAction(RenderPassStoreAction::Code c) {
-    switch (c) {
-        case RenderPassStoreAction::DontCare: return MTLStoreActionDontCare;
-        case RenderPassStoreAction::Store: return MTLStoreActionStore;
-        case RenderPassStoreAction::Resolve: return MTLStoreActionMultisampleResolve;
-        case RenderPassStoreAction::StoreAndResolve: return MTLStoreActionStoreAndMultisampleResolve;
+    else {
+        if (action->Flags & (PassAction::ClearC0<<colorIndex)) {
+            return MTLLoadActionClear;
+        }
+        else if (action->Flags & (PassAction::LoadC0<<colorIndex)) {
+            return MTLLoadActionLoad;
+        }
+        else {
+            return MTLLoadActionDontCare;
+        }
     }
 }
 

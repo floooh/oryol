@@ -232,9 +232,10 @@ mtlRenderer::checkCreateCommandBuffer() {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
+mtlRenderer::beginPass(renderPass* pass, const PassAction* action) {
     o_assert_dbg(this->valid);
     o_assert_dbg(nil == this->curRenderCmdEncoder);
+    o_assert_dbg(action);
 
     // create command buffer if this is the first call in the current frame
     this->checkCreateCommandBuffer();
@@ -270,81 +271,64 @@ mtlRenderer::beginPass(renderPass* pass, const PassState* passState) {
         for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
             if (pass->colorTextures[i]) {
                 const auto& colorAtt = pass->Setup.ColorAttachments[i];
-                passDesc.colorAttachments[i].loadAction = mtlTypes::asLoadAction(colorAtt.LoadAction);
-                passDesc.colorAttachments[i].storeAction = mtlTypes::asStoreAction(pass->Setup.StoreAction);
-                const glm::vec4& c = passState ? passState->Color[i] : colorAtt.ClearColor;
+                bool isMSAA = pass->colorTextures[i]->textureAttrs.SampleCount > 1;
+                passDesc.colorAttachments[i].loadAction = mtlTypes::asLoadAction(action, i, false);
+                passDesc.colorAttachments[i].storeAction = isMSAA ? MTLStoreActionMultisampleResolve:MTLStoreActionStore;
+                const glm::vec4& c = action->Color[i];
                 passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
-                if ((pass->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
-                    (pass->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve)) {
-
+                if (isMSAA) {
                     // render to MSAA render target...
                     o_assert_dbg(pass->colorTextures[i]->mtlMSAATex);
                     passDesc.colorAttachments[i].texture = pass->colorTextures[i]->mtlMSAATex;
                     passDesc.colorAttachments[i].resolveTexture = pass->colorTextures[i]->mtlTextures[0];
-                    passDesc.colorAttachments[i].resolveLevel = colorAtt.Level;
-                    switch (pass->colorTextures[i]->textureAttrs.Type) {
-                        case TextureType::TextureCube:
-                            passDesc.colorAttachments[i].resolveSlice = pass->Setup.ColorAttachments[i].Face;
-                            break;
-                        case TextureType::TextureArray:
-                            passDesc.colorAttachments[i].resolveSlice = pass->Setup.ColorAttachments[i].Layer;
-                            break;
-                        case TextureType::Texture3D:
-                            passDesc.colorAttachments[i].resolveDepthPlane = pass->Setup.ColorAttachments[i].Layer;
-                            break;
-                        default:
-                            break;
-                    }
+                    passDesc.colorAttachments[i].resolveLevel = colorAtt.MipLevel;
                 }
                 else {
                     // render to non-MSAA render target...
                     passDesc.colorAttachments[i].texture = pass->colorTextures[i]->mtlTextures[0];
-                    passDesc.colorAttachments[i].level = colorAtt.Level;
-                    switch (pass->colorTextures[i]->textureAttrs.Type) {
-                        case TextureType::TextureCube:
-                            passDesc.colorAttachments[i].slice = pass->Setup.ColorAttachments[i].Face;
-                            break;
-                        case TextureType::TextureArray:
-                            passDesc.colorAttachments[i].slice = pass->Setup.ColorAttachments[i].Layer;
-                            break;
-                        case TextureType::Texture3D:
-                            passDesc.colorAttachments[i].depthPlane = pass->Setup.ColorAttachments[i].Layer;
-                            break;
-                        default:
-                            break;
-                    }
+                    passDesc.colorAttachments[i].level = colorAtt.MipLevel;
+                }
+                switch (pass->colorTextures[i]->textureAttrs.Type) {
+                    case TextureType::TextureCube:
+                    case TextureType::TextureArray:
+                        passDesc.colorAttachments[i].slice = pass->Setup.ColorAttachments[i].Slice;
+                        break;
+                    case TextureType::Texture3D:
+                        passDesc.colorAttachments[i].depthPlane = pass->Setup.ColorAttachments[i].Slice;
+                        break;
+                    default:
+                        break;
                 }
             }
         }
-        const auto& dsAtt = pass->Setup.DepthStencilAttachment;
         if (PixelFormat::IsDepthFormat(this->rpAttrs.DepthPixelFormat)) {
             passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
-            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(dsAtt.LoadAction);
-            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : dsAtt.ClearDepth;
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth;
         }
         else if (PixelFormat::IsDepthStencilFormat(this->rpAttrs.DepthPixelFormat)) {
             passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
-            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(dsAtt.LoadAction);
-            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : dsAtt.ClearDepth;
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth; 
             passDesc.stencilAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
-            passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(dsAtt.LoadAction);
-            passDesc.stencilAttachment.clearStencil = passState ? passState->Stencil : dsAtt.ClearStencil;
+            passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.stencilAttachment.clearStencil = action->Stencil;
         }
     }
     else {
         // default framebuffer
-        passDesc.colorAttachments[0].loadAction = mtlTypes::asLoadAction(this->gfxSetup.DefaultColorLoadAction);
-        const glm::vec4& c = passState ? passState->Color[0] : this->gfxSetup.DefaultClearColor;
+        passDesc.colorAttachments[0].loadAction = mtlTypes::asLoadAction(action, 0, false);
+        const glm::vec4& c = action->Color[0];
         passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
         if (PixelFormat::IsDepthFormat(this->gfxSetup.DepthFormat)) {
-            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(this->gfxSetup.DefaultDepthStencilLoadAction);
-            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : this->gfxSetup.DefaultClearDepth;
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth;
         }
         else if (PixelFormat::IsDepthStencilFormat(this->gfxSetup.DepthFormat)) {
-            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(this->gfxSetup.DefaultDepthStencilLoadAction);
-            passDesc.depthAttachment.clearDepth = passState ? passState->Depth : this->gfxSetup.DefaultClearDepth;
-            passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(this->gfxSetup.DefaultDepthStencilLoadAction);
-            passDesc.stencilAttachment.clearStencil = passState ? passState->Stencil : this->gfxSetup.DefaultClearStencil;
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth;
+            passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.stencilAttachment.clearStencil = action->Stencil;
         }
     }
 
