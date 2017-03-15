@@ -45,7 +45,7 @@ public:
     const DisplayAttrs& renderPassAttrs() const;
 
     /// begin rendering pass (both ptrs can be nullptr)
-    void beginPass(renderPass* pass, const PassState* passState);
+    void beginPass(renderPass* pass, const PassAction* action);
     /// end current rendering pass
     void endPass();
     /// apply viewport

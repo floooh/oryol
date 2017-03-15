@@ -74,39 +74,39 @@ d3d11RenderPassFactory::SetupResource(renderPass& rp) {
                     }
                     else {
                         rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-                        rtvDesc.Texture2D.MipSlice = rp.Setup.ColorAttachments[i].Level;
+                        rtvDesc.Texture2D.MipSlice = rp.Setup.ColorAttachments[i].MipLevel;
                     }
                     break;
                 case TextureType::TextureCube:
                     if (isMSAA) {
                         rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
-                        rtvDesc.Texture2DMSArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Face;
+                        rtvDesc.Texture2DMSArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Slice;
                         rtvDesc.Texture2DMSArray.ArraySize = 1;
                     }
                     else {
                         rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-                        rtvDesc.Texture2DArray.MipSlice = rp.Setup.ColorAttachments[i].Level;
-                        rtvDesc.Texture2DArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Face;
+                        rtvDesc.Texture2DArray.MipSlice = rp.Setup.ColorAttachments[i].MipLevel;
+                        rtvDesc.Texture2DArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Slice;
                         rtvDesc.Texture2DArray.ArraySize = 1;
                     }
                     break;
                 case TextureType::Texture3D:
                     o_assert_dbg(!isMSAA);
                     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
-                    rtvDesc.Texture3D.MipSlice = rp.Setup.ColorAttachments[i].Level;
-                    rtvDesc.Texture3D.FirstWSlice = rp.Setup.ColorAttachments[i].Layer;
+                    rtvDesc.Texture3D.MipSlice = rp.Setup.ColorAttachments[i].MipLevel;
+                    rtvDesc.Texture3D.FirstWSlice = rp.Setup.ColorAttachments[i].Slice;
                     rtvDesc.Texture3D.WSize = 1;
                     break;
                 case TextureType::TextureArray:
                     if (isMSAA) {
                         rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
-                        rtvDesc.Texture2DMSArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Layer;
+                        rtvDesc.Texture2DMSArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Slice;
                         rtvDesc.Texture2DMSArray.ArraySize = 1;
                     }
                     else {
                         rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-                        rtvDesc.Texture2DArray.MipSlice = rp.Setup.ColorAttachments[i].Level;
-                        rtvDesc.Texture2DArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Layer;
+                        rtvDesc.Texture2DArray.MipSlice = rp.Setup.ColorAttachments[i].MipLevel;
+                        rtvDesc.Texture2DArray.FirstArraySlice = rp.Setup.ColorAttachments[i].Slice;
                         rtvDesc.Texture2DArray.ArraySize = 1;
                     }
                 default:

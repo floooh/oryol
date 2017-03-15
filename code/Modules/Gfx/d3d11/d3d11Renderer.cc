@@ -183,9 +183,10 @@ d3d11Renderer::renderPassAttrs() const {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::beginPass(renderPass* pass, const PassState* passState) {
+d3d11Renderer::beginPass(renderPass* pass, const PassAction* action) {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->d3d11DeviceContext);
+    o_assert_dbg(action);
 
     // don't keep texture binding across passes, bound texture might be render targets!
     this->invalidateTextureState();
@@ -223,40 +224,32 @@ d3d11Renderer::beginPass(renderPass* pass, const PassState* passState) {
 
     // perform clear action
     if (nullptr == this->curRenderPass) {
-        if (this->gfxSetup.DefaultColorLoadAction == RenderPassLoadAction::Clear) {
+        if (action->Flags & PassAction::ClearC0) {
             if (this->d3d11CurRTVs[0]) {
-                const FLOAT* c = passState ? glm::value_ptr(passState->Color[0]):glm::value_ptr(this->gfxSetup.DefaultClearColor);
-                this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[0], c);
+                this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[0], glm::value_ptr(action->Color[0]));
             }
         }
-        if (this->gfxSetup.DefaultDepthStencilLoadAction == RenderPassLoadAction::Clear) {
+        if (action->Flags & PassAction::ClearDS) {
             if (this->d3d11CurDSV) {
                 const UINT f = D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL;
-                const FLOAT d = passState ? passState->Depth : this->gfxSetup.DefaultClearDepth;
-                const UINT8 s = passState ? passState->Stencil : this->gfxSetup.DefaultClearStencil;
-                this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDSV, f, d, s);
+                this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDSV, f, action->Depth, action->Stencil);
             }
         }
     }
     else {
         for (int i = 0; i < this->numRTVs; i++) {
-            const auto& att = pass->Setup.ColorAttachments[i];
             if (this->d3d11CurRTVs[i]) {
-                if (att.LoadAction == RenderPassLoadAction::Clear) {
-                    const FLOAT* c = passState ? glm::value_ptr(passState->Color[i]):glm::value_ptr(att.ClearColor);
-                    this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[i], c);
+                if (action->Flags & (PassAction::ClearC0<<i)) {
+                    this->d3d11DeviceContext->ClearRenderTargetView(this->d3d11CurRTVs[i], glm::value_ptr(action->Color[i]));
                 }
             }
             else {
                 break;
             }
         }
-        const auto& att = pass->Setup.DepthStencilAttachment;
-        if (this->d3d11CurDSV && (att.LoadAction == RenderPassLoadAction::Clear)) {
+        if (this->d3d11CurDSV && (action->Flags & PassAction::ClearDS)) { 
             const UINT f = D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL;
-            const FLOAT d = passState ? passState->Depth : att.ClearDepth;
-            const UINT8 s = passState ? passState->Stencil : att.ClearStencil;
-            this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDSV, f, d, s);
+            this->d3d11DeviceContext->ClearDepthStencilView(this->d3d11CurDSV, f, action->Depth, action->Stencil);
         }
     }
 }
@@ -268,15 +261,14 @@ d3d11Renderer::endPass() {
 
     const renderPass* rp = this->curRenderPass;
     if (rp) {
-        if ((rp->Setup.StoreAction == RenderPassStoreAction::Resolve) ||
-            (rp->Setup.StoreAction == RenderPassStoreAction::StoreAndResolve))
-        {
+        const bool isMSAA = nullptr != rp->colorTextures[0]->d3d11MSAATexture2D;
+        if (isMSAA) {
             // perform MSAA resolve on offscreen render targets
             for (int i = 0; i < this->numRTVs; i++) {
                 texture* colorTex = rp->colorTextures[i];
                 const auto& att = rp->Setup.ColorAttachments[i];
                 o_assert_dbg(colorTex->d3d11MSAATexture2D && colorTex->d3d11Texture2D);
-                UINT subres = D3D11CalcSubresource(att.Level, att.Level, colorTex->textureAttrs.NumMipMaps);
+                UINT subres = D3D11CalcSubresource(att.MipLevel, att.Slice, colorTex->textureAttrs.NumMipMaps);
                 this->d3d11DeviceContext->ResolveSubresource(
                     colorTex->d3d11Texture2D,       // pDstResource
                     subres,                         // DstSubresource
