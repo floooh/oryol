@@ -1,0 +1,8 @@
+---
+platform: win64 
+generator-platform: x64
+build_tool: vscode_cmake
+build_type: Debug
+defines:
+    ORYOL_USE_D3D11: ON
+
