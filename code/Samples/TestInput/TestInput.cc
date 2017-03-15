@@ -303,12 +303,12 @@ TestInputApp::printGamepadState(int gamepadIndex) {
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightTrigger) ? " RightTrigger\n\r" : "           \n\r");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftStick) ? " LeftStick  " : "            ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightStick) ? " RightStick\n\r" : "          \n\r");
-        Dbg::PrintF(" LeftStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStick).x);
-        Dbg::PrintF(" LeftStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStick).y);
-        Dbg::PrintF(" RightStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick).x);
-        Dbg::PrintF(" RightStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick).y);
-        Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftTrigger).x);
-        Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightTrigger).x);
+        Dbg::PrintF(" LeftStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue).x);
+        Dbg::PrintF(" LeftStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue).y);
+        Dbg::PrintF(" RightStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue).x);
+        Dbg::PrintF(" RightStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue).y);
+        Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftTriggerValue).x);
+        Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightTriggerValue).x);
     }
     else {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -438,8 +438,8 @@ void TestInputApp::handleGamepadInput(int gamepadIndex) {
     static const float rotatePerFrame = 0.025f;
     static const float movePerFrame = 0.025f;
 
-    const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStick);
-    const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStick);
+    const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue);
+    const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue);
 
     if ((leftStick.x > FLT_EPSILON) ||
         (leftStick.x < -FLT_EPSILON)) {

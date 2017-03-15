@@ -218,14 +218,14 @@ Input::GamepadButtonUp(int gamepadIndex, GamepadGizmo::Code btn) {
 
 //------------------------------------------------------------------------------
 float
-Input::GamepadTriggerValue(int gamepadIndex, GamepadGizmo::Code trigger) {
+Input::GamepadTriggerValue(int gamepadIndex, GamepadGizmo::Value trigger) {
     o_assert_dbg(state);
     return state->inputManager.gamepad[gamepadIndex].triggerValue(trigger);
 }
 
 //------------------------------------------------------------------------------
 const glm::vec2&
-Input::GamepadStickPos(int gamepadIndex, GamepadGizmo::Code stick) {
+Input::GamepadStickPos(int gamepadIndex, GamepadGizmo::Value stick) {
     o_assert_dbg(state);
     return state->inputManager.gamepad[gamepadIndex].stickPos(stick);
 }

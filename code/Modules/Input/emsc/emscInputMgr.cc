@@ -173,7 +173,7 @@ emscInputMgr::update() {
 
         GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
         for (int j = 0; j < 12; ++j) {
-            gizmoCode = static_cast<GamepadGizmo::Code>(j);
+            gizmoCode = (GamepadGizmo::Code)j;
             // If it wasn't previously pressed...
             if (!(this->gamepad[i].pressed & gizmoCode)) {
                 // If currently pressed...
@@ -196,12 +196,12 @@ emscInputMgr::update() {
         this->gamepad[i].up = up;
         this->gamepad[i].pressed = pressed;
 
-        this->gamepad[i].values[GamepadGizmo::LeftStick].x = gamepadState.axis[0];
-        this->gamepad[i].values[GamepadGizmo::LeftStick].y = gamepadState.axis[1];
-        this->gamepad[i].values[GamepadGizmo::RightStick].x = gamepadState.axis[2];
-        this->gamepad[i].values[GamepadGizmo::LeftTrigger].x = gamepadState.axis[3];
-        this->gamepad[i].values[GamepadGizmo::RightTrigger].x = gamepadState.axis[4];
-        this->gamepad[i].values[GamepadGizmo::RightStick].y = gamepadState.axis[5];
+        this->gamepad[i].values[GamepadGizmo::LeftStickValue].x = gamepadState.axis[0];
+        this->gamepad[i].values[GamepadGizmo::LeftStickValue].y = gamepadState.axis[1];
+        this->gamepad[i].values[GamepadGizmo::RightStickValue].x = gamepadState.axis[2];
+        this->gamepad[i].values[GamepadGizmo::LeftTriggerValue].x = gamepadState.axis[3];
+        this->gamepad[i].values[GamepadGizmo::RightTriggerValue].x = gamepadState.axis[4];
+        this->gamepad[i].values[GamepadGizmo::RightStickValue].y = gamepadState.axis[5];
     }
 }
 
