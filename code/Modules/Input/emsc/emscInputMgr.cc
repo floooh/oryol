@@ -91,33 +91,34 @@ emscInputMgr::discardCallbacks() {
 }
 
 //------------------------------------------------------------------------------
-void
-emscInputMgr::updateGamepadsAttached(int& gamepadsAttached) {
-    gamepadsAttached = emscripten_get_num_gamepads();
+int
+emscInputMgr::updateGamepadsAttached() {
+    int gamepadsAttached = emscripten_get_num_gamepads();
 
-    // TODO: Check if gamepadsAttached <= MaxNumGamepads
+    // TODO: Check if gamepadsAttached <= MaxNumGamepads and log warning if not?
     int i = 0;
-    for (; i < 4; ++i) {
+    for (; i < MaxNumGamepads; ++i) {
         this->gamepad[i].attached = false;
     }
-    for (i = 0; i < gamepadsAttached && i < 4; ++i) {
+    for (i = 0; i < gamepadsAttached && i < MaxNumGamepads; ++i) {
         this->gamepad[i].attached = true;
     }
+
+    return gamepadsAttached;
 }
 
 //------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepads() {
-    int                     gamepadsAttached = 0;
     uint32_t                down = 0;
     uint32_t                up = 0;
     uint32_t                pressed = 0;
     EMSCRIPTEN_RESULT       result = EMSCRIPTEN_RESULT_FAILED;
     EmscriptenGamepadEvent  gamepadState;
+    int                     gamepadsAttached = updateGamepadsAttached();
 
-    updateGamepadsAttached(gamepadsAttached);
     for (int i = 0; i < gamepadsAttached; ++i) {
-        memset(&gamepadState, 0, sizeof(gamepadState));
+        Memory::Clear(&gamepadState, sizeof(gamepadState));
         result = emscripten_get_gamepad_status(i, &gamepadState);
         // TODO: check gamepadState validity
         if (EMSCRIPTEN_RESULT_SUCCESS != result) {
