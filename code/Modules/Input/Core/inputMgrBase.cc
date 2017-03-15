@@ -45,12 +45,6 @@ inputMgrBase::isValid() const {
 
 //------------------------------------------------------------------------------
 void
-inputMgrBase::update() {
-
-}
-
-//------------------------------------------------------------------------------
-void
 inputMgrBase::reset() {
     if (this->keyboard.attached) {
         this->keyboard.reset();

@@ -34,6 +34,7 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->touchpad.attached = true;
     this->sensors.attached = true;
     this->setupCallbacks();
+    this->updateGamepadsRunLoopId = Core::PreRunLoop()->Add([this]() { this->updateGamepads(); });
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
@@ -41,6 +42,7 @@ emscInputMgr::setup(const InputSetup& setup) {
 void
 emscInputMgr::discard() {
     this->discardCallbacks();
+    Core::PreRunLoop()->Remove(this->updateGamepadsRunLoopId);
     Core::PostRunLoop()->Remove(this->runLoopId);
     this->runLoopId = RunLoop::InvalidId;
     inputMgrBase::discard();    
@@ -105,9 +107,7 @@ emscInputMgr::updateGamepadsAttached(int& gamepadsAttached) {
 
 //------------------------------------------------------------------------------
 void
-emscInputMgr::update() {
-    inputMgrBase::update();
-
+emscInputMgr::updateGamepads() {
     int                     gamepadsAttached = 0;
     uint32_t                down = 0;
     uint32_t                up = 0;

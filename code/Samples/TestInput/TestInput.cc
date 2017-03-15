@@ -473,8 +473,6 @@ TestInputApp::drawCube() {
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnRunning() {
-    Input::Update();
-
     // print input device status as debug text
     this->printMouseState();
     this->printKeyboardState();

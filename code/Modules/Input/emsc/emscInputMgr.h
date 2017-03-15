@@ -24,7 +24,7 @@ public:
     /// discard the input manager
     void discard();
     /// polling for the gamepad
-    void update();
+    void updateGamepads();
 
 private:
     /// setup the key mapping table
@@ -69,6 +69,7 @@ private:
 
     static const int MaxNumKeys = 256;
     RunLoop::Id runLoopId;
+    RunLoop::Id updateGamepadsRunLoopId;
     bool pointerLockActive;
     Key::Code keyTable[MaxNumKeys];
 };
