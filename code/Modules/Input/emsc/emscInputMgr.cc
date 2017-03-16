@@ -15,6 +15,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 emscInputMgr::emscInputMgr() :
 runLoopId(RunLoop::InvalidId),
+updateGamepadsRunLoopId(RunLoop::InvalidId),
 pointerLockActive(false) {
     // empty
 }
@@ -45,7 +46,7 @@ emscInputMgr::discard() {
     Core::PreRunLoop()->Remove(this->updateGamepadsRunLoopId);
     Core::PostRunLoop()->Remove(this->runLoopId);
     this->runLoopId = RunLoop::InvalidId;
-    inputMgrBase::discard();    
+    inputMgrBase::discard();
 }
 
 //------------------------------------------------------------------------------
