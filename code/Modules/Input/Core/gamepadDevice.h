@@ -13,8 +13,6 @@ namespace Oryol {
 namespace _priv {
     
 class gamepadDevice {
-private:
-    //static const unsigned char NUMVALUESMAX = 64;
 public:
     /// constructor
     gamepadDevice();
