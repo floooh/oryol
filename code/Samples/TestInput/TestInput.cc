@@ -12,6 +12,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/polar_coordinates.hpp"
 #include "shaders.h"
+#include <float.h>
 
 using namespace Oryol;
 
@@ -20,7 +21,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnInit();
     AppState::Code OnCleanup();
-    
+
 private:
     void testMouseButton(MouseButton::Code btn, const char* name);
     void testKey(Key::Code key, const char* name);
@@ -28,6 +29,7 @@ private:
     void printKeyboardState();
     void printTouchpadState();
     void printSensorState();
+    void printGamepadState(int gamepadIndex);
     glm::vec4 getClearColor();
     void updateView();
     void reset();
@@ -35,6 +37,7 @@ private:
     void handleKeyboardInput();
     void handleMouseInput();
     void handleTouchInput();
+    void handleGamepadInput(int gamepadIndex);
     
     const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
     const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
@@ -58,6 +61,7 @@ private:
     glm::mat4 invView;
     bool pointerLock = false;
     String lastCaptured;
+    int selectedGamepadIndex = 0;
 };
 OryolMain(TestInputApp);
 
@@ -71,6 +75,7 @@ TestInputApp::OnInit() {
     if (Gfx::DisplayAttrs().WindowWidth > 800) {
         Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     }
+
     Input::Setup();
     Input::SetPointerLockHandler([this](const InputEvent& event) -> PointerLockMode::Code {
         if (event.Button == MouseButton::Left) {
@@ -273,6 +278,45 @@ TestInputApp::printSensorState() {
 }
 
 //------------------------------------------------------------------------------
+void
+TestInputApp::printGamepadState(int gamepadIndex) {
+    // TODO: range check incoming gamepadIndex against maximum num game pads and zero
+    //assert(gamepadIndex >= 0 && gamepadIndex < GamePad::NUM)
+
+    if (Input::GamepadAttached(gamepadIndex)) {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::PrintF("\n\n\r GAMEPAD %d STATUS:\n\n\r", gamepadIndex);
+        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::A) ? " A" : "  ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::B) ? " B" : "  ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::X) ? " X" : "  ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::Y) ? " Y\n\r" : "\n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::Start) ? " Start" : "      ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::Back) ? " Back\n\r" : "\n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftBumper) ? " LeftBumper\t" : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightBumper) ? " RightBumper\n\r" : "\n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadLeft) ? " DPadLeft" : "         ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadRight) ? " DPadRight" : "          ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadUp) ? " DPadUp" : "       ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadDown) ? " DPadDown\n\r" : "        \n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftTrigger) ? " LeftTrigger" : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightTrigger) ? " RightTrigger\n\r" : "           \n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftStick) ? " LeftStick  " : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightStick) ? " RightStick\n\r" : "          \n\r");
+        Dbg::PrintF(" LeftStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue).x);
+        Dbg::PrintF(" LeftStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue).y);
+        Dbg::PrintF(" RightStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue).x);
+        Dbg::PrintF(" RightStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue).y);
+        Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftTriggerValue).x);
+        Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightTriggerValue).x);
+    }
+    else {
+        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::PrintF("\n\n\r GAMEPAD %d NOT ATTACHED", gamepadIndex);
+    }
+}
+
+//------------------------------------------------------------------------------
 glm::vec4
 TestInputApp::getClearColor() {
     glm::vec4 clearColor(0.25f, 0.25f, 0.25f, 1.0f);
@@ -333,6 +377,19 @@ TestInputApp::handleKeyboardInput() {
             if (Input::KeyPressed(Key::Down)) {
                 this->pointOfInterest += glm::vec3(this->invView[1]) * movePerFrame;
             }
+            // select gamepad
+            if (Input::KeyPressed(Key::N1)) {
+            	this->selectedGamepadIndex = 0;
+            }
+            else if (Input::KeyPressed(Key::N2)) {
+            	this->selectedGamepadIndex = 1;
+            }
+            else if (Input::KeyPressed(Key::N3)) {
+            	this->selectedGamepadIndex = 2;
+            }
+            else if (Input::KeyPressed(Key::N4)) {
+            	this->selectedGamepadIndex = 3;
+            }
         }
     }
 }
@@ -377,6 +434,33 @@ TestInputApp::handleTouchInput() {
 }
 
 //------------------------------------------------------------------------------
+void TestInputApp::handleGamepadInput(int gamepadIndex) {
+    static const float rotatePerFrame = 0.025f;
+    static const float movePerFrame = 0.025f;
+
+    const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue);
+    const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue);
+
+    if ((leftStick.x > FLT_EPSILON) ||
+        (leftStick.x < -FLT_EPSILON)) {
+        this->pointOfInterest -= leftStick.x * glm::vec3(this->invView[0]) * movePerFrame;
+    }
+    if ((leftStick.y > FLT_EPSILON) ||
+        (leftStick.y < -FLT_EPSILON)) {
+        this->pointOfInterest += leftStick.y * glm::vec3(this->invView[1]) * movePerFrame;
+    }
+
+    if ((rightStick.x > FLT_EPSILON) ||
+        (rightStick.x < -FLT_EPSILON)) {
+        this->polar.y -= rightStick.x * rotatePerFrame;
+    }
+    if ((rightStick.y > FLT_EPSILON) ||
+        (rightStick.y < -FLT_EPSILON)) {
+        this->polar.x += rightStick.y * glm::clamp(this->polar.x + rotatePerFrame, this->minLatitude, this->maxLatitude);
+    }
+}
+
+//------------------------------------------------------------------------------
 void
 TestInputApp::drawCube() {
     Shader::VSParams vsParams;
@@ -389,15 +473,20 @@ TestInputApp::drawCube() {
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnRunning() {
-
     // print input device status as debug text
     this->printMouseState();
     this->printKeyboardState();
     this->printTouchpadState();
     this->printSensorState();
+#if ORYOL_EMSCRIPTEN
+    this->printGamepadState(selectedGamepadIndex);
+#endif
     this->handleKeyboardInput();
     this->handleMouseInput();
     this->handleTouchInput();
+#if ORYOL_EMSCRIPTEN
+    this->handleGamepadInput(selectedGamepadIndex);
+#endif
     this->updateView();
     
     // draw frame

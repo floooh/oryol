@@ -5,7 +5,9 @@
 #include "emscInputMgr.h"
 #include "Core/Core.h"
 #include "Core/Time/Clock.h"
+#include "Core/Log.h"
 #include "glm/glm.hpp"
+#include <emscripten.h>
 
 namespace Oryol {
 namespace _priv {
@@ -13,6 +15,7 @@ namespace _priv {
 //------------------------------------------------------------------------------
 emscInputMgr::emscInputMgr() :
 runLoopId(RunLoop::InvalidId),
+updateGamepadsRunLoopId(RunLoop::InvalidId),
 pointerLockActive(false) {
     // empty
 }
@@ -32,6 +35,7 @@ emscInputMgr::setup(const InputSetup& setup) {
     this->touchpad.attached = true;
     this->sensors.attached = true;
     this->setupCallbacks();
+    this->updateGamepadsRunLoopId = Core::PreRunLoop()->Add([this]() { this->updateGamepads(); });
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
@@ -39,9 +43,10 @@ emscInputMgr::setup(const InputSetup& setup) {
 void
 emscInputMgr::discard() {
     this->discardCallbacks();
+    Core::PreRunLoop()->Remove(this->updateGamepadsRunLoopId);
     Core::PostRunLoop()->Remove(this->runLoopId);
     this->runLoopId = RunLoop::InvalidId;
-    inputMgrBase::discard();    
+    inputMgrBase::discard();
 }
 
 //------------------------------------------------------------------------------
@@ -58,6 +63,7 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
+    emscripten_set_gamepadconnected_callback(this, true, emscGamepadConnected);
     if (this->inputSetup.AccelerometerEnabled) {
         emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
     }
@@ -82,6 +88,123 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
     emscripten_set_devicemotion_callback(0, true, 0);
     emscripten_set_deviceorientation_callback(0, true, 0);
+    emscripten_set_gamepaddisconnected_callback(this, true, emscGamepadDisconnected);
+}
+
+//------------------------------------------------------------------------------
+int
+emscInputMgr::updateGamepadsAttached() {
+    int gamepadsAttached = emscripten_get_num_gamepads();
+
+    // TODO: Check if gamepadsAttached <= MaxNumGamepads and log warning if not?
+    int i = 0;
+    for (; i < MaxNumGamepads; ++i) {
+        this->gamepad[i].attached = false;
+    }
+    for (i = 0; i < gamepadsAttached && i < MaxNumGamepads; ++i) {
+        this->gamepad[i].attached = true;
+    }
+
+    return gamepadsAttached;
+}
+
+//------------------------------------------------------------------------------
+void
+emscInputMgr::updateGamepads() {
+    uint32_t                down = 0;
+    uint32_t                up = 0;
+    uint32_t                pressed = 0;
+    EMSCRIPTEN_RESULT       result = EMSCRIPTEN_RESULT_FAILED;
+    EmscriptenGamepadEvent  gamepadState;
+    int                     gamepadsAttached = updateGamepadsAttached();
+
+    for (int i = 0; i < gamepadsAttached; ++i) {
+        Memory::Clear(&gamepadState, sizeof(gamepadState));
+        result = emscripten_get_gamepad_status(i, &gamepadState);
+        // TODO: check gamepadState validity
+        if (EMSCRIPTEN_RESULT_SUCCESS != result) {
+            continue;
+        }
+
+        down = 0;
+        up = 0;
+        pressed = 0;
+        this->gamepad[i].down = 0;
+        this->gamepad[i].up = 0;
+
+        // NOTE: The following maps to a PS4 DualShock 4 controller
+        // - digitalButton[12] is the PS button
+        // - digitalButton[13] is the touch sensor click
+
+        if (gamepadState.digitalButton[0]) {
+            pressed |= GamepadGizmo::X;
+        }
+        if (gamepadState.digitalButton[1]) {
+            pressed |= GamepadGizmo::A;
+        }
+        if (gamepadState.digitalButton[2]) {
+            pressed |= GamepadGizmo::B;
+        }
+        if (gamepadState.digitalButton[3]) {
+            pressed |= GamepadGizmo::Y;
+        }
+        if (gamepadState.digitalButton[4]) {
+            pressed |= GamepadGizmo::LeftBumper;
+        }
+        if (gamepadState.digitalButton[5]) {
+            pressed |= GamepadGizmo::RightBumper;
+        }
+        if (gamepadState.digitalButton[6]) {
+            pressed |= GamepadGizmo::LeftTrigger;
+        }
+        if (gamepadState.digitalButton[7]) {
+            pressed |= GamepadGizmo::RightTrigger;
+        }
+        if (gamepadState.digitalButton[8]) {
+            pressed |= GamepadGizmo::Start;
+        }
+        if (gamepadState.digitalButton[9]) {
+            pressed |= GamepadGizmo::Back;
+        }
+        if (gamepadState.digitalButton[10]) {
+            pressed |= GamepadGizmo::LeftStick;
+        }
+        if (gamepadState.digitalButton[11]) {
+            pressed |= GamepadGizmo::RightStick;
+        }
+
+        GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
+        for (int j = 0; j < 12; ++j) {
+            gizmoCode = (GamepadGizmo::Code)j;
+            // If it wasn't previously pressed...
+            if (!(this->gamepad[i].pressed & gizmoCode)) {
+                // If currently pressed...
+                if (pressed & gizmoCode) {
+                    down |= gizmoCode;
+                }
+            }
+            // If it was previously pressed...
+            if (this->gamepad[i].pressed & gizmoCode) {
+                // If currently NOT pressed...
+                if (!(pressed & gizmoCode)) {
+                    up |= gizmoCode;
+                }
+            }
+        }
+
+        // TODO: Where are the DPad values...?
+
+        this->gamepad[i].down = down;
+        this->gamepad[i].up = up;
+        this->gamepad[i].pressed = pressed;
+
+        this->gamepad[i].values[GamepadGizmo::LeftStickValue].x = gamepadState.axis[0];
+        this->gamepad[i].values[GamepadGizmo::LeftStickValue].y = gamepadState.axis[1];
+        this->gamepad[i].values[GamepadGizmo::RightStickValue].x = gamepadState.axis[2];
+        this->gamepad[i].values[GamepadGizmo::LeftTriggerValue].x = gamepadState.axis[3];
+        this->gamepad[i].values[GamepadGizmo::RightTriggerValue].x = gamepadState.axis[4];
+        this->gamepad[i].values[GamepadGizmo::RightStickValue].y = gamepadState.axis[5];
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -269,6 +392,22 @@ emscInputMgr::emscDeviceOrientation(int eventType, const EmscriptenDeviceOrienta
     self->sensors.yawPitchRoll.y = glm::radians(e->beta);
     self->sensors.yawPitchRoll.z = glm::radians(e->alpha);
 
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    self->gamepad[e->index].attached = true;
+    return true;
+}
+
+//------------------------------------------------------------------------------
+EM_BOOL
+emscInputMgr::emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData) {
+    emscInputMgr* self = (emscInputMgr*) userData;
+    self->gamepad[e->index].attached = false;
     return true;
 }
 

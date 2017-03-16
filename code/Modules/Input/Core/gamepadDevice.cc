@@ -19,30 +19,30 @@ pressed(0) {
 //------------------------------------------------------------------------------
 void
 gamepadDevice::onButtonDown(GamepadGizmo::Code btn) {
-    o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    this->down |= (1<<btn);
-    this->pressed |= (1<<btn);
+    o_assert(((0 == btn % 2) || (1 == btn)) && (btn <= GamepadGizmo::MaxGamepadGizmoCode));
+    this->down |= btn;
+    this->pressed |= btn;
 }
 
 //------------------------------------------------------------------------------
 void
 gamepadDevice::onButtonUp(GamepadGizmo::Code btn) {
-    o_assert_range_dbg(btn, GamepadGizmo::NumGamepadGizmos);
-    this->up |= (1<<btn);
-    this->pressed &= ~(1<<btn);
+    o_assert(((0 == btn % 2) || (1 == btn)) && (btn <= GamepadGizmo::MaxGamepadGizmoCode));
+    this->up |= btn;
+    this->pressed &= ~btn;
 }
 
 //------------------------------------------------------------------------------
 void
-gamepadDevice::onTriggerValue(GamepadGizmo::Code trigger, float value) {
-    o_assert_range_dbg(trigger, GamepadGizmo::NumGamepadGizmos);
+gamepadDevice::onTriggerValue(GamepadGizmo::Value trigger, float value) {
+    o_assert_range_dbg(trigger, GamepadGizmo::NumGamepadGizmoValues);
     this->values[trigger].x = value;
 }
 
 //------------------------------------------------------------------------------
 void
-gamepadDevice::onStickPos(GamepadGizmo::Code stick, const glm::vec2& pos) {
-    o_assert_range_dbg(stick, GamepadGizmo::NumGamepadGizmos);
+gamepadDevice::onStickPos(GamepadGizmo::Value stick, const glm::vec2& pos) {
+    o_assert_range_dbg(stick, GamepadGizmo::NumGamepadGizmoValues);
     this->values[stick] = pos;
 }
 

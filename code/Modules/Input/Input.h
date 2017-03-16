@@ -24,7 +24,6 @@ public:
     static void Discard();
     /// check if Input module is valid
     static bool IsValid();
-    
     /// input event callback function
     typedef _priv::inputDispatcher::inputEventCallback InputEventCallback;
     /// mouse pointer lock handler type
@@ -85,9 +84,9 @@ public:
     /// test if gamepad button was released this frame
     static bool GamepadButtonUp(int gamepadIndex, GamepadGizmo::Code btn);
     /// get gamepad trigger position (0.0 .. 1.0)
-    static float GamepadTriggerValue(int gamepadIndex, GamepadGizmo::Code trigger);
+    static float GamepadTriggerValue(int gamepadIndex, GamepadGizmo::Value trigger);
     /// get stick position (-1.0 .. +1.0)
-    static const glm::vec2& GamepadStickPos(int gamepadIndex, GamepadGizmo::Code stick);
+    static const glm::vec2& GamepadStickPos(int gamepadIndex, GamepadGizmo::Value stick);
 
     /// return true if a touchpad is attached
     static bool TouchpadAttached();
