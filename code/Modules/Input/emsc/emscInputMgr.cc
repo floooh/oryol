@@ -111,24 +111,18 @@ emscInputMgr::updateGamepadsAttached() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepads() {
-    uint32_t                down = 0;
-    uint32_t                up = 0;
-    uint32_t                pressed = 0;
-    EMSCRIPTEN_RESULT       result = EMSCRIPTEN_RESULT_FAILED;
-    EmscriptenGamepadEvent  gamepadState;
-    int                     gamepadsAttached = updateGamepadsAttached();
-
+    int gamepadsAttached = updateGamepadsAttached();
     for (int i = 0; i < gamepadsAttached; ++i) {
-        Memory::Clear(&gamepadState, sizeof(gamepadState));
-        result = emscripten_get_gamepad_status(i, &gamepadState);
+        EmscriptenGamepadEvent gamepadState = { };
+        EMSCRIPTEN_RESULT result = emscripten_get_gamepad_status(i, &gamepadState);
         // TODO: check gamepadState validity
         if (EMSCRIPTEN_RESULT_SUCCESS != result) {
             continue;
         }
 
-        down = 0;
-        up = 0;
-        pressed = 0;
+        uint32_t down = 0;
+        uint32_t up = 0;
+        uint32_t pressed = 0;
         this->gamepad[i].down = 0;
         this->gamepad[i].up = 0;
 
@@ -201,9 +195,9 @@ emscInputMgr::updateGamepads() {
         this->gamepad[i].values[GamepadGizmo::LeftStickValue].x = gamepadState.axis[0];
         this->gamepad[i].values[GamepadGizmo::LeftStickValue].y = gamepadState.axis[1];
         this->gamepad[i].values[GamepadGizmo::RightStickValue].x = gamepadState.axis[2];
-        this->gamepad[i].values[GamepadGizmo::LeftTriggerValue].x = gamepadState.axis[3];
-        this->gamepad[i].values[GamepadGizmo::RightTriggerValue].x = gamepadState.axis[4];
-        this->gamepad[i].values[GamepadGizmo::RightStickValue].y = gamepadState.axis[5];
+        this->gamepad[i].values[GamepadGizmo::RightStickValue].y = gamepadState.axis[3];
+        this->gamepad[i].values[GamepadGizmo::LeftTriggerValue].x = gamepadState.analogButton[6];
+        this->gamepad[i].values[GamepadGizmo::RightTriggerValue].x = gamepadState.analogButton[7];
     }
 }
 
