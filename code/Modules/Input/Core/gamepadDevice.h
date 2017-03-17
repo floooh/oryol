@@ -29,15 +29,6 @@ public:
     float triggerValue(GamepadGizmo::Value trigger) const;
     /// get stick position (-1.0 .. +1.0)
     const glm::vec2& stickPos(GamepadGizmo::Value stick) const;
-    
-    /// called when button is pressed-down
-    void onButtonDown(GamepadGizmo::Code btn);
-    /// called when button is released
-    void onButtonUp(GamepadGizmo::Code btn);
-    /// update trigger value
-    void onTriggerValue(GamepadGizmo::Value trigger, float val);
-    /// update stick position
-    void onStickPos(GamepadGizmo::Value stick, const glm::vec2& pos);
     /// reset the gamepad state
     void reset();
     
