@@ -135,22 +135,17 @@ glfwInputMgr::updateGamepads() {
             int numAxes = 0;
             const float* axes = glfwGetJoystickAxes(padIndex, &numAxes);
             for (int axisIndex = 0; axisIndex < numAxes; axisIndex++) {
-                float* dst = nullptr;
                 switch (axisIndex) {
-                    case 0: dst = &pad.values[GamepadGizmo::LeftStickValue].x; break;
-                    case 1: dst = &pad.values[GamepadGizmo::LeftStickValue].y; break;
-                    case 2: dst = &pad.values[GamepadGizmo::RightStickValue].x; break;
-                    case 3: dst = &pad.values[GamepadGizmo::RightStickValue].y; break;
-                    case 4: dst = &pad.values[GamepadGizmo::LeftTriggerValue].x; break;
-                    case 5: dst = &pad.values[GamepadGizmo::RightTriggerValue].x; break;
-                }
-                if (dst) {
-                    *dst = axes[axisIndex];
+                    case 0: pad.values[GamepadGizmo::LeftStickValue].x = axes[0]; break;
+                    case 1: pad.values[GamepadGizmo::LeftStickValue].y = axes[1]; break;
+                    case 2: pad.values[GamepadGizmo::RightStickValue].x = axes[2]; break;
+                    case 3: pad.values[GamepadGizmo::RightStickValue].y = axes[3]; break;
+                    case 4: pad.values[GamepadGizmo::LeftTriggerValue].x = axes[4]*0.5f+0.5f; break;
+                    case 5: pad.values[GamepadGizmo::RightTriggerValue].x = axes[5]*0.5f+0.5f; break;
                 }
             }
         }
     }
-
 }
 
 //------------------------------------------------------------------------------
