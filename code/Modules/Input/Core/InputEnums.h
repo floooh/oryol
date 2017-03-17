@@ -53,7 +53,8 @@ struct GamepadGizmo {
         RightTrigger        = (1 << 13),
         LeftStick           = (1 << 14),
         RightStick          = (1 << 15),
-        MaxGamepadGizmoCode    = RightStick
+        MaxGamepadGizmoCode = RightStick,
+        NumGamepadGizmos    = 16
     };
     enum Value {
         LeftTriggerValue        = 0,

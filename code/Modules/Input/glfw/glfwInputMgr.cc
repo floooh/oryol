@@ -15,9 +15,27 @@ glfwInputMgr* glfwInputMgr::self = nullptr;
 
 static Key::Code keyTable[GLFW_KEY_LAST + 1];
 
+// map GLFW gamepad buttons to Oryol flags
+static const GamepadGizmo::Code btnMap[] = {
+    GamepadGizmo::X,
+    GamepadGizmo::A,
+    GamepadGizmo::B,
+    GamepadGizmo::Y,
+    GamepadGizmo::LeftBumper,
+    GamepadGizmo::RightBumper,
+    GamepadGizmo::LeftTrigger,
+    GamepadGizmo::RightTrigger,
+    GamepadGizmo::Back,
+    GamepadGizmo::Start,
+    GamepadGizmo::LeftStick,
+    GamepadGizmo::RightStick
+};
+static const int numBtnMappings = sizeof(btnMap) / sizeof(GamepadGizmo::Code);
+
 //------------------------------------------------------------------------------
 glfwInputMgr::glfwInputMgr() :
-runLoopId(RunLoop::InvalidId) {
+resetRunLoopId(RunLoop::InvalidId),
+updateGamepadsRunLoopId(RunLoop::InvalidId) {
     o_assert(nullptr == self);
     self = this;
 }
@@ -45,8 +63,9 @@ glfwInputMgr::setup(const InputSetup& setup) {
     this->setupKeyTable();
     this->setupCallbacks(glfwWindow);
 
-    // attach our reset callback to the global runloop
-    this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });    
+    // attach per-frame callbacks to the global runloop
+    this->updateGamepadsRunLoopId = Core::PreRunLoop()->Add([this] { this->updateGamepads(); });
+    this->resetRunLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
 }
 
 //------------------------------------------------------------------------------
@@ -59,8 +78,10 @@ glfwInputMgr::discard() {
     this->discardCallbacks(glfwWindow);
     
     // detach our reset callback from runloop
-    Core::PostRunLoop()->Remove(this->runLoopId);
-    this->runLoopId = RunLoop::InvalidId;
+    Core::PostRunLoop()->Remove(this->resetRunLoopId);
+    this->resetRunLoopId = RunLoop::InvalidId;
+    Core::PreRunLoop()->Remove(this->updateGamepadsRunLoopId);
+    this->updateGamepadsRunLoopId = RunLoop::InvalidId;
     
     inputMgrBase::discard();
 }
@@ -89,13 +110,49 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
 
 //------------------------------------------------------------------------------
 void
-glfwInputMgr::reset() {
-    for (int i = 0; i < MaxNumGamepads; i++) {
-        this->gamepad[i].attached = glfwJoystickPresent(i) != 0;
+glfwInputMgr::updateGamepads() {
+    for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
+        auto& pad = this->gamepad[padIndex];
+        pad.attached = glfwJoystickPresent(padIndex) != 0;
+        if (pad.attached) {
+            int numButtons = 0;
+            const unsigned char* btns = glfwGetJoystickButtons(padIndex, &numButtons);
+            for (int btnIndex = 0; (btnIndex < numButtons) && (btnIndex < numBtnMappings); btnIndex++) {
+                uint32_t mask = btnMap[btnIndex];
+                if (btns[btnIndex] == GLFW_PRESS) {
+                    if ((pad.pressed & mask) == 0) {
+                        pad.down |= mask;
+                    }
+                    pad.pressed |= mask;
+                }
+                else {
+                    if ((pad.pressed & mask) != 0) {
+                        pad.up |= mask;
+                    }
+                    pad.pressed &= ~mask;
+                }
+            }
+            int numAxes = 0;
+            const float* axes = glfwGetJoystickAxes(padIndex, &numAxes);
+            for (int axisIndex = 0; axisIndex < numAxes; axisIndex++) {
+                float* dst = nullptr;
+                switch (axisIndex) {
+                    case 0: dst = &pad.values[GamepadGizmo::LeftStickValue].x; break;
+                    case 1: dst = &pad.values[GamepadGizmo::LeftStickValue].y; break;
+                    case 2: dst = &pad.values[GamepadGizmo::RightStickValue].x; break;
+                    case 3: dst = &pad.values[GamepadGizmo::RightStickValue].y; break;
+                    case 4: dst = &pad.values[GamepadGizmo::LeftTriggerValue].x; break;
+                    case 5: dst = &pad.values[GamepadGizmo::RightTriggerValue].x; break;
+                }
+                if (dst) {
+                    *dst = axes[axisIndex];
+                }
+            }
+        }
     }
-    inputMgrBase::reset();
+
 }
-    
+
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::keyCallback(GLFWwindow* win, int glfwKey, int /*glfwScancode*/, int glfwAction, int /*glfwMods*/) {

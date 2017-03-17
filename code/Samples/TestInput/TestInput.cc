@@ -435,28 +435,25 @@ TestInputApp::handleTouchInput() {
 
 //------------------------------------------------------------------------------
 void TestInputApp::handleGamepadInput(int gamepadIndex) {
-    static const float rotatePerFrame = 0.025f;
-    static const float movePerFrame = 0.025f;
+    const float rotatePerFrame = 0.025f;
+    const float movePerFrame = 0.025f;
+    const float deadZone = 0.1f;
 
     const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue);
     const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue);
 
-    if ((leftStick.x > FLT_EPSILON) ||
-        (leftStick.x < -FLT_EPSILON)) {
+    if ((leftStick.x > deadZone) || (leftStick.x < -deadZone)) {
         this->pointOfInterest -= leftStick.x * glm::vec3(this->invView[0]) * movePerFrame;
     }
-    if ((leftStick.y > FLT_EPSILON) ||
-        (leftStick.y < -FLT_EPSILON)) {
+    if ((leftStick.y > deadZone) || (leftStick.y < -deadZone)) {
         this->pointOfInterest += leftStick.y * glm::vec3(this->invView[1]) * movePerFrame;
     }
-
-    if ((rightStick.x > FLT_EPSILON) ||
-        (rightStick.x < -FLT_EPSILON)) {
+    if ((rightStick.x > deadZone) || (rightStick.x < -deadZone)) {
         this->polar.y -= rightStick.x * rotatePerFrame;
     }
-    if ((rightStick.y > FLT_EPSILON) ||
-        (rightStick.y < -FLT_EPSILON)) {
-        this->polar.x += rightStick.y * glm::clamp(this->polar.x + rotatePerFrame, this->minLatitude, this->maxLatitude);
+    if ((rightStick.y > deadZone) || (rightStick.y < -deadZone)) {
+        this->polar.x += rightStick.y * rotatePerFrame;
+        this->polar.x = glm::clamp(this->polar.x, this->minLatitude, this->maxLatitude);
     }
 }
 
@@ -478,15 +475,11 @@ TestInputApp::OnRunning() {
     this->printKeyboardState();
     this->printTouchpadState();
     this->printSensorState();
-#if ORYOL_EMSCRIPTEN
     this->printGamepadState(selectedGamepadIndex);
-#endif
     this->handleKeyboardInput();
     this->handleMouseInput();
     this->handleTouchInput();
-#if ORYOL_EMSCRIPTEN
     this->handleGamepadInput(selectedGamepadIndex);
-#endif
     this->updateView();
     
     // draw frame
