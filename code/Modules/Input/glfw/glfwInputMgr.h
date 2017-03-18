@@ -6,6 +6,7 @@
     @brief provide input on platforms using GLFW
 */
 #include "Input/Core/inputMgrBase.h"
+#include "Core/Containers/Map.h"
 
 struct GLFWwindow;
 
@@ -34,6 +35,10 @@ private:
     /// map GLFW key code to Oryol key code
     Key::Code mapKey(int glfwKey) const;
 
+    /// setup game pad mappings for known gamepads
+    void setupGamepadMappings();
+    /// lookup a mapping for a gamepad id
+    const gamepadDevice::Mapping& lookupGamepadMapping(const StringAtom& id) const;
     /// update gamepad state
     void updateGamepads(); 
     /// GLFW key callback
@@ -52,6 +57,8 @@ private:
     static glfwInputMgr* self;
     int resetRunLoopId;
     int updateGamepadsRunLoopId;
+    gamepadDevice::Mapping defaultGamepadMapping;
+    Map<StringAtom, gamepadDevice::Mapping> gamepadMappings;
 };
 
 } // namespace _priv

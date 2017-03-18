@@ -12,9 +12,7 @@ void
 gamepadDevice::reset() {
     this->down = 0;
     this->up = 0;
-    for (auto& val : this->values) {
-        val.x = 0.0f; val.y = 0.0f;
-    }
+    this->axes.Fill(0.0f);
 }
 
 } // namespace _priv

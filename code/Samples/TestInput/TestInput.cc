@@ -287,28 +287,29 @@ TestInputApp::printGamepadState(int gamepadIndex) {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::PrintF("\n\n\r GAMEPAD %d STATUS:\n\n\r", gamepadIndex);
         Dbg::TextColor(glm::vec4(1.0f));
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::A) ? " A" : "  ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::B) ? " B" : "  ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::X) ? " X" : "  ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::Y) ? " Y\n\r" : "\n\r");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::Start) ? " Start" : "      ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::Back) ? " Back\n\r" : "\n\r");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftBumper) ? " LeftBumper\t" : "            ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightBumper) ? " RightBumper\n\r" : "\n\r");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadLeft) ? " DPadLeft" : "         ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadRight) ? " DPadRight" : "          ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadUp) ? " DPadUp" : "       ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::DPadDown) ? " DPadDown\n\r" : "        \n\r");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftTrigger) ? " LeftTrigger" : "            ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightTrigger) ? " RightTrigger\n\r" : "           \n\r");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::LeftStick) ? " LeftStick  " : "            ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadGizmo::RightStick) ? " RightStick\n\r" : "          \n\r");
-        Dbg::PrintF(" LeftStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue).x);
-        Dbg::PrintF(" LeftStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue).y);
-        Dbg::PrintF(" RightStick.x %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue).x);
-        Dbg::PrintF(" RightStick.y %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue).y);
-        Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftTriggerValue).x);
-        Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightTriggerValue).x);
+        Dbg::PrintF(" Id: %s\n\r", Input::GamepadId(gamepadIndex).AsCStr());
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::A) ? " A" : "  ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::B) ? " B" : "  ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::X) ? " X" : "  ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Y) ? " Y\n\r" : "\n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Start) ? " Start" : "      ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Back) ? " Back\n\r" : "\n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::LeftBumper) ? " LeftBumper\t" : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::RightBumper) ? " RightBumper\n\r" : "\n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::DPadLeft) ? " DPadLeft" : "         ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::DPadRight) ? " DPadRight" : "          ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::DPadUp) ? " DPadUp" : "       ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::DPadDown) ? " DPadDown\n\r" : "        \n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::LeftTrigger) ? " LeftTrigger" : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::RightTrigger) ? " RightTrigger\n\r" : "           \n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::LeftStick) ? " LeftStick  " : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::RightStick) ? " RightStick\n\r" : "          \n\r");
+        Dbg::PrintF(" LeftStick.x %4.4f", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftStickHori));
+        Dbg::PrintF(" LeftStick.y %4.4f\n\r", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftStickVert));
+        Dbg::PrintF(" RightStick.x %4.4f", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::RightStickHori));
+        Dbg::PrintF(" RightStick.y %4.4f\n\r", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::RightStickVert));
+        Dbg::PrintF(" LeftTrigger %4.4f", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftTrigger));
+        Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::RightTrigger));
     }
     else {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -439,20 +440,22 @@ void TestInputApp::handleGamepadInput(int gamepadIndex) {
     const float movePerFrame = 0.025f;
     const float deadZone = 0.1f;
 
-    const glm::vec2& leftStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::LeftStickValue);
-    const glm::vec2& rightStick = Input::GamepadStickPos(gamepadIndex, GamepadGizmo::RightStickValue);
+    float leftStickHori = Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftStickHori);
+    float leftStickVert = Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftStickVert);
+    float rightStickHori = Input::GamepadAxisValue(gamepadIndex, GamepadAxis::RightStickHori);
+    float rightStickVert = Input::GamepadAxisValue(gamepadIndex, GamepadAxis::RightStickVert);
 
-    if ((leftStick.x > deadZone) || (leftStick.x < -deadZone)) {
-        this->pointOfInterest -= leftStick.x * glm::vec3(this->invView[0]) * movePerFrame;
+    if ((leftStickHori > deadZone) || (leftStickHori < -deadZone)) {
+        this->pointOfInterest -= leftStickHori * glm::vec3(this->invView[0]) * movePerFrame;
     }
-    if ((leftStick.y > deadZone) || (leftStick.y < -deadZone)) {
-        this->pointOfInterest += leftStick.y * glm::vec3(this->invView[1]) * movePerFrame;
+    if ((leftStickVert > deadZone) || (leftStickVert < -deadZone)) {
+        this->pointOfInterest += leftStickVert * glm::vec3(this->invView[1]) * movePerFrame;
     }
-    if ((rightStick.x > deadZone) || (rightStick.x < -deadZone)) {
-        this->polar.y -= rightStick.x * rotatePerFrame;
+    if ((rightStickHori > deadZone) || (rightStickHori < -deadZone)) {
+        this->polar.y -= rightStickHori * rotatePerFrame;
     }
-    if ((rightStick.y > deadZone) || (rightStick.y < -deadZone)) {
-        this->polar.x += rightStick.y * rotatePerFrame;
+    if ((rightStickVert > deadZone) || (rightStickVert < -deadZone)) {
+        this->polar.x += rightStickVert * rotatePerFrame;
         this->polar.x = glm::clamp(this->polar.x, this->minLatitude, this->maxLatitude);
     }
 }

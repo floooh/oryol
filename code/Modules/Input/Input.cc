@@ -188,38 +188,38 @@ Input::GamepadAttached(int gamepadIndex) {
 }
 
 //------------------------------------------------------------------------------
+StringAtom
+Input::GamepadId(int gamepadIndex) {
+    o_assert_dbg(state);
+    return state->inputManager.gamepad[gamepadIndex].id;
+}
+
+//------------------------------------------------------------------------------
 bool
-Input::GamepadButtonPressed(int gamepadIndex, GamepadGizmo::Code btn) {
+Input::GamepadButtonPressed(int gamepadIndex, GamepadButton::Code btn) {
     o_assert_dbg(state);
     return state->inputManager.gamepad[gamepadIndex].buttonPressed(btn);
 }
 
 //------------------------------------------------------------------------------
 bool
-Input::GamepadButtonDown(int gamepadIndex, GamepadGizmo::Code btn) {
+Input::GamepadButtonDown(int gamepadIndex, GamepadButton::Code btn) {
     o_assert_dbg(state);
     return state->inputManager.gamepad[gamepadIndex].buttonDown(btn);
 }
 
 //------------------------------------------------------------------------------
 bool
-Input::GamepadButtonUp(int gamepadIndex, GamepadGizmo::Code btn) {
+Input::GamepadButtonUp(int gamepadIndex, GamepadButton::Code btn) {
     o_assert_dbg(state);
     return state->inputManager.gamepad[gamepadIndex].buttonUp(btn);
 }
 
 //------------------------------------------------------------------------------
 float
-Input::GamepadTriggerValue(int gamepadIndex, GamepadGizmo::Value trigger) {
+Input::GamepadAxisValue(int gamepadIndex, GamepadAxis::Code axis) {
     o_assert_dbg(state);
-    return state->inputManager.gamepad[gamepadIndex].triggerValue(trigger);
-}
-
-//------------------------------------------------------------------------------
-const glm::vec2&
-Input::GamepadStickPos(int gamepadIndex, GamepadGizmo::Value stick) {
-    o_assert_dbg(state);
-    return state->inputManager.gamepad[gamepadIndex].stickPos(stick);
+    return state->inputManager.gamepad[gamepadIndex].axisValue(axis);
 }
 
 //------------------------------------------------------------------------------
