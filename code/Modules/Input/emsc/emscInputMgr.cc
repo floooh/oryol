@@ -394,6 +394,7 @@ EM_BOOL
 emscInputMgr::emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
     self->gamepad[e->index].attached = true;
+    Log::Info("emscInputMgr: gamepad connected (id: %s, mapping: %s)\n", e->id, e->mapping);
     return true;
 }
 
