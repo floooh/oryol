@@ -11,7 +11,7 @@
     class implements a cache for such sampler groups on a single sampler
     heap. Existing sampler groups will never be freed.
 */
-#include "Gfx/Core/SamplerState.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/d3d12/d3d12DescAllocator.h"

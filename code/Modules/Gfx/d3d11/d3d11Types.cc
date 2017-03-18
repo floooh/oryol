@@ -223,7 +223,6 @@ d3d11Types::asBlendFactor(BlendFactor::Code b) {
         case BlendFactor::SrcAlphaSaturated:    return D3D11_BLEND_SRC_ALPHA_SAT;
         case BlendFactor::BlendColor:           return D3D11_BLEND_BLEND_FACTOR;
         case BlendFactor::OneMinusBlendColor:   return D3D11_BLEND_INV_BLEND_FACTOR;
-        // FIXME FIXME FIXME:
         case BlendFactor::BlendAlpha:           return D3D11_BLEND_BLEND_FACTOR;
         case BlendFactor::OneMinusBlendAlpha:   return D3D11_BLEND_INV_BLEND_FACTOR;
         default: return D3D11_BLEND_ONE;

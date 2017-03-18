@@ -42,7 +42,7 @@ public:
     /// copy data into buffer, create a temp upload buffer if none is provided
     void CopyBufferData(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64_t frameIndex, D3D12_RESOURCE_STATES state, ID3D12Resource* dstResource, ID3D12Resource* optUploadBuffer, const void* data, uint32_t size);
     /// allocate a render target resource
-    ID3D12Resource* AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, const ClearState& clearHint, int smpCount);
+    ID3D12Resource* AllocRenderTarget(ID3D12Device* d3d12Device, int width, int height, PixelFormat::Code fmt, int smpCount);
     /// allocate a texture resource, optionally with data
     ID3D12Resource* AllocTexture(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* cmdList, uint64_t frameIndex, const TextureSetup& setup, const void* data, int size);
     /// copy data into dynamic texture, create a temp upload buffer if none is provided

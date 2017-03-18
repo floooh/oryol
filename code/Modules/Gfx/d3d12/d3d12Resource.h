@@ -112,10 +112,30 @@ public:
     uint32_t activeSlot;
     StaticArray<slot, NumSlots> slots;
 
-    ID3D12Resource* d3d12DepthBufferRes;
-    D3D12_RESOURCE_STATES d3d12DepthBufferState;
-    int rtvDescriptorSlot;
-    int dsvDescriptorSlot;
+    ID3D12Resource* d3d12DepthStencilTextureRes;
+    D3D12_RESOURCE_STATES d3d12DepthStencilTextureState;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::d3d12RenderPass
+    @ingroup _priv
+    @brief D3D12 implementation of renderPass
+*/
+class d3d12RenderPass : public renderPassBase {
+public:
+    /// constructor
+    d3d12RenderPass();
+    /// destructor
+    ~d3d12RenderPass();
+
+    /// clear the object
+    void Clear();
+
+    /// render-target-view descriptor slots
+    StaticArray<int, GfxConfig::MaxNumColorAttachments> rtvDescSlots;
+    /// depth-stencil-view descriptor slot
+    int dsvDescSlot;
 };
 
 } // namespace _priv

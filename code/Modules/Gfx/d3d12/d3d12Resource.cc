@@ -70,10 +70,8 @@ d3d12Texture::d3d12Texture() :
     updateFrameIndex(InvalidIndex),
     numSlots(1),
     activeSlot(0),
-    d3d12DepthBufferRes(nullptr),
-    d3d12DepthBufferState(D3D12_RESOURCE_STATE_COMMON),
-    rtvDescriptorSlot(InvalidIndex),
-    dsvDescriptorSlot(InvalidIndex) {
+    d3d12DepthStencilTextureRes(nullptr),
+    d3d12DepthStencilTextureState(D3D12_RESOURCE_STATE_COMMON) {
     for (int i = 0; i < NumSlots; i++) {
         this->slots[i].d3d12TextureRes = nullptr;
         this->slots[i].d3d12UploadBuffer = nullptr;
@@ -83,9 +81,7 @@ d3d12Texture::d3d12Texture() :
 
 //------------------------------------------------------------------------------
 d3d12Texture::~d3d12Texture() {
-    o_assert_dbg(nullptr == this->d3d12DepthBufferRes);
-    o_assert_dbg(InvalidIndex == this->rtvDescriptorSlot);
-    o_assert_dbg(InvalidIndex == this->dsvDescriptorSlot);
+    o_assert_dbg(nullptr == this->d3d12DepthStencilTextureRes);
 #if ORYOL_DEBUG
     for (int i = 0; i < NumSlots; i++) {
         o_assert(nullptr == this->slots[i].d3d12TextureRes);
@@ -106,10 +102,32 @@ d3d12Texture::Clear() {
         this->slots[i].d3d12UploadBuffer = nullptr;
         this->slots[i].d3d12TextureState = D3D12_RESOURCE_STATE_COMMON;
     }
-    this->d3d12DepthBufferRes = nullptr;
-    this->d3d12DepthBufferState = D3D12_RESOURCE_STATE_COMMON;
-    this->rtvDescriptorSlot = InvalidIndex;
-    this->dsvDescriptorSlot = InvalidIndex;
+    this->d3d12DepthStencilTextureRes = nullptr;
+    this->d3d12DepthStencilTextureState = D3D12_RESOURCE_STATE_COMMON;
+}
+
+//==============================================================================
+d3d12RenderPass::d3d12RenderPass() {
+    this->rtvDescSlots.Fill(InvalidIndex);
+    this->dsvDescSlot = InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+d3d12RenderPass::~d3d12RenderPass() {
+    #if ORYOL_DEBUG
+    o_assert(InvalidIndex == this->dsvDescSlot);
+    for (int rtv : this->rtvDescSlots) {
+        o_assert(InvalidIndex == rtv);
+    }
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12RenderPass::Clear() {
+    renderPassBase::Clear();
+    this->rtvDescSlots.Fill(InvalidIndex);
+    this->dsvDescSlot = InvalidIndex;
 }
 
 } // namespace _priv

@@ -106,6 +106,8 @@ class texture : public mtlTexture { };
 class renderPass : public glRenderPass { };
 #elif ORYOL_D3D11
 class renderPass : public d3d11RenderPass { };
+#elif ORYOL_D3D12
+class renderPass : public d3d12RenderPass { };
 #elif ORYOL_METAL
 class renderPass : public mtlRenderPass { };
 #else

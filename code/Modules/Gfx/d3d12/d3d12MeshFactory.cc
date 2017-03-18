@@ -34,12 +34,6 @@ d3d12MeshFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-d3d12MeshFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 d3d12MeshFactory::SetupResource(mesh& msh) {
     o_assert_dbg(this->isValid);

@@ -23,8 +23,6 @@ public:
     void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
-    /// return true if the object has been setup
-    bool IsValid() const;
 
     /// setup resource
     ResourceState::Code SetupResource(mesh& mesh);

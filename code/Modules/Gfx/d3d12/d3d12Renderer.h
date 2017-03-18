@@ -7,10 +7,8 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Setup/Types.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/ClearState.h"
-#include "Gfx/Core/PrimitiveGroup.h"
 #include "Gfx/d3d12/d3d12Config.h"
 #include "Gfx/d3d12/d3d12ResAllocator.h"
 #include "Gfx/d3d12/d3d12DescAllocator.h"
@@ -23,6 +21,7 @@ namespace _priv {
 class texture;
 class pipeline;
 class mesh;
+class renderPass;
 
 class d3d12Renderer {
 public:
@@ -45,8 +44,10 @@ public:
     /// get the current render target attributes
     const DisplayAttrs& renderTargetAttrs() const;
 
-    /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt, const ClearState& clearState);
+    /// begin rendering pass (both ptrs can be nullptr)
+    void beginPass(renderPass* pass, const PassAction* action);
+    /// end current rendering pass
+    void endPass();
     /// apply viewport
     void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
     /// apply scissor rect
@@ -58,21 +59,15 @@ public:
     /// apply a textures
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex);
-    /// submit a draw call with direct primitive group
-    void draw(const PrimitiveGroup& primGroup);
-    /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int primGroupIndex, int numInstances);
-    /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    void draw(int primGroupIndex, int numInstances);
+    /// submit a draw call with element range
+    void draw(int baseElementIndex, int numElements, int numInstances);
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);
     /// update index data
     void updateIndices(mesh* msh, const void* data, int numBytes);
     /// update texture data
     void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSize);
-    /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(void* buf, int bufNumBytes);
 
     /// wait for the previous frame to finish
     void frameSync();
@@ -141,7 +136,7 @@ private:
     bool rtValid;
     DisplayAttrs rtAttrs;
 
-    texture* curRenderTarget;
+    renderPass* curRenderPass;
     pipeline* curPipeline;
     mesh* curPrimaryMesh;
 

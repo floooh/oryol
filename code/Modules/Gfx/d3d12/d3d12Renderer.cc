@@ -21,7 +21,7 @@ frameIndex(0),
 curFrameRotateIndex(0),
 valid(false),
 rtValid(false),
-curRenderTarget(nullptr),
+curRenderPass(nullptr),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 d3d12Fence(nullptr),
@@ -122,7 +122,6 @@ d3d12Renderer::createFrameResources(int cbSize, int maxDrawCallsPerFrame) {
     this->curCBOffset = 0;
     this->curSRVSlotIndex = 0;
     for (auto& frameRes : this->frameResources) {
-
         o_assert_dbg(nullptr == frameRes.constantBuffer);
 
         // create a command allocator
@@ -246,7 +245,6 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
             width, 
             height, 
             dispAttrs.ColorPixelFormat,
-            this->gfxSetup.ClearHint,
             sampleCount);
     }
 
@@ -279,7 +277,6 @@ d3d12Renderer::createDefaultRenderTargets(int width, int height) {
             width, 
             height, 
             depthFormat, 
-            ClearState::ClearDepthStencil(),
             sampleCount);
         this->dsvDescriptorSlot = this->descAllocator.AllocSlot(this->dsvHeap);
         D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
@@ -409,7 +406,7 @@ d3d12Renderer::commitFrame() {
     cmdList->Close();
     this->d3d12CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&cmdList);
 
-    this->curRenderTarget = nullptr;
+    this->curRenderPass = nullptr;
     this->curPipeline = nullptr;
     this->curPrimaryMesh = nullptr;
 }

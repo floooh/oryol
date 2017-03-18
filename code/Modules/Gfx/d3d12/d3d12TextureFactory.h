@@ -24,25 +24,17 @@ public:
     void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
-    /// return true if the object has been setup
-    bool IsValid() const;
 
-    /// setup resource
-    ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
     ResourceState::Code SetupResource(texture& tex, const void* data, int size);
     /// discard the resource
     void DestroyResource(texture& tex);
 
 private:
-    /// create render target texture
-    ResourceState::Code createRenderTarget(texture& tex);
-    /// create a texture from pixel data in memory
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int size);
-    /// create empty texture (cannot be immutable)
-    ResourceState::Code createEmptyTexture(texture& tex);
     /// setup texture attributes object in texture
     void setupTextureAttrs(texture& tex);
+    /// create a texture with or without associated data
+    ResourceState::Code createTexture(texture& tex, const void* data, int32_t size);
 
     gfxPointers pointers;
     bool isValid = false;

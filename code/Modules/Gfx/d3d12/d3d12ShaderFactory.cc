@@ -32,12 +32,6 @@ d3d12ShaderFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-d3d12ShaderFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 d3d12ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);

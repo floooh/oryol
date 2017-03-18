@@ -25,16 +25,12 @@ d3d12Types::asSwapChainFormat(PixelFormat::Code pixelFormat) {
 DXGI_FORMAT
 d3d12Types::asRenderTargetFormat(PixelFormat::Code pf) {
     switch (pf) {
-        case PixelFormat::RGBA8:    
-            return DXGI_FORMAT_R8G8B8A8_UNORM;
-        case PixelFormat::RGBA32F:  
-            return DXGI_FORMAT_R32G32B32A32_FLOAT;
-        case PixelFormat::RGBA16F:  
-            return DXGI_FORMAT_R16G16B16A16_FLOAT;
-        case PixelFormat::DEPTH:      
-            return DXGI_FORMAT_D16_UNORM;
-        case PixelFormat::DEPTHSTENCIL:    
-            return DXGI_FORMAT_D24_UNORM_S8_UINT;
+        case PixelFormat::RGBA8:        return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case PixelFormat::RGBA32F:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case PixelFormat::RGBA16F:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case PixelFormat::R10G10B10A2:  return DXGI_FORMAT_R10G10B10A2_UNORM;
+        case PixelFormat::DEPTH:        return DXGI_FORMAT_D16_UNORM;
+        case PixelFormat::DEPTHSTENCIL: return DXGI_FORMAT_D24_UNORM_S8_UINT;
         default:
             o_error("d3d12Types::asRenderTargetFormat(): invalid pixel format!\n");
             return DXGI_FORMAT_UNKNOWN;
@@ -51,6 +47,7 @@ d3d12Types::asTextureFormat(PixelFormat::Code pf) {
     case PixelFormat::R5G5B5A1:     return DXGI_FORMAT_B5G5R5A1_UNORM;
     case PixelFormat::RGBA32F:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
     case PixelFormat::RGBA16F:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case PixelFormat::R10G10B10A2:  return DXGI_FORMAT_R10G10B10A2_UNORM;
     case PixelFormat::L8:           return DXGI_FORMAT_R8_UNORM;
     case PixelFormat::DXT1:         return DXGI_FORMAT_BC1_UNORM;
     case PixelFormat::DXT3:         return DXGI_FORMAT_BC2_UNORM;
@@ -79,7 +76,6 @@ d3d12Types::asBlendFactor(BlendFactor::Code b) {
         case BlendFactor::SrcAlphaSaturated:    return D3D12_BLEND_SRC_ALPHA_SAT;
         case BlendFactor::BlendColor:           return D3D12_BLEND_BLEND_FACTOR;
         case BlendFactor::OneMinusBlendColor:   return D3D12_BLEND_INV_BLEND_FACTOR;
-            // FIXME FIXME FIXME:
         case BlendFactor::BlendAlpha:           return D3D12_BLEND_BLEND_FACTOR;
         case BlendFactor::OneMinusBlendAlpha:   return D3D12_BLEND_INV_BLEND_FACTOR;
         default: return D3D12_BLEND_ONE;
@@ -113,12 +109,8 @@ d3d12Types::asColorWriteMask(PixelChannel::Mask mask) {
 D3D12_CULL_MODE
 d3d12Types::asCullMode(bool cullEnabled, Face::Code face) {
     if (cullEnabled) {
-        if (Face::Front == face) {
-            return D3D12_CULL_MODE_FRONT;
-        }
-        else {
-            return D3D12_CULL_MODE_BACK;
-        }
+        if (Face::Front == face) return D3D12_CULL_MODE_FRONT;
+        else return D3D12_CULL_MODE_BACK;
     }
     else {
         return D3D12_CULL_MODE_NONE;
@@ -320,14 +312,10 @@ d3d12Types::asSamplerFilter(TextureFilterMode::Code magFilter, TextureFilterMode
 D3D12_TEXTURE_ADDRESS_MODE
 d3d12Types::asTextureAddressMode(TextureWrapMode::Code mode) {
     switch (mode) {
-    case TextureWrapMode::ClampToEdge:
-        return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    case TextureWrapMode::Repeat:
-        return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    case TextureWrapMode::MirroredRepeat:
-        return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
-    default:
-        return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        case TextureWrapMode::ClampToEdge:      return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        case TextureWrapMode::Repeat:           return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        case TextureWrapMode::MirroredRepeat:   return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+        default:                                return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
     }
 }
 
@@ -409,24 +397,23 @@ d3d12Types::initBufferResourceDesc(D3D12_RESOURCE_DESC* out, int size) {
 
 //------------------------------------------------------------------------------
 void
-d3d12Types::initClearValue(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, const ClearState& clearState) {
+d3d12Types::initClearColor(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, const glm::vec4& c) {
     o_assert_dbg(out);
-    o_assert_dbg(clearState.Actions != ClearState::None);
+    o_assert_dbg(PixelFormat::IsValidRenderTargetColorFormat(fmt));
     Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));
     out->Format = d3d12Types::asRenderTargetFormat(fmt);
-    if (PixelFormat::IsValidRenderTargetColorFormat(fmt)) {
-        out->Color[0] = clearState.Color.x;
-        out->Color[1] = clearState.Color.y;
-        out->Color[2] = clearState.Color.z;
-        out->Color[3] = clearState.Color.w;
-    }
-    else if (PixelFormat::IsValidRenderTargetDepthFormat(fmt)) {
-        out->DepthStencil.Depth = clearState.Depth;
-        out->DepthStencil.Stencil = clearState.Stencil;
-    }
-    else {
-        o_error("d3d12Types::initClearValue(): invalid pixel format!\n");
-    }
+    out->Color[0] = c.x; out->Color[1] = c.y; out->Color[2] = c.z; out->Color[3] = c.w;
+}
+
+//------------------------------------------------------------------------------
+void
+d3d12Types::initClearDepthStencil(D3D12_CLEAR_VALUE* out, PixelFormat::Code fmt, float depth, uint8_t stencil) {
+    o_assert_dbg(out);
+    o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(fmt));
+    Memory::Clear(out, sizeof(D3D12_CLEAR_VALUE));
+    out->Format = d3d12Types::asRenderTargetFormat(fmt);
+    out->DepthStencil.Depth = depth;
+    out->DepthStencil.Stencil = stencil;
 }
 
 //------------------------------------------------------------------------------
