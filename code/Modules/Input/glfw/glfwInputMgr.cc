@@ -113,20 +113,8 @@ void
 glfwInputMgr::updateGamepads() {
     for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
         auto& pad = this->gamepad[padIndex];
-        bool present = glfwJoystickPresent(padIndex);
-        if (present && !pad.attached) {
-            // has just been attached
-            pad.typeId = glfwGetJoystickName(padIndex);
-        }
-        else if (!present && pad.attached) {
-            // has just been detached
-            pad.typeId.Clear();
-        }
-        pad.attached = present;
+        pad.attached = glfwJoystickPresent(padIndex);
         if (pad.attached) {
-            if (pad.typeId.Empty()) {
-                pad.typeId = glfwGetJoystickName(padIndex);
-            }
             int numButtons = 0;
             const unsigned char* btns = glfwGetJoystickButtons(padIndex, &numButtons);
             for (int btnIndex = 0; (btnIndex < numButtons) && (btnIndex < numBtnMappings); btnIndex++) {

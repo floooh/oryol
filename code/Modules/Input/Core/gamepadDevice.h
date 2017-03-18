@@ -31,7 +31,6 @@ public:
     /// reset the gamepad state
     void reset();
 
-    StringAtom typeId;
     uint32_t down = 0;
     uint32_t up = 0;
     uint32_t pressed = 0;
