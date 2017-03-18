@@ -23,10 +23,15 @@ public:
     void setup(const InputSetup& setup);
     /// discard the input manager
     void discard();
-    /// polling for the gamepad
-    void updateGamepads();
 
 private:
+    /// setup game pad mappings for known gamepads
+    void setupGamepadMappings();
+    /// lookup a mapping for a gamepad id
+    const gamepadDevice::Mapping& lookupGamepadMapping(const StringAtom& id) const;
+    /// polling for the gamepad
+    void updateGamepads();
+    
     /// setup the key mapping table
     void setupKeyTable();    
     /// setup emscripten input handling callbacks
@@ -37,8 +42,6 @@ private:
     Key::Code mapKey(unsigned long html5KeyCode) const;
     /// map HTML5 mouse button code to Oryol mouse button
     MouseButton::Code mapMouseButton(unsigned short html5Btn) const;
-    /// check to see the gamepads currently attached, updates our internal attached, and returns the number
-    int updateGamepadsAttached();
 
     /// update mouse pointer lock state
     static bool updatePointerLockMode(PointerLockMode::Code lockMode);
@@ -62,15 +65,13 @@ private:
     static EM_BOOL emscDeviceMotion(int eventType, const EmscriptenDeviceMotionEvent* e, void* userData);
     /// device orientation callback
     static EM_BOOL emscDeviceOrientation(int eventType, const EmscriptenDeviceOrientationEvent* e, void* userData);
-    /// gamepad callback when connected
-    static EM_BOOL emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData);
-    /// gamepad callback when disconnected
-    static EM_BOOL emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData);
 
     static const int MaxNumKeys = 256;
     RunLoop::Id runLoopId;
     RunLoop::Id updateGamepadsRunLoopId;
     bool pointerLockActive;
+    gamepadDevice::Mapping defaultGamepadMapping;
+    Map<StringAtom, gamepadDevice::Mapping> gamepadMappings;
     Key::Code keyTable[MaxNumKeys];
 };
 
