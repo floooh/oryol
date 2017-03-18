@@ -8,15 +8,6 @@ namespace Oryol {
 namespace _priv {
     
 //------------------------------------------------------------------------------
-gamepadDevice::gamepadDevice() :
-attached(false),
-down(0),
-up(0),
-pressed(0) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 gamepadDevice::reset() {
     this->down = 0;
