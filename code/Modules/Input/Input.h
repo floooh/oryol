@@ -75,18 +75,28 @@ public:
     /// scroll movement (usually provided by mouse wheel)
     static const glm::vec2& MouseScroll();
 
+    /// add or replace a gamepad mapping
+    static void AddGamepadMapping(const StringAtom& gamepadTypeId, const GamepadMapping& mapping);
     /// return true if a gamepad is attached
     static bool GamepadAttached(int gamepadIndex);
     /// return a gamepad type identifier string
     static StringAtom GamepadId(int gamepadIndex);
-    /// test if a gamepad button is currently pressed
+    /// test if a mapped gamepad button is currently pressed
     static bool GamepadButtonPressed(int gamepadIndex, GamepadButton::Code btn);
-    /// test if gamepad button was pressed-down this frame
+    /// test if a mapped gamepad button was pressed-down this frame
     static bool GamepadButtonDown(int gamepadIndex, GamepadButton::Code btn);
-    /// test if gamepad button was released this frame
+    /// test if a mapped gamepad button was released this frame
     static bool GamepadButtonUp(int gamepadIndex, GamepadButton::Code btn);
-    /// get gamepad axis position (-1.0..1.0 for sticks, 0.0..1.0 for triggers)
+    /// get mapped gamepad axis position (-1.0..1.0 for sticks, 0.0..1.0 for triggers)
     static float GamepadAxisValue(int gamepadIndex, GamepadAxis::Code axis);
+    /// get unmapped gamepad button pressed state
+    static bool GamepadRawButtonPressed(int gamepadIndex, int buttonIndex);
+    /// get unmapped gamepad button down-pressed state
+    static bool GamepadRawButtonDown(int gamepadIndex, int buttonIndex);
+    /// get unmapped gamepad button up state
+    static bool GamepadRawButtonUp(int gamepadIndex, int buttonIndex);
+    /// get unmapped gamepad axis value
+    static float GamepadRawAxisValue(int gamepadIndex, int axisIndex); 
 
     /// return true if a touchpad is attached
     static bool TouchpadAttached();

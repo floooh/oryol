@@ -5,6 +5,8 @@
     @ingroup _priv
     @brief base class for platform-specific input managers
 */
+#include "Core/String/StringAtom.h"
+#include "Core/Containers/Map.h"
 #include "Input/Core/InputSetup.h"
 #include "Input/Core/InputEvent.h"
 #include "Input/Core/keyboardDevice.h"
@@ -17,6 +19,7 @@
 #include "Input/touch/panDetector.h"
 #include "Input/touch/pinchDetector.h"
 #include "Input/Core/inputDispatcher.h"
+#include "Input/Core/GamepadMapping.h"
 
 namespace Oryol {
 namespace _priv {
@@ -38,6 +41,10 @@ public:
     void reset();
     /// get the input setup object
     const InputSetup& getInputSetup() const;
+    /// add a gamepad mapping ("__default" to set default mapping)
+    void addGamepadMapping(const StringAtom& id, const GamepadMapping& mapping);
+    /// lookup a gamepad mapping by id (return "__default" mapping if not found)
+    const GamepadMapping& lookupGamepadMapping(const StringAtom& id) const;
 
     class keyboardDevice keyboard;
     class mouseDevice mouse;
@@ -56,6 +63,8 @@ public:
     tapDetector doubleTapDetector;
     class panDetector panDetector;
     class pinchDetector pinchDetector;
+    GamepadMapping defaultGamepadMapping;
+    Map<StringAtom, GamepadMapping> gamepadMappings;
 };
 
 } // namespace _priv

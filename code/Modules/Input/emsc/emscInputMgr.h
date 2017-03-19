@@ -27,11 +27,8 @@ public:
 private:
     /// setup game pad mappings for known gamepads
     void setupGamepadMappings();
-    /// lookup a mapping for a gamepad id
-    const gamepadDevice::Mapping& lookupGamepadMapping(const StringAtom& id) const;
     /// polling for the gamepad
     void updateGamepads();
-    
     /// setup the key mapping table
     void setupKeyTable();    
     /// setup emscripten input handling callbacks
@@ -70,8 +67,6 @@ private:
     RunLoop::Id runLoopId;
     RunLoop::Id updateGamepadsRunLoopId;
     bool pointerLockActive;
-    gamepadDevice::Mapping defaultGamepadMapping;
-    Map<StringAtom, gamepadDevice::Mapping> gamepadMappings;
     Key::Code keyTable[MaxNumKeys];
 };
 

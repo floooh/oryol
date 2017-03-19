@@ -181,6 +181,13 @@ Input::MouseScroll() {
 }
 
 //------------------------------------------------------------------------------
+void
+Input::AddGamepadMapping(const StringAtom& gamepadTypeId, const GamepadMapping& mapping) {
+    o_assert_dbg(state);
+    state->inputManager.addGamepadMapping(gamepadTypeId, mapping);
+}
+
+//------------------------------------------------------------------------------
 bool
 Input::GamepadAttached(int gamepadIndex) {
     o_assert_dbg(state);
@@ -196,30 +203,93 @@ Input::GamepadId(int gamepadIndex) {
 
 //------------------------------------------------------------------------------
 bool
+Input::GamepadRawButtonPressed(int gamepadIndex, int btnIndex) {
+    o_assert_dbg(state);
+    return state->inputManager.gamepad[gamepadIndex].buttonPressed(btnIndex);
+}
+
+//------------------------------------------------------------------------------
+bool
+Input::GamepadRawButtonDown(int gamepadIndex, int btnIndex) {
+    o_assert_dbg(state);
+    return state->inputManager.gamepad[gamepadIndex].buttonDown(btnIndex);
+}
+
+//------------------------------------------------------------------------------
+bool
+Input::GamepadRawButtonUp(int gamepadIndex, int btnIndex) {
+    o_assert_dbg(state);
+    return state->inputManager.gamepad[gamepadIndex].buttonUp(btnIndex);
+}
+
+//------------------------------------------------------------------------------
+float
+Input::GamepadRawAxisValue(int gamepadIndex, int axisIndex) {
+    o_assert_dbg(state);
+    return state->inputManager.gamepad[gamepadIndex].axisValue(axisIndex);
+}
+
+//------------------------------------------------------------------------------
+bool
 Input::GamepadButtonPressed(int gamepadIndex, GamepadButton::Code btn) {
     o_assert_dbg(state);
-    return state->inputManager.gamepad[gamepadIndex].buttonPressed(btn);
+    o_assert_range_dbg(btn, GamepadButton::NumButtons);
+    const auto& pad = state->inputManager.gamepad[gamepadIndex];
+    int btnIndex = pad.mapping.Buttons[btn];
+    if (InvalidIndex != btnIndex) {
+        return pad.buttonPressed(btnIndex);
+    }
+    else {
+        return false;
+    }
 }
 
 //------------------------------------------------------------------------------
 bool
 Input::GamepadButtonDown(int gamepadIndex, GamepadButton::Code btn) {
     o_assert_dbg(state);
-    return state->inputManager.gamepad[gamepadIndex].buttonDown(btn);
+    o_assert_range_dbg(btn, GamepadButton::NumButtons);
+    const auto& pad = state->inputManager.gamepad[gamepadIndex];
+    int btnIndex = pad.mapping.Buttons[btn];
+    if (InvalidIndex != btnIndex) {
+        return pad.buttonDown(btnIndex);
+    }
+    else {
+        return false;
+    }
 }
 
 //------------------------------------------------------------------------------
 bool
 Input::GamepadButtonUp(int gamepadIndex, GamepadButton::Code btn) {
     o_assert_dbg(state);
-    return state->inputManager.gamepad[gamepadIndex].buttonUp(btn);
+    o_assert_range_dbg(btn, GamepadButton::NumButtons);
+    const auto& pad = state->inputManager.gamepad[gamepadIndex];
+    int btnIndex = pad.mapping.Buttons[btn];
+    if (InvalidIndex != btnIndex) {
+        return pad.buttonUp(btnIndex);
+    }
+    else {
+        return false;
+    }
 }
 
 //------------------------------------------------------------------------------
 float
 Input::GamepadAxisValue(int gamepadIndex, GamepadAxis::Code axis) {
     o_assert_dbg(state);
-    return state->inputManager.gamepad[gamepadIndex].axisValue(axis);
+    o_assert_range_dbg(axis, GamepadAxis::NumAxes);
+    const auto& pad = state->inputManager.gamepad[gamepadIndex];
+    const auto& axisMapping = pad.mapping.Axes[axis];
+    if (InvalidIndex != axisMapping.AxisIndex) {
+        float val = pad.axisValue(axisMapping.AxisIndex);
+        val = (val * axisMapping.Scale) + axisMapping.Bias;
+        // FIXME: deadzone        
+        return val;
+    }
+    else {
+        return 0.0f;
+    }
 }
 
 //------------------------------------------------------------------------------

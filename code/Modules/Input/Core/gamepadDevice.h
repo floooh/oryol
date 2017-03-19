@@ -8,8 +8,7 @@
 #include "Core/Assertion.h"
 #include "glm/vec2.hpp"
 #include "Input/Core/InputEnums.h"
-#include "Core/String/StringAtom.h"
-#include "Core/Containers/StaticArray.h"
+#include "Input/Core/GamepadMapping.h"
 
 namespace Oryol {
 namespace _priv {
@@ -19,63 +18,56 @@ public:
     /// gamepad is valid/attached?
     bool attached = false;
     /// test if button is currently pressed
-    bool buttonPressed(GamepadButton::Code btn) const;
+    bool buttonPressed(int rawBtnIndex) const;
     /// test if button was pressed-down this frame
-    bool buttonDown(GamepadButton::Code btn) const;
+    bool buttonDown(int rawBtnIndex) const;
     /// test if button was released this frame
-    bool buttonUp(GamepadButton::Code btn) const;
+    bool buttonUp(int rawBtnIndex) const;
     /// get axes value (-1.0 to 1.0 for sticks, 0.0 to 1.0 for triggers)
-    float axisValue(GamepadAxis::Code axis) const;
+    float axisValue(int rawAxisIndex) const;
     /// reset the gamepad state
     void reset();
 
+    static const int MaxNumRawButtons = 32;
+    static const int MaxNumRawAxes = 32;
     StringAtom id;
     uint32_t down = 0;
     uint32_t up = 0;
     uint32_t pressed = 0;
-    StaticArray<float, GamepadAxis::NumAxes> axes;
-    struct Mapping {
-        Mapping() {
-            for (uint32_t i = 0; i < GamepadButton::NumButtons; i++) {
-                this->buttons[i] = (1<<i);
-            }
-            for (uint32_t i = 0; i < GamepadAxis::NumAxes; i++) {
-                this->axes[i].axisIndex = i;
-            }
-        }
-        struct axisMapping {
-            uint32_t axisIndex = 0;
-            float scale = 1.0f;
-            float bias  = 0.0f;
-        };
-        StaticArray<uint32_t, GamepadButton::NumButtons> buttons;
-        StaticArray<axisMapping, GamepadAxis::NumAxes> axes;
-    };
-    Mapping mapping;
+    StaticArray<float, MaxNumRawAxes> axes;
+    GamepadMapping mapping;
 };
 
 //------------------------------------------------------------------------------
-inline bool
-gamepadDevice::buttonPressed(GamepadButton::Code btn) const {
-    return 0 != (this->pressed & (1<<btn));
+inline void
+gamepadDevice::reset() {
+    this->down = 0;
+    this->up = 0;
+    this->axes.Fill(0.0f);
 }
 
 //------------------------------------------------------------------------------
 inline bool
-gamepadDevice::buttonDown(GamepadButton::Code btn) const {
-    return 0 != (this->down & (1<<btn));
+gamepadDevice::buttonPressed(int rawBtnIndex) const {
+    return 0 != (this->pressed & (1<<rawBtnIndex));
 }
 
 //------------------------------------------------------------------------------
 inline bool
-gamepadDevice::buttonUp(GamepadButton::Code btn) const {
-    return 0 != (this->up & (1<<btn));
+gamepadDevice::buttonDown(int rawBtnIndex) const {
+    return 0 != (this->down & (1<<rawBtnIndex));
+}
+
+//------------------------------------------------------------------------------
+inline bool
+gamepadDevice::buttonUp(int rawBtnIndex) const {
+    return 0 != (this->up & (1<<rawBtnIndex));
 }
 
 //------------------------------------------------------------------------------
 inline float
-gamepadDevice::axisValue(GamepadAxis::Code axis) const {
-    return this->axes[axis];
+gamepadDevice::axisValue(int rawAxisIndex) const {
+    return this->axes[rawAxisIndex];
 }
 
 } // namespace _priv

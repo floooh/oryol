@@ -37,8 +37,6 @@ private:
 
     /// setup game pad mappings for known gamepads
     void setupGamepadMappings();
-    /// lookup a mapping for a gamepad id
-    const gamepadDevice::Mapping& lookupGamepadMapping(const StringAtom& id) const;
     /// update gamepad state
     void updateGamepads(); 
     /// GLFW key callback
@@ -57,8 +55,6 @@ private:
     static glfwInputMgr* self;
     int resetRunLoopId;
     int updateGamepadsRunLoopId;
-    gamepadDevice::Mapping defaultGamepadMapping;
-    Map<StringAtom, gamepadDevice::Mapping> gamepadMappings;
 };
 
 } // namespace _priv

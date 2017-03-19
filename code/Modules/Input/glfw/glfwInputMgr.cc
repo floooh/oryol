@@ -33,6 +33,7 @@ glfwInputMgr::~glfwInputMgr() {
 void
 glfwInputMgr::setup(const InputSetup& setup) {
     
+    this->setupGamepadMappings();   // must be called before parent class!
     inputMgrBase::setup(setup);
     this->keyboard.attached = true;
     this->mouse.attached = true;
@@ -44,7 +45,6 @@ glfwInputMgr::setup(const InputSetup& setup) {
         return;
     }
     this->setupKeyTable();
-    this->setupGamepadMappings();
     this->setupCallbacks(glfwWindow);
 
     // attach per-frame callbacks to the global runloop
@@ -93,19 +93,9 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
 }
 
 //------------------------------------------------------------------------------
-const gamepadDevice::Mapping&
-glfwInputMgr::lookupGamepadMapping(const StringAtom& id) const {
-    if (this->gamepadMappings.Contains(id)) {
-        return this->gamepadMappings[id];
-    }
-    else {
-        return this->defaultGamepadMapping;
-    }
-}
-
-//------------------------------------------------------------------------------
 void
 glfwInputMgr::setupGamepadMappings() {
+/*
     // reference gamepad on all platforms is the wired Xbox360 gamepad
     gamepadDevice::Mapping m;
     #if ORYOL_LINUX
@@ -141,6 +131,7 @@ glfwInputMgr::setupGamepadMappings() {
         m.axes[3].scale = -1.0f;
         this->gamepadMappings.Add("Xbox 360 Controller", m);
     #endif
+*/
 }
 
 //------------------------------------------------------------------------------
@@ -150,22 +141,24 @@ glfwInputMgr::updateGamepads() {
         auto& pad = this->gamepad[padIndex];
         bool present = glfwJoystickPresent(padIndex);
         if (present && !pad.attached) {
+            // pad has just been attached
             pad.id = glfwGetJoystickName(padIndex);
             pad.mapping = this->lookupGamepadMapping(pad.id);
         }
         else if (!present && pad.attached) {
+            // pad has just been detached
             pad.id.Clear();
         }
         pad.attached = present;
         if (pad.attached) {
-            int numButtons = 0;
-            const unsigned char* btns = glfwGetJoystickButtons(padIndex, &numButtons);
-            if (numButtons > GamepadButton::NumButtons) {
-                numButtons = GamepadButton::NumButtons;
+            int numRawBtns = 0;
+            const unsigned char* rawBtns = glfwGetJoystickButtons(padIndex, &numRawBtns);
+            if (numRawBtns > gamepadDevice::MaxNumRawButtons) {
+                numRawBtns = gamepadDevice::MaxNumRawButtons;
             }
-            for (int btnIndex = 0; btnIndex < numButtons; btnIndex++) {
-                uint32_t mask = pad.mapping.buttons[btnIndex];
-                if (btns[btnIndex] == GLFW_PRESS) {
+            for (int rawBtnIndex = 0; rawBtnIndex < numRawBtns; rawBtnIndex++) {
+                uint32_t mask = (1<<rawBtnIndex);
+                if (rawBtns[rawBtnIndex] == GLFW_PRESS) {
                     if ((pad.pressed & mask) == 0) {
                         pad.down |= mask;
                     }
@@ -178,14 +171,13 @@ glfwInputMgr::updateGamepads() {
                     pad.pressed &= ~mask;
                 }
             }
-            int numAxes = 0;
-            const float* axes = glfwGetJoystickAxes(padIndex, &numAxes);
-            if (numAxes > GamepadAxis::NumAxes) {
-                numAxes = GamepadAxis::NumAxes;
+            int numRawAxes = 0;
+            const float* rawAxes = glfwGetJoystickAxes(padIndex, &numRawAxes);
+            if (numRawAxes > gamepadDevice::MaxNumRawAxes) {
+                numRawAxes = gamepadDevice::MaxNumRawAxes;
             }
-            for (int axisIndex = 0; axisIndex < numAxes; axisIndex++) {
-                const auto& axisMapping = pad.mapping.axes[axisIndex];
-                pad.axes[axisMapping.axisIndex] = axes[axisIndex]*axisMapping.scale+axisMapping.bias;
+            for (int rawAxisIndex = 0; rawAxisIndex < numRawAxes; rawAxisIndex++) {
+                pad.axes[rawAxisIndex] = rawAxes[rawAxisIndex];
             }
         }
     }

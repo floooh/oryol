@@ -119,17 +119,6 @@ emscInputMgr::setupGamepadMappings() {
 }
 
 //------------------------------------------------------------------------------
-const gamepadDevice::Mapping&
-emscInputMgr::lookupGamepadMapping(const StringAtom& id) const {
-    if (this->gamepadMappings.Contains(id)) {
-        return this->gamepadMappings[id];
-    }
-    else {
-        return this->defaultGamepadMapping;
-    }
-}
-
-//------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepads() {
     for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
