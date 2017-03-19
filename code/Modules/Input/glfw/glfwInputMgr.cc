@@ -106,28 +106,41 @@ glfwInputMgr::lookupGamepadMapping(const StringAtom& id) const {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::setupGamepadMappings() {
-    // reference gamepad is the wired Xbox360 gamepad
+    // reference gamepad on all platforms is the wired Xbox360 gamepad
     gamepadDevice::Mapping m;
-    m.buttons[6] = (1<<GamepadButton::Back);
-    m.buttons[7] = (1<<GamepadButton::Start);
-    m.buttons[8] = 0;
-    m.buttons[9] = (1<<GamepadButton::LeftStick);
-    m.buttons[10] = (1<<GamepadButton::RightStick);
-    m.axes[2].axisIndex = GamepadAxis::LeftTrigger; m.axes[2].scale = 0.5f; m.axes[2].bias = 0.5f;
-    m.axes[3].axisIndex = GamepadAxis::RightStickHori;
-    m.axes[4].axisIndex = GamepadAxis::RightStickVert;
-    m.axes[5].axisIndex = GamepadAxis::RightTrigger; m.axes[5].scale = 0.5f; m.axes[5].bias = 0.5f;
-    this->defaultGamepadMapping = m;
+    #if ORYOL_LINUX
+        m.buttons[6] = (1<<GamepadButton::Back);
+        m.buttons[7] = (1<<GamepadButton::Start);
+        m.buttons[8] = 0;
+        m.buttons[9] = (1<<GamepadButton::LeftStick);
+        m.buttons[10] = (1<<GamepadButton::RightStick);
+        m.axes[2].axisIndex = GamepadAxis::LeftTrigger; m.axes[2].scale = 0.5f; m.axes[2].bias = 0.5f;
+        m.axes[3].axisIndex = GamepadAxis::RightStickHori;
+        m.axes[4].axisIndex = GamepadAxis::RightStickVert;
+        m.axes[5].axisIndex = GamepadAxis::RightTrigger; m.axes[5].scale = 0.5f; m.axes[5].bias = 0.5f;
+        this->defaultGamepadMapping = m;
 
-    // Sony PS4 Dualshock
-    m = gamepadDevice::Mapping();
-    m.buttons[0] = (1<<GamepadButton::B);
-    m.buttons[1] = (1<<GamepadButton::A);
-    m.axes[2].axisIndex = GamepadAxis::RightStickHori;
-    m.axes[3].axisIndex = GamepadAxis::LeftTrigger;  m.axes[3].scale = 0.5f; m.axes[3].bias = 0.5f;
-    m.axes[4].axisIndex = GamepadAxis::RightTrigger; m.axes[4].scale = 0.5f; m.axes[4].bias = 0.5f;
-    m.axes[5].axisIndex = GamepadAxis::RightStickVert;
-    this->gamepadMappings.Add("Sony Computer Entertainment Wireless Controller", m);
+        // Sony PS4 Dualshock
+        m = gamepadDevice::Mapping();
+        m.buttons[0] = (1<<GamepadButton::B);
+        m.buttons[1] = (1<<GamepadButton::A);
+        m.axes[2].axisIndex = GamepadAxis::RightStickHori;
+        m.axes[3].axisIndex = GamepadAxis::LeftTrigger;  m.axes[3].scale = 0.5f; m.axes[3].bias = 0.5f;
+        m.axes[4].axisIndex = GamepadAxis::RightTrigger; m.axes[4].scale = 0.5f; m.axes[4].bias = 0.5f;
+        m.axes[5].axisIndex = GamepadAxis::RightStickVert;
+        this->gamepadMappings.Add("Sony Computer Entertainment Wireless Controller", m);
+    #elif ORYOL_WINDOWS
+        // Xbox 360 wired controller
+        m.buttons[6] = (1<<GamepadButton::Back);
+        m.buttons[7] = (1<<GamepadButton::Start);
+        m.buttons[8] = (1<<GamepadButton::LeftStick);
+        m.buttons[9] = (1<<GamepadButton::RightStick);
+        m.buttons[10] = 0;
+        m.buttons[11] = 0;
+        m.axes[1].scale = -1.0f;
+        m.axes[3].scale = -1.0f;
+        this->gamepadMappings.Add("Xbox 360 Controller", m);
+    #endif
 }
 
 //------------------------------------------------------------------------------
