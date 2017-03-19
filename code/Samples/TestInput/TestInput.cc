@@ -287,7 +287,7 @@ TestInputApp::printGamepadState(int gamepadIndex) {
         Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         Dbg::PrintF("\n\n\r GAMEPAD %d STATUS:\n\n\r", gamepadIndex);
         Dbg::TextColor(glm::vec4(1.0f));
-        Dbg::PrintF(" Id: %s\n\r", Input::GamepadId(gamepadIndex).AsCStr());
+        Dbg::PrintF(" Id: %s\n\r", Input::GamepadTypeId(gamepadIndex).AsCStr());
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::A) ? " A" : "  ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::B) ? " B" : "  ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::X) ? " X" : "  ");

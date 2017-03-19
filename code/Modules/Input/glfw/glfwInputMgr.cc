@@ -144,10 +144,14 @@ glfwInputMgr::updateGamepads() {
             // pad has just been attached
             pad.id = glfwGetJoystickName(padIndex);
             pad.mapping = this->lookupGamepadMapping(pad.id);
+            pad.pressed = 0;
+            pad.axes.Fill(0.0f);
         }
         else if (!present && pad.attached) {
             // pad has just been detached
             pad.id.Clear();
+            pad.pressed = 0;
+            pad.axes.Fill(0.0f);
         }
         pad.attached = present;
         if (pad.attached) {

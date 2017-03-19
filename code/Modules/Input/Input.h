@@ -75,12 +75,18 @@ public:
     /// scroll movement (usually provided by mouse wheel)
     static const glm::vec2& MouseScroll();
 
+    /// max number of attached gamepads (4)
+    static const int MaxNumGamepads = _priv::inputMgrBase::MaxNumGamepads;
+    /// max number of buttons for raw button input
+    static const int MaxNumRawButtons = _priv::gamepadDevice::MaxNumRawButtons;
+    /// max number of axes for raw axis input
+    static const int MaxNumRawAxes = _priv::gamepadDevice::MaxNumRawAxes;
     /// add or replace a gamepad mapping
     static void AddGamepadMapping(const StringAtom& gamepadTypeId, const GamepadMapping& mapping);
     /// return true if a gamepad is attached
     static bool GamepadAttached(int gamepadIndex);
     /// return a gamepad type identifier string
-    static StringAtom GamepadId(int gamepadIndex);
+    static StringAtom GamepadTypeId(int gamepadIndex);
     /// test if a mapped gamepad button is currently pressed
     static bool GamepadButtonPressed(int gamepadIndex, GamepadButton::Code btn);
     /// test if a mapped gamepad button was pressed-down this frame

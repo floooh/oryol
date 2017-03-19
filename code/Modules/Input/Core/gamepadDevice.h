@@ -29,7 +29,7 @@ public:
     void reset();
 
     static const int MaxNumRawButtons = 32;
-    static const int MaxNumRawAxes = 32;
+    static const int MaxNumRawAxes = 16;
     StringAtom id;
     uint32_t down = 0;
     uint32_t up = 0;

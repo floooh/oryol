@@ -196,7 +196,7 @@ Input::GamepadAttached(int gamepadIndex) {
 
 //------------------------------------------------------------------------------
 StringAtom
-Input::GamepadId(int gamepadIndex) {
+Input::GamepadTypeId(int gamepadIndex) {
     o_assert_dbg(state);
     return state->inputManager.gamepad[gamepadIndex].id;
 }
