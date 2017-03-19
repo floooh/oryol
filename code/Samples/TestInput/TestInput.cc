@@ -438,7 +438,7 @@ TestInputApp::handleTouchInput() {
 void TestInputApp::handleGamepadInput(int gamepadIndex) {
     const float rotatePerFrame = 0.025f;
     const float movePerFrame = 0.025f;
-    const float deadZone = 0.1f;
+    const float deadZone = 0.2f;
 
     float leftStickHori = Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftStickHori);
     float leftStickVert = Input::GamepadAxisValue(gamepadIndex, GamepadAxis::LeftStickVert);
