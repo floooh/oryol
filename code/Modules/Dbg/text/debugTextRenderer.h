@@ -66,6 +66,7 @@ private:
     static const int MaxNumLines = 80;
     static const int MaxNumChars = MaxNumColumns * MaxNumLines;
     static const int MaxNumVertices = MaxNumChars * 6;
+    static const int TabWidth = 8; // must be 2^n
     
     glm::vec2 textScale;
     VertexLayout vertexLayout;
