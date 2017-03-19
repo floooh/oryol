@@ -110,6 +110,7 @@ glfwInputMgr::setupGamepadMappings() {
     gamepadDevice::Mapping m;
     m.buttons[6] = (1<<GamepadButton::Back);
     m.buttons[7] = (1<<GamepadButton::Start);
+    m.buttons[8] = 0;
     m.buttons[9] = (1<<GamepadButton::LeftStick);
     m.buttons[10] = (1<<GamepadButton::RightStick);
     m.axes[2].axisIndex = GamepadAxis::LeftTrigger; m.axes[2].scale = 0.5f; m.axes[2].bias = 0.5f;
