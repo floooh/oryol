@@ -28,13 +28,13 @@ emscInputMgr::~emscInputMgr() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setup(const InputSetup& setup) {
+    this->setupGamepadMappings();   // needs to happen before calling base class
     inputMgrBase::setup(setup);
     this->setupKeyTable();
     this->keyboard.attached = true;
     this->mouse.attached = true;
     this->touchpad.attached = true;
     this->sensors.attached = true;
-    this->setupGamepadMappings();
     this->setupCallbacks();
     this->updateGamepadsRunLoopId = Core::PreRunLoop()->Add([this]() { this->updateGamepads(); });
     this->runLoopId = Core::PostRunLoop()->Add([this]() { this->reset(); });
@@ -93,6 +93,7 @@ emscInputMgr::discardCallbacks() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setupGamepadMappings() {
+/* FIXME
     // reference gamepad is the wired Xbox360 gamepad
     gamepadDevice::Mapping m;
     m.buttons[6] = (1<<GamepadButton::Back);
@@ -116,6 +117,7 @@ emscInputMgr::setupGamepadMappings() {
     m.axes[4].axisIndex = GamepadAxis::RightTrigger; m.axes[4].scale = 0.5f; m.axes[4].bias = 0.5f;
     m.axes[5].axisIndex = GamepadAxis::RightStickVert;
     this->gamepadMappings.Add("054c-05c4-Sony Computer Entertainment Wireless Controller", m);
+*/
 }
 
 //------------------------------------------------------------------------------
@@ -132,18 +134,21 @@ emscInputMgr::updateGamepads() {
         auto& pad = this->gamepad[padIndex];
         if (state.connected && !pad.attached) {
             pad.id = state.id;
-            Log::Info("GAMEPAD %d ATTACHED: %s\n", padIndex, state.id);
             pad.mapping = this->lookupGamepadMapping(pad.id);
+            pad.pressed = 0;
+            pad.axes.Fill(0.0f);
         }
         else if (!state.connected && pad.attached) {
-            Log::Info("GAMEPAD %d DETACHED\n", padIndex);
             pad.id.Clear();
+            pad.pressed = 0;
+            pad.axes.Fill(0.0f);
         }
         pad.attached = state.connected;
         if (pad.attached) {
-            for (int btnIndex = 0; btnIndex < GamepadButton::NumButtons; btnIndex++) {
-                uint32_t mask = pad.mapping.buttons[btnIndex];
-                if (state.digitalButton[btnIndex]) {
+            static_assert(gamepadDevice::MaxNumRawButtons < 64, "gamepadDevice::MaxNumRawButtons");
+            for (int rawBtnIndex = 0; rawBtnIndex < gamepadDevice::MaxNumRawButtons; rawBtnIndex++) {
+                uint32_t mask = (1<<rawBtnIndex);
+                if (state.digitalButton[rawBtnIndex]) {
                     if ((pad.pressed & mask) == 0) {
                         pad.down |= mask;
                     }
@@ -156,9 +161,9 @@ emscInputMgr::updateGamepads() {
                     pad.pressed &= ~mask;
                 }
             }
-            for (int axisIndex = 0; axisIndex < GamepadAxis::NumAxes; axisIndex++) {
-                const auto& axisMapping = pad.mapping.axes[axisIndex];
-                pad.axes[axisMapping.axisIndex] = state.axis[axisIndex]*axisMapping.scale+axisMapping.bias;
+            static_assert(gamepadDevice::MaxNumRawAxes < 64, "gamepadDevice::MaxNumRawAxes");
+            for (int rawAxisIndex = 0; rawAxisIndex < gamepadDevice::MaxNumRawAxes; rawAxisIndex++) {
+                pad.axes[rawAxisIndex] = state.axis[rawAxisIndex];
             }
         }
     }
