@@ -132,6 +132,62 @@ emscInputMgr::setupGamepadMappings() {
         // Xbox360 controller isn't recognized anyway
         this->defaultGamepadMapping = m;
     }
+    else if (2 == os) {
+        // FIXME Windows
+    }
+    else {
+        // Linux
+        // Xbox360 is default gamepad 
+        // FIXME: triggers and dpad only exposed as axes
+        m.Buttons[GamepadButton::A] = 0;
+        m.Buttons[GamepadButton::B] = 1;
+        m.Buttons[GamepadButton::X] = 2;
+        m.Buttons[GamepadButton::Y] = 3;
+        m.Buttons[GamepadButton::LeftBumper] = 4;
+        m.Buttons[GamepadButton::RightBumper] = 5;
+        m.Buttons[GamepadButton::Back] = 6;
+        m.Buttons[GamepadButton::Start] = 7;
+        m.Buttons[GamepadButton::LeftStick] = 9;
+        m.Buttons[GamepadButton::RightStick] = 10;
+        m.Buttons[GamepadButton::Center] = 8;
+        m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+        m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+        m.Axes[GamepadAxis::RightStickHori].Axis = 3;
+        m.Axes[GamepadAxis::RightStickVert].Axis = 4;
+        m.Axes[GamepadAxis::LeftTrigger].Axis = 2;
+        m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Axis = 5;
+        m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+        this->defaultGamepadMapping = m;
+
+        // DS4 controller
+        // FIXME: DPad only exposed as axes
+        m.Buttons[GamepadButton::A] = 1;
+        m.Buttons[GamepadButton::B] = 2;
+        m.Buttons[GamepadButton::X] = 0;
+        m.Buttons[GamepadButton::Y] = 3;
+        m.Buttons[GamepadButton::LeftBumper] = 4;
+        m.Buttons[GamepadButton::RightBumper] = 5;
+        m.Buttons[GamepadButton::LeftTrigger] = 6;
+        m.Buttons[GamepadButton::RightTrigger] = 7;
+        m.Buttons[GamepadButton::Back] = 8;
+        m.Buttons[GamepadButton::Start] = 9;
+        m.Buttons[GamepadButton::LeftStick] = 10;
+        m.Buttons[GamepadButton::RightStick] = 11;
+        m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+        m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+        m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+        m.Axes[GamepadAxis::RightStickVert].Axis = 5;
+        m.Axes[GamepadAxis::LeftTrigger].Axis = 3;
+        m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Axis = 4;
+        m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+        this->addGamepadMapping("054c-05c4-Sony Computer Entertainment Wireless Controller", m);
+    }
 }
 
 //------------------------------------------------------------------------------
