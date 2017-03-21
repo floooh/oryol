@@ -93,31 +93,45 @@ emscInputMgr::discardCallbacks() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setupGamepadMappings() {
-/* FIXME
-    // reference gamepad is the wired Xbox360 gamepad
-    gamepadDevice::Mapping m;
-    m.buttons[6] = (1<<GamepadButton::Back);
-    m.buttons[7] = (1<<GamepadButton::Start);
-    m.buttons[8] = 0;
-    m.buttons[9] = (1<<GamepadButton::LeftStick);
-    m.buttons[10] = (1<<GamepadButton::RightStick);
-    m.buttons[11] = 0;
-    m.axes[2].axisIndex = GamepadAxis::LeftTrigger; m.axes[2].scale = 0.5f; m.axes[2].bias = 0.5f;
-    m.axes[3].axisIndex = GamepadAxis::RightStickHori;
-    m.axes[4].axisIndex = GamepadAxis::RightStickVert;
-    m.axes[5].axisIndex = GamepadAxis::RightTrigger; m.axes[5].scale = 0.5f; m.axes[5].bias = 0.5f;
-    this->defaultGamepadMapping = m;
+    // need to identify OS we're running on :/
+    int os = EM_ASM_INT_V(
+        var ua = navigator.userAgent;
+        if (ua.includes('OS X')) return 1;
+        else if (ua.includes('Windows')) return 2;
+        else return 3;
+    );
 
-    // Sony PS4 dual shock
-    m = gamepadDevice::Mapping();
-    m.buttons[0] = (1<<GamepadButton::B);
-    m.buttons[1] = (1<<GamepadButton::A);
-    m.axes[2].axisIndex = GamepadAxis::RightStickHori;
-    m.axes[3].axisIndex = GamepadAxis::LeftTrigger;  m.axes[3].scale = 0.5f; m.axes[3].bias = 0.5f;
-    m.axes[4].axisIndex = GamepadAxis::RightTrigger; m.axes[4].scale = 0.5f; m.axes[4].bias = 0.5f;
-    m.axes[5].axisIndex = GamepadAxis::RightStickVert;
-    this->gamepadMappings.Add("054c-05c4-Sony Computer Entertainment Wireless Controller", m);
-*/
+    // PS4 controller, OSX
+    GamepadMapping m;
+    if (1 == os) {
+        m.Buttons[GamepadButton::A] = 0;
+        m.Buttons[GamepadButton::B] = 1;
+        m.Buttons[GamepadButton::X] = 2;
+        m.Buttons[GamepadButton::Y] = 3;
+        m.Buttons[GamepadButton::LeftBumper] = 4;
+        m.Buttons[GamepadButton::RightBumper] = 5;
+        m.Buttons[GamepadButton::LeftTrigger] = 6;
+        m.Buttons[GamepadButton::RightTrigger] = 7;
+        m.Buttons[GamepadButton::Back] = 8;
+        m.Buttons[GamepadButton::Start] = 9;
+        m.Buttons[GamepadButton::LeftStick] = 10;
+        m.Buttons[GamepadButton::RightStick] = 11;
+        m.Buttons[GamepadButton::DPadUp] = 12;
+        m.Buttons[GamepadButton::DPadDown] = 13;
+        m.Buttons[GamepadButton::DPadLeft] = 14;
+        m.Buttons[GamepadButton::DPadRight] = 15;
+        m.Buttons[GamepadButton::Center] = 17;
+        m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+        m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+        m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+        m.Axes[GamepadAxis::RightStickVert].Axis = 3;
+        // FIXME: for the trigger axes, we would need to map 
+        // emscripten gamepad event 'analogue buttons' to axes!
+        
+        // ON OSX, the PS4 controller is the default controller, since the
+        // Xbox360 controller isn't recognized anyway
+        this->defaultGamepadMapping = m;
+    }
 }
 
 //------------------------------------------------------------------------------
