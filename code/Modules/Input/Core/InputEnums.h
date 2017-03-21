@@ -48,7 +48,7 @@ struct GamepadButton {
         DPadDown,
         DPadLeft,
         DPadRight,
-        OnOff,
+        Center,         // Xbox-button or DS4 touchpad
 
         NumButtons,
         InvalidButton

@@ -17,6 +17,35 @@ public:
 };
 OryolMain(GamepadExplorerApp);
 
+const char* btnNames[GamepadButton::NumButtons] = {
+    "A              ",
+    "B              ",
+    "X              ",
+    "Y              ",
+    "LeftBumper     ",
+    "RightBumper    ",
+    "LeftTrigger    ",
+    "RightTrigger   ",
+    "Back           ",
+    "Start          ",
+    "LeftStick      ",
+    "RightStick     ",
+    "DPadUp         ",
+    "DPadDown       ",
+    "DPadLeft       ",
+    "DPadRight      ",
+    "Center         "
+};
+
+const char* axisNames[GamepadAxis::NumAxes] = {
+    "LeftStickHori  ",
+    "LeftStickVert  ",
+    "RightStickHori ",
+    "RightStickVert ",
+    "LeftTrigger    ",
+    "RightTrigger   "
+};
+
 //------------------------------------------------------------------------------
 AppState::Code
 GamepadExplorerApp::OnInit() {
@@ -70,6 +99,26 @@ GamepadExplorerApp::OnRunning() {
     // gamepad id's
     for (int padIndex = 0; padIndex < Input::MaxNumGamepads; padIndex++) {
         Dbg::PrintF("Gamepad%d Id:\t%s\n\r", padIndex, Input::GamepadTypeId(padIndex).AsCStr());
+    }
+
+    // mapped buttons
+    Dbg::Print("\n\n");
+    for (int btnIndex = 0; btnIndex < GamepadButton::NumButtons; btnIndex++) {
+        Dbg::PrintF("%s\t", btnNames[btnIndex]);
+        for (int padIndex = 0; padIndex < Input::MaxNumGamepads; padIndex++) {
+            Dbg::PrintF("%s\t\t", Input::GamepadButtonPressed(padIndex, (GamepadButton::Code)btnIndex) ? "X":"-");
+        }
+        Dbg::Print("\n\r");
+    }
+
+    // mapped axis values
+    Dbg::Print("\n");
+    for (int axisIndex = 0; axisIndex < GamepadAxis::NumAxes; axisIndex++) {
+        Dbg::PrintF("%s\t", axisNames[axisIndex]);
+        for (int padIndex = 0; padIndex < Input::MaxNumGamepads; padIndex++) {
+            Dbg::PrintF("%.3f\t\t", Input::GamepadAxisValue(padIndex, (GamepadAxis::Code)axisIndex));
+        }
+        Dbg::Print("\n\r");
     }
 
     Dbg::DrawTextBuffer();

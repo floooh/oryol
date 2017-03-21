@@ -95,43 +95,39 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::setupGamepadMappings() {
-/*
-    // reference gamepad on all platforms is the wired Xbox360 gamepad
-    gamepadDevice::Mapping m;
-    #if ORYOL_LINUX
-        m.buttons[6] = (1<<GamepadButton::Back);
-        m.buttons[7] = (1<<GamepadButton::Start);
-        m.buttons[8] = 0;
-        m.buttons[9] = (1<<GamepadButton::LeftStick);
-        m.buttons[10] = (1<<GamepadButton::RightStick);
-        m.axes[2].axisIndex = GamepadAxis::LeftTrigger; m.axes[2].scale = 0.5f; m.axes[2].bias = 0.5f;
-        m.axes[3].axisIndex = GamepadAxis::RightStickHori;
-        m.axes[4].axisIndex = GamepadAxis::RightStickVert;
-        m.axes[5].axisIndex = GamepadAxis::RightTrigger; m.axes[5].scale = 0.5f; m.axes[5].bias = 0.5f;
-        this->defaultGamepadMapping = m;
-
-        // Sony PS4 Dualshock
-        m = gamepadDevice::Mapping();
-        m.buttons[0] = (1<<GamepadButton::B);
-        m.buttons[1] = (1<<GamepadButton::A);
-        m.axes[2].axisIndex = GamepadAxis::RightStickHori;
-        m.axes[3].axisIndex = GamepadAxis::LeftTrigger;  m.axes[3].scale = 0.5f; m.axes[3].bias = 0.5f;
-        m.axes[4].axisIndex = GamepadAxis::RightTrigger; m.axes[4].scale = 0.5f; m.axes[4].bias = 0.5f;
-        m.axes[5].axisIndex = GamepadAxis::RightStickVert;
-        this->gamepadMappings.Add("Sony Computer Entertainment Wireless Controller", m);
-    #elif ORYOL_WINDOWS
-        // Xbox 360 wired controller
-        m.buttons[6] = (1<<GamepadButton::Back);
-        m.buttons[7] = (1<<GamepadButton::Start);
-        m.buttons[8] = (1<<GamepadButton::LeftStick);
-        m.buttons[9] = (1<<GamepadButton::RightStick);
-        m.buttons[10] = 0;
-        m.buttons[11] = 0;
-        m.axes[1].scale = -1.0f;
-        m.axes[3].scale = -1.0f;
-        this->gamepadMappings.Add("Xbox 360 Controller", m);
+    #if ORYOL_OSX
+    // PS4 dualshock, OSX
+    // NOTE: the Xbox360 wired controller is not recognized on OSX
+    GamepadMapping m;
+    m.Buttons[GamepadButton::A] = 1;
+    m.Buttons[GamepadButton::B] = 2;
+    m.Buttons[GamepadButton::X] = 0;
+    m.Buttons[GamepadButton::Y] = 3;
+    m.Buttons[GamepadButton::LeftBumper] = 4;
+    m.Buttons[GamepadButton::RightBumper] = 5;
+    m.Buttons[GamepadButton::LeftTrigger] = 6;
+    m.Buttons[GamepadButton::RightTrigger] = 7;
+    m.Buttons[GamepadButton::Back] = 8;
+    m.Buttons[GamepadButton::Start] = 9;
+    m.Buttons[GamepadButton::LeftStick] = 10;
+    m.Buttons[GamepadButton::RightStick] = 11;
+    m.Buttons[GamepadButton::DPadUp] = 14;
+    m.Buttons[GamepadButton::DPadDown] = 16;
+    m.Buttons[GamepadButton::DPadLeft] = 17;
+    m.Buttons[GamepadButton::DPadRight] = 15;
+    m.Buttons[GamepadButton::Center] = 13;
+    m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+    m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+    m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+    m.Axes[GamepadAxis::RightStickVert].Axis = 3;
+    m.Axes[GamepadAxis::LeftTrigger].Axis = 4;
+    m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+    m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+    m.Axes[GamepadAxis::RightTrigger].Axis = 5;
+    m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+    m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+    this->defaultGamepadMapping = m;
     #endif
-*/
 }
 
 //------------------------------------------------------------------------------

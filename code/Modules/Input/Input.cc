@@ -281,8 +281,8 @@ Input::GamepadAxisValue(int gamepadIndex, GamepadAxis::Code axis) {
     o_assert_range_dbg(axis, GamepadAxis::NumAxes);
     const auto& pad = state->inputManager.gamepad[gamepadIndex];
     const auto& axisMapping = pad.mapping.Axes[axis];
-    if (InvalidIndex != axisMapping.AxisIndex) {
-        float val = pad.axisValue(axisMapping.AxisIndex);
+    if (InvalidIndex != axisMapping.Axis) {
+        float val = pad.axisValue(axisMapping.Axis);
         val = (val * axisMapping.Scale) + axisMapping.Bias;
         // FIXME: deadzone        
         return val;

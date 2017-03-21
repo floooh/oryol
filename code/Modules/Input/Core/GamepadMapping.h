@@ -15,7 +15,7 @@ public:
     StaticArray<int, GamepadButton::NumButtons> Buttons;
     /// axis mapping also contains scale/bias values
     struct AxisMapping {
-        int AxisIndex = InvalidIndex;
+        int Axis = InvalidIndex;
         float Scale = 1.0f;
         float Bias = 0.0f;
         // FIXME: deadzone, origin mapping?
