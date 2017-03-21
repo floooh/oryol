@@ -95,10 +95,10 @@ glfwInputMgr::discardCallbacks(GLFWwindow* glfwWindow) {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::setupGamepadMappings() {
+    GamepadMapping m;
     #if ORYOL_OSX
     // PS4 dualshock, OSX
     // NOTE: the Xbox360 wired controller is not recognized on OSX
-    GamepadMapping m;
     m.Buttons[GamepadButton::A] = 1;
     m.Buttons[GamepadButton::B] = 2;
     m.Buttons[GamepadButton::X] = 0;
@@ -127,6 +127,59 @@ glfwInputMgr::setupGamepadMappings() {
     m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
     m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
     this->defaultGamepadMapping = m;
+    #elif ORYOL_LINUX
+    // Xbox360 wired controller is default
+    // FIXME: triggers are not exposed as buttons, only as axes, DPad also only axes
+    m.Buttons[GamepadButton::A] = 0;
+    m.Buttons[GamepadButton::B] = 1;
+    m.Buttons[GamepadButton::X] = 2;
+    m.Buttons[GamepadButton::Y] = 3;
+    m.Buttons[GamepadButton::LeftBumper] = 4;
+    m.Buttons[GamepadButton::RightBumper] = 5;
+    m.Buttons[GamepadButton::Back] = 6;
+    m.Buttons[GamepadButton::Start] = 7;
+    m.Buttons[GamepadButton::LeftStick] = 9;
+    m.Buttons[GamepadButton::RightStick] = 10;
+    m.Buttons[GamepadButton::Center] = 8;
+    m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+    m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+    m.Axes[GamepadAxis::RightStickHori].Axis = 3;
+    m.Axes[GamepadAxis::RightStickVert].Axis = 4;
+    m.Axes[GamepadAxis::LeftTrigger].Axis = 2;
+    m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+    m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+    m.Axes[GamepadAxis::RightTrigger].Axis = 5;
+    m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+    m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+    this->defaultGamepadMapping = m;
+
+    // DS4 Linux, FIXME DPad is not exposed as buttons, only axes :/
+    m.Buttons[GamepadButton::A] = 1;
+    m.Buttons[GamepadButton::B] = 2;
+    m.Buttons[GamepadButton::X] = 0;
+    m.Buttons[GamepadButton::Y] = 3;
+    m.Buttons[GamepadButton::LeftBumper] = 4;
+    m.Buttons[GamepadButton::RightBumper] = 5;
+    m.Buttons[GamepadButton::LeftTrigger] = 6;
+    m.Buttons[GamepadButton::RightTrigger] = 7;
+    m.Buttons[GamepadButton::Back] = 8;
+    m.Buttons[GamepadButton::Start] = 9;
+    m.Buttons[GamepadButton::LeftStick] = 10;
+    m.Buttons[GamepadButton::RightStick] = 11;
+    m.Buttons[GamepadButton::Center] = 13;
+    m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+    m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+    m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+    m.Axes[GamepadAxis::RightStickVert].Axis = 5;
+    m.Axes[GamepadAxis::LeftTrigger].Axis = 3;
+    m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+    m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+    m.Axes[GamepadAxis::RightTrigger].Axis = 4;
+    m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+    m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+    this->addGamepadMapping("Sony Computer Entertainment Wireless Controller", m);
+    #elif ORYOL_WINDOWS
+    // FIXME
     #endif
 }
 
