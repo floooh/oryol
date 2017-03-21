@@ -164,6 +164,7 @@ emscInputMgr::setupGamepadMappings() {
 
         // DS4 controller
         // FIXME: DPad only exposed as axes
+        m = GamepadMapping();
         m.Buttons[GamepadButton::A] = 1;
         m.Buttons[GamepadButton::B] = 2;
         m.Buttons[GamepadButton::X] = 0;
