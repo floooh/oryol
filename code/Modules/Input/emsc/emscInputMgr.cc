@@ -28,6 +28,7 @@ emscInputMgr::~emscInputMgr() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setup(const InputSetup& setup) {
+    this->setupGamepadMappings();   // needs to happen before calling base class
     inputMgrBase::setup(setup);
     this->setupKeyTable();
     this->keyboard.attached = true;
@@ -63,7 +64,6 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
-    emscripten_set_gamepadconnected_callback(this, true, emscGamepadConnected);
     if (this->inputSetup.AccelerometerEnabled) {
         emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
     }
@@ -88,122 +88,152 @@ emscInputMgr::discardCallbacks() {
     emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
     emscripten_set_devicemotion_callback(0, true, 0);
     emscripten_set_deviceorientation_callback(0, true, 0);
-    emscripten_set_gamepaddisconnected_callback(this, true, emscGamepadDisconnected);
 }
 
 //------------------------------------------------------------------------------
-int
-emscInputMgr::updateGamepadsAttached() {
-    int gamepadsAttached = emscripten_get_num_gamepads();
+void
+emscInputMgr::setupGamepadMappings() {
+    // need to identify OS we're running on :/
+    int os = EM_ASM_INT_V(
+        var ua = navigator.userAgent;
+        if (ua.includes('OS X')) return 1;
+        else if (ua.includes('Windows')) return 2;
+        else return 3;
+    );
 
-    // TODO: Check if gamepadsAttached <= MaxNumGamepads and log warning if not?
-    int i = 0;
-    for (; i < MaxNumGamepads; ++i) {
-        this->gamepad[i].attached = false;
+    GamepadMapping m;
+    if ((1 == os) || (2 == os)) {
+        // OSX and Windows, on Windows, both the Xbox360 and PS4
+        // gamepad behave identical, on OSX the PS4 gamepad
+        // behaves identical, and the Xbox360 gamepad isn't 
+        // recognized
+        m.Buttons[GamepadButton::A] = 0;
+        m.Buttons[GamepadButton::B] = 1;
+        m.Buttons[GamepadButton::X] = 2;
+        m.Buttons[GamepadButton::Y] = 3;
+        m.Buttons[GamepadButton::LeftBumper] = 4;
+        m.Buttons[GamepadButton::RightBumper] = 5;
+        m.Buttons[GamepadButton::LeftTrigger] = 6;
+        m.Buttons[GamepadButton::RightTrigger] = 7;
+        m.Buttons[GamepadButton::Back] = 8;
+        m.Buttons[GamepadButton::Start] = 9;
+        m.Buttons[GamepadButton::LeftStick] = 10;
+        m.Buttons[GamepadButton::RightStick] = 11;
+        m.Buttons[GamepadButton::DPadUp] = 12;
+        m.Buttons[GamepadButton::DPadDown] = 13;
+        m.Buttons[GamepadButton::DPadLeft] = 14;
+        m.Buttons[GamepadButton::DPadRight] = 15;
+        m.Buttons[GamepadButton::Center] = 17;
+        m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+        m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+        m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+        m.Axes[GamepadAxis::RightStickVert].Axis = 3;
+        // FIXME: for the trigger axes, we would need to map 
+        // emscripten gamepad event 'analogue buttons' to axes!
+        this->defaultGamepadMapping = m;
     }
-    for (i = 0; i < gamepadsAttached && i < MaxNumGamepads; ++i) {
-        this->gamepad[i].attached = true;
-    }
+    else {
+        // Linux
+        // Xbox360 is default gamepad 
+        // FIXME: triggers and dpad only exposed as axes
+        m.Buttons[GamepadButton::A] = 0;
+        m.Buttons[GamepadButton::B] = 1;
+        m.Buttons[GamepadButton::X] = 2;
+        m.Buttons[GamepadButton::Y] = 3;
+        m.Buttons[GamepadButton::LeftBumper] = 4;
+        m.Buttons[GamepadButton::RightBumper] = 5;
+        m.Buttons[GamepadButton::Back] = 6;
+        m.Buttons[GamepadButton::Start] = 7;
+        m.Buttons[GamepadButton::LeftStick] = 9;
+        m.Buttons[GamepadButton::RightStick] = 10;
+        m.Buttons[GamepadButton::Center] = 8;
+        m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+        m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+        m.Axes[GamepadAxis::RightStickHori].Axis = 3;
+        m.Axes[GamepadAxis::RightStickVert].Axis = 4;
+        m.Axes[GamepadAxis::LeftTrigger].Axis = 2;
+        m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Axis = 5;
+        m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+        this->defaultGamepadMapping = m;
 
-    return gamepadsAttached;
+        // DS4 controller
+        // FIXME: DPad only exposed as axes
+        m = GamepadMapping();
+        m.Buttons[GamepadButton::A] = 1;
+        m.Buttons[GamepadButton::B] = 2;
+        m.Buttons[GamepadButton::X] = 0;
+        m.Buttons[GamepadButton::Y] = 3;
+        m.Buttons[GamepadButton::LeftBumper] = 4;
+        m.Buttons[GamepadButton::RightBumper] = 5;
+        m.Buttons[GamepadButton::LeftTrigger] = 6;
+        m.Buttons[GamepadButton::RightTrigger] = 7;
+        m.Buttons[GamepadButton::Back] = 8;
+        m.Buttons[GamepadButton::Start] = 9;
+        m.Buttons[GamepadButton::LeftStick] = 10;
+        m.Buttons[GamepadButton::RightStick] = 11;
+        m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+        m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+        m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+        m.Axes[GamepadAxis::RightStickVert].Axis = 5;
+        m.Axes[GamepadAxis::LeftTrigger].Axis = 3;
+        m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Axis = 4;
+        m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+        m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+        this->addGamepadMapping("054c-05c4-Sony Computer Entertainment Wireless Controller", m);
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepads() {
-    uint32_t                down = 0;
-    uint32_t                up = 0;
-    uint32_t                pressed = 0;
-    EMSCRIPTEN_RESULT       result = EMSCRIPTEN_RESULT_FAILED;
-    EmscriptenGamepadEvent  gamepadState;
-    int                     gamepadsAttached = updateGamepadsAttached();
-
-    for (int i = 0; i < gamepadsAttached; ++i) {
-        Memory::Clear(&gamepadState, sizeof(gamepadState));
-        result = emscripten_get_gamepad_status(i, &gamepadState);
+    for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
+        EmscriptenGamepadEvent state = { };
+        EMSCRIPTEN_RESULT result = emscripten_get_gamepad_status(padIndex, &state);
         // TODO: check gamepadState validity
         if (EMSCRIPTEN_RESULT_SUCCESS != result) {
             continue;
         }
 
-        down = 0;
-        up = 0;
-        pressed = 0;
-        this->gamepad[i].down = 0;
-        this->gamepad[i].up = 0;
-
-        // NOTE: The following maps to a PS4 DualShock 4 controller
-        // - digitalButton[12] is the PS button
-        // - digitalButton[13] is the touch sensor click
-
-        if (gamepadState.digitalButton[0]) {
-            pressed |= GamepadGizmo::X;
+        auto& pad = this->gamepad[padIndex];
+        if (state.connected && !pad.attached) {
+            pad.id = state.id;
+            pad.mapping = this->lookupGamepadMapping(pad.id);
+            pad.pressed = 0;
+            pad.axes.Fill(0.0f);
         }
-        if (gamepadState.digitalButton[1]) {
-            pressed |= GamepadGizmo::A;
+        else if (!state.connected && pad.attached) {
+            pad.id.Clear();
+            pad.pressed = 0;
+            pad.axes.Fill(0.0f);
         }
-        if (gamepadState.digitalButton[2]) {
-            pressed |= GamepadGizmo::B;
-        }
-        if (gamepadState.digitalButton[3]) {
-            pressed |= GamepadGizmo::Y;
-        }
-        if (gamepadState.digitalButton[4]) {
-            pressed |= GamepadGizmo::LeftBumper;
-        }
-        if (gamepadState.digitalButton[5]) {
-            pressed |= GamepadGizmo::RightBumper;
-        }
-        if (gamepadState.digitalButton[6]) {
-            pressed |= GamepadGizmo::LeftTrigger;
-        }
-        if (gamepadState.digitalButton[7]) {
-            pressed |= GamepadGizmo::RightTrigger;
-        }
-        if (gamepadState.digitalButton[8]) {
-            pressed |= GamepadGizmo::Start;
-        }
-        if (gamepadState.digitalButton[9]) {
-            pressed |= GamepadGizmo::Back;
-        }
-        if (gamepadState.digitalButton[10]) {
-            pressed |= GamepadGizmo::LeftStick;
-        }
-        if (gamepadState.digitalButton[11]) {
-            pressed |= GamepadGizmo::RightStick;
-        }
-
-        GamepadGizmo::Code gizmoCode = GamepadGizmo::InvalidGamepadGizmo;
-        for (int j = 0; j < 12; ++j) {
-            gizmoCode = (GamepadGizmo::Code)j;
-            // If it wasn't previously pressed...
-            if (!(this->gamepad[i].pressed & gizmoCode)) {
-                // If currently pressed...
-                if (pressed & gizmoCode) {
-                    down |= gizmoCode;
+        pad.attached = state.connected;
+        if (pad.attached) {
+            static_assert(gamepadDevice::MaxNumRawButtons < 64, "gamepadDevice::MaxNumRawButtons");
+            for (int rawBtnIndex = 0; rawBtnIndex < gamepadDevice::MaxNumRawButtons; rawBtnIndex++) {
+                uint32_t mask = (1<<rawBtnIndex);
+                if (state.digitalButton[rawBtnIndex]) {
+                    if ((pad.pressed & mask) == 0) {
+                        pad.down |= mask;
+                    }
+                    pad.pressed |= mask;
+                }
+                else {
+                    if ((pad.pressed & mask) != 0) {
+                        pad.up |= mask;
+                    }
+                    pad.pressed &= ~mask;
                 }
             }
-            // If it was previously pressed...
-            if (this->gamepad[i].pressed & gizmoCode) {
-                // If currently NOT pressed...
-                if (!(pressed & gizmoCode)) {
-                    up |= gizmoCode;
-                }
+            static_assert(gamepadDevice::MaxNumRawAxes < 64, "gamepadDevice::MaxNumRawAxes");
+            for (int rawAxisIndex = 0; rawAxisIndex < gamepadDevice::MaxNumRawAxes; rawAxisIndex++) {
+                pad.axes[rawAxisIndex] = state.axis[rawAxisIndex];
             }
         }
-
-        // TODO: Where are the DPad values...?
-
-        this->gamepad[i].down = down;
-        this->gamepad[i].up = up;
-        this->gamepad[i].pressed = pressed;
-
-        this->gamepad[i].values[GamepadGizmo::LeftStickValue].x = gamepadState.axis[0];
-        this->gamepad[i].values[GamepadGizmo::LeftStickValue].y = gamepadState.axis[1];
-        this->gamepad[i].values[GamepadGizmo::RightStickValue].x = gamepadState.axis[2];
-        this->gamepad[i].values[GamepadGizmo::LeftTriggerValue].x = gamepadState.axis[3];
-        this->gamepad[i].values[GamepadGizmo::RightTriggerValue].x = gamepadState.axis[4];
-        this->gamepad[i].values[GamepadGizmo::RightStickValue].y = gamepadState.axis[5];
     }
 }
 
@@ -392,22 +422,6 @@ emscInputMgr::emscDeviceOrientation(int eventType, const EmscriptenDeviceOrienta
     self->sensors.yawPitchRoll.y = glm::radians(e->beta);
     self->sensors.yawPitchRoll.z = glm::radians(e->alpha);
 
-    return true;
-}
-
-//------------------------------------------------------------------------------
-EM_BOOL
-emscInputMgr::emscGamepadConnected(int eventType, const EmscriptenGamepadEvent* e, void* userData) {
-    emscInputMgr* self = (emscInputMgr*) userData;
-    self->gamepad[e->index].attached = true;
-    return true;
-}
-
-//------------------------------------------------------------------------------
-EM_BOOL
-emscInputMgr::emscGamepadDisconnected(int eventType, const EmscriptenGamepadEvent* e, void* userData) {
-    emscInputMgr* self = (emscInputMgr*) userData;
-    self->gamepad[e->index].attached = false;
     return true;
 }
 

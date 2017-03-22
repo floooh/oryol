@@ -1,0 +1,6 @@
+fips_begin_app(GamepadExplorer windowed)
+    fips_vs_warning_level(3)
+    fips_files(GamepadExplorer.cc)
+    fips_deps(Gfx Dbg Input)
+    oryol_add_web_sample(GamepadExplorer "Show raw gamepad input" "emscripten" GamepadExplorer.jpg "GamepadExplorer/GamepadExplorer.cc")
+fips_end_app()

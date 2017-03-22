@@ -6,10 +6,12 @@ fips_begin_module(Input)
     fips_files(Input.cc Input.h)
     fips_dir(Core)
     fips_files(
-        InputSetup.h InputEnums.h InputEvent.h
+        InputSetup.h 
+        InputEnums.h InputEvent.h
+        GamepadMapping.h
         Key.cc Key.h
         inputDispatcher.cc inputDispatcher.h
-        gamepadDevice.cc gamepadDevice.h
+        gamepadDevice.h
         keyboardDevice.cc keyboardDevice.h
         mouseDevice.cc mouseDevice.h
         sensorDevice.h

@@ -75,18 +75,34 @@ public:
     /// scroll movement (usually provided by mouse wheel)
     static const glm::vec2& MouseScroll();
 
+    /// max number of attached gamepads (4)
+    static const int MaxNumGamepads = _priv::inputMgrBase::MaxNumGamepads;
+    /// max number of buttons for raw button input
+    static const int MaxNumRawButtons = _priv::gamepadDevice::MaxNumRawButtons;
+    /// max number of axes for raw axis input
+    static const int MaxNumRawAxes = _priv::gamepadDevice::MaxNumRawAxes;
+    /// add or replace a gamepad mapping
+    static void AddGamepadMapping(const StringAtom& gamepadTypeId, const GamepadMapping& mapping);
     /// return true if a gamepad is attached
     static bool GamepadAttached(int gamepadIndex);
-    /// test if a gamepad button is currently pressed
-    static bool GamepadButtonPressed(int gamepadIndex, GamepadGizmo::Code btn);
-    /// test if gamepad button was pressed-down this frame
-    static bool GamepadButtonDown(int gamepadIndex, GamepadGizmo::Code btn);
-    /// test if gamepad button was released this frame
-    static bool GamepadButtonUp(int gamepadIndex, GamepadGizmo::Code btn);
-    /// get gamepad trigger position (0.0 .. 1.0)
-    static float GamepadTriggerValue(int gamepadIndex, GamepadGizmo::Value trigger);
-    /// get stick position (-1.0 .. +1.0)
-    static const glm::vec2& GamepadStickPos(int gamepadIndex, GamepadGizmo::Value stick);
+    /// return a gamepad type identifier string
+    static StringAtom GamepadTypeId(int gamepadIndex);
+    /// test if a mapped gamepad button is currently pressed
+    static bool GamepadButtonPressed(int gamepadIndex, GamepadButton::Code btn);
+    /// test if a mapped gamepad button was pressed-down this frame
+    static bool GamepadButtonDown(int gamepadIndex, GamepadButton::Code btn);
+    /// test if a mapped gamepad button was released this frame
+    static bool GamepadButtonUp(int gamepadIndex, GamepadButton::Code btn);
+    /// get mapped gamepad axis position (-1.0..1.0 for sticks, 0.0..1.0 for triggers)
+    static float GamepadAxisValue(int gamepadIndex, GamepadAxis::Code axis);
+    /// get unmapped gamepad button pressed state
+    static bool GamepadRawButtonPressed(int gamepadIndex, int buttonIndex);
+    /// get unmapped gamepad button down-pressed state
+    static bool GamepadRawButtonDown(int gamepadIndex, int buttonIndex);
+    /// get unmapped gamepad button up state
+    static bool GamepadRawButtonUp(int gamepadIndex, int buttonIndex);
+    /// get unmapped gamepad axis value
+    static float GamepadRawAxisValue(int gamepadIndex, int axisIndex); 
 
     /// return true if a touchpad is attached
     static bool TouchpadAttached();

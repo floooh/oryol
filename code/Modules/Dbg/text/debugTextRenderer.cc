@@ -256,8 +256,12 @@ debugTextRenderer::convertStringToVertices(const String& str) {
             switch (c) {
                 case 0x08: // cursor left
                     cursorX = cursorX > 0 ? cursorX - 1 : 0; break;
-                case 0x09: // cursor right
-                    cursorX = cursorX < cursorMaxX ? cursorX + 1 : cursorMaxX; break;
+                case 0x09: // tab
+                    cursorX = (cursorX & ~(TabWidth-1)) + TabWidth;
+                    if (cursorX > cursorMaxX) {
+                        cursorX = cursorMaxX;
+                    }
+                    break;
                 case 0x0A: // cursor down
                     cursorY = cursorY < cursorMaxY ? cursorY + 1 : cursorMaxY; break;
                 case 0x0B: // cursor up
