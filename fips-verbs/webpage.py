@@ -13,7 +13,7 @@ from tools import texexport
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 
 BuildEmscripten = True
-BuildPNaCl = True 
+BuildPNaCl = False 
 BuildWasm = True
 ExportAssets = True
 
