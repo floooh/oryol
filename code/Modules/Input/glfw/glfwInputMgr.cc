@@ -248,7 +248,7 @@ void
 glfwInputMgr::updateGamepads() {
     for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
         auto& pad = this->gamepad[padIndex];
-        bool present = glfwJoystickPresent(padIndex);
+        bool present = 0 != glfwJoystickPresent(padIndex);
         if (present && !pad.attached) {
             // pad has just been attached
             pad.id = glfwGetJoystickName(padIndex);
