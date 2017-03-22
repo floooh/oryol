@@ -101,9 +101,12 @@ emscInputMgr::setupGamepadMappings() {
         else return 3;
     );
 
-    // PS4 controller, OSX
     GamepadMapping m;
-    if (1 == os) {
+    if ((1 == os) || (2 == os)) {
+        // OSX and Windows, on Windows, both the Xbox360 and PS4
+        // gamepad behave identical, on OSX the PS4 gamepad
+        // behaves identical, and the Xbox360 gamepad isn't 
+        // recognized
         m.Buttons[GamepadButton::A] = 0;
         m.Buttons[GamepadButton::B] = 1;
         m.Buttons[GamepadButton::X] = 2;
@@ -127,13 +130,7 @@ emscInputMgr::setupGamepadMappings() {
         m.Axes[GamepadAxis::RightStickVert].Axis = 3;
         // FIXME: for the trigger axes, we would need to map 
         // emscripten gamepad event 'analogue buttons' to axes!
-        
-        // ON OSX, the PS4 controller is the default controller, since the
-        // Xbox360 controller isn't recognized anyway
         this->defaultGamepadMapping = m;
-    }
-    else if (2 == os) {
-        // FIXME Windows
     }
     else {
         // Linux
