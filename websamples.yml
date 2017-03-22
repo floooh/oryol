@@ -88,6 +88,11 @@
   type: emscripten,pnacl,android
   image: /Users/floh/projects/oryol/code/Samples/TestInput/TestInput.jpg
   src: TestInput/TestInput.cc
+- name: GamepadExplorer
+  desc: Show raw gamepad input
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/GamepadExplorer/GamepadExplorer.jpg
+  src: GamepadExplorer/GamepadExplorer.cc
 - name: NativeTexture
   desc: Demonstrates native 3D-API texture usage
   type: emscripten,pnacl,android
