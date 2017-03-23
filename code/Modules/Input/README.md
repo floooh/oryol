@@ -1,6 +1,6 @@
 # Input Module
 
-**Updated 11-Jun-2016**
+**Updated 23-Mar-2017 (Gamepad Input)**
 
 The Oryol Input module provides unified access to input devices 
 across platforms. The available types of input depends on the
@@ -8,20 +8,20 @@ platform, currently it looks like this:
 
 Platform        | Keyboard | Mouse | Gamepad | Touch | Sensors
 ----------------|----------|-------|---------|-------|---------
-OSX             | YES      | YES   | -       | -     | -
-Linux           | YES      | YES   | -       | -     | -
-Windows         | YES      | YES   | -       | -     | -
+OSX             | YES      | YES   | YES*    | -     | -
+Linux           | YES      | YES   | YES     | -     | -
+Windows         | YES      | YES   | YES*    | -     | -
 iOS             | -        | -     | -       | YES   | YES
 Android         | -        | -     | -       | YES   | YES
-HTML5 (desktop) | YES      | YES   | -       | -     | - 
+HTML5 (desktop) | YES      | YES   | YES     | -     | - 
 HTML5 (mobile)  | -        | -     | -       | YES   | YES
 PNaCl           | YES      | YES   | -       | -     | -
 RaspberryPi     | YES      | YES   | -       | -     | -
 
-> NOTE: while all the functions for gamepad input exist, they
-are currently not implemented on any platform
-
-
+> NOTE: gamepad support on OSX and Windows is currently only
+implemented via GLFW, it is not available when using the
+D3D11, D3D12 or Metal rendering backends
+ 
 ### Sample Code
 
 Most of the basic Input module functionality is demonstrated
@@ -445,7 +445,206 @@ if (Input::SensorsAttached()) {
 
 ### Gamepad Input
 
-(gamepad input is currently not implemented on any platform)
+#### Cooked vs Raw Gamepad Input
+
+Gamepad access between platforms and gamepads is not standardized.
+Oryol needs to perform a mapping from physical buttons and
+axes to a 'standard mapping'. The Input module provides built-in
+mappings for a few gamepad types (PS4 and Xbox360 controller) and
+platforms (Windows, Linux, OSX and HTML5). User code can provide
+additional mappings, or override the builtin mappings. 
+
+> NOTE: Gamepad input is only available via polling, not through
+input events!
+
+#### Checking For Attached Gamepads
+
+To check whether a gamepad is attached, call the **Input::GamepadAttached()** method:
+
+```cpp
+for (int i = 0; i < Input::MaxNumGamepads; i++) {
+    if (Input::GamepadAttached(i)) {
+        // gamepad is attached
+    }
+}
+```
+Up to 4 gamepads can be attached (this is the value of the **Input::MaxNumGamepads** constant).
+
+Please note that the behaviour of the Input::GamepadAttached() method is quite different between platforms:
+
+- on HTML5, an attached gamepad will only be detected when
+the user triggers a button or axis
+- an attached gamepad that was removed might still be reported
+as attached, but all buttons and axes will be idle
+
+#### Getting Cooked Gamepad Input
+
+To get cooked (aka 'mapped') gamepad input, call the following
+methods:
+
+```cpp
+// check status of first gamepad
+if (Input::GamepadAttached(0)) {
+    // check if 'A' button is currently pressed down
+    if (Input::GamepadButtonPressed(0, GamepadButton::A)) {
+        ...
+    }
+    // check if 'B' button changed from released to pressed last frame:
+    if (Input::GamepadButtonDown(0, GamepadButton::B)) {
+        ...
+    }
+    // check if 'X' button was released during last frame:
+    if (Input::GamepadButtonUp(0, GamepadButton::X)) {
+        ...
+    }
+    
+    // get the current horizontal position (-1.0..1.0) of the left stick
+    float v = Input::GamepadAxisValue(0, GamepadAxis::LeftStickHori);
+
+    // get the current value of the right trigger (0.0..1.0)
+    float t = Input::GamepadAxisValue(0, GamepadAxis::RightTrigger);
+}
+```
+These are the button and axis identifiers (but note that not all
+buttons or axes will be functional on all gamepads or even the same
+gamepad type on different platforms):
+
+```cpp
+struct GamepadButton {
+    enum Code {
+        A = 0,
+        B,
+        X,
+        Y,
+        LeftBumper,
+        RightBumper,
+        LeftTrigger,
+        RightTrigger,
+        Back,
+        Start,
+        LeftStick,
+        RightStick,
+        DPadUp,
+        DPadDown,
+        DPadLeft,
+        DPadRight,
+        Center,         // Xbox-button or DS4 touchpad
+
+        NumButtons,
+        InvalidButton
+    };
+};
+
+struct GamepadAxis {
+    enum Code {
+        LeftStickHori = 0,
+        LeftStickVert,
+        RightStickHori,
+        RightStickVert,
+        LeftTrigger,
+        RightTrigger,
+
+        NumAxes,
+        InvalidAxis
+    };
+};
+```
+
+#### Raw Gamepad Input
+
+The Input module also provides raw (aka unmapped) gamepad input. This
+is useful if the standard mapping mechanism isn't sufficient. But please
+be aware that the meaning of raw buttons/axes or the value range
+of axes may differ between platforms and gamepad types.
+
+Accessing raw input works with button and axes indexes:
+
+```cpp
+// get raw input from gamepad 0
+if (Input::GamepadAttached(0)) {
+    // check state of all raw buttons
+    for (int btnIndex = 0; btnIndex < Input::MaxNumRawButtons; btnIndex++) {
+        if (Input::GamepadRawButtonPressed(0, btnIndex)) {
+            ...
+        }
+        if (Input::GamepadRawButtonDown(0, btnIndex)) {
+            ...
+        }      
+        if (Input::GamepadRawButtonUp(0, btnIndex)) {
+
+        }
+    }
+    // check state of all raw axes
+    for (int axisIndex = 0; axisIndex < Input::MaxNumRawAxes; axisIndex++) {
+        float v = Input::GamepadRawAxisValue(0, axisIndex);
+        ...
+    }
+}
+```
+
+#### Adding New Gamepad Mappings
+
+It is possible to add new gamepad mappings or override the built-in
+standard mappings. This can either happen when the Input module
+is initialized, or at any later time.
+
+A gamepad mapping provides the following information to the 
+Oryol Input module:
+
+- A gamepad-type identifier string to associate the mapping
+with a specific gamepad type. The special identifier string **"__default"** is used to override the default-mapping.
+- For each supported 'logical button' (e.g. GamepadButton::A) the
+physical button index.
+- For each supported 'logical axis' (e.g. GamepadAxis::LeftStickHori) the
+physical axis index.
+- For each axis, optional scale and bias values to move the 
+input values into a new range (for instance from -1..1 to 0..1)
+
+Here's some sample code how to add mappings:
+
+```cpp
+// setup a new GamepadMapping object (this example uses the
+// PS4 controller mapping on Linux):
+GamepadMapping m;
+m.Buttons[GamepadButton::A] = 1;
+m.Buttons[GamepadButton::B] = 2;
+m.Buttons[GamepadButton::X] = 0;
+m.Buttons[GamepadButton::Y] = 3;
+m.Buttons[GamepadButton::LeftBumper] = 4;
+m.Buttons[GamepadButton::RightBumper] = 5;
+m.Buttons[GamepadButton::LeftTrigger] = 6;
+m.Buttons[GamepadButton::RightTrigger] = 7;
+m.Buttons[GamepadButton::Back] = 8;
+m.Buttons[GamepadButton::Start] = 9;
+m.Buttons[GamepadButton::LeftStick] = 10;
+m.Buttons[GamepadButton::RightStick] = 11;
+m.Buttons[GamepadButton::Center] = 13;
+m.Axes[GamepadAxis::LeftStickHori].Axis = 0;
+m.Axes[GamepadAxis::LeftStickVert].Axis = 1;
+m.Axes[GamepadAxis::RightStickHori].Axis = 2;
+m.Axes[GamepadAxis::RightStickVert].Axis = 5;
+m.Axes[GamepadAxis::LeftTrigger].Axis = 3;
+m.Axes[GamepadAxis::LeftTrigger].Scale = 0.5f;
+m.Axes[GamepadAxis::LeftTrigger].Bias = 0.5f;
+m.Axes[GamepadAxis::RightTrigger].Axis = 4;
+m.Axes[GamepadAxis::RightTrigger].Scale = 0.5f;
+m.Axes[GamepadAxis::RightTrigger].Bias = 0.5f;
+
+// add the mapping during the Input module initialization
+InputSetup setup;
+setup.GamepadMappings.Add("Sony Computer Entertainment Wireless Controller", m);
+
+//... or you can also do this later:
+Input::AddGamepadMapping("Sony ... Controller", m);
+```
+
+Use the [GamepadExplorer sample](https://floooh.github.com/oryol/asmjs/GamepadExplorer.html)
+to find out what the physical button and axis indices, and the identifier
+string of a specific gamepad are. But please be aware that this may
+differ for the same gamepad type on different platforms, so make sure
+to check this on each browser and platform (for the emscripten version),
+and also check the natively compiled version of the GamepadExplorer sample
+on OSX, Windows and Linux!
 
 ### Input Event Callbacks
 
