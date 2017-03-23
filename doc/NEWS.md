@@ -1,5 +1,9 @@
 # What's New
 
+- **23-Mar-2017**: initial gamepad support on HTML5, OSX, Linux and Windows has
+landed, see the Input module README and the new GamepadExplorer sample
+for details :)
+
 - **11-Jun-2016**: I have cleaned up the Input module API, unfortunately
 this breaks existing code. See the README in code/Modules/Input for 
 a complete documentation.
