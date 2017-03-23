@@ -20,7 +20,7 @@ RaspberryPi     | YES      | YES   | -       | -     | -
 
 > NOTE: gamepad support on OSX and Windows is currently only
 implemented via GLFW, it is not available when using the
-D3D11, D3D12 or Metal rendering backends
+non-GL rendering backends
  
 ### Sample Code
 
