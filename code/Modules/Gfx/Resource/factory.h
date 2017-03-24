@@ -12,12 +12,6 @@
 #include "Gfx/d3d11/d3d11ShaderFactory.h"
 #include "Gfx/d3d11/d3d11TextureFactory.h"
 #include "Gfx/d3d11/d3d11RenderPassFactory.h"
-#elif ORYOL_D3D12
-#include "Gfx/d3d12/d3d12MeshFactory.h"
-#include "Gfx/d3d12/d3d12PipelineFactory.h"
-#include "Gfx/d3d12/d3d12ShaderFactory.h"
-#include "Gfx/d3d12/d3d12TextureFactory.h"
-#include "Gfx/d3d12/d3d12RenderPassFactory.h"
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlMeshFactory.h"
 #include "Gfx/mtl/mtlPipelineFactory.h"
@@ -42,12 +36,6 @@ class pipelineFactory : public d3d11PipelineFactory { };
 class shaderFactory : public d3d11ShaderFactory { };
 class textureFactory : public d3d11TextureFactory { };
 class renderPassFactory : public d3d11RenderPassFactory { };
-#elif ORYOL_D3D12
-class meshFactory : public d3d12MeshFactory { };
-class pipelineFactory : public d3d12PipelineFactory { };
-class shaderFactory : public d3d12ShaderFactory { };
-class textureFactory : public d3d12TextureFactory { };
-class renderPassFactory : public d3d12RenderPassFactory { };
 #elif ORYOL_METAL
 class meshFactory : public mtlMeshFactory { };
 class pipelineFactory : public mtlPipelineFactory { };

@@ -17,12 +17,6 @@ namespace Oryol {
 namespace _priv {
 class renderer : public d3d11Renderer { };
 } }
-#elif ORYOL_D3D12
-#include "Gfx/d3d12/d3d12Renderer.h"
-namespace Oryol {
-namespace _priv {
-class renderer : public d3d12Renderer { };
-} }
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlRenderer.h"
 namespace Oryol {

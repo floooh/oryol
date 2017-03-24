@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 83
+Version = 84
 
 import os
 import sys
@@ -1941,7 +1941,7 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
-    f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
+    f.write('#if ORYOL_D3D11\n')
     f.write('typedef unsigned char BYTE;\n')
     f.write('#endif\n')
 
@@ -1965,7 +1965,7 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         # for HLSL, the actual shader code has been compiled into a header by FXC
         # also write the generated shader source into a C comment as
         # human-readable version
-        f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
+        f.write('#if ORYOL_D3D11\n')
         f.write('/*\n')
         f.write('{}_{}_src: \n\n'.format(shd.name, slVersion))
         for line in shd.generatedSource[slVersion] :
@@ -2017,7 +2017,7 @@ def writeProgramSource(f, shdLib, prog) :
         if isGLSL[slVersion] :
             f.write('    #if ORYOL_OPENGL\n')
         elif isHLSL[slVersion] :
-            f.write('    #if ORYOL_D3D11 || ORYOL_D3D12\n')
+            f.write('    #if ORYOL_D3D11\n')
         elif isMetal[slVersion] :
             f.write('    #if ORYOL_METAL\n')
             f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))

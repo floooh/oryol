@@ -85,14 +85,6 @@ For example:
 > fips open
 ```
 
-##### D3D12:
-
-Building with D3D12 support requires Windows10, VS2015 and cmake-3.4, use
-the following build configs for D3D12:
-
-- d3d12-win64-vstudio-debug
-- d3d12-win64-vstudio-release
-
 ##### Metal (OSX and iOS):
 
 Building with Metal support requires OSX 10.11 and Xcode7. For iOS, a

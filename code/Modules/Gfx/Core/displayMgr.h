@@ -9,13 +9,7 @@
     GL context creation, and usually processes host window system
     events (such as input events) and forwards them to Oryol.
 */
-#if ORYOL_D3D12
-#include "Gfx/d3d12/d3d12DisplayMgr.h"
-namespace Oryol {
-namespace _priv {
-class displayMgr : public d3d12DisplayMgr { };
-} }
-#elif ORYOL_D3D11
+#if ORYOL_D3D11
 #include "Gfx/d3d11/d3d11DisplayMgr.h"
 namespace Oryol {
 namespace _priv {
