@@ -16,7 +16,7 @@ classes ended up the way they are.
 For specific information on how to create and use resources, please read
 the particular module documentation (like the Gfx module doc page).
 
-### Oryol's Definition of Resources (or: What's a Resource)
+### Oryol's Definition of a Resource
 
 A resource is a very slim proxy object that adds a standardized interface 
 for **creation**, **destruction**, **sharing** and **lifetime management** to some
