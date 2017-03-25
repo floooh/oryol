@@ -137,7 +137,7 @@ debugTextRenderer::drawTextBuffer() {
         Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::Draw({0, numVertices});
+        Gfx::Draw(PrimitiveGroup(0, numVertices));
     }
 }
 
