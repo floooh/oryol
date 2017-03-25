@@ -25,6 +25,10 @@ public:
     void discard();
 
 private:
+    /// setup game pad mappings for known gamepads
+    void setupGamepadMappings();
+    /// polling for the gamepad
+    void updateGamepads();
     /// setup the key mapping table
     void setupKeyTable();    
     /// setup emscripten input handling callbacks
@@ -61,6 +65,7 @@ private:
 
     static const int MaxNumKeys = 256;
     RunLoop::Id runLoopId;
+    RunLoop::Id updateGamepadsRunLoopId;
     bool pointerLockActive;
     Key::Code keyTable[MaxNumKeys];
 };

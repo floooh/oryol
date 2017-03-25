@@ -12,7 +12,7 @@ from tools import texexport
 
 # what to build
 BuildEmscripten = True
-BuildPNaCl = True 
+BuildPNaCl = False 
 BuildWasm = True
 ExportAssets = True
 ExtensionSamples = False

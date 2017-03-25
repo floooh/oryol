@@ -29,32 +29,43 @@ struct PointerLockMode {
     };
 };
 
-/// gamepad buttons, triggers, sticks
-struct GamepadGizmo {
+/// gamepad buttons, triggers, sticks (see standard mapping: https://w3c.github.io/gamepad/)
+struct GamepadButton {
     enum Code {
         A = 0,
         B,
         X,
         Y,
-        
-        Start,
-        Back,
-        
-        RightBumper,
         LeftBumper,
-        
-        DPadLeft,
-        DPadRight,
-        DPadUp,
-        DPadDown,
-        
+        RightBumper,
         LeftTrigger,
         RightTrigger,
+        Back,
+        Start,
         LeftStick,
         RightStick,
-        
-        NumGamepadGizmos,
-        InvalidGamepadGizmo,
+        DPadUp,
+        DPadDown,
+        DPadLeft,
+        DPadRight,
+        Center,         // Xbox-button or DS4 touchpad
+
+        NumButtons,
+        InvalidButton
+    };
+};
+
+struct GamepadAxis {
+    enum Code {
+        LeftStickHori = 0,
+        LeftStickVert,
+        RightStickHori,
+        RightStickVert,
+        LeftTrigger,
+        RightTrigger,
+
+        NumAxes,
+        InvalidAxis
     };
 };
 

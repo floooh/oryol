@@ -28,6 +28,9 @@ inputMgrBase::setup(const InputSetup& setup) {
     this->doubleTapDetector.numRequiredTaps = 2;        
     this->valid = true;
     this->inputSetup = setup;
+    for (const auto& item : setup.GamepadMappings) {
+        this->addGamepadMapping(item.Key(), item.Value());
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -133,6 +136,31 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
                     break;
             }
         }
+    }
+}
+
+//------------------------------------------------------------------------------
+void
+inputMgrBase::addGamepadMapping(const StringAtom& id, const GamepadMapping& mapping) {
+    if (id == "__default") {
+        this->defaultGamepadMapping = mapping;
+    }
+    else if (this->gamepadMappings.Contains(id)) {
+        this->gamepadMappings[id] = mapping;
+    }
+    else {
+        this->gamepadMappings.Add(id, mapping);
+    }
+}
+
+//------------------------------------------------------------------------------
+const GamepadMapping&
+inputMgrBase::lookupGamepadMapping(const StringAtom& id) const {
+    if (this->gamepadMappings.Contains(id)) {
+        return this->gamepadMappings[id];
+    }
+    else {
+        return this->defaultGamepadMapping;
     }
 }
 
