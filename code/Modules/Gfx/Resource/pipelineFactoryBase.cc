@@ -10,12 +10,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-pipelineFactoryBase::pipelineFactoryBase() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 pipelineFactoryBase::~pipelineFactoryBase() {
     o_assert_dbg(!this->isValid);
 }

@@ -90,9 +90,9 @@ public:
     /// begin rendering to default render pass with override clear values
     static void BeginPass(const PassAction& action);
     /// begin offscreen rendering
-    static void BeginPass(const Id& id);
+    static void BeginPass(const Id& passId);
     /// begin offscreen rendering with override clear colors
-    static void BeginPass(const Id& id, const PassAction& action);
+    static void BeginPass(const Id& passId, const PassAction& action);
     /// finish rendering to current pass
     static void EndPass();
 

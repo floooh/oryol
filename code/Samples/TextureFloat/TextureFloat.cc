@@ -49,7 +49,7 @@ TextureFloatApp::OnInit() {
     rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     Id rt = Gfx::CreateResource(rtSetup);
     auto passSetup = PassSetup::From(rt);
-    passSetup.DefaultAction.ColorDontCare(0);
+    passSetup.DefaultAction.DontCareColor(0);
     this->renderPass = Gfx::CreateResource(passSetup);
 
     // fullscreen mesh, we'll reuse this several times

@@ -15,8 +15,6 @@ class pipeline;
 
 class pipelineFactoryBase {
 public:
-    /// constructor
-    pipelineFactoryBase();
     /// destructor
     ~pipelineFactoryBase();
 
@@ -31,7 +29,7 @@ public:
     
 protected:
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
 
 } // namespace _priv

@@ -24,9 +24,6 @@ class displayMgr;
 
 class gfxResourceContainer : public resourceContainerBase {
 public:
-    /// constructor
-    gfxResourceContainer();
-
     /// setup the resource container
     void setup(const GfxSetup& setup, const gfxPointers& ptrs);
     /// discard the resource manager
@@ -81,7 +78,7 @@ public:
     class texturePool texturePool;
     class pipelinePool pipelinePool;
     class renderPassPool renderPassPool;
-    RunLoop::Id runLoopId;
+    RunLoop::Id runLoopId = RunLoop::InvalidId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
     Array<ResourceLabel> destroyQueue;
 };

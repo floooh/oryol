@@ -10,12 +10,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-gfxResourceContainer::gfxResourceContainer() :
-runLoopId(RunLoop::InvalidId) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->isValid());

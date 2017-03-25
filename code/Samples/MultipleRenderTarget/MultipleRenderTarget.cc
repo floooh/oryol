@@ -72,9 +72,9 @@ MultipleRenderTargetApp::OnInit() {
     // FIXME: depth-stencil should be its own texture!
     auto passSetup = PassSetup::From({ rt0, rt1, rt2 }, rt0);
     passSetup.DefaultAction
-        .ColorClear(0, glm::vec4(0.25f, 0.0f, 0.0f, 1.0f))
-        .ColorClear(1, glm::vec4(0.0f, 0.25f, 0.0f, 1.0f))
-        .ColorClear(2, glm::vec4(0.0f, 0.0f, 0.25f, 1.0f));
+        .ClearColor(0, glm::vec4(0.25f, 0.0f, 0.0f, 1.0f))
+        .ClearColor(1, glm::vec4(0.0f, 0.25f, 0.0f, 1.0f))
+        .ClearColor(2, glm::vec4(0.0f, 0.0f, 0.25f, 1.0f));
     this->mrtPass = Gfx::CreateResource(passSetup);
 
     // create a mesh with 2 shapes, a box and a plane

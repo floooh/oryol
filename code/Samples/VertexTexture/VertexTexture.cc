@@ -49,7 +49,7 @@ VertexTextureApp::OnInit() {
     rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     Id plasmaTex = Gfx::CreateResource(rtSetup);
     auto passSetup = PassSetup::From(plasmaTex);
-    passSetup.DefaultAction.ColorDontCare(0);
+    passSetup.DefaultAction.DontCareColor(0);
     this->plasmaRenderPass = Gfx::CreateResource(passSetup);
 
     // setup draw state for offscreen rendering to float render target

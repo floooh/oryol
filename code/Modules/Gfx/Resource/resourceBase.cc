@@ -32,12 +32,6 @@ pipelineBase::Clear() {
 }
 
 //------------------------------------------------------------------------------
-renderPassBase::renderPassBase() :
-depthStencilTexture(nullptr) {
-    this->colorTextures.Fill(nullptr);
-}
-
-//------------------------------------------------------------------------------
 void
 renderPassBase::Clear() {
     this->colorTextures.Fill(nullptr);

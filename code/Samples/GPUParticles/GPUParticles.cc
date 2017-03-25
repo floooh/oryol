@@ -84,7 +84,7 @@ GPUParticlesApp::OnInit() {
     for (int i = 0; i < 2; i++) {
         this->particleBuffer[i].texture = Gfx::CreateResource(particleTextureSetup);
         auto particlePassSetup = PassSetup::From(this->particleBuffer[i].texture);
-        particlePassSetup.DefaultAction.ColorDontCare(0);
+        particlePassSetup.DefaultAction.DontCareColor(0);
         this->particleBuffer[i].pass = Gfx::CreateResource(particlePassSetup);
     }
 

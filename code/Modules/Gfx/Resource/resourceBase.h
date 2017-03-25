@@ -81,14 +81,16 @@ class texture;
 class renderPassBase : public resourceBase<PassSetup> {
 public:
     /// constructor
-    renderPassBase();
+    renderPassBase() { 
+        colorTextures.Fill(nullptr);
+    }
     /// clear the object
     void Clear();
 
     /// color texture pointers
     StaticArray<texture*, GfxConfig::MaxNumColorAttachments> colorTextures;
     /// depth-stencil texture pointer
-    texture* depthStencilTexture;
+    texture* depthStencilTexture = nullptr;
 };
 
 } // namespace _priv

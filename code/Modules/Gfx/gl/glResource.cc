@@ -28,12 +28,6 @@ glMesh::Clear() {
 }
 
 //------------------------------------------------------------------------------
-glPipeline::glPipeline() :
-glPrimType(0) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 glPipeline::Clear() {
     this->glAttrs.Fill(glVertexAttr());
@@ -92,13 +86,7 @@ glShader::bindAttribLocation(VertexAttr::Code attr, GLint location) {
 #endif
 
 //------------------------------------------------------------------------------
-glTexture::glTexture() :
-glTarget(0),
-glDepthRenderbuffer(0),
-glMSAARenderbuffer(0),
-updateFrameIndex(-1),
-numSlots(1),
-activeSlot(0) {
+glTexture::glTexture() {
     this->glTextures.Fill(0);
 }
 
@@ -128,8 +116,7 @@ glTexture::Clear() {
 }
 
 //------------------------------------------------------------------------------
-glRenderPass::glRenderPass() :
-glFramebuffer(0) {
+glRenderPass::glRenderPass() {
     this->glMSAAResolveFramebuffers.Fill(0);
 }
 

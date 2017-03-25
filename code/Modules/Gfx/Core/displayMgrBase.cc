@@ -8,15 +8,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-displayMgrBase::displayMgrBase() :
-uniqueIdCounter(0),
-displayValid(false),
-curFramebufferWidth(0),
-curFramebufferHeight(0) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 displayMgrBase::~displayMgrBase() {
     o_assert(!this->displayValid);
 }

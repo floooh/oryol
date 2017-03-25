@@ -13,7 +13,12 @@
 namespace Oryol {
 namespace _priv {
 
-const glPipelineFactory::VertexFormatTable glPipelineFactory::vertexFormatTable[VertexFormat::NumVertexFormats] = {
+// map Oryol VertexFormats to GL vertex attributes
+struct {
+    GLint size;
+    GLenum type;
+    GLboolean normalized;
+} const vertexFormatTable[VertexFormat::NumVertexFormats] = {
     { 1, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float
     { 2, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float2
     { 3, GL_FLOAT, GL_FALSE },                  // VertexFormat::Float3

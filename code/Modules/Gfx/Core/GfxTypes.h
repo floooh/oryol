@@ -829,17 +829,17 @@ public:
     /// clear all surfaces with individual colors
     static PassAction ClearAll(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
     /// clear a single surface to a color
-    PassAction& ColorClear(int index, const glm::vec4& color);
+    PassAction& ClearColor(int index, const glm::vec4& color);
     /// clear depth-stencil surface  
-    PassAction& DepthStencilClear(float depth=1.0f, uint8_t stencil=0); 
+    PassAction& ClearDepthStencil(float depth=1.0f, uint8_t stencil=0); 
     /// set a color surface to 'dont care' (initial content is undefined)
-    PassAction& ColorDontCare(int index);
+    PassAction& DontCareColor(int index);
     /// set depth-stencil initial state to 'dont care'
-    PassAction& DepthStencilDontCare();
+    PassAction& DontCareDepthStencil();
     /// initialize color surface with its previus content
-    PassAction& ColorLoad(int index);
+    PassAction& LoadColor(int index);
     /// initialize depth-stencil surface with its previous content
-    PassAction& DepthStencilLoad();
+    PassAction& LoadDepthStencil();
 
     /// override clear colors
     StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;

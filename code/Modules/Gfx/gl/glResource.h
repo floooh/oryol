@@ -46,13 +46,11 @@ public:
 */
 class glPipeline : public pipelineBase {
 public:
-    /// constructor
-    glPipeline();
     /// clear the object (called from pipelineFactory::DestroyResource()
     void Clear();
     
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
-    GLenum glPrimType;
+    GLenum glPrimType = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -103,7 +101,7 @@ public:
     static int samplerArrayIndex(ShaderStage::Code bindStage, int textureIndex);
 
     /// the GL shader program
-    GLuint glProgram;
+    GLuint glProgram = 0;
 
 private:
     static const int MaxUniformsPerBlock = GfxConfig::MaxNumUniformBlockLayoutComponents;
@@ -190,14 +188,14 @@ public:
     /// clear the object
     void Clear();
 
-    GLenum glTarget;
-    GLuint glDepthRenderbuffer;
-    GLuint glMSAARenderbuffer;
+    GLenum glTarget = 0;
+    GLuint glDepthRenderbuffer = 0;
+    GLuint glMSAARenderbuffer = 0;
 
     static const int MaxNumSlots = 2;
-    int updateFrameIndex;
-    uint8_t numSlots;
-    uint8_t activeSlot;
+    int updateFrameIndex = -1;
+    uint8_t numSlots = 1;
+    uint8_t activeSlot = 0;
     StaticArray<GLuint, MaxNumSlots> glTextures;
 };
 
@@ -217,7 +215,7 @@ public:
     /// clear the object
     void Clear();
 
-    GLuint glFramebuffer;
+    GLuint glFramebuffer = 0;
     StaticArray<GLuint, GfxConfig::MaxNumColorAttachments> glMSAAResolveFramebuffers;
 };
 
