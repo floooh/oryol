@@ -272,7 +272,7 @@ Id vertexMesh = Gfx::CreateResource(meshBuilder.Build());
 ```
 
 If you just need a very low level way to write packed vertices to memory you can
-use the VertexWriter class (the header is _Assets/VertexWriter.h_):
+use the VertexWriter class (the header is _Assets/Gfx/VertexWriter.h_):
 
 ```cpp
 class VertexWriter {
