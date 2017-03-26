@@ -10,12 +10,12 @@ using namespace Oryol;
 TEST(TextureSetupTest) {
     
     // setup as absolute-size render target, no depth buffer
-    auto rt = TextureSetup::RenderTarget(320, 256);
+    auto rt = TextureSetup::RenderTarget2D(320, 256);
     rt.Locator = Locator("absSize");
     rt.ColorFormat = PixelFormat::RGB8;
     CHECK(!rt.ShouldSetupFromFile());
     CHECK(!rt.ShouldSetupFromPixelData());
-    CHECK(rt.ShouldSetupAsRenderTarget());
+    CHECK(rt.IsRenderTarget);
     CHECK(!rt.HasDepth());
     CHECK(rt.Locator.Location() == "absSize");
     CHECK(rt.Width == 320);
@@ -28,12 +28,12 @@ TEST(TextureSetupTest) {
     CHECK(rt.Sampler.MinFilter == TextureFilterMode::Nearest);
     
     // setup as absolute-size render target, with depth buffer
-    auto rt0 = TextureSetup::RenderTarget(320, 256);
+    auto rt0 = TextureSetup::RenderTarget2D(320, 256);
     rt0.ColorFormat = PixelFormat::RGBA8;
     rt0.DepthFormat = PixelFormat::DEPTHSTENCIL;
     CHECK(!rt0.ShouldSetupFromFile());
     CHECK(!rt0.ShouldSetupFromPixelData());
-    CHECK(rt0.ShouldSetupAsRenderTarget());
+    CHECK(rt0.IsRenderTarget);
     CHECK(rt0.HasDepth());
     CHECK(rt0.Locator == Locator::NonShared());
     CHECK(rt0.Width == 320);

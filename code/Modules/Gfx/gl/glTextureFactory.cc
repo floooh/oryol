@@ -124,7 +124,7 @@ glTextureFactory::setupTextureAttrs(texture& tex) {
     attrs.Height = tex.Setup.Height;
     attrs.Depth = tex.Setup.Depth;
     attrs.NumMipMaps = tex.Setup.NumMipMaps;
-    attrs.IsRenderTarget = tex.Setup.RenderTarget;
+    attrs.IsRenderTarget = tex.Setup.IsRenderTarget;
     attrs.HasDepthBuffer = tex.Setup.HasDepth();
     tex.textureAttrs = attrs;
 }
@@ -267,7 +267,7 @@ glTextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
 
     // additional render target stuff
-    if (setup.RenderTarget) {
+    if (setup.IsRenderTarget) {
         // create MSAA renderbuffer
         #if !ORYOL_OPENGLES2
         const bool msaa = (setup.SampleCount > 1) && glCaps::HasFeature(glCaps::MSAARenderTargets);

@@ -596,6 +596,14 @@ VertexLayout::VertexLayout() {
 }
 
 //------------------------------------------------------------------------------
+VertexLayout::VertexLayout(std::initializer_list<Component> l) {
+    this->Clear();
+    for (const auto& c : l) {
+        this->Add(c);
+    }
+}
+
+//------------------------------------------------------------------------------
 VertexLayout& VertexLayout::Clear() {
     this->StepFunction = VertexStepFunction::PerVertex;
     this->StepRate = 1;
@@ -1341,7 +1349,7 @@ TextureSetup TextureSetup::RenderTarget2D(int w, int h, PixelFormat::Code colorF
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::Texture2D;
-    setup.RenderTarget = true;
+    setup.IsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
     setup.ColorFormat = colorFmt;
@@ -1356,7 +1364,7 @@ TextureSetup TextureSetup::RenderTargetCube(int w, int h, PixelFormat::Code colo
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::TextureCube;
-    setup.RenderTarget = true;
+    setup.IsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
     setup.ColorFormat = colorFmt;
@@ -1371,7 +1379,7 @@ TextureSetup TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::Texture3D;
-    setup.RenderTarget = true;
+    setup.IsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
     setup.Depth = d;
@@ -1387,7 +1395,7 @@ TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelForm
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::TextureArray;
-    setup.RenderTarget = true;
+    setup.IsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
     setup.Depth = layers;

@@ -941,8 +941,10 @@ public:
     /// the vertex step rate, used for instancing
     uint8_t StepRate = 1;
 
-    /// constructor
+    /// default constructor
     VertexLayout();
+    /// initializer list constructor
+    VertexLayout(std::initializer_list<Component> l);
     /// clear the vertex layout, chainable
     VertexLayout& Clear();
     /// return true if layout is empty
@@ -1559,7 +1561,7 @@ public:
     /// texture type
     TextureType::Code Type = TextureType::Texture2D;
     /// use as render target?
-    bool RenderTarget = false;
+    bool IsRenderTarget = false;
     /// width in pixels
     int Width = 1;
     /// height in pixels

@@ -4,7 +4,11 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Assets/Gfx/ShapeBuilder.h"
-#include "Gfx/Gfx.h""
+#include "Gfx/Gfx.h"
+#include "Gfx/Core/displayMgr.h"
+#include "Gfx/Core/renderer.h"
+#include "Gfx/Resource/resourcePools.h"
+#include "Gfx/Resource/factory.h"
 #include <cstring>
 
 #if ORYOL_OPENGL

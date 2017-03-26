@@ -39,11 +39,11 @@ TEST(RenderTargetCreationTest) {
     factory.Setup(ptrs);
     
     // create a render target (no depth buffer)
-    auto texSetup = TextureSetup::RenderTarget(320, 256);
+    auto texSetup = TextureSetup::RenderTarget2D(320, 256);
     texSetup.ColorFormat = PixelFormat::RGBA8;
     texture tex0;
     tex0.Setup = texSetup;
-    factory.SetupResource(tex0);
+    factory.SetupResource(tex0, nullptr, 0);
     CHECK(tex0.glTextures[0] != 0);
     CHECK(tex0.glDepthRenderbuffer == 0);
     const TextureAttrs& attrs0 = tex0.textureAttrs;
@@ -60,12 +60,12 @@ TEST(RenderTargetCreationTest) {
     CHECK(!attrs0.HasDepthBuffer);
 
     // create a render target with depth buffer
-    auto rtSetup = TextureSetup::RenderTarget(640, 480);
+    auto rtSetup = TextureSetup::RenderTarget2D(640, 480);
     rtSetup.ColorFormat = PixelFormat::RGBA8;
     rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     texture tex1;
     tex1.Setup = rtSetup;
-    factory.SetupResource(tex1);
+    factory.SetupResource(tex1, nullptr, 0);
     CHECK(tex1.glTextures[0] != 0);
     CHECK(tex1.glDepthRenderbuffer != 0);
     const TextureAttrs& attrs1 = tex1.textureAttrs;

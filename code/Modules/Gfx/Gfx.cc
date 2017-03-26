@@ -503,9 +503,9 @@ Gfx::validateTextureSetup(const TextureSetup& setup, const void* data, int size)
         o_assert(setup.Depth <= GfxConfig::MaxNumTextureArraySlices);
     }
     if (setup.Type == TextureType::Texture3D) {
-        o_assert(!setup.RenderTarget);
+        o_assert(!setup.IsRenderTarget);
     }
-    if (setup.RenderTarget) {
+    if (setup.IsRenderTarget) {
         o_assert(setup.TextureUsage == Usage::Immutable);
         o_assert(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
         if (setup.DepthFormat != PixelFormat::InvalidPixelFormat) {
@@ -598,7 +598,7 @@ Gfx::validatePassSetup(const PassSetup& setup) {
             if (attrs.TextureUsage != Usage::Immutable) {
                 o_error("invalid render pass: color attachments must have immutable usage!\n");
             }
-            if (!tex->Setup.RenderTarget) {
+            if (!tex->Setup.IsRenderTarget) {
                 o_error("invalid render pass: color attachment must have been setup as render target!\n");
             }
         }
@@ -615,7 +615,7 @@ Gfx::validatePassSetup(const PassSetup& setup) {
         if (attrs.TextureUsage != Usage::Immutable) {
             o_error("invalid render pass: depth attachment must have immutable usage!\n");
         }
-        if (!dsTex->Setup.RenderTarget) {
+        if (!dsTex->Setup.IsRenderTarget) {
             o_error("invalid render pass: depth attachment must have been setup as render target!\n");
         }
     }

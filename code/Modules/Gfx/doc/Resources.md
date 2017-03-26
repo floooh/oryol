@@ -19,9 +19,9 @@ please read the [Resource module documentation](../Resources/README.md).
 
 The Oryol Gfx module has the following resource types (it is recommended to first continue reading the general resource documentation below before diving into the different resource types):
 
-* **[Render Passes](RenderPasses.md)**: wrap rendering operations to a render target, clearing, offscreen rendering, multiple render targets, MSAA resolve
 * **[Meshes](Meshes.md)**: immutable or dynamic vertex and index data, 'primitive groups'
 * **[Textures](Textures.md)**: immutable or dynamic 2D-, 3D-, cubemap- and array-textures
+* **[Render Passes](RenderPasses.md)**: wrap rendering operations to a render target, clearing, offscreen rendering, multiple render targets, MSAA resolve
 * **[Shaders](Shaders.md)**: vertex-shaders, fragment-shaders and uniform-blocks
 * **[Pipelines](Pipelines.md)**: pipeline-state-objects containing immutable, precompiled render state and vertex-layout
 
