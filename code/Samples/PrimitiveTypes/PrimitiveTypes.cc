@@ -44,8 +44,8 @@ createIndexMesh(int numIndices, const void* data, int dataSize) {
     setup.NumVertices = 0;
     setup.NumIndices = numIndices;
     setup.IndicesType = IndexType::Index16;
-    setup.DataVertexOffset = InvalidIndex;
-    setup.DataIndexOffset = 0;
+    setup.VertexDataOffset = InvalidIndex;
+    setup.IndexDataOffset = 0;
     return Gfx::CreateResource(setup, data, dataSize);
 }
 

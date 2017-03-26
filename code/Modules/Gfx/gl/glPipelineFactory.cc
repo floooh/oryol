@@ -31,7 +31,6 @@ struct {
     { 2, GL_SHORT, GL_TRUE },                   // VertexFormat::Short2N
     { 4, GL_SHORT, GL_FALSE },                  // VertexFormat::Short4
     { 4, GL_SHORT, GL_TRUE },                   // VertexFormat::Short4N
-    { 4, GL_INT_2_10_10_10_REV, GL_TRUE },              // VertexFormat::Int10_2N
     { 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE },     // VertexFormat::UInt10_2N
 };
 

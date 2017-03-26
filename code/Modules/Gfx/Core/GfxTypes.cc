@@ -371,7 +371,6 @@ int VertexFormat::ByteSize(Code c) {
         case UByte4N:
         case Short2:
         case Short2N:
-        case Int10_2N:
         case UInt10_2N:
             return 4;
         case Short4:
@@ -398,7 +397,6 @@ const char* VertexFormat::ToString(Code c) {
         case Short2N:   return "Short2N";
         case Short4:    return "Short4";
         case Short4N:   return "Short4N";
-        case Int10_2N:  return "Int10_2N";
         case UInt10_2N: return "Int10_2N";
         default:
             o_error("VertexFormat::ToString(): invalid value!\n");
@@ -635,6 +633,14 @@ VertexLayout& VertexLayout::Add(const Component& comp) {
 //------------------------------------------------------------------------------
 VertexLayout& VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
     return this->Add(Component(attr, format));
+}
+
+//------------------------------------------------------------------------------
+VertexLayout& VertexLayout::Add(std::initializer_list<Component> l) {
+    for (const auto& c : l) {
+        this->Add(c);
+    }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -927,8 +933,8 @@ MeshSetup MeshSetup::Empty(int numVertices, Usage::Code vertexUsage, IndexType::
     setup.NumVertices = numVertices;
     setup.NumIndices = numIndices;
     setup.IndicesType = indexType;
-    setup.DataVertexOffset = InvalidIndex;
-    setup.DataIndexOffset = InvalidIndex;
+    setup.VertexDataOffset = InvalidIndex;
+    setup.IndexDataOffset = InvalidIndex;
     return setup;
 }
 

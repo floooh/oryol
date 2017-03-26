@@ -377,7 +377,6 @@ public:
         Short2N,        ///< 2-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
         Short4,         ///< 4-component float (-32768.0f..+32767.0f) mapped to short (-32768..+32767)
         Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
-        Int10_2N,       ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (-1.0 .. +1.0)
         UInt10_2N,      ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (0.0 .. 1.0)
 
         NumVertexFormats,       ///< number of vertex formats
@@ -953,6 +952,8 @@ public:
     VertexLayout& Add(const Component& comp);
     /// add component by name and format
     VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
+    /// add multiple components via initializer list
+    VertexLayout& Add(std::initializer_list<Component> l);
     /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
     VertexLayout& EnableInstancing();
     /// get number of components
@@ -1338,9 +1339,9 @@ public:
     /// placeholder Id
     Id Placeholder;
     /// vertex data byte offset in data (default: 0, set to InvalidIndex if no vertex data provided)
-    int DataVertexOffset = 0;
+    int VertexDataOffset = 0;
     /// index data byte offset in data (default: InvalidIndex, no index data provided)
-    int DataIndexOffset = 0;
+    int IndexDataOffset = 0;
 private:
     int numPrimGroups = 0;
     class PrimitiveGroup primGroups[GfxConfig::MaxNumPrimGroups];

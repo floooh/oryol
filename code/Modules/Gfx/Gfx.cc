@@ -528,14 +528,14 @@ Gfx::validateMeshSetup(const MeshSetup& setup, const void* data, int size) {
         o_assert(!setup.Layout.Empty());
         if (setup.VertexUsage == Usage::Immutable) {
             o_assert(data && (size > 0));
-            o_assert((setup.DataVertexOffset >= 0) && (setup.DataVertexOffset < size));
+            o_assert((setup.VertexDataOffset >= 0) && (setup.VertexDataOffset < size));
         }
     }
     if (setup.NumIndices > 0) {
         o_assert((setup.IndicesType == IndexType::Index16) || (setup.IndicesType == IndexType::Index32));
         if (setup.IndexUsage == Usage::Immutable) {
             o_assert(data && (size > 0));
-            o_assert((setup.DataIndexOffset >= 0) && (setup.DataIndexOffset < size));
+            o_assert((setup.IndexDataOffset >= 0) && (setup.IndexDataOffset < size));
         }
     }
 }

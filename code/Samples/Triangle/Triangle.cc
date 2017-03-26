@@ -41,15 +41,16 @@ TriangleApp::OnInit() {
     // create a mesh with vertex data from memory
     const float vertices[] = {
         // positions            // colors (RGBA)
-         0.0f,  0.5f,  0.5f,    1.0f, 0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,    0.0f, 1.0f, 0.0f , 1.0f,
-        -0.5f, -0.5f, 0.5f,    0.0f, 0.0f, 1.0f, 1.0f,
+         0.0f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
+        -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
     };
     auto meshSetup = MeshSetup::FromData();
     meshSetup.NumVertices = 3;
-    meshSetup.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    meshSetup.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
     meshSetup.AddPrimitiveGroup({0, 3});
     this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, vertices, sizeof(vertices));
 

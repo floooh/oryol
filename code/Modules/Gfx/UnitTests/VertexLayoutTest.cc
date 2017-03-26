@@ -57,5 +57,14 @@ TEST(VertexLayoutTest) {
     CHECK(l0.ComponentIndexByVertexAttr(VertexAttr::Position) == 0);
     CHECK(l0.ComponentIndexByVertexAttr(VertexAttr::Normal) == 1);
     CHECK(l0.ComponentIndexByVertexAttr(VertexAttr::TexCoord0) == 2);
+
+    VertexLayout l1;
+    l1.Add({
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Tangent, VertexFormat::Byte4N },
+    }).EnableInstancing();
+    CHECK(l1.ComponentIndexByVertexAttr(VertexAttr::Position) == 0);
+    CHECK(l1.ComponentIndexByVertexAttr(VertexAttr::Tangent) == 1);
+    CHECK(l1.StepFunction == VertexStepFunction::PerInstance);
 }
 

@@ -1,0 +1,7 @@
+fips_begin_app(Quad windowed)
+    fips_vs_warning_level(3)
+    fips_files(Quad.cc)
+    oryol_shader(shaders.shd)
+    fips_deps(Gfx)
+    oryol_add_web_sample(Quad "Render a quad with vertex-indices" "emscripten,android,pnacl" none "Quad/Quad.cc")
+fips_end_app()

@@ -181,8 +181,8 @@ glMeshFactory::createMesh(mesh& mesh, const void* data, int size) {
         mesh.buffers[mesh::vb].numSlots = Usage::Stream == vbAttrs.BufferUsage ? 2 : 1;
         const uint8_t* vertices = nullptr;
         if (ptr) {
-            o_assert_dbg(mesh.Setup.DataVertexOffset >= 0);
-            vertices = ptr + mesh.Setup.DataVertexOffset;
+            o_assert_dbg(mesh.Setup.VertexDataOffset >= 0);
+            vertices = ptr + mesh.Setup.VertexDataOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
         for (uint8_t slotIndex = 0; slotIndex < mesh.buffers[mesh::vb].numSlots; slotIndex++) {
@@ -197,8 +197,8 @@ glMeshFactory::createMesh(mesh& mesh, const void* data, int size) {
         mesh.buffers[mesh::ib].numSlots = Usage::Stream == ibAttrs.BufferUsage ? 2 : 1;
         const uint8_t* indices = nullptr;
         if (ptr) {
-            o_assert_dbg(mesh.Setup.DataIndexOffset >= 0);
-            indices = ptr + mesh.Setup.DataIndexOffset;
+            o_assert_dbg(mesh.Setup.IndexDataOffset >= 0);
+            indices = ptr + mesh.Setup.IndexDataOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
         for (uint8_t slotIndex = 0; slotIndex < mesh.buffers[mesh::ib].numSlots; slotIndex++) {

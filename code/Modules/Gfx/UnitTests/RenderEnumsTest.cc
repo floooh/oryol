@@ -160,7 +160,6 @@ TEST(VertexFormatTest) {
     CHECK(VertexFormat::ByteSize(VertexFormat::Short2N) == 4);
     CHECK(VertexFormat::ByteSize(VertexFormat::Short4) == 8);
     CHECK(VertexFormat::ByteSize(VertexFormat::Short4N) == 8);
-    CHECK(VertexFormat::ByteSize(VertexFormat::Int10_2N) == 4);
     CHECK(VertexFormat::ByteSize(VertexFormat::UInt10_2N) == 4);
 }
 
