@@ -43,8 +43,8 @@ You can chain those Add calls, sometimes this is more convenient:
 
 ```cpp
 VertexLayout layout;
-layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    .Add(VertexAttr::Normal, VertexFormat::Float3);
+layout.Add(VertexAttr::Position, VertexFormat::Float3)
+    .Add(VertexAttr::Normal, VertexFormat::Float3)
     .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
 ```
 
@@ -66,7 +66,7 @@ layout1.Add({
 ```
 
 The Oryol Gfx module supports a number of packed vertex formats, these are
-very useful to reduce memory usage and bandwidth. For instance it
+very useful to reduce memory usage and vertex-fetch bandwidth. For instance it
 often makes sense to pack normal data into a single Byte4N component (4
 bytes because all vertex data must be 4-byte-aligned):
 
@@ -89,10 +89,10 @@ the intended update strategy of the mesh data:
 
 * **Usage::Immutable**: the resource is initialized with data and cannot be
 changed later, this is the most common and most efficient usage
-* **Usage::Stream**: the resource is initialized without data, and the data
-will be be updated by the CPU in each frame
-* **Usage::Dynamic**: the resource is initialized without data and must
-be written by the CPU before use, but updates will be infrequent
+* **Usage::Stream**: the resource is initialized without data, but will be be 
+updated by the CPU in each frame
+* **Usage::Dynamic**: the resource is initialized without data and will
+be written by the CPU before use, updates will be infrequent
 (not per frame like in _Usage::Stream_)
 
 Usage hints are provided independently for vertex and index data, see
@@ -123,8 +123,8 @@ and for non-indexed rendering a range of vertices.
 
 Multiple primitive groups can be associated with a mesh at creation time,
 and a primitive-group-index used as parameter to the **Gfx::Draw()** method.
-This way the rendering code doesn't need to know too many details about the
-underlying mesh structure.
+This way the rendering code doesn't need to know how exactly the mesh
+data is split into groups.
 
 It is also possible to create meshes without primitive groups, in this
 case the drawing code needs to pass a PrimitiveGroup object to
