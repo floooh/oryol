@@ -123,7 +123,7 @@ Quit menu item). If this happens, the method **Gfx::QuitRequested()**
 will return true, and the per-frame-callback will return 
 AppState::Cleanup instead of AppState::Running, which causes the 
 parent application class to switch to the Cleanup state (and thus
-call the MyApp::OnCleanup() method):
+call the SimpleApp::OnCleanup() method):
 
 ```cpp
 AppState::Code SimpleApp::OnCleanup() {
