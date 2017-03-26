@@ -1,15 +1,15 @@
 ## A Simple Render Loop
 
-This document is a complete code-walkthrough of the most Gfx module render loop (setup the Gfx module, clear the
-framebuffer to black each frame, and shutdown the Gfx
-module).
+This document is a complete code-walkthrough of the most simple Gfx module
+render loop (setup the Gfx module, clear the framebuffer to black each
+frame, and shutdown the Gfx module).
 
 The complete git repository for this simple
 application is here: [https://github.com/floooh/oryol-simple/](https://github.com/floooh/oryol-simple/)
 
-### Preparation
+### Add a Linker Dependency
 
-First add the Gfx module to as linker dependency to your app's CMakeLists.txt file:
+First add the Gfx module as linker dependency to your app's CMakeLists.txt file:
 
 ```
 fips_begin_app(Simple windowed)
@@ -103,7 +103,7 @@ AppState::Code SimpleApp::OnRunning() {
 
 The **Gfx::BeginPass()** call starts rendering to the default
 framebuffer. The function is called without any arguments, this 
-means the default 'pass actions' is taking place, which clears the
+means the default 'pass actions' are applied: clear the
 color buffer to black, the depth buffer with 1.0, and the stencil buffer
 with 0.
 
@@ -116,7 +116,7 @@ rendering frame is complete and should be displayed.
 
 Finally we need to decide whether the application should quit. In a more
 complex application this might look a bit more involved, but in this
-simple demo we're only interested if the user quits the application
+simple demo we're only checking if the user quits the application
 through the host platform's window system (for instance by clicking
 on the 'close window' button, pressing Alt-F4, or selecting the
 Quit menu item). If this happens, the method **Gfx::QuitRequested()**
@@ -173,8 +173,9 @@ Gfx::Setup(setup);
 ```
 
 On platforms which support HighDPI rendering (e.g. Windows, macOS, iOS),
-rendering happens by default at half resolution. To render at full HighDPI
-resolution, the the GfxSetup::HighDPI member to true:
+rendering happens by default at half resolution if a HighDPI display is
+detected. To render at full HighDPI the the GfxSetup::HighDPI member to
+true:
 
 ```cpp
 GfxSetup setup;
@@ -204,10 +205,10 @@ setup.DefaultPassAction.ClearAll(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.5f, 255);
 
 More information on render pass actions [is provided here](RenderPasses.md).
 
-Finally there's a number of GfxSetup member which tweak various
-Gfx resource system upper bounds. When starting with Oryol you don't
-need to care about those values too much, but they are either useful
-for very big apps (which use a lot of resources), or very small app
+Finally there's a number of GfxSetup members which tweak various
+Gfx resource-system upper bounds. When starting with Oryol you don't
+need to care about those values yet, but tweaking those values will
+be useful for very big apps (which use a lot of resources), or very small app
 which only use a handful resources.
 
 Just for completeness, here are the GfxSetup members for resource

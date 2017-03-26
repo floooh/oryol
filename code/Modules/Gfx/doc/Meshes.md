@@ -21,7 +21,8 @@ component consists of a **vertex attribute** (describing what the
 vertex component is used for), and the **vertex format** (the data
 type and number of values in the vertex component).
 
-Some vertex structures, and how the corresponding vertex layout is created:
+Here are some vertex structs, and how the corresponding
+vertex layout object is created:
 
 ```cpp
 // a vertex with a position, normal and a single 2D texcoords, all floats
@@ -65,9 +66,9 @@ layout1.Add({
 ```
 
 The Oryol Gfx module supports a number of packed vertex formats, these are
-very useful to save memory and vertex fetching bandwidth. For instance it
+very useful to reduce memory and bandwidth. For instance it
 often makes sense to pack normal data into a single Byte4N component (4
-bytes instead of 3 for alignment reasons):
+bytes because all vertex data must be 4-byte-aligned):
 
 ```cpp
 struct PackedVertex {
@@ -84,7 +85,7 @@ VertexLayout packedLayout({
 #### Usage Hints
 
 When creating a new mesh resource the Gfx module needs to be hinted about
-the itended update strategy of the mesh data:
+the intended update strategy of the mesh data:
 
 * **Usage::Immutable**: the resource is initialized with data and cannot be
 changed later, this is the most common and most efficient usage
@@ -100,9 +101,9 @@ the _Mesh Creation_ section below for more details.
 #### Index Types
 
 Vertex indices in the Oryol Gfx module can be either 16- or 32-bit. You
-should always use 16-bit indices though unless 32-bit indices are definitely
-required. 32-bit indices may have a performance penalty on some platforms,
-and they require more bandwidth.
+should always prefer 16-bit indices over 32-bit indices, since the latter
+may have performance panelties on some platforms, and they take
+up twice as much memory.
 
 * **IndexType::None**: the mesh has no index data
 * **IndexType::Index16**: the index data type is uint16_t
@@ -111,7 +112,7 @@ and they require more bandwidth.
 #### Primitive Groups
 
 A single mesh often contains vertex and index data for several unrelated
-drawing operations. For instance the data in the mesh may be split into
+drawing operations. For instance the data in a mesh may be split into
 different material groups, where each group must be rendered with 
 a separate draw call. A **PrimitiveGroup** is a simple value pair
 made of a _Base Element Index_ and _Element Count_ which together
@@ -146,8 +147,8 @@ This creates a triangle with vertex colors:
 ```cpp
 const float vertices[] = {
     // positions            // colors (RGBA)
-        0.0f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
+     0.0f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
     -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
 };
 auto meshSetup = MeshSetup::FromData();

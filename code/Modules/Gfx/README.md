@@ -28,16 +28,16 @@ is the Samples source code.
 Looking at those four samples should give you most of the
 information necessary to work with the Gfx module:
 
-* [Clear Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Clear/Clear.cc)
-* [Triangle Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Triangle/Triangle.cc)
-* [Shapes Sample](https://github.com/floooh/oryol/blob/master/code/Samples/Shapes/Shapes.cc)
-* [Texture Loading](https://github.com/floooh/oryol/blob/master/code/Samples/DDSCubeMap/DDSCubeMap.cc)
-* [Offscreen Render Targets](https://github.com/floooh/oryol/blob/master/code/Samples/SimpleRenderTarget/SimpleRenderTarget.cc)
+* [Clear Sample](../../Samples/Clear/Clear.cc)
+* [Triangle Sample](../../Samples/Triangle/Triangle.cc)
+* [Shapes Sample](../../Samples/Shapes/Shapes.cc)
+* [Texture Loading](../../Samples/DDSCubeMap/DDSCubeMap.cc)
+* [Offscreen Render Targets](../../Samples/SimpleRenderTarget/SimpleRenderTarget.cc)
 
 ### Topics
 
-* [Render Backends](doc/RenderBackends.md)
-* [A simple Render Loop](doc/RenderLoop.md)
+* [Rendering Backends](doc/RenderBackends.md)
+* [A Simple Render Loop](doc/RenderLoop.md)
 * [Resource Objects](doc/Resources.md)
 * [Shader Programming](doc/Shaders.md)
 * [Offscreen Rendering](doc/OffscreenRendering.md)

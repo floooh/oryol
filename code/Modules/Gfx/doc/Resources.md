@@ -13,7 +13,7 @@ with a focus on ease-of-use over 'explicitness'.
 ### Resource Concepts
 
 For a general overview of resource objects in Oryol, 
-please read the [Resource module documentation](../Resources/README.md).
+please read the [Resource module documentation](../../Resources/README.md).
 
 ### Gfx Module Resource Types
 
@@ -25,10 +25,10 @@ The Oryol Gfx module has the following resource types (it is recommended to firs
 * **[Shaders](Shaders.md)**: vertex-shaders, fragment-shaders and uniform-blocks
 * **[Pipelines](Pipelines.md)**: pipeline-state-objects containing immutable, precompiled render state and vertex-layout
 
-There are also **UniformBlocks**, these similar to resources in that
+There are also **UniformBlocks**, these are similar to resources in that
 they are 'bound' before draw calls take place. But UniformBlocks 
 are not resources in the typical sense since they are just simple
-plain-old-data C structures, they are not explicitely created or destroyed through the Gfx module.
+C structures, they are not explicitely created or destroyed through the Gfx module.
 
 ### Resource Creation
 
