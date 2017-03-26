@@ -59,9 +59,10 @@ NativeTextureApp::OnInit() {
 
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4);
     this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shader::Setup());

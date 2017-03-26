@@ -62,8 +62,10 @@ PackedNormalsApp::OnInit() {
     Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    shapeBuilder.Layout.Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N }
+    };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)

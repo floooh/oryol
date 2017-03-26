@@ -84,9 +84,10 @@ RenderToCubeMapApp::OnInit() {
 
     // mesh, shaders and pipelines to render color shapes
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Float3);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Float3 }
+    };
     shapeBuilder
         .Box(1.0f, 1.0f, 1.0f, 1, true)
         .Cylinder(0.5f, 1.0f, 36, 1, true)

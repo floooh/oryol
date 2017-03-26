@@ -199,17 +199,100 @@ this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, &data, sizeof(data));
 
 #### Create a mesh with dynamic vertex- and static index-data
 
+TODO
+
 #### Create a mesh with index data only
+
+TODO
 
 ### Mesh Data Creation Helpers
 
-### Mesh Usage
+The Oryol Assets module has a few useful helper classes to generate mesh 
+data:
 
-### Immutable vs Dynamic Meshes
+- **ShapeBuilder**: create box, sphere, cylinder, torus and plane primitive shapes
+- **MeshBuilder**: create arbitrary vertex and index data
+- **VertexWriter**: write vertex data with automatic vertex component packing
+
+The following ShapeBuilder code sample creates a single mesh with all possible
+shape primitives, each in a separate primitive group (so that they can be
+rendered with individual transforms). The code sample is taken from the
+[PackedNormals sample](http://floooh.github.io/oryol/asmjs/PackedNormals.html):
+
+```cpp
+#include "Assets/Gfx/ShapeBuilder.h"
+...
+
+ShapeBuilder shapeBuilder;
+shapeBuilder.Layout = {
+    { VertexAttr::Position, VertexFormat::Float3 },
+    { VertexAttr::Normal, VertexFormat::Byte4N }
+};
+shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
+    .Sphere(0.75f, 36, 20)
+    .Cylinder(0.5f, 1.5f, 36, 10)
+    .Torus(0.3f, 0.5f, 20, 36)
+    .Plane(1.5f, 1.5f, 10);
+this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+```
+
+If you need more flexible mesh data creation, the lower level MeshBuilder class is the
+next best option. Here is an example which creates a grid mesh with alternating vertex
+colors. This is taken from the [PrimitiveTypes sample](http://floooh.github.io/oryol/asmjs/PrimitiveTypes.html). Note how the
+vertex colors are provided as 4 floats, and automatically packed into an UByte4N
+vertex format:
+
+```cpp
+#include "Assets/Gfx/MeshBuilder.h"
+
+MeshBuilder meshBuilder;
+meshBuilder.NumVertices = NumVertices;
+meshBuilder.IndicesType = IndexType::None;
+meshBuilder.Layout = {
+    { VertexAttr::Position, VertexFormat::Float3 },
+    { VertexAttr::Color0, VertexFormat::UByte4N }
+};
+meshBuilder.Begin();
+const float dx = 1.0f / NumX;
+const float dy = 1.0f / NumY;
+const float xOffset = -dx * (NumX/2);
+const float yOffset = -dy * (NumY/2);
+for (int y = 0, vi=0; y < NumY; y++) {
+    for (int x = 0; x < NumX; x++, vi++) {
+        meshBuilder.Vertex(vi, VertexAttr::Position, x*dx+xOffset, y*dy+yOffset, 0.0f);
+        switch (vi % 3) {
+            case 0: meshBuilder.Vertex(vi, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f); break;
+            case 1: meshBuilder.Vertex(vi, VertexAttr::Color0, 0.0f, 1.0f, 0.0f, 1.0f); break;
+            default: meshBuilder.Vertex(vi, VertexAttr::Color0, 1.0f, 1.0f, 0.0f, 1.0f); break;
+        }
+    }
+}
+Id vertexMesh = Gfx::CreateResource(meshBuilder.Build());
+```
+
+If you just need a very low level way to write packed vertices to memory you can
+use the VertexWriter class (the header is _Assets/VertexWriter.h_):
+
+```cpp
+class VertexWriter {
+public:
+    /// write 1D generic vertex component with run-time pack-format selection
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x);
+    /// write 2D generic vertex component with run-time pack-format selection
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y);
+    /// write 3D generic vertex component with run-time pack-format selection
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y, float z);
+    /// write 4D generic vertex component with run-time pack-format selection
+    static uint8_t* Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y, float z, float w);
+};
+```
 
 ### Multiple Input Meshes
 
+TODO
+
 ### Hardware Instancing
 
+TODO
 
 

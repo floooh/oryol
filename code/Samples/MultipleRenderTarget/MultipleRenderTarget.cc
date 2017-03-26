@@ -79,10 +79,11 @@ MultipleRenderTargetApp::OnInit() {
 
     // create a mesh with 2 shapes, a box and a plane
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::UByte4N)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::UByte4N },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     shapeBuilder.Plane(1.0f, 1.0f, 1);
     Id cubeMesh = Gfx::CreateResource(shapeBuilder.Build());

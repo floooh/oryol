@@ -61,10 +61,11 @@ InfiniteSpheresApp::OnInit() {
 
     // create a sphere shape mesh
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Sphere(0.75f, 72, 40);
     Id sphere = Gfx::CreateResource(shapeBuilder.Build());
     this->offscreenDrawState.Mesh[0] = sphere;

@@ -71,9 +71,10 @@ BlendTestApp::OnInit() {
     MeshBuilder meshBuilder;
     meshBuilder.NumVertices = 3;
     meshBuilder.IndicesType = IndexType::None;
-    meshBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    meshBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
     meshBuilder.PrimitiveGroups.Add(0, 3);
     meshBuilder.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.05f, 0.5f)

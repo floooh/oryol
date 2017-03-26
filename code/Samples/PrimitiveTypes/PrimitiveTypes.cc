@@ -74,9 +74,10 @@ PrimitiveTypesApp::OnInit() {
     MeshBuilder meshBuilder;
     meshBuilder.NumVertices = NumVertices;
     meshBuilder.IndicesType = IndexType::None;
-    meshBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::UByte4N);
+    meshBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::UByte4N }
+    };
     meshBuilder.Begin();
     const float dx = 1.0f / NumX;
     const float dy = 1.0f / NumY;

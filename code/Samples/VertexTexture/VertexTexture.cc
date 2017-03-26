@@ -63,9 +63,10 @@ VertexTextureApp::OnInit() {
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Plane(3.0f, 3.0f, 255);
     this->planeDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id planeShader = Gfx::CreateResource(PlaneShader::Setup());

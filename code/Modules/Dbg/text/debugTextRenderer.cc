@@ -191,10 +191,10 @@ debugTextRenderer::setupTextMesh() {
     
     // setup an empty mesh, only vertices
     int maxNumVerts = MaxNumChars * 6;
-    this->vertexLayout
-        .Add(VertexAttr::Position, VertexFormat::Float4)
-        .Add(VertexAttr::Color0, VertexFormat::UByte4N);
-
+    this->vertexLayout = {
+        { VertexAttr::Position, VertexFormat::Float4 },
+        { VertexAttr::Color0, VertexFormat::UByte4N }
+    };
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;

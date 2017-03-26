@@ -61,9 +61,10 @@ SimpleRenderTargetApp::OnInit() {
     // create a donut mesh, shader and pipeline object
     // (this will be rendered into the offscreen render target)
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N }
+    };
     shapeBuilder.Torus(0.3f, 0.5f, 20, 36);
     this->offscreenDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 
@@ -78,11 +79,11 @@ SimpleRenderTargetApp::OnInit() {
     this->offscreenDrawState.Pipeline = Gfx::CreateResource(offpsSetup);
 
     // create a sphere mesh, shader and pipeline object for rendering to display
-    shapeBuilder.Layout
-        .Clear()
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Sphere(0.5f, 72, 40);
     this->displayDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 

@@ -68,7 +68,7 @@ VolumeTextureApp::OnInit() {
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
+    shapeBuilder.Layout = { { VertexAttr::Position, VertexFormat::Float3 } };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
     this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
 
