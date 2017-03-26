@@ -174,7 +174,7 @@ Gfx::Setup(setup);
 
 On platforms which support HighDPI rendering (e.g. Windows, macOS, iOS),
 rendering happens by default at half resolution if a HighDPI display is
-detected. To render at full HighDPI the the GfxSetup::HighDPI member to
+detected. To render at full resolution set the GfxSetup::HighDPI member to
 true:
 
 ```cpp
