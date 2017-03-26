@@ -76,16 +76,15 @@ Gfx::Draw();
 Gfx::EndPass();
 ```
 
-The function **Gfx::BeginPass*()** optionally takes the resource id of
+The function **Gfx::BeginPass()** optionally takes the resource id of
 a render pass object, in this case, offscreen rendering will be 
 performed (if no pass id is given to Gfx::BeginPass() rendering
 will go into the default framebuffer).
 
-**Gfx::ApplyDrawState()** is the most important resource binding
-function, since this binds a pipeline state object, meshes and 
-textures. A **DrawState** is the a simple C structure with bindind
-slots for one pipeline object, and a fixed number of resource slots
-for mesh data, and textures. 
+**Gfx::ApplyDrawState()** is the most important resource binding function,
+since this binds a pipeline state object, meshes and textures. A
+**DrawState** is a simple C structure with bind-slots for one pipeline
+object, and a fixed number of resource slots for meshes and textures.
 
 Since a draw state object is just a simple C structure (similar to a
 UniformBlock) it can be reconfigured any time by pluggin different resources

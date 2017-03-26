@@ -25,7 +25,7 @@ Here are some vertex structs, and how the corresponding
 vertex layout object is created:
 
 ```cpp
-// a vertex with a position, normal and a single 2D texcoords, all floats
+// a vertex with a position, normal and a single 2D uv set, all floats
 struct Vertex {
     float position[3];  
     float normal[3];
@@ -66,7 +66,7 @@ layout1.Add({
 ```
 
 The Oryol Gfx module supports a number of packed vertex formats, these are
-very useful to reduce memory and bandwidth. For instance it
+very useful to reduce memory usage and bandwidth. For instance it
 often makes sense to pack normal data into a single Byte4N component (4
 bytes because all vertex data must be 4-byte-aligned):
 
@@ -92,7 +92,7 @@ changed later, this is the most common and most efficient usage
 * **Usage::Stream**: the resource is initialized without data, and the data
 will be be updated by the CPU in each frame
 * **Usage::Dynamic**: the resource is initialized without data and must
-be written be the CPU before use, but the data update will be infrequently
+be written by the CPU before use, but updates will be infrequent
 (not per frame like in _Usage::Stream_)
 
 Usage hints are provided independently for vertex and index data, see
@@ -102,7 +102,7 @@ the _Mesh Creation_ section below for more details.
 
 Vertex indices in the Oryol Gfx module can be either 16- or 32-bit. You
 should always prefer 16-bit indices over 32-bit indices, since the latter
-may have performance panelties on some platforms, and they take
+may have performance penalties on some platforms, and they take
 up twice as much memory.
 
 * **IndexType::None**: the mesh has no index data
@@ -122,21 +122,21 @@ For indexed rendering the value pair describes a range of indices,
 and for non-indexed rendering a range of vertices.
 
 Multiple primitive groups can be associated with a mesh at creation time,
-and used as used as parameter to the **Gfx::Draw()** method. This way the
-rendering code doesn't need to know too many details about the underlying
-mesh data.
+and a primitive-group-index used as parameter to the **Gfx::Draw()** method.
+This way the rendering code doesn't need to know too many details about the
+underlying mesh structure.
 
 It is also possible to create meshes without primitive groups, in this
-case the drawing code needs pass a PrimitiveGroup object to
+case the drawing code needs to pass a PrimitiveGroup object to
 an overloaded version of **Gfx::Draw()**.
 
 ### Mesh Creation
 
 Mesh creation follows the usual resource creation pattern:
 
-* fill a MeshSetup object with creation parameters
-* optionally setup the initial vertex- and index data
-* call Gfx::CreateResource() and get an opaque Id back
+* fill a **MeshSetup** object with creation parameters
+* optionally setup the initial vertex- and index data in memory
+* call **Gfx::CreateResource()** and get an opaque Id back
 
 Following are a number of examples for the most common scenarios:
 
