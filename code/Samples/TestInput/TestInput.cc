@@ -486,7 +486,7 @@ TestInputApp::OnRunning() {
     this->updateView();
     
     // draw frame
-    Gfx::BeginPass(PassAction::ClearAll(this->getClearColor()));
+    Gfx::BeginPass(PassAction::Clear(this->getClearColor()));
     this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::EndPass();

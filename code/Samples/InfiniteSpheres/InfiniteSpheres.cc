@@ -29,7 +29,7 @@ private:
         Id pass;
     } passInfo[2];
     Shader::VSParams vsParams;
-    PassAction passAction = PassAction::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    PassAction passAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;

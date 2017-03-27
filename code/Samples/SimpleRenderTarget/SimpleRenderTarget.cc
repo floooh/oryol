@@ -25,8 +25,6 @@ private:
     DrawState displayDrawState;
     OffscreenShader::VSParams offscreenParams;
     DisplayShader::VSParams displayVSParams;
-    PassAction offscreenPassState = PassAction::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
-    PassAction displayPassState = PassAction::ClearAll(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -40,6 +38,7 @@ AppState::Code
 SimpleRenderTargetApp::OnInit() {
 
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
+    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
     Gfx::Setup(gfxSetup);
 
     // create an offscreen render pass object with a single color attachment
@@ -56,6 +55,7 @@ SimpleRenderTargetApp::OnInit() {
     }
     Id rtTexture = Gfx::CreateResource(rtSetup);
     auto rpSetup = PassSetup::From(rtTexture, rtTexture);
+    rpSetup.DefaultAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     this->renderPass = Gfx::CreateResource(rpSetup);
 
     // create a donut mesh, shader and pipeline object
@@ -114,7 +114,7 @@ SimpleRenderTargetApp::OnRunning() {
     this->angleX += 0.02f;
     
     // render donut to offscreen render target
-    Gfx::BeginPass(this->renderPass, this->offscreenPassState);
+    Gfx::BeginPass(this->renderPass);
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
@@ -122,7 +122,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::EndPass();
     
     // render sphere to display, with offscreen render target as texture
-    Gfx::BeginPass(this->displayPassState);
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);

@@ -95,7 +95,7 @@ DDSTextureLoadingApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
-    gfxSetup.DefaultPassAction = PassAction::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
 
     // setup resources

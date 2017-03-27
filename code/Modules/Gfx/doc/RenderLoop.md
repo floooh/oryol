@@ -191,7 +191,7 @@ clear the default framebuffer with color red instead of black:
 
 ```cpp
 GfxSetup setup;
-setup.DefaultPassAction.ClearAll(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+setup.DefaultPassAction = PassAction::ClearAll(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 ...
 ```
 ...you can also change the clear values for the depth/stencil buffer from
@@ -199,7 +199,7 @@ the default 1.0 and 0:
 
 ```cpp
 GfxSetup setup;
-setup.DefaultPassAction.ClearAll(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.5f, 255);
+setup.DefaultPassAction = PassAction::ClearAll(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.5f, 255);
 ...
 ```
 

@@ -67,7 +67,7 @@ DDSCubeMapApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DXT Cube Map Sample");
-    gfxSetup.DefaultPassAction = PassAction::ClearAll(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
 
     // create resources

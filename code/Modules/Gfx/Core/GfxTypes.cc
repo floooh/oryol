@@ -507,7 +507,7 @@ PassAction::PassAction() {
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::ClearAll(const glm::vec4& c, float d, uint8_t s) {
+PassAction PassAction::Clear(const glm::vec4& c, float d, uint8_t s) {
     PassAction p;
     p.Color.Fill(c);
     p.Depth = d;
@@ -516,7 +516,7 @@ PassAction PassAction::ClearAll(const glm::vec4& c, float d, uint8_t s) {
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::ClearAll(std::initializer_list<glm::vec4> colors, float d, uint8_t s) {
+PassAction PassAction::Clear(std::initializer_list<glm::vec4> colors, float d, uint8_t s) {
     PassAction p;
     int i = 0;
     for (const auto& c : colors) {
@@ -524,6 +524,20 @@ PassAction PassAction::ClearAll(std::initializer_list<glm::vec4> colors, float d
     }
     p.Depth = d;
     p.Stencil = s;
+    return p;
+}
+
+//------------------------------------------------------------------------------
+PassAction PassAction::Load() {
+    PassAction p;
+    p.Flags = LoadC0|LoadC1|LoadC2|LoadC3|LoadDS;
+    return p;
+}
+
+//------------------------------------------------------------------------------
+PassAction PassAction::DontCare() {
+    PassAction p;
+    p.Flags = 0;
     return p;
 }
 

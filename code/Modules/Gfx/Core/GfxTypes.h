@@ -824,9 +824,15 @@ public:
     /// default constructor, set all actions to 'clear with default values'
     PassAction();
     /// clear all surfaces with given values
-    static PassAction ClearAll(const glm::vec4& color=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float depth=1.0f, uint8_t stencil=0);
+    static PassAction Clear(const glm::vec4& color=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float depth=1.0f, uint8_t stencil=0);
     /// clear all surfaces with individual colors
-    static PassAction ClearAll(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
+    static PassAction Clear(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
+    /// load previous content
+    static PassAction Load();
+    /// discard previous content
+    static PassAction DontCare();
+
+    /// FIXME: these methods are confusing, since some are static, some are not!
     /// clear a single surface to a color
     PassAction& ClearColor(int index, const glm::vec4& color);
     /// clear depth-stencil surface  
