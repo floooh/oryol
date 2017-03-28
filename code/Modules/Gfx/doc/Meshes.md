@@ -198,11 +198,7 @@ this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, &data, sizeof(data));
 }
 ```
 
-#### Create a mesh with dynamic vertex- and static index-data
-
-TODO
-
-#### Create a mesh with index data only
+#### Create a mesh with dynamically updated data
 
 TODO
 
