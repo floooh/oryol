@@ -266,10 +266,10 @@ by clearing the smart pointer.
 
 ```cpp
 
-// need to store Ptr<IOProtocol::Read> at a persistent place
+// need to store Ptr<Oryol::IORead> at a persistent place
 class MyClass {
     ...
-    Ptr<IOProtocol::Read> ioRequest;
+    Ptr<Oryol::IORead> ioRequest;
     ...
 };
 
@@ -277,7 +277,7 @@ class MyClass {
 this->ioRequest = IO::LoadFile("tex:wood.dds");
 
 // frequently check whether the IO request has finished (e.g. once per frame)
-if (this->ioRequest.Handled()) {
+if (this->ioRequest != nullptr && this->ioRequest->Handled) {
     // success?
     if (IOStatus::OK == this->ioRequest->Status) {
         // do something with the loaded data...
