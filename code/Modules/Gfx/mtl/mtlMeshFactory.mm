@@ -133,8 +133,8 @@ mtlMeshFactory::createMesh(mesh& msh, const void* data, int size) {
         msh.buffers[mesh::vb].numSlots = Usage::Immutable == vbAttrs.BufferUsage ? 1 : 2;
         const uint8* vertices = nullptr;
         if (data) {
-            o_assert((msh.Setup.DataVertexOffset >= 0) && (size > 0));
-            vertices = ptr + msh.Setup.DataVertexOffset;
+            o_assert((msh.Setup.VertexDataOffset >= 0) && (size > 0));
+            vertices = ptr + msh.Setup.VertexDataOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
         for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::vb].numSlots; slotIndex++) {
@@ -150,8 +150,8 @@ mtlMeshFactory::createMesh(mesh& msh, const void* data, int size) {
         msh.buffers[mesh::ib].numSlots = Usage::Immutable == ibAttrs.BufferUsage ? 1 : 2;
         const uint8* indices = nullptr;
         if (data) {
-            o_assert((msh.Setup.DataIndexOffset >= 0) && (size > 0));
-            indices = ptr + msh.Setup.DataIndexOffset;
+            o_assert((msh.Setup.IndexDataOffset >= 0) && (size > 0));
+            indices = ptr + msh.Setup.IndexDataOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
         for (uint8 slotIndex = 0; slotIndex < msh.buffers[mesh::ib].numSlots; slotIndex++) {

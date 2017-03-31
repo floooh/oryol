@@ -86,7 +86,7 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     const TextureSetup& setup = tex.Setup;
     #if ORYOL_DEBUG
     o_assert(setup.NumMipMaps > 0);
-    if (setup.RenderTarget) {
+    if (setup.IsRenderTarget) {
         o_assert(PixelFormat::IsValidRenderTargetColorFormat(setup.ColorFormat));
     }
     #endif
@@ -97,7 +97,7 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     // create metal texture object
     MTLTextureDescriptor* texDesc = [[MTLTextureDescriptor alloc] init];
     texDesc.textureType = mtlTypes::asTextureType(setup.Type);
-    if (setup.RenderTarget) {
+    if (setup.IsRenderTarget) {
         texDesc.pixelFormat = mtlTypes::asRenderTargetColorFormat(setup.ColorFormat);
     }
     else {
@@ -123,7 +123,7 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
         texDesc.arrayLength = 1;
     }
     texDesc.usage = MTLTextureUsageShaderRead;
-    if (setup.RenderTarget) {
+    if (setup.IsRenderTarget) {
         texDesc.resourceOptions = MTLResourceStorageModePrivate;
         texDesc.cpuCacheMode = MTLCPUCacheModeDefaultCache;
         texDesc.storageMode = MTLStorageModePrivate;
@@ -179,7 +179,7 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
         }
     }
 
-    if (setup.RenderTarget) {
+    if (setup.IsRenderTarget) {
         // prepare texture descriptor for optional MSAA and depth texture
         texDesc.textureType = MTLTextureType2D;
         texDesc.depth = 1;
@@ -197,7 +197,7 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
 
         // create optional depth buffer texture (may be MSAA)
         if (setup.HasDepth()) {
-            o_assert_dbg(setup.RenderTarget);
+            o_assert_dbg(setup.IsRenderTarget);
             o_assert_dbg(PixelFormat::IsValidRenderTargetDepthFormat(setup.DepthFormat));
             o_assert_dbg(PixelFormat::None != setup.DepthFormat);
             texDesc.pixelFormat = mtlTypes::asRenderTargetDepthFormat(setup.DepthFormat);
@@ -222,7 +222,7 @@ mtlTextureFactory::createTexture(texture& tex, const void* data, int size) {
     attrs.Height        = setup.Height;
     attrs.Depth         = setup.Depth;
     attrs.NumMipMaps    = setup.NumMipMaps;
-    attrs.IsRenderTarget = setup.RenderTarget;
+    attrs.IsRenderTarget = setup.IsRenderTarget;
     attrs.HasDepthBuffer = setup.HasDepth();
     tex.textureAttrs = attrs;
 
