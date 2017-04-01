@@ -70,7 +70,7 @@ fips_end_app()
 
 After a _fips gen_ the new shader will be evaluated when the project
 is built, and a C++ header/source pair will be generated
-(in this case it would the pair would be shader.h / shader.cc).
+(in this case the generated pair would be shader.h / shader.cc).
 
 The generated source code contains the code to create
 a ready-to-use shader resource object:
