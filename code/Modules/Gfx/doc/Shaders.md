@@ -207,7 +207,362 @@ sampler2D tex Texture
 @program Shader vs fs
 ```
 
-FIXME: texture usage in C++ code
+On the C++ side, texture blocks are not exposed as C structs
+like uniform blocks, instead binding slot indices will be
+written to the generated C++ header:
 
+```cpp
+struct Textures {
+    static const int Texture = 0;
+};
+```
 
+The struct name 'Textures' and constant name 'Texture' is
+taken from the texture block definition in shaders.shd:
 
+```glsl
+@texture_block textures Textures
+sampler2D tex Texture
+@end
+```
+
+To bind a texture to this slot in the fragment-shader stage in
+C++ (along with a pipeline state object and mesh):
+
+```cpp
+DrawState ds;
+ds.Pipeline = myPipeline;
+ds.Meshes[0] = myMesh;
+ds.FSTexture[Textures::Texture] = myTexture;
+Gfx::ApplyDrawState(ds);
+```
+
+### Shader Programming Reference
+
+#### @-Tags
+
+@-tags are used as meta-keywords which are parsed by the
+shader code generator and removed before the code is handed
+to the platform-specific shader compilers.
+
+##### @vs \[name\]
+
+Defines a vertex shader main-function, must be finished with an ```@end``` tag. Inside the (```@vs```,```@end```) tags the
+following tags a valid:
+
+* ```@in```: the vertex-shader input attributes
+* ```@out```: the vertex-shader output attributes
+* ```@use_uniform_block```: one for each uniform-block used by the vertex shader
+* ```@use_texture_block```: one for each texture-block used by the vertex shader
+* ```@use_code_block```: one for each code-block used by the vertex shader
+
+In addition to its custom output parameters, a vertex shader function
+must write the special 'homogeneous vertex position' variable 
+```_position```.
+
+An example, non-trivial vertex shader could look like this:
+
+```glsl
+@vs shapeVS
+@use_uniform_block shapeVSParams
+@in vec4 position
+@in vec3 normal
+@out vec3 worldPosition
+@out vec3 worldNormal
+@out vec3 worldEyePos
+@out vec3 worldLightDir
+@out vec4 color
+{
+    _position = mul(mvp, position);
+    worldPosition = mul(model, position).xyz;
+    worldNormal = mul(model, vec4(normal, 0.0)).xyz;
+    worldEyePos = eyePos;
+    worldLightDir = lightDir;
+    color = shapeColor;
+}
+@end
+```
+
+##### @fs \[name\]
+
+Defines a fragment-shader main-function, must be finished with an
+```@end``` tag. Inside (```@fs```,```@end```) the following tags
+are valid:
+
+* ```@in```: the fragment-shader input attributes
+* ```@use_uniform_block```: one for each uniform-block used by the fragment shader
+* ```@use_texture_block```: one for each texture-block used by the fragment shader
+* ```@use_code_block```: one for each code-block used by the fragment shader
+
+A fragment shader is expected to write the output color to the special
+variable ```_color```, or for multiple-render-target-rendering, to
+```_color```, ```_color1```, ```_color2``` and ```_color3``` (depending
+on the number of render targets).
+
+A non-trivial fragment shader could look like this:
+
+```glsl
+@fs sphereFS
+@use_texture_block textures
+@use_code_block lighting
+@use_code_block util
+@in vec3 worldPosition
+@in vec3 worldNormal
+@in vec3 worldEyePos
+@in vec3 worldLightDir
+{
+    vec3 eyeVec = normalize(worldEyePos.xyz - worldPosition.xyz);
+    vec3 nrm = normalize(worldNormal.xyz);
+
+    // reflection, refraction and fresnel
+    vec3 refl = reflect(-eyeVec, nrm);
+    vec3 refr = refract(-eyeVec, nrm, 0.7);
+    vec4 reflectColor = texCUBE(tex, refl);
+    vec4 refractColor;
+    if (length(refr) > 0.0) {
+        refractColor = texCUBE(tex, refr);
+    }
+    else {
+        refractColor = reflectColor;
+    }
+    float fr = fresnel(eyeVec, nrm, 0.4);
+    vec3 c = vec3(1.5, 1.2, 1.2) * fr * mix(refractColor.xyz, reflectColor.xyz, fr);
+    c = light(c, eyeVec, nrm, normalize(worldLightDir));
+    _color = vec4(gamma(c), 1.0);
+}
+@end
+```
+
+##### @program \[name\] \[vs\_name\] \[fs\_name\]
+
+The program tag is used to associate a vertex-shader with a
+fragment-shader. Note that outputs of the vertex shader must
+match exactly the inputs of the fragment shader (names, types and
+order).
+
+For example:
+
+```glsl
+@vs sphereVS
+@in vec4 position
+@in vec3 normal
+@out vec3 worldPosition
+@out vec3 worldNormal
+@out vec3 worldEyePos
+@out vec3 worldLightDir
+    ...
+@end
+
+@fs sphereFS
+@in vec3 worldPosition
+@in vec3 worldNormal
+@in vec3 worldEyePos
+@in vec3 worldLightDir
+    ...
+@end
+
+@program SphereShader sphereVS sphereFS
+```
+
+Note how the ```@out```puts of the vertex shader match the ```@in```puts of the fragment shader.
+
+##### @in \[type\]\[name\]
+
+The ```@in``` tag must appear inside a ```@vs``` or ```@fs``` block
+and defines an input argument to the vertex- or fragment-shader main
+function.
+
+Only the following ```types``` are allowed as input- or output
+arguments: ```float, vec2, vec3 or vec4```.
+
+For the vertex shader, ```name``` must be a valid vertex attribute name
+(this is used for matching mesh-data vertex components to vertex-shader-
+inputs):
+
+```position, normal, texcoord0..3, tangent, binormal, weights, indices, color0..1, instance0..3```
+
+Note how these match the members of the C++ VertexAttr enum class:
+
+```cpp
+class VertexAttr {
+public:
+    /// vertex attribute enum
+    enum Code : uint8_t {
+        Position = 0,   ///< "position"
+        Normal,         ///< "normal"
+        TexCoord0,      ///< "texcoord0"
+        TexCoord1,      ///< "texcoord1"
+        TexCoord2,      ///< "texcoord2"
+        TexCoord3,      ///< "texcoord3"
+        Tangent,        ///< "tangent
+        Binormal,       ///< "binormal"
+        Weights,        ///< "weights" (skin weights)
+        Indices,        ///< "indices" (skin indices)
+        Color0,         ///< "color0"
+        Color1,         ///< "color1"
+        Instance0,      ///< "instance0"
+        Instance1,      ///< "instance1"
+        Instance2,      ///< "instance2"
+        Instance3,      ///< "instance3"
+
+        NumVertexAttrs,
+        InvalidVertexAttr,
+    };
+
+    /// convert to string
+    static const char* ToString(Code c);
+};
+```
+
+For fragment-shader inputs, the ```name``` can be choosen freely,
+but must match the ```@out``` names of the vertex-shader.
+
+##### @out \[type\]\[name\]
+
+The ```@out``` tag defines the vertex-shader outputs which are handed
+to the fragment-shader as inputs. It must appear inside a ```@vs```,```@end``` block. Only the following ```type```s are valid as vertex shader outputs:
+
+```float, vec2, vec3, vec4```
+
+The ```name``` can be choosen freely, but must match the name of the
+corresponding fragment shader input.
+
+##### @uniform\_block \[name\]\[export\_name\]
+
+A uniform block groups shader uniform parameters for the vertex or fragment
+shader. A shader can use up to 4 uniform blocks. During code-generation, a C
+struct will be generated for each shader uniform block to allow easy
+updating of uniform parameters from the C++ side (but note that a call to
+Gfx::ApplyUniformBlock() is required after updating the C structs)
+
+The ```name``` parameter of the uniform blocks is used to reference the
+uniform block inside the shader source via ```@use_uniform_block```,
+while the second ```export_name``` parameter is used as name of the generated
+C struct on the C++ side.
+
+Here's an example what a uniform block definition:
+
+```glsl
+@uniform_block shapeVSParams VSParams
+mat4 mvp ModelViewProjection
+mat4 model Model
+vec4 shapeColor Color
+vec3 lightDir LightDir
+vec3 eyePos EyePos
+@end
+```
+
+Each uniform block member has a ```type``` (e.g. float, vec2, ...), an
+internal name for use in shader functions (e.g. mvp, shapeColor, ...), and
+an export name which is used in the generated C struct (e.g. ModelViewProject,
+Color, ...).
+
+Here's a code example how to use the above uniform block in a
+vertex shader function:
+
+```glsl
+@vs shapeVS
+@use_uniform_block shapeVSParams
+@in vec4 position
+@in vec3 normal
+@out vec3 worldPosition
+@out vec3 worldNormal
+@out vec3 worldEyePos
+@out vec3 worldLightDir
+@out vec4 color
+    _position = mul(mvp, position);
+    worldPosition = mul(model, position).xyz;
+    worldNormal = mul(model, vec4(normal, 0.0)).xyz;
+    worldEyePos = eyePos;
+    worldLightDir = lightDir;
+    color = shapeColor;
+@end
+```
+
+This is the C structure that is created for the above uniform block:
+
+```cpp
+struct VSParams {
+    glm::mat4 ModelViewProjection;
+    glm::mat4 Model;
+    glm::vec4 Color;
+    glm::vec3 LightDir;
+    float _pad_LightDir;
+    glm::vec3 EyePos;
+    float _pad_EyePos;
+};
+```
+The automatically generated \_pad\_* fields are required to enforce the same
+memory layout in the C structure as in the GPU-side uniform block.
+
+##### @texture\_block \[name\]\[export\_name\]
+
+##### @code\_block \[name\]
+
+##### @end
+
+##### @use\_uniform\_block \[ub_name\]
+
+##### @use\_texture\_block \[tb_name\]
+
+##### @use\_code\_block \[cb_name\]
+
+##### @highp []
+
+#### Vertex Shader Input Names
+
+* **position**:
+* **normal**:
+* **texcoord0..3**:
+* **tangent**:
+* **binormal**:
+* **weights**:
+* **indices**:
+* **color0..1**:
+* **instance0..3**:
+
+#### Data Types
+
+The following types can be used as inputs for the vertex-
+or fragment-shader function:
+```
+float, vec2, vec3, vec4
+```
+
+The following types can be used in uniform blocks:
+```
+mat4, mat3, mat2, 
+vec4, vec3, vec2, 
+float, int, bool,
+mat4[], vec4[]
+```
+
+These are the valid texture types used in texture blocks:
+```
+sampler2D, samplerCube, sampler3D, sampler2DArray
+```
+
+#### Compatibility Wrappers
+
+These are macros which for compatibility between the different GLSL
+versions, HLSL and MetalSL:
+
+* **\_vertexid**: use this instead of gl_VertexID in vertex shaders (not available in GLES2/WebGL)
+* **\_instanceid**: use this instead of gl_InstanceID in vertex shaders (not available in GLES2/WebGL)
+* **\_position**: replaces gl_Position (vertex shader output)
+* **\_pointsize**: replaces gl_PointSize in vertex shader
+* **\_color, \_color1, \_color2, \_color3**: fragment shader color outputs (replace gl_FragColor etc)
+* **\_fragcoord**: replaces gl_FragCoord in fragment shaders
+* **\_const**: use this for global constants (resolves to _const_ in GLSL, _static const_ in HLSL and _constant_ in MetalSL
+* **\_func**: use this in front of functions which are not the main vertex- or fragment-shader functions (resolves to nothing in GLSL and HLSL, and to _static_ in MetalSL)
+
+Use the following function macros which ensure compatibility between
+the different shader languages:
+
+* **mul(m,v)**: use the mul() macros for a matrix*vector multiplication  (resolves to _(m\*v)_ in GLSL and MetalSL, and to _mul(m,v)_ in HLSL)
+* **tex2D(s,t), tex3D(s,t), tex2DArray(s,t), texCUBE(s,t)**: texture sampling wrappers in _fragment shader_
+* **tex2Dvs(s,t), tex3Dvs(s,t), tex2DArrayvs(s,t)**: texture sampling wrappers in _vertex shader_
+* **mix(a,b,c)**: resolved to lerp(a,b,c) in HLSL
+* **mod(x,y)**: resolved to (x-y*floor(x/y)) in HLSL
+* **fract(x)**: resolved to frac(x) in HLSL
+* **discard**: resolved to discard\_fragment() in MetalSL
