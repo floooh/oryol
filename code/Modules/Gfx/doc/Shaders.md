@@ -497,17 +497,92 @@ memory layout in the C structure as in the GPU-side uniform block.
 
 ##### @texture\_block \[name\]\[export\_name\]
 
+A texture block groups textures used by a vertex- or
+fragment-program, it must be finished with a ```@end```
+tag. The ```name``` parameter is used to reference the
+texture block inside the shader source file via
+```@use_texture_block```, and the ```export_name```
+is used to identify the texture on the C++ side.
+
+```glsl
+@texture_block
+sampler2D tex Texture
+@end
+```
+Inside a texture block, textures are defined with the following
+keywords:
+
+* **sampler2D**: a 2D texture
+* **samplerCube**: a cubemap texture
+* **sampler2DArray**: a 2D-array texture
+* **sampler3D**: a 3D texture
+
 ##### @code\_block \[name\]
+
+A code block is used to group shader subroutines under a name
+that can be 'included' in a vertex- or fragment-shader with the
+```@use_code_block [name]``` tag. Functions inside a code block
+must be annotated with the ```_func``` keyword:
+
+```glsl
+@code_block lighting
+func vec3 light(vec3 baseColor, vec3 eyeVec, vec3 normal, vec3 lightVec) {
+    // ambient intensity
+    float ambient = 0.25;
+
+    // diffuse
+    float n_dot_l = max(dot(normal, lightVec), 0.0);
+    float diff = n_dot_l + ambient;
+
+    // specular
+    float specPower = 16.0;
+    vec3 r = reflect(-lightVec, normal);
+    float r_dot_v = max(dot(r, eyeVec), 0.0);
+    float spec = pow(r_dot_v, specPower) * n_dot_l;
+
+    return baseColor * (diff+ambient) + vec3(spec,spec,spec);
+}
+@end
+
+@fs shapeFS
+@use_code_block lighting
+@in vec3 worldPosition
+@in vec3 worldNormal
+@in vec3 worldEyePos
+@in vec3 worldLightDir
+@in vec4 color
+    vec3 eyeVec = normalize(worldEyePos - worldPosition);
+    vec3 nrm = normalize(worldNormal);
+    vec3 lightDir = normalize(worldLightDir);
+    _color = vec4(light(color.xyz, eyeVec, nrm, lightDir), 1.0);
+@end
+```
 
 ##### @end
 
+ The ```@end``` tag is to finish a ```@vs```, ```@fs```,
+ ```@uniform_block```, ```@texture_block``` or ```@code_block```.
+
 ##### @use\_uniform\_block \[ub_name\]
+
+The ```@use_uniform_block``` tag is used to import a ```@uniform_block```
+into a vertex- or fragment-shader.
 
 ##### @use\_texture\_block \[tb_name\]
 
+The ```@use_texture_block``` tag is used to import a ```@texture_block```
+into a vertex- or fragment-shader.
+
 ##### @use\_code\_block \[cb_name\]
 
-##### @highp []
+The ```@use_code_block``` tag is used to import functions inside a
+```@code_block``` into a vertex- or fragment-shader.
+
+##### @highp [type]
+
+The ```@highp``` tag is used on mobile platforms to 
+use 'high precision' for a specific type. Valid types
+are ```float``` and all ```sampler*``` types.
 
 #### Vertex Shader Input Names
 
