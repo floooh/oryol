@@ -554,11 +554,6 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
             o_assert_range_dbg(cullFace, Face::NumFaceCodes);
             ::glCullFace(mapCullFace[cullFace]);
         }
-        const bool depthOffsetEnabled = newState.DepthOffsetEnabled;
-        if (depthOffsetEnabled != curState.DepthOffsetEnabled) {
-            if (depthOffsetEnabled) ::glEnable(GL_POLYGON_OFFSET_FILL);
-            else                    ::glDisable(GL_POLYGON_OFFSET_FILL);
-        }
         const bool scissorTestEnabled = newState.ScissorTestEnabled;
         if (scissorTestEnabled != curState.ScissorTestEnabled) {
             if (scissorTestEnabled) ::glEnable(GL_SCISSOR_TEST);

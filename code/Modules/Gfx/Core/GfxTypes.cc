@@ -480,7 +480,6 @@ RasterizerState::RasterizerState() {
     static_assert(sizeof(RasterizerState) == 2, "sizeof(RasterizerState) is not 4, bitfield packing problem?");
     this->Hash = 0;
     this->CullFaceEnabled = false;
-    this->DepthOffsetEnabled = false;
     this->ScissorTestEnabled = false;
     this->DitherEnabled = true;
     this->AlphaToCoverageEnabled = false;

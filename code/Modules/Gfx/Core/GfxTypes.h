@@ -490,7 +490,7 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::StencilOperation
+    @class Oryol::StencilOp
     @ingroup Gfx
     @brief stencil operations
 */
@@ -652,7 +652,6 @@ public:
             BlendOperation::Code OpAlpha:3;
             PixelChannel::Mask ColorWriteMask:4;
             PixelFormat::Code ColorFormat : 5;
-            PixelFormat::Code ColorFormat3 : 5;
             PixelFormat::Code DepthFormat : 5;
             uint64_t MRTCount : 3;
         };
@@ -754,7 +753,6 @@ public:
         #pragma pack(push,1)
         struct {
             uint16_t CullFaceEnabled : 1;
-            uint16_t DepthOffsetEnabled : 1;
             uint16_t ScissorTestEnabled : 1;
             uint16_t DitherEnabled : 1;
             uint16_t AlphaToCoverageEnabled : 1;
