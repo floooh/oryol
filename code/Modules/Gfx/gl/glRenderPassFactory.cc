@@ -95,7 +95,7 @@ checkFramebufferCompleteness() {
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: reason = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"; break;
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: reason = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"; break;
             case GL_FRAMEBUFFER_UNSUPPORTED: reason = "GL_FRAMEBUFFER_UNSUPPORTED"; break;
-            #if ORYOL_OPENGLES2
+            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
             case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS: reason = "GL_FRAMEBUFFER_IMCOMPLETE_DIMENSIONS"; break;
             #endif
             default: reason = "unknown";
