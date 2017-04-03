@@ -171,10 +171,10 @@ d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int size) {
     if (mesh.Setup.NumVertices > 0) {
         const int vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
         const uint8_t* vertices = nullptr;
-        if (InvalidIndex != mesh.Setup.DataVertexOffset) {
+        if (InvalidIndex != mesh.Setup.VertexDataOffset) {
             const uint8_t* ptr = (const uint8_t*)data;
             o_assert_dbg(ptr && (size > 0));
-            vertices = ptr + mesh.Setup.DataVertexOffset;
+            vertices = ptr + mesh.Setup.VertexDataOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
         mesh.d3d11VertexBuffer = this->createBuffer(vertices, vbSize, D3D11_BIND_VERTEX_BUFFER, vbAttrs.BufferUsage);
@@ -182,10 +182,10 @@ d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int size) {
     if (IndexType::None != ibAttrs.Type) {
         const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         const uint8_t* indices = nullptr;
-        if (InvalidIndex != mesh.Setup.DataIndexOffset) {
+        if (InvalidIndex != mesh.Setup.IndexDataOffset) {
             const uint8_t* ptr = (const uint8_t*)data;
             o_assert_dbg(ptr && (size > 0));
-            indices = ((const uint8_t*)ptr) + mesh.Setup.DataIndexOffset;
+            indices = ((const uint8_t*)ptr) + mesh.Setup.IndexDataOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
         mesh.d3d11IndexBuffer = this->createBuffer(indices, ibSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);

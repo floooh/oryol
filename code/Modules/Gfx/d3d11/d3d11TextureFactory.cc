@@ -90,7 +90,7 @@ d3d11TextureFactory::setupTextureAttrs(texture& tex) {
     attrs.Height = tex.Setup.Height;
     attrs.Depth = tex.Setup.Depth;
     attrs.NumMipMaps = tex.Setup.NumMipMaps;
-    attrs.IsRenderTarget = tex.Setup.RenderTarget;
+    attrs.IsRenderTarget = tex.Setup.IsRenderTarget;
     attrs.HasDepthBuffer = tex.Setup.HasDepth();
     tex.textureAttrs = attrs;
 }
@@ -160,7 +160,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         else {
             texDesc.ArraySize = 1;
         }
-        if (setup.RenderTarget) {
+        if (setup.IsRenderTarget) {
             texDesc.Format = tex.d3d11ColorFormat = d3d11Types::asRenderTargetFormat(setup.ColorFormat);
             o_assert2_dbg(texDesc.Format != DXGI_FORMAT_UNKNOWN, "Invalid render target pixel format!");
             texDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -202,7 +202,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
         texDesc.Height = setup.Height;
         texDesc.Depth = setup.Depth;
         texDesc.MipLevels = setup.NumMipMaps;
-        if (setup.RenderTarget) {
+        if (setup.IsRenderTarget) {
             texDesc.Format = tex.d3d11ColorFormat = d3d11Types::asRenderTargetFormat(setup.ColorFormat);
             o_assert2_dbg(texDesc.Format != DXGI_FORMAT_UNKNOWN, "Invalid render target color pixel format!");
             texDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -224,7 +224,7 @@ d3d11TextureFactory::createTexture(texture& tex, const void* data, int size) {
     }
 
     // optional depth-stencil-buffer texture
-    if (setup.RenderTarget && (setup.DepthFormat != PixelFormat::InvalidPixelFormat)) {
+    if (setup.IsRenderTarget && (setup.DepthFormat != PixelFormat::InvalidPixelFormat)) {
         // create depth-buffer-texture
         D3D11_TEXTURE2D_DESC dsDesc = {};
         dsDesc.Width = setup.Width;
