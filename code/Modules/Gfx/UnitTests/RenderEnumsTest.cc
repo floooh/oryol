@@ -146,7 +146,7 @@ TEST(PixelFormatByteSizeTest) {
 
 //------------------------------------------------------------------------------
 TEST(VertexFormatTest) {
-    CHECK(VertexFormat::NumVertexFormats == 14);
+    CHECK(VertexFormat::NumVertexFormats == 13);
     
     CHECK(VertexFormat::ByteSize(VertexFormat::Float) == 4);
     CHECK(VertexFormat::ByteSize(VertexFormat::Float2) == 8);

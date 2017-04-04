@@ -54,7 +54,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs0.TextureUsage == Usage::Immutable);
     CHECK(attrs0.Width == 320);
     CHECK(attrs0.Height == 256);
-    CHECK(attrs0.Depth == 0);
+    CHECK(attrs0.Depth == 1);
     CHECK(1 == attrs0.NumMipMaps);
     CHECK(attrs0.IsRenderTarget);
     CHECK(!attrs0.HasDepthBuffer);
@@ -76,7 +76,7 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs1.TextureUsage == Usage::Immutable);
     CHECK(attrs1.Width == 640);
     CHECK(attrs1.Height == 480);
-    CHECK(attrs1.Depth == 0);
+    CHECK(attrs1.Depth == 1);
     CHECK(1 == attrs1.NumMipMaps);
     CHECK(attrs1.IsRenderTarget);
     CHECK(attrs1.HasDepthBuffer);
