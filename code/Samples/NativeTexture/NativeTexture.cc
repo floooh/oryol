@@ -9,6 +9,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
+#include <cstring>
 
 // need to access GL API directly
 #if ORYOL_OPENGL
@@ -181,7 +182,7 @@ NativeTextureApp::computeMVP(const glm::vec3& pos) {
 AppState::Code
 NativeTextureApp::notSupported() {
     const char* msg = "This demo needs GL\n";
-    int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(strlen(msg)))/2;
+    int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(std::strlen(msg)))/2;
     int y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
     Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
