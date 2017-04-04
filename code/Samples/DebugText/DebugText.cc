@@ -127,7 +127,7 @@ DebugTextApp::drawText() {
         for (int x = 0; x < this->width; x++) {
             char c = this->buffer[yOffset + x];
             if (0 == c) {
-                strBuilder.Append(0x09);    // cursor right
+                strBuilder.Append(0x20);    // replace 0 with space
             }
             else {
                 strBuilder.Append(c);
