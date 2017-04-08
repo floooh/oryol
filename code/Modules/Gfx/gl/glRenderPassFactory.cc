@@ -41,7 +41,7 @@ attachFramebufferTextures(const renderPass& rp) {
                     #if !ORYOL_OPENGLES2
                     // 3D- and 2D-array-texture
                     ::glFramebufferTextureLayer(GL_FRAMEBUFFER,
-                                                GL_COLOR_ATTACHMENT0,
+                                                GL_COLOR_ATTACHMENT0+i,
                                                 glTex,
                                                 att.MipLevel,
                                                 att.Slice);
