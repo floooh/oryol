@@ -101,9 +101,11 @@ glRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
 
     // in case we are on a Core Profile, create a global Vertex Array Object
     #if !ORYOL_OPENGLES2
-    ::glGenVertexArrays(1, &this->globalVAO);
-    ::glBindVertexArray(this->globalVAO);
-    ORYOL_GL_CHECK_ERROR();
+    if (!glCaps::IsFlavour(glCaps::GLES2)) {
+        ::glGenVertexArrays(1, &this->globalVAO);
+        ::glBindVertexArray(this->globalVAO);
+        ORYOL_GL_CHECK_ERROR();
+    }
     #endif
 
     #if !(ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
@@ -129,7 +131,7 @@ glRenderer::discard() {
     this->curPipeline = nullptr;
 
     #if !ORYOL_OPENGLES2
-    if (glCaps::IsFlavour(glCaps::GL_3_3_CORE)) {
+    if (!glCaps::IsFlavour(glCaps::GLES2)) {
         ::glDeleteVertexArrays(1, &this->globalVAO);
         this->globalVAO = 0;
     }
@@ -284,18 +286,20 @@ glRenderer::beginPass(renderPass* pass, const PassAction* action) {
         ::glBindFramebuffer(GL_FRAMEBUFFER, pass->glFramebuffer);
         ORYOL_GL_CHECK_ERROR();
         #if !ORYOL_OPENGLES2
-        int numAtts = 0;
-        GLenum att[GfxConfig::MaxNumColorAttachments] = { };
-        for (; numAtts < GfxConfig::MaxNumColorAttachments; numAtts++) {
-            if (pass->colorTextures[numAtts]) {
-                att[numAtts] = GL_COLOR_ATTACHMENT0 + numAtts;
+        if (!glCaps::IsFlavour(glCaps::GLES2)) {
+            int numAtts = 0;
+            GLenum att[GfxConfig::MaxNumColorAttachments] = { };
+            for (; numAtts < GfxConfig::MaxNumColorAttachments; numAtts++) {
+                if (pass->colorTextures[numAtts]) {
+                    att[numAtts] = GL_COLOR_ATTACHMENT0 + numAtts;
+                }
+                else {
+                    break;
+                }
             }
-            else {
-                break;
-            }
+            ::glDrawBuffers(numAtts, att);
+            ORYOL_GL_CHECK_ERROR();
         }
-        ::glDrawBuffers(numAtts, att);
-        ORYOL_GL_CHECK_ERROR();
         #endif
     }
     ORYOL_GL_CHECK_ERROR();
@@ -373,28 +377,30 @@ glRenderer::endPass() {
 
     // perform the MSAA resolve if necessary
     #if !ORYOL_OPENGLES2
-    const renderPass* rp = this->curRenderPass;
-    if (rp) {
-        const bool isMSAA = 0 != rp->colorTextures[0]->glMSAARenderbuffer;
-        if (isMSAA) {
-            ::glBindFramebuffer(GL_READ_FRAMEBUFFER, rp->glFramebuffer);
-            o_assert_dbg(rp->colorTextures[0]);
-            const int w = rp->colorTextures[0]->textureAttrs.Width;
-            const int h = rp->colorTextures[0]->textureAttrs.Height;
-            for (int attIndex = 0; attIndex < GfxConfig::MaxNumColorAttachments; attIndex++) {
-                if (rp->colorTextures[attIndex]) {
-                    o_assert_dbg(rp->glMSAAResolveFramebuffers[attIndex]);
-                    ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rp->glMSAAResolveFramebuffers[attIndex]);
-                    ::glReadBuffer(GL_COLOR_ATTACHMENT0+attIndex);
-                    const GLenum att = GL_COLOR_ATTACHMENT0;
-                    ::glDrawBuffers(1, &att);
-                    ::glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    if (!glCaps::IsFlavour(glCaps::GLES2)) {
+        const renderPass* rp = this->curRenderPass;
+        if (rp) {
+            const bool isMSAA = 0 != rp->colorTextures[0]->glMSAARenderbuffer;
+            if (isMSAA) {
+                ::glBindFramebuffer(GL_READ_FRAMEBUFFER, rp->glFramebuffer);
+                o_assert_dbg(rp->colorTextures[0]);
+                const int w = rp->colorTextures[0]->textureAttrs.Width;
+                const int h = rp->colorTextures[0]->textureAttrs.Height;
+                for (int attIndex = 0; attIndex < GfxConfig::MaxNumColorAttachments; attIndex++) {
+                    if (rp->colorTextures[attIndex]) {
+                        o_assert_dbg(rp->glMSAAResolveFramebuffers[attIndex]);
+                        ::glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rp->glMSAAResolveFramebuffers[attIndex]);
+                        ::glReadBuffer(GL_COLOR_ATTACHMENT0+attIndex);
+                        const GLenum att = GL_COLOR_ATTACHMENT0;
+                        ::glDrawBuffers(1, &att);
+                        ::glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                    }
+                    else {
+                        break;
+                    }
                 }
-                else {
-                    break;
-                }
+                ORYOL_GL_CHECK_ERROR();
             }
-            ORYOL_GL_CHECK_ERROR();
         }
     }
     #endif

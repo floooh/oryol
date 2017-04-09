@@ -102,8 +102,10 @@ glTextureFactory::setupTextureParams(const TextureSetup& setup, GLenum glTexTarg
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_S, glTypes::asGLTexWrapMode(setup.Sampler.WrapU));
         ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_T, glTypes::asGLTexWrapMode(setup.Sampler.WrapV));
         #if !ORYOL_OPENGLES2
-        if (setup.Type == TextureType::Texture3D) {
-            ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, glTypes::asGLTexWrapMode(setup.Sampler.WrapW));
+        if (!glCaps::IsFlavour(glCaps::GLES2)) {
+            if (setup.Type == TextureType::Texture3D) {
+                ::glTexParameteri(glTexTarget, GL_TEXTURE_WRAP_R, glTypes::asGLTexWrapMode(setup.Sampler.WrapW));
+            }
         }
         #endif
     }
