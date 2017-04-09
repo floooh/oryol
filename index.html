@@ -2,22 +2,22 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
-<title>Oryol Core Samples</title>
+<title>Oryol WebGL2 Core Samples</title>
 <link href='https://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="style.css"/>
 <link rel="icon" type="image/png" href="favicon.png"/>
 </head>
 <body>
-<div class="title">ORYOL<span class="game-title">core samples</span></div>
-<div class="rainbow"></div>
+<div class="title">Oryol<span class="subtitle">core samples</span></div>
+<div class="simple-separator"></div>
 <div class="nav-bar" style="width:400px">
     <ul class="nav-list">
         <li class="nav-item"><a class="nav-link" style="width:100px" href="about.html">readme</a></li>    
         <li class="nav-item"><a class="nav-link" style="width:100px" href="http://github.com/floooh/oryol">github</a></li>
         <li class="nav-item"><a class="nav-link" style="width:100px" href="https://twitter.com/FlohOfWoe">twitter</a></li>
         <li class="nav-item"><a class="nav-link" style="width:100px" href="http://floooh.github.io">blog</a></li>
-        <div class="break"></div>
     </ul>
+    <div class="break"></div>
 </div>
 <div class="gallery">
     <div class="thumb">
@@ -41,6 +41,16 @@
     <ul class="thumb-list">
       <li class="thumb-item"><a class="thumb-link" href="asmjs/Triangle.html">asm.js</a></li>
       <li class="thumb-item"><a class="thumb-link" href="wasm/Triangle.html">wasm</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumb-title">Quad</div>
+  <div class="img-frame"><a href="asmjs/Quad.html"><img class="image" src="Quad.jpg" title="Render a quad with vertex-indices"></img></a></div>
+  <div class="thumb-bar">
+    <ul class="thumb-list">
+      <li class="thumb-item"><a class="thumb-link" href="asmjs/Quad.html">asm.js</a></li>
+      <li class="thumb-item"><a class="thumb-link" href="wasm/Quad.html">wasm</a></li>
     </ul>
   </div>
 </div>
@@ -91,6 +101,26 @@
     <ul class="thumb-list">
       <li class="thumb-item"><a class="thumb-link" href="asmjs/SimpleRenderTarget.html">asm.js</a></li>
       <li class="thumb-item"><a class="thumb-link" href="wasm/SimpleRenderTarget.html">wasm</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumb-title">MultipleRenderTarget</div>
+  <div class="img-frame"><a href="asmjs/MultipleRenderTarget.html"><img class="image" src="MultipleRenderTarget.jpg" title="Demonstrate MRT rendering"></img></a></div>
+  <div class="thumb-bar">
+    <ul class="thumb-list">
+      <li class="thumb-item"><a class="thumb-link" href="asmjs/MultipleRenderTarget.html">asm.js</a></li>
+      <li class="thumb-item"><a class="thumb-link" href="wasm/MultipleRenderTarget.html">wasm</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumb-title">RenderToCubeMap</div>
+  <div class="img-frame"><a href="asmjs/RenderToCubeMap.html"><img class="image" src="RenderToCubeMap.jpg" title="Render to cubemap faces"></img></a></div>
+  <div class="thumb-bar">
+    <ul class="thumb-list">
+      <li class="thumb-item"><a class="thumb-link" href="asmjs/RenderToCubeMap.html">asm.js</a></li>
+      <li class="thumb-item"><a class="thumb-link" href="wasm/RenderToCubeMap.html">wasm</a></li>
     </ul>
   </div>
 </div>
@@ -161,6 +191,26 @@
     <ul class="thumb-list">
       <li class="thumb-item"><a class="thumb-link" href="asmjs/VertexTexture.html">asm.js</a></li>
       <li class="thumb-item"><a class="thumb-link" href="wasm/VertexTexture.html">wasm</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumb-title">VolumeTexture</div>
+  <div class="img-frame"><a href="asmjs/VolumeTexture.html"><img class="image" src="VolumeTexture.jpg" title="Demonstrate 3D texture usage"></img></a></div>
+  <div class="thumb-bar">
+    <ul class="thumb-list">
+      <li class="thumb-item"><a class="thumb-link" href="asmjs/VolumeTexture.html">asm.js</a></li>
+      <li class="thumb-item"><a class="thumb-link" href="wasm/VolumeTexture.html">wasm</a></li>
+    </ul>
+  </div>
+</div>
+<div class="thumb">
+  <div class="thumb-title">ArrayTexture</div>
+  <div class="img-frame"><a href="asmjs/ArrayTexture.html"><img class="image" src="ArrayTexture.jpg" title="Demonstrate array texture usage"></img></a></div>
+  <div class="thumb-bar">
+    <ul class="thumb-list">
+      <li class="thumb-item"><a class="thumb-link" href="asmjs/ArrayTexture.html">asm.js</a></li>
+      <li class="thumb-item"><a class="thumb-link" href="wasm/ArrayTexture.html">wasm</a></li>
     </ul>
   </div>
 </div>
@@ -261,16 +311,6 @@
     <ul class="thumb-list">
       <li class="thumb-item"><a class="thumb-link" href="asmjs/IOQueueSample.html">asm.js</a></li>
       <li class="thumb-item"><a class="thumb-link" href="wasm/IOQueueSample.html">wasm</a></li>
-    </ul>
-  </div>
-</div>
-<div class="thumb">
-  <div class="thumb-title">Julia</div>
-  <div class="img-frame"><a href="asmjs/Julia.html"><img class="image" src="dummy.jpg" title="Fractal demo"></img></a></div>
-  <div class="thumb-bar">
-    <ul class="thumb-list">
-      <li class="thumb-item"><a class="thumb-link" href="asmjs/Julia.html">asm.js</a></li>
-      <li class="thumb-item"><a class="thumb-link" href="wasm/Julia.html">wasm</a></li>
     </ul>
   </div>
 </div>

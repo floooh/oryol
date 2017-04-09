@@ -8,6 +8,11 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/Triangle/Triangle.jpg
   src: Triangle/Triangle.cc
+- name: Quad
+  desc: Render a quad with vertex-indices
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/Quad/Quad.jpg
+  src: Quad/Quad.cc
 - name: Shapes
   desc: Shapes with random vertex colors, created with ShapeBuilder class
   type: emscripten,pnacl,android
@@ -33,6 +38,16 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/SimpleRenderTarget/SimpleRenderTarget.jpg
   src: SimpleRenderTarget/SimpleRenderTarget.cc
+- name: MultipleRenderTarget
+  desc: Demonstrate MRT rendering
+  type: emscripten,android,pnacl
+  image: /Users/floh/projects/oryol/code/Samples/MultipleRenderTarget/MultipleRenderTarget.jpg
+  src: MultipleRenderTarget/MultipleTarget.cc
+- name: RenderToCubeMap
+  desc: Render to cubemap faces
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/RenderToCubeMap/RenderToCubeMap.jpg
+  src: RenderToCubeMap/RenderToCubeMap.cc
 - name: InfiniteSpheres
   desc: Infinite recursive spheres
   type: emscripten,android,pnacl
@@ -68,6 +83,16 @@
   type: emscripten,android,pnacl
   image: /Users/floh/projects/oryol/code/Samples/VertexTexture/VertexTexture.jpg
   src: VertexTexture/VertexTexture.cc
+- name: VolumeTexture
+  desc: Demonstrate 3D texture usage
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/VolumeTexture/VolumeTexture.jpg
+  src: VolumeTexture/VolumeTexture.cc
+- name: ArrayTexture
+  desc: Demonstrate array texture usage
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/ArrayTexture/ArrayTexture.jpg
+  src: ArrayTexture/ArrayTexture.cc
 - name: DDSTextureLoading
   desc: Load and render various DDS texture formats
   type: emscripten,pnacl,android
@@ -118,8 +143,3 @@
   type: emscripten,pnacl
   image: /Users/floh/projects/oryol/code/Samples/IOQueueSample/none
   src: IOQueueSample/IOQueueSample.cc
-- name: Julia
-  desc: Fractal demo
-  type: emscripten,pnacl,android
-  image: /Users/floh/projects/oryol/code/Samples/Julia/none
-  src: Julia/Julia.cc
