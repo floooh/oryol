@@ -19,7 +19,7 @@ ExtensionSamples = True
 
 # webpage template arguments
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
-DocTitle = 'Oryol WebGL2 Core Samples'
+DocTitle = 'Oryol Core Samples'
 Title = 'Oryol'
 Subtitle = 'core samples'
 # Separator = 'rainbow-separator'
