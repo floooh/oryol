@@ -1,5 +1,15 @@
 # What's New
 
+- **09-Apr-2017**: the big WebGL2/RenderPasses branch has finally been merged,
+see this blog post for details:https://floooh.github.io/2017/04/04/oryol-webgl2-merge.html
+This change also affects the following git repos:
+
+  - https://github.com/floooh/oryol-imgui
+  - https://github.com/floooh/oryol-nuklear
+  - https://github.com/floooh/oryol-tbui
+  - https://github.com/floooh/oryol-samples
+  - https://github.com/floooh/yakc
+
 - **23-Mar-2017**: initial gamepad support on HTML5, OSX, Linux and Windows has
 landed, see the Input module README and the new GamepadExplorer sample
 for details :)

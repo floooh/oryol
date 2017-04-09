@@ -15,20 +15,20 @@ BuildEmscripten = True
 BuildPNaCl = False 
 BuildWasm = True
 ExportAssets = True
-ExtensionSamples = False
+ExtensionSamples = True
 
 # webpage template arguments
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
 DocTitle = 'Oryol WebGL2 Core Samples'
 Title = 'Oryol'
-Subtitle = 'WebGL2 core samples'
+Subtitle = 'core samples'
 # Separator = 'rainbow-separator'
 # GameSeparator = 'game-rainbow-separator'
 # BackgroundColor = '#19A3FF'     # this is the original bright blue 
 
 Separator = 'simple-separator'
 GameSeparator = 'simple-separator'
-BackgroundColor = '#73e600'       # a bright green  
+BackgroundColor = '#42A5F5'
 
 # build configuration
 EmscConfig  = 'webgl2-emsc-ninja-release'
