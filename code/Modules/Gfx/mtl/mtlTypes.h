@@ -7,7 +7,7 @@
     
     NOTE: only include this file from a Objective-C(++) file!
 */
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 #if !defined(__OBJC__)
@@ -57,6 +57,8 @@ public:
     static MTLIndexType asIndexType(IndexType::Code c);
     /// convert primitive type
     static MTLPrimitiveType asPrimitiveType(PrimitiveType::Code c);
+    /// convert render pass load action from PassAction flags
+    static MTLLoadAction asLoadAction(const PassAction* action, int colorIndex, bool depthStencil);
 };
 
 } // namespace _priv

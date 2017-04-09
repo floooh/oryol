@@ -10,12 +10,30 @@ from string import Template
 from mod import log, util, project, emscripten, android, nacl
 from tools import texexport
 
-GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
-
+# what to build
 BuildEmscripten = True
 BuildPNaCl = False 
 BuildWasm = True
 ExportAssets = True
+ExtensionSamples = True
+
+# webpage template arguments
+GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
+DocTitle = 'Oryol WebGL2 Core Samples'
+Title = 'Oryol'
+Subtitle = 'core samples'
+# Separator = 'rainbow-separator'
+# GameSeparator = 'game-rainbow-separator'
+# BackgroundColor = '#19A3FF'     # this is the original bright blue 
+
+Separator = 'simple-separator'
+GameSeparator = 'simple-separator'
+BackgroundColor = '#42A5F5'
+
+# build configuration
+EmscConfig  = 'webgl2-emsc-ninja-release'
+PNaclConfig = 'pnacl-ninja-release'
+WasmConfig  = 'webgl2-wasm-ninja-release'
 
 #-------------------------------------------------------------------------------
 def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
@@ -33,10 +51,12 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             os.makedirs(platform_dir)
 
     # link to the Extension Samples
-    content  = '<div class="thumb">\n'
-    content += '  <div class="thumb-title">To Extension Samples...</div>\n'
-    content += '  <div class="img-frame"><a href="http://floooh.github.com/oryol-samples/index.html"><img class="image" src="ext_samples.jpg"></img></a></div>\n'
-    content += '</div>\n'
+    content = ''
+    if ExtensionSamples :
+        content  = '<div class="thumb">\n'
+        content += '  <div class="thumb-title">To Extension Samples...</div>\n'
+        content += '  <div class="img-frame"><a href="http://floooh.github.com/oryol-samples/index.html"><img class="image" src="ext_samples.jpg"></img></a></div>\n'
+        content += '</div>\n'
     
     # build the thumbnail gallery
     for sample in samples :
@@ -69,18 +89,25 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
     # populate the html template, and write to the build directory
     with open(proj_dir + '/web/index.html', 'r') as f :
         templ = Template(f.read())
-    html = templ.safe_substitute(samples=content)
+    html = templ.safe_substitute(doctitle=DocTitle, title=Title, subtitle=Subtitle, samples=content, separator=Separator)
     with open(webpage_dir + '/index.html', 'w') as f :
         f.write(html)
 
+    # and the same with the CSS template
+    with open(proj_dir + '/web/style.css', 'r') as f :
+        templ = Template(f.read())
+    css = templ.safe_substitute(background=BackgroundColor)
+    with open(webpage_dir +'/style.css', 'w') as f :
+        f.write(css)
+
     # copy other required files
-    for name in ['style.css', 'dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
+    for name in ['dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
         log.info('> copy file: {}'.format(name))
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
     # generate emscripten HTML pages
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
-        emsc_deploy_dir = '{}/fips-deploy/oryol/emsc-ninja-release'.format(ws_dir)
+        emsc_deploy_dir = '{}/fips-deploy/oryol/{}'.format(ws_dir, EmscConfig)
         for sample in samples :
             name = sample['name']
             if name != '__end__' and 'emscripten' in sample['type'] :
@@ -92,13 +119,13 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 with open(proj_dir + '/web/emsc.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
-                html = templ.safe_substitute(name=name, source=src_url)
+                html = templ.safe_substitute(name=name, source=src_url, separator=GameSeparator)
                 with open('{}/asmjs/{}.html'.format(webpage_dir, name, name), 'w') as f :
                     f.write(html)
 
     # generate WebAssembly HTML pages
     if BuildWasm and emscripten.check_exists(fips_dir) :
-        wasm_deploy_dir = '{}/fips-deploy/oryol/wasm-ninja-release'.format(ws_dir)
+        wasm_deploy_dir = '{}/fips-deploy/oryol/{}'.format(ws_dir, WasmConfig)
         for sample in samples :
             name = sample['name']
             if name != '__end__' and 'emscripten' in sample['type'] :
@@ -114,13 +141,13 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 with open(proj_dir + '/web/wasm.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
-                html = templ.safe_substitute(name=name, source=src_url)
+                html = templ.safe_substitute(name=name, source=src_url, separator=GameSeparator)
                 with open('{}/wasm/{}.html'.format(webpage_dir, name), 'w') as f :
                     f.write(html)
 
     # generate PNaCl HTML pages
     if BuildPNaCl and nacl.check_exists(fips_dir) :
-        pnacl_deploy_dir = '{}/fips-deploy/oryol/pnacl-ninja-release'.format(ws_dir)
+        pnacl_deploy_dir = '{}/fips-deploy/oryol/{}'.format(ws_dir, PNaclConfig)
         for sample in samples :
             name = sample['name']
             if name != '__end__' and 'pnacl' in sample['type'] :
@@ -132,7 +159,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 with open(proj_dir + '/web/pnacl.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
-                html = templ.safe_substitute(name=name, source=src_url)
+                html = templ.safe_substitute(name=name, source=src_url, separator=GameSeparator)
                 with open('{}/pnacl/{}.html'.format(webpage_dir, name), 'w') as f :
                     f.write(html)
 
@@ -157,24 +184,26 @@ def export_assets(fips_dir, proj_dir, webpage_dir) :
             shutil.copy(dataFile, '{}/data/'.format(webpage_dir))
 
 #-------------------------------------------------------------------------------
-def build_deploy_webpage(fips_dir, proj_dir) :
+def build_deploy_webpage(fips_dir, proj_dir, rebuild) :
     # if webpage dir exists, clear it first
     ws_dir = util.get_workspace_dir(fips_dir)
     webpage_dir = '{}/fips-deploy/oryol-webpage'.format(ws_dir)
-    if os.path.isdir(webpage_dir) :
-        shutil.rmtree(webpage_dir)
-    os.makedirs(webpage_dir)
+    if rebuild :
+        if os.path.isdir(webpage_dir) :
+            shutil.rmtree(webpage_dir)
+    if not os.path.isdir(webpage_dir) :
+        os.makedirs(webpage_dir)
 
     # compile samples
     if BuildPNaCl and nacl.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'pnacl-ninja-release')
-        project.build(fips_dir, proj_dir, 'pnacl-ninja-release')
+        project.gen(fips_dir, proj_dir, PNaclConfig)
+        project.build(fips_dir, proj_dir, PNaclConfig)
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'emsc-ninja-release')
-        project.build(fips_dir, proj_dir, 'emsc-ninja-release')
+        project.gen(fips_dir, proj_dir, EmscConfig)
+        project.build(fips_dir, proj_dir, EmscConfig)
     if BuildWasm and emscripten.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, 'wasm-ninja-release')
-        project.build(fips_dir, proj_dir, 'wasm-ninja-release')
+        project.gen(fips_dir, proj_dir, WasmConfig)
+        project.build(fips_dir, proj_dir, WasmConfig)
     
     # export sample assets
     if ExportAssets :
@@ -216,7 +245,9 @@ def serve_webpage(fips_dir, proj_dir) :
 def run(fips_dir, proj_dir, args) :
     if len(args) > 0 :
         if args[0] == 'build' :
-            build_deploy_webpage(fips_dir, proj_dir)
+            build_deploy_webpage(fips_dir, proj_dir, False)
+        elif args[0] == 'rebuild' :
+            build_deploy_webpage(fips_dir, proj_dir, True)
         elif args[0] == 'serve' :
             serve_webpage(fips_dir, proj_dir)
         else :
@@ -228,6 +259,7 @@ def run(fips_dir, proj_dir, args) :
 def help() :
     log.info(log.YELLOW +
              'fips webpage build\n' +
+             'fips webpage rebuild\n' +
              'fips webpage serve\n' +
              log.DEF +
              '    build oryol samples webpage')

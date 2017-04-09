@@ -29,22 +29,14 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource
-    ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
     ResourceState::Code SetupResource(texture& tex, const void* data, int size);
     /// discard the resource
     void DestroyResource(texture& tex);
     
 private:
-    /// setup the TextureAttrs object in texture
-    void setupTextureAttrs(texture& tex);
-    /// create a render-target texture
-    ResourceState::Code createRenderTarget(texture& tex);
-    /// create a texture from pixel-data in memory
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int size);
-    /// create an empty texture
-    ResourceState::Code createEmptyTexture(texture& tex);
+    /// create texture with or without data
+    ResourceState::Code createTexture(texture& tex, const void* data, int size);
     /// create a sampler state object and set in texture object
     void createSamplerState(texture& tex);
     /// release sampler state object of texture

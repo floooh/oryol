@@ -28,12 +28,6 @@ glMesh::Clear() {
 }
 
 //------------------------------------------------------------------------------
-glPipeline::glPipeline() :
-glPrimType(0) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 void
 glPipeline::Clear() {
     this->glAttrs.Fill(glVertexAttr());
@@ -71,6 +65,14 @@ glShader::bindUniform(ShaderStage::Code bindStage, int bindSlot, int uniformInde
 
 //------------------------------------------------------------------------------
 void
+glShader::bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLuint glUBBindPoint, GLint glUBDataSize) {
+    auto& ubMapping = this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)];
+    ubMapping.bindLocation = glUBBindPoint;
+    ubMapping.blockDataSize = glUBDataSize;
+}
+
+//------------------------------------------------------------------------------
+void
 glShader::bindSampler(ShaderStage::Code bindStage, int textureIndex, int samplerIndex) {
     this->samplerMappings[samplerArrayIndex(bindStage, textureIndex)] = samplerIndex;
 }
@@ -84,21 +86,15 @@ glShader::bindAttribLocation(VertexAttr::Code attr, GLint location) {
 #endif
 
 //------------------------------------------------------------------------------
-glTexture::glTexture() :
-glTarget(0),
-glFramebuffer(0),
-glDepthRenderbuffer(0),
-updateFrameIndex(-1),
-numSlots(1),
-activeSlot(0) {
+glTexture::glTexture() {
     this->glTextures.Fill(0);
 }
 
 //------------------------------------------------------------------------------
 glTexture::~glTexture() {
     o_assert_dbg(0 == this->glTarget);
-    o_assert_dbg(0 == this->glFramebuffer);
     o_assert_dbg(0 == this->glDepthRenderbuffer);
+    o_assert_dbg(0 == this->glMSAARenderbuffer);
     #if ORYOL_DEBUG
     for (const auto& glTex : this->glTextures) {
         o_assert_dbg(0 == glTex);
@@ -111,12 +107,30 @@ void
 glTexture::Clear() {
     textureBase::Clear();
     this->glTarget = 0;
-    this->glFramebuffer = 0;
     this->glDepthRenderbuffer = 0;
+    this->glMSAARenderbuffer = 0;
     this->updateFrameIndex = -1;
     this->numSlots = 1;
     this->activeSlot = 0;
     this->glTextures.Fill(0);
+}
+
+//------------------------------------------------------------------------------
+glRenderPass::glRenderPass() {
+    this->glMSAAResolveFramebuffers.Fill(0);
+}
+
+//------------------------------------------------------------------------------
+glRenderPass::~glRenderPass() {
+    o_assert_dbg(0 == this->glFramebuffer);
+}
+
+//------------------------------------------------------------------------------
+void
+glRenderPass::Clear() {
+    this->glFramebuffer = 0;
+    this->glMSAAResolveFramebuffers.Fill(0);
+    renderPassBase::Clear();
 }
 
 } // namespace _priv

@@ -1,0 +1,87 @@
+
+//------------------------------------------------------------------------------
+@uniform_block offscreenVSParams VSParams
+mat4 mvp ModelViewProjection
+@end
+@vs offscreenVS
+@use_uniform_block offscreenVSParams
+@in vec4 position
+@in vec4 normal
+@out vec4 nrm
+    _position = mul(mvp, position);
+    nrm = normal;
+@end
+
+@fs offscreenFS
+@in vec4 nrm
+    vec3 c = abs(nrm.xyz) * vec3(0.5,0.5,0.5) + vec3(0.5,0.5,0.5);
+    _color = vec4(c.x, 0.0, 0.0, 1.0);
+    _color1 = vec4(0.0, c.y, 0.0, 1.0);
+    _color2 = vec4(0.0, 0.0, c.z, 1.0);
+@end
+
+@program OffscreenShader offscreenVS offscreenFS
+
+//------------------------------------------------------------------------------
+@texture_block quadTextures QuadTextures
+sampler2D tex Texture
+@end
+
+@vs quadVS
+@in vec4 position
+@in vec2 texcoord0
+@out vec2 uv
+    _position = position;
+    uv = texcoord0;
+@end
+
+@fs quadFS
+@use_texture_block quadTextures
+@in vec2 uv
+    _color = tex2D(tex, uv);
+@end
+
+@program QuadShader quadVS quadFS
+
+//------------------------------------------------------------------------------
+@uniform_block displayVSParams VSParams
+mat4 mvp ModelViewProjection
+vec2 offsets Offsets
+@end
+@vs displayVS
+@use_uniform_block displayVSParams
+@in vec4 position
+@in vec4 normal
+@in vec2 texcoord0
+@out vec4 nrm
+@out vec2 uvRed
+@out vec2 uvGreen
+@out vec2 uvBlue
+    _position = mul(mvp, position);
+    nrm = normalize(mul(mvp, normal));
+    uvRed = texcoord0 + vec2(offsets.x, 0.0);
+    uvGreen = texcoord0 + vec2(0.0, offsets.y);
+    uvBlue = texcoord0;
+@end
+
+@texture_block displayTextures DisplayTextures
+sampler2D redTex Red
+sampler2D greenTex Green
+sampler2D blueTex Blue
+@end
+
+@fs displayFS
+@use_texture_block displayTextures
+@in vec4 nrm
+@in vec2 uvRed
+@in vec2 uvGreen
+@in vec2 uvBlue
+    vec4 red = tex2D(redTex, uvRed);
+    vec4 green = tex2D(greenTex, uvGreen);
+    vec4 blue = tex2D(blueTex, uvBlue);
+    vec4 c = vec4(red.xyz + green.xyz + blue.xyz, 1.0);
+    _color = c;
+@end
+
+@program DisplayShader displayVS displayFS
+

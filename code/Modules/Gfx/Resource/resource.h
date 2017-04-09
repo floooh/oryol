@@ -4,8 +4,6 @@
 #include "Gfx/gl/glResource.h"
 #elif ORYOL_D3D11
 #include "Gfx/d3d11/d3d11Resource.h"
-#elif ORYOL_D3D12
-#include "Gfx/d3d12/d3d12Resource.h"
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlResource.h"
 #else
@@ -29,8 +27,6 @@ namespace _priv {
 class mesh : public glMesh { };
 #elif ORYOL_D3D11
 class mesh : public d3d11Mesh { };
-#elif ORYOL_D3D12
-class mesh : public d3d12Mesh { };
 #elif ORYOL_METAL
 class mesh : public mtlMesh { };
 #endif
@@ -45,8 +41,6 @@ class mesh : public mtlMesh { };
 class pipeline : public glPipeline { };
 #elif ORYOL_D3D11
 class pipeline : public d3d11Pipeline { };
-#elif ORYOL_D3D12
-class pipeline : public d3d12Pipeline { };
 #elif ORYOL_METAL
 class pipeline : public mtlPipeline { };
 #endif
@@ -67,8 +61,6 @@ class pipeline : public mtlPipeline { };
 class shader : public glShader { };
 #elif ORYOL_D3D11
 class shader : public d3d11Shader { };
-#elif ORYOL_D3D12
-class shader : public d3d12Shader { };
 #elif ORYOL_METAL
 class shader : public mtlShader { };
 #else
@@ -88,10 +80,26 @@ class shader : public mtlShader { };
 class texture : public glTexture { };
 #elif ORYOL_D3D11
 class texture : public d3d11Texture { };
-#elif ORYOL_D3D12
-class texture : public d3d12Texture { };
 #elif ORYOL_METAL
 class texture : public mtlTexture { };
+#else
+#error "Target platform not yet supported!"
+#endif
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::renderPass
+    @ingroup _priv
+    @brief render-pass frontend class
+*/
+#if ORYOL_OPENGL
+class renderPass : public glRenderPass { };
+#elif ORYOL_D3D11
+class renderPass : public d3d11RenderPass { };
+#elif ORYOL_METAL
+class renderPass : public mtlRenderPass { };
+#else
+class renderPass : public renderPassBase { };
 #endif
 
 } // namespace _priv

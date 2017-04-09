@@ -62,7 +62,7 @@ pnaclDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs)
         this->requestCanvasResize(reqWidth, reqHeight);
     }
    
-    glCaps::Setup();
+    glCaps::Setup(glCaps::GLES2);
     
     // NOTE: we put in the requested framebuffer size regardless of the
     // actual size, the framebuffer will be resized in the next frame

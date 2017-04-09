@@ -11,7 +11,7 @@ namespace Oryol {
 namespace _priv {
 class inputMgr : public uwpInputMgr { };
 } }
-#elif (ORYOL_D3D11 || ORYOL_D3D12)
+#elif ORYOL_D3D11
 #include "Input/win/winInputMgr.h"
 namespace Oryol {
 namespace _priv {

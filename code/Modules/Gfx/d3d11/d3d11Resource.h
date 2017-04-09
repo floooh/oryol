@@ -3,7 +3,7 @@
 #include "Gfx/Resource/resourceBase.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
@@ -103,16 +103,39 @@ public:
 
     /// d3d11 2D texture object
     ID3D11Texture2D* d3d11Texture2D = nullptr;
+    /// d3d11 3D texture object
+    ID3D11Texture3D* d3d11Texture3D = nullptr;
     /// d3d11 shader resource view object
     ID3D11ShaderResourceView* d3d11ShaderResourceView = nullptr;
     /// d3d11 sampler state object
     ID3D11SamplerState* d3d11SamplerState = nullptr;
+    /// d3d11 depth-stencil texture (if render target with depth buffer)
+    ID3D11Texture2D* d3d11DepthStencilTexture = nullptr;
+    /// d3d11 MSAA texture (optional)
+    ID3D11Texture2D* d3d11MSAATexture2D = nullptr;
+    /// d3d11 color texture format
+    DXGI_FORMAT d3d11ColorFormat = (DXGI_FORMAT) 0;   // DXGI_FORMAT_UNKNOWN
+};
 
-    /// d3d11 render target resource view (only if this is a render-target texture)
-    ID3D11RenderTargetView* d3d11RenderTargetView = nullptr;
-    /// d3d11 depth buffer texture (if render target with depth buffer)
-    ID3D11Texture2D* d3d11DepthBufferTexture = nullptr;
-    /// d3d11 depth-stencil view
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::d3d11RenderPass
+    @ingroup _priv
+    @brief D3D11 implementation of renderPass
+*/
+class d3d11RenderPass : public renderPassBase {
+public:
+    /// constructor
+    d3d11RenderPass();
+    /// destructor
+    ~d3d11RenderPass();
+
+    /// clear the object
+    void Clear();
+
+    /// the d3d11 render-target-view objects
+    StaticArray<ID3D11RenderTargetView*, GfxConfig::MaxNumColorAttachments> d3d11RenderTargetViews;
+    /// the optional depth-stencil view object
     ID3D11DepthStencilView* d3d11DepthStencilView = nullptr;
 };
 

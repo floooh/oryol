@@ -35,32 +35,15 @@ d3d11MeshFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-d3d11MeshFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
-d3d11MeshFactory::SetupResource(mesh& msh) {
+d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    if (msh.Setup.ShouldSetupEmpty()) {
-        return this->createBuffers(msh, nullptr, 0);
-    }
-    else if (msh.Setup.ShouldSetupFullScreenQuad()) {
+    if (msh.Setup.ShouldSetupFullScreenQuad()) {
         return this->createFullscreenQuad(msh);
     }
     else {
-        o_error("d3d11MeshFactory::SetupResource(): don't know how to create mesh!");
-        return ResourceState::InvalidState;
+        return this->createBuffers(msh, data, size);
     }
-}
-
-//------------------------------------------------------------------------------
-ResourceState::Code
-d3d11MeshFactory::SetupResource(mesh& msh, const void* data, int size) {
-    o_assert_dbg(msh.Setup.ShouldSetupFromData());
-    return this->createBuffers(msh, data, size);
 }
 
 //------------------------------------------------------------------------------
@@ -82,16 +65,14 @@ d3d11MeshFactory::createBuffer(const void* data, uint32_t dataSize, uint32_t d3d
     o_assert_dbg(this->d3d11Device);
     o_assert_dbg((D3D11_BIND_VERTEX_BUFFER == d3d11BindFlags) || (D3D11_BIND_INDEX_BUFFER == d3d11BindFlags));
 
-    D3D11_BUFFER_DESC desc;
-    Memory::Clear(&desc, sizeof(desc));
+    D3D11_BUFFER_DESC desc = { };
     desc.ByteWidth = dataSize;
     desc.Usage = d3d11Types::asResourceUsage(usage);
     desc.BindFlags = d3d11BindFlags;
     desc.CPUAccessFlags = d3d11Types::asResourceCPUAccessFlag(usage);
 
     D3D11_SUBRESOURCE_DATA* initDataPtr = nullptr;
-    D3D11_SUBRESOURCE_DATA initData;
-    Memory::Clear(&initData, sizeof(initData));
+    D3D11_SUBRESOURCE_DATA initData = { };
     if (data) {
         initData.pSysMem = data;
         initDataPtr = &initData;
@@ -190,10 +171,10 @@ d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int size) {
     if (mesh.Setup.NumVertices > 0) {
         const int vbSize = vbAttrs.NumVertices * vbAttrs.Layout.ByteSize();
         const uint8_t* vertices = nullptr;
-        if (InvalidIndex != mesh.Setup.DataVertexOffset) {
+        if (InvalidIndex != mesh.Setup.VertexDataOffset) {
             const uint8_t* ptr = (const uint8_t*)data;
             o_assert_dbg(ptr && (size > 0));
-            vertices = ptr + mesh.Setup.DataVertexOffset;
+            vertices = ptr + mesh.Setup.VertexDataOffset;
             o_assert_dbg((ptr + size) >= (vertices + vbSize));
         }
         mesh.d3d11VertexBuffer = this->createBuffer(vertices, vbSize, D3D11_BIND_VERTEX_BUFFER, vbAttrs.BufferUsage);
@@ -201,10 +182,10 @@ d3d11MeshFactory::createBuffers(mesh& mesh, const void* data, int size) {
     if (IndexType::None != ibAttrs.Type) {
         const int ibSize = ibAttrs.NumIndices * IndexType::ByteSize(ibAttrs.Type);
         const uint8_t* indices = nullptr;
-        if (InvalidIndex != mesh.Setup.DataIndexOffset) {
+        if (InvalidIndex != mesh.Setup.IndexDataOffset) {
             const uint8_t* ptr = (const uint8_t*)data;
             o_assert_dbg(ptr && (size > 0));
-            indices = ((const uint8_t*)ptr) + mesh.Setup.DataIndexOffset;
+            indices = ((const uint8_t*)ptr) + mesh.Setup.IndexDataOffset;
             o_assert_dbg((ptr + size) >= (indices + ibSize));
         }
         mesh.d3d11IndexBuffer = this->createBuffer(indices, ibSize, D3D11_BIND_INDEX_BUFFER, ibAttrs.BufferUsage);

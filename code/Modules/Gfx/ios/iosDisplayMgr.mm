@@ -92,7 +92,7 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         glkView.drawableMultisample = GLKViewDrawableMultisampleNone;
     }
     */
-    glCaps::Setup(); 
+    glCaps::Setup(glCaps::GLES3);
     
     // update the displayAttrs with the actual frame buffer size
     this->glFramebufferWidth = (int) glkView.drawableWidth;

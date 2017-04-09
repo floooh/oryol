@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
-#include "Assets/Gfx/MeshBuilder.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -23,9 +22,10 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnRunning() {
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::Draw();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?
@@ -38,26 +38,25 @@ TriangleApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxSetup::Window(400, 400, "Oryol Triangle Sample"));
     
-    // create triangle mesh with 3 vertices, with position and vertex color
-    MeshBuilder meshBuilder;
-    meshBuilder.NumVertices = 3;
-    meshBuilder.IndicesType = IndexType::None;
-    meshBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::Float4);
-    meshBuilder.PrimitiveGroups.Add(0, 3);
-    meshBuilder.Begin()
-        .Vertex(0, VertexAttr::Position, 0.0f, 0.5f, 0.5f)
-        .Vertex(0, VertexAttr::Color0, 1.0f, 0.0f, 0.0f, 1.0f)
-        .Vertex(1, VertexAttr::Position, 0.5f, -0.5f, 0.5f)
-        .Vertex(1, VertexAttr::Color0, 0.0f, 1.0f, 0.0f, 1.0f)
-        .Vertex(2, VertexAttr::Position, -0.5f, -0.5f, 0.5f)
-        .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 1.0f, 1.0f);
-    this->drawState.Mesh[0] =  Gfx::CreateResource(meshBuilder.Build());
+    // create a mesh with vertex data from memory
+    const float vertices[] = {
+        // positions            // colors (RGBA)
+         0.0f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
+        -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
+    };
+    auto meshSetup = MeshSetup::FromData();
+    meshSetup.NumVertices = 3;
+    meshSetup.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
+    meshSetup.AddPrimitiveGroup({0, 3});
+    this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, vertices, sizeof(vertices));
 
     // create shader and pipeline-state-object
     Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
+    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, shd);
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 
     return App::OnInit();

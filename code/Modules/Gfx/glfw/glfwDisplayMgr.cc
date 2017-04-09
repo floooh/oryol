@@ -64,7 +64,7 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     ORYOL_GL_CHECK_ERROR();
     flextInit(glfwWindow);
     ORYOL_GL_CHECK_ERROR();
-    glCaps::Setup();
+    glCaps::Setup(glCaps::GL_3_3_CORE);
     #if ORYOL_DEBUG
     glCaps::EnableDebugOutput(glCaps::SeverityMedium);
     #endif

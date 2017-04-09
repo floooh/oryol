@@ -63,7 +63,7 @@ DrawCallPerfApp::OnRunning() {
     
     // render block
     TimePoint applyRtStart = Clock::Now();
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     applyRtTime = Clock::Since(applyRtStart);
     TimePoint drawStart = Clock::Now();
     Gfx::ApplyDrawState(this->drawState);
@@ -76,6 +76,7 @@ DrawCallPerfApp::OnRunning() {
     drawTime = Clock::Since(drawStart);
     
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
 
     // toggle particle update
@@ -151,9 +152,10 @@ DrawCallPerfApp::OnInit() {
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
     shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
     this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shader::Setup());

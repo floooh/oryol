@@ -30,7 +30,6 @@ private:
     Shader::VSParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
-    ClearState clearState;
 };
 OryolMain(DDSTextureLoadingApp);
 
@@ -40,7 +39,7 @@ DDSTextureLoadingApp::OnRunning() {
     
     this->distVal += 0.01f;
     
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
+    Gfx::BeginPass();
 
     // only render when texture is loaded (until texture placeholder are implemented)
     static const glm::vec3 pos[NumTextures] = {
@@ -77,6 +76,7 @@ DDSTextureLoadingApp::OnRunning() {
             Gfx::Draw();
         }
     }
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?
@@ -95,6 +95,7 @@ DDSTextureLoadingApp::OnInit() {
 
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
+    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
 
     // setup resources
@@ -129,17 +130,17 @@ DDSTextureLoadingApp::OnInit() {
 
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4);
     this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
-    this->clearState.Color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-    
+
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

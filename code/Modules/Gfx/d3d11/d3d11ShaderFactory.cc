@@ -34,12 +34,6 @@ d3d11ShaderFactory::Discard() {
 }
 
 //------------------------------------------------------------------------------
-bool
-d3d11ShaderFactory::IsValid() const {
-    return this->isValid;
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 d3d11ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
@@ -71,8 +65,7 @@ d3d11ShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(shd.d3d11PixelShader);
 
     // create constant buffers
-    D3D11_BUFFER_DESC cbDesc;
-    Memory::Clear(&cbDesc, sizeof(cbDesc));
+    D3D11_BUFFER_DESC cbDesc = { };
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
         const ShaderStage::Code bindStage = setup.UniformBlockBindStage(i);
         const int bindSlot = setup.UniformBlockBindSlot(i);

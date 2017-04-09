@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 60
+Version = 84
 
 import os
 import sys
@@ -13,6 +13,7 @@ from pprint import pprint
 from collections import OrderedDict
 import genutil as util
 from util import glslcompiler
+import zlib # only for crc32
 
 if platform.system() == 'Windows' :
     from util import hlslcompiler
@@ -21,12 +22,13 @@ if platform.system() == 'Darwin' :
     from util import metalcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl150', 'hlsl5', 'metal' ]
+slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3', 'hlsl5', 'metal' ]
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
     'glsl120': 'ShaderLang::GLSL120',
-    'glsl150': 'ShaderLang::GLSL150',
+    'glsl330': 'ShaderLang::GLSL330',
+    'glsles3': 'ShaderLang::GLSLES3',
     'hlsl5':   'ShaderLang::HLSL5',
     'metal':   'ShaderLang::Metal'
 }
@@ -34,7 +36,8 @@ slSlangTypes = {
 isGLSL = {
     'glsl100': True,
     'glsl120': True,
-    'glsl150': True,
+    'glsl330': True,
+    'glsles3': True,
     'hlsl5': False,
     'metal': False
 }
@@ -42,7 +45,8 @@ isGLSL = {
 isHLSL = {
     'glsl100': False,
     'glsl120': False,
-    'glsl150': False,
+    'glsl330': False,
+    'glsles3': False,
     'hlsl5': True,
     'metal': False
 }
@@ -50,7 +54,8 @@ isHLSL = {
 isMetal = {
     'glsl100': False,
     'glsl120': False,
-    'glsl150': False,
+    'glsl330': False,
+    'glsles3': False,
     'hlsl5': False,
     'metal': True
 }
@@ -58,7 +63,8 @@ isMetal = {
 glslVersionNumber = {
     'glsl100': 100,
     'glsl120': 120,
-    'glsl150': 150,
+    'glsl330': 330,
+    'glsles3': 300,
     'hlsl5': None,
     'metal': None
 }
@@ -69,54 +75,118 @@ slMacros = {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(100)',
+        '_vertexid': '(0)',
+        '_instanceid': '(0)',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
+        '_color1': 'gl_FragColor',
+        '_color2': 'gl_FragColor',
+        '_color3': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
+        'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
+        'sampler2DArray': 'sampler2D',  # hack to hide invalid sampler types
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
+        'tex3D(s, t)': 'vec4(0.0)',
+        'tex2DArray(s, t)': 'vec4(0.0)',
         'texCUBE(s, t)': 'textureCube(s,t)',
-        'tex2Dvs(s, t)': 'texture2D(s,t)'
+        'tex2Dvs(s, t)': 'texture2D(s,t)',
+        'tex3Dvs(s, t)': 'vec4(0.0)',
+        'tex2DArrayvs(s, t)': 'vec4(0.0)',
     },
     'glsl120': {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(120)',
+        '_vertexid': 'gl_VertexID',
+        '_instanceid': 'gl_InstanceID',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': 'gl_FragColor',
+        '_color1': 'gl_FragColor',
+        '_color2': 'gl_FragColor',
+        '_color3': 'gl_FragColor',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
+        'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
+        'sampler2DArray': 'sampler2D',  # hack to hide invalid sampler types
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture2D(s,t)',
+        'tex3D(s, t)': 'vec4(0.0)',
+        'tex2DArray(s, t)': 'vec4(0.0)',
         'texCUBE(s, t)': 'textureCube(s,t)',
-        'tex2Dvs(s, t)': 'texture2D(s,t)'
+        'tex2Dvs(s, t)': 'texture2D(s,t)',
+        'tex3Dvs(s, t)': 'vec4(0.0)',
+        'tex2DArrayvs(s, t)': 'vec4(0.0)',
     },
-    'glsl150': {
+    'glsl330': {
         'ORYOL_GLSL': '(1)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(330)',
+        '_vertexid': 'gl_VertexID',
+        '_instanceid': 'gl_InstanceID',
         '_position': 'gl_Position',
         '_pointsize': 'gl_PointSize',
         '_color': '_FragColor',
+        '_color1': '_FragColor1',
+        '_color2': '_FragColor2',
+        '_color3': '_FragColor3',
         '_fragcoord': 'gl_FragCoord',
         '_const': 'const',
         '_func': '',
         'mul(m,v)': '(m*v)',
         'tex2D(s, t)': 'texture(s,t)',
+        'tex3D(s, t)': 'texture(s,t)',
+        'tex2DArray(s, t)': 'texture(s,t)',
         'texCUBE(s, t)': 'texture(s,t)',
-        'tex2Dvs(s, t)': 'texture(s,t)'
+        'tex2Dvs(s, t)': 'texture(s,t)',
+        'tex3Dvs(s, t)': 'texture(s,t)',
+        'tex2DArrayvs(s, t)': 'texture(s,t)',
+    },
+    'glsles3': {
+        'ORYOL_GLSL': '(1)',
+        'ORYOL_HLSL': '(0)',
+        'ORYOL_METALSL': '(0)',
+        'ORYOL_GLSL_VERSION': '(300)',
+        '_vertexid': 'gl_VertexID',
+        '_instanceid': 'gl_InstanceID',
+        '_position': 'gl_Position',
+        '_pointsize': 'gl_PointSize',
+        '_color': '_FragColor',
+        '_color1': '_FragColor1',
+        '_color2': '_FragColor2',
+        '_color3': '_FragColor3',
+        '_fragcoord': 'gl_FragCoord',
+        '_const': 'const',
+        '_func': '',
+        'mul(m,v)': '(m*v)',
+        'tex2D(s, t)': 'texture(s,t)',
+        'tex3D(s, t)': 'texture(s,t)',
+        'tex2DArray(s, t)': 'texture(s,t)',
+        'texCUBE(s, t)': 'texture(s,t)',
+        'tex2Dvs(s, t)': 'texture(s,t)',
+        'tex3Dvs(s, t)': 'texture(s,t)',
+        'tex2DArrayvs(s, t)': 'texture(s,t)',
     },
     'hlsl5': {
         'ORYOL_GLSL': '(0)',
         'ORYOL_HLSL': '(1)',
         'ORYOL_METALSL': '(0)',
+        '_vertexid': '_iVertexID',
+        '_instanceid': '_iInstanceID',
         '_position': '_oPosition',
         '_pointsize': '_oPointSize',
         '_color': '_oColor',
+        '_color1': '_oColor1',
+        '_color2': '_oColor2',
+        '_color3': '_oColor3',
         '_const': 'static const',
         '_func': '',
         'vec2': 'float2',
@@ -126,8 +196,12 @@ slMacros = {
         'mat3': 'float3x3',
         'mat4': 'float4x4',
         'tex2D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
+        'tex3D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
+        'tex2DArray(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'texCUBE(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
+        'tex3Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
+        'tex2DArrayvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
         'mix(a,b,c)': 'lerp(a,b,c)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'fract(x)': 'frac(x)'
@@ -136,9 +210,15 @@ slMacros = {
         'ORYOL_GLSL': '(0)',
         'ORYOL_HLSL': '(0)',
         'ORYOL_METALSL': '(1)',
+        '_vertexid': 'vs_vertexid',
+        '_instanceid': 'vs_instanceid',
         '_position': 'vs_out._vofi_position',
         '_pointsize': 'vs_out._vofi_pointsize',
-        '_color': '_fo_color',
+        '_color': '_fo_color.color0',
+        '_color0': '_fo_color.color0',
+        '_color1': '_fo_color.color1',
+        '_color2': '_fo_color.color2',
+        '_color3': '_fo_color.color3',
         '_const': 'constant',
         '_func': 'static',
         'bool': 'int',
@@ -151,8 +231,12 @@ slMacros = {
         'mul(m,v)': '(m*v)',
         'mod(x,y)': '(x-y*floor(x/y))',
         'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t.xy,(uint)_t.z)',
         'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
+        'tex3D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
         'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
+        'tex3Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
+        'tex2DArrayvs(_obj, _t)': '_obj.t.sample(_obj.s,_t.xy,(uint)_t.z,level(0))',
         'discard': 'discard_fragment()'
     }
 }
@@ -201,9 +285,42 @@ uniformOryolType = {
     'mat4':         'UniformType::Mat4',
 }
 
+attrOryolType = {
+    'float':    'VertexFormat::Float',
+    'vec2':     'VertexFormat::Float2',
+    'vec3':     'VertexFormat::Float3',
+    'vec4':     'VertexFormat::Float4'
+}
+
+attrOryolName = {
+    'position':     'VertexAttr::Position',
+    'normal':       'VertexAttr::Normal',
+    'texcoord0':    'VertexAttr::TexCoord0',
+    'texcoord1':    'VertexAttr::TexCoord1',
+    'texcoord2':    'VertexAttr::TexCoord2',
+    'texcoord3':    'VertexAttr::TexCoord3',
+    'tangent':      'VertexAttr::Tangent',
+    'binormal':     'VertexAttr::Binormal',
+    'weights':      'VertexAttr::Weights',
+    'indices':      'VertexAttr::Indices',
+    'color0':       'VertexAttr::Color0',
+    'color1':       'VertexAttr::Color1',
+    'instance0':    'VertexAttr::Instance0',
+    'instance1':    'VertexAttr::Instance1',
+    'instance2':    'VertexAttr::Instance2',
+    'instance3':    'VertexAttr::Instance3'
+}
+
 validTextureTypes = [
-    'sampler2D', 'samplerCube'
+    'sampler2D', 'samplerCube', 'sampler3D', 'sampler2DArray'
 ]
+
+texOryolType = {
+    'sampler2D':        'TextureType::Texture2D',
+    'samplerCube':      'TextureType::TextureCube',
+    'sampler3D':        'TextureType::Texture3D',
+    'sampler2DArray':   'TextureType::TextureArray',
+}
 
 #-------------------------------------------------------------------------------
 def dumpObj(obj) :
@@ -361,7 +478,7 @@ class UniformBlock :
             for uniform in self.uniformsByType[type] :
                 hashString += type
                 hashString += str(uniform.num)
-        return hash(hashString)
+        return zlib.crc32(hashString) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
 class Texture :
@@ -430,7 +547,7 @@ class Attr :
         self.lineNumber = lineNumber
 
     def __eq__(self, other) :
-        return (self.type == other.type) and (self.name == other.name)
+        return (self.type == other.type) and (self.name == other.name) 
 
     def __ne__(self, other) :
         return (self.type != other.type) or (self.name != other.name)
@@ -455,7 +572,13 @@ class Shader(Snippet) :
         self.outputs = []
         self.resolvedDeps = []
         self.generatedSource = {}
-        self.hasPointSize = False;
+        self.hasPointSize = False
+        self.hasVertexId = False
+        self.hasInstanceId = False
+        self.hasColor1 = False
+        self.hasColor2 = False
+        self.hasColor3 = False
+        self.hasFragCoord = False
 
     def dump(self) :
         Snippet.dump(self)
@@ -533,7 +656,14 @@ class Parser :
         self.current = None
         self.stack = []
         self.inComment = False
-        self.regexPointSize = re.compile('[\s,;,=]*_pointsize[\s,;,=]*')
+        rx_str = '[\s\w,;=+-/%()*{}\[\]]*'
+        self.regexPointSize = re.compile('^{}_pointsize{}$'.format(rx_str, rx_str))
+        self.regexVertexId = re.compile('^{}_vertexid{}$'.format(rx_str, rx_str))
+        self.regexInstanceId = re.compile('^{}_instanceid{}$'.format(rx_str, rx_str))
+        self.regexColor1 = re.compile('^{}_color1{}$'.format(rx_str, rx_str))
+        self.regexColor2 = re.compile('^{}_color2{}$'.format(rx_str, rx_str))
+        self.regexColor3 = re.compile('^{}_color3{}$'.format(rx_str, rx_str))
+        self.regexFragCoord = re.compile('^{}_fragcoord{}$'.format(rx_str, rx_str))
 
     #---------------------------------------------------------------------------
     def stripComments(self, line) :
@@ -822,6 +952,18 @@ class Parser :
         if self.current is not None :
             if self.regexPointSize.match(line) :
                 self.current.hasPointSize = True
+            if self.regexVertexId.match(line) :
+                self.current.hasVertexId = True
+            if self.regexInstanceId.match(line) :
+                self.current.hasInstanceId = True
+            if self.regexColor1.match(line) :
+                self.current.hasColor1 = True
+            if self.regexColor2.match(line) :
+                self.current.hasColor2 = True
+            if self.regexColor3.match(line) :
+                self.current.hasColor3 = True
+            if self.regexFragCoord.match(line) :
+                self.current.hasFragCoord = True
 
     #---------------------------------------------------------------------------
     def parseLine(self, line) :
@@ -870,6 +1012,7 @@ class GLSLGenerator :
 
     #---------------------------------------------------------------------------
     def genUniforms(self, shd, slVersion, lines) :
+        # no GLSL uniform blocks
         for ub in shd.uniformBlocks :
             for type in ub.uniformsByType :
                 for uniform in ub.uniformsByType[type] :
@@ -889,7 +1032,9 @@ class GLSLGenerator :
         lines = []
 
         # version tag
-        if glslVersionNumber[slVersion] > 100 :
+        if slVersion == 'glsles3' :
+            lines.append(Line('#version 300 es'))
+        elif glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
 
         # write compatibility macros
@@ -898,14 +1043,16 @@ class GLSLGenerator :
 
         # precision modifiers 
         # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
-        if slVersion == 'glsl100' :
+        if slVersion == 'glsl100' or slVersion == 'glsles3' :
             if vs.highPrecision :
-                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                if slVersion == 'glsl100' :
+                    lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
                 for type in vs.highPrecision :
                     lines.append(Line('precision highp {};'.format(type)))
-                lines.append(Line('#endif'))
+                if slVersion == 'glsl100' :
+                    lines.append(Line('#endif'))
 
-        # write uniform blocks 
+        # write uniform definition 
         lines = self.genUniforms(vs, slVersion, lines)
 
         # write vertex shader inputs
@@ -937,23 +1084,27 @@ class GLSLGenerator :
         lines = []
 
         # version tag
-        if glslVersionNumber[slVersion] > 100 :
+        if slVersion == 'glsles3' :
+            lines.append(Line('#version 300 es'))
+        elif glslVersionNumber[slVersion] > 100 :
             lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
-
-        # precision modifiers
-        if slVersion == 'glsl100' :
-            lines.append(Line('precision mediump float;'))
-            if fs.highPrecision :
-                lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
-                for type in fs.highPrecision :
-                    lines.append(Line('precision highp {};'.format(type)))
-                lines.append(Line('#endif'))
 
         # write compatibility macros
         for func in slMacros[slVersion] :
             lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
 
-        # write uniform blocks (only in glsl150)
+        # precision modifiers
+        if slVersion == 'glsl100' or slVersion == 'glsles3' :
+            lines.append(Line('precision mediump float;'))
+            if fs.highPrecision :
+                if 'glsl100' == slVersion :
+                    lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
+                for type in fs.highPrecision :
+                    lines.append(Line('precision highp {};'.format(type)))
+                if 'glsl100' == slVersion :
+                    lines.append(Line('#endif'))
+
+        # write uniform definition
         lines = self.genUniforms(fs, slVersion, lines)
 
         # write fragment shader inputs
@@ -965,7 +1116,16 @@ class GLSLGenerator :
 
         # write the fragcolor output
         if glslVersionNumber[slVersion] >= 130 :
-            lines.append(Line('out vec4 _FragColor;'))
+            if glslVersionNumber[slVersion] >= 300 :
+                lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
+                if fs.hasColor1 :
+                    lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
+                if fs.hasColor2 :
+                    lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
+                if fs.hasColor3 :
+                    lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
+            else :
+                lines.append(Line('out vec4 _FragColor;'))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1003,8 +1163,18 @@ class HLSLGenerator :
         lines.append(Line('    TextureCube t;'))
         lines.append(Line('    SamplerState s;'))
         lines.append(Line('};'))
+        lines.append(Line('class _tex3d {'))
+        lines.append(Line('    Texture3D t;'))
+        lines.append(Line('    SamplerState s;'))
+        lines.append(Line('};'))
+        lines.append(Line('class _tex2darray {'))
+        lines.append(Line('    Texture2DArray t;'))
+        lines.append(Line('    SamplerState s;'))
+        lines.append(Line('};'))
         lines.append(Line('#define sampler2D _tex2d'))
         lines.append(Line('#define samplerCube _texcube'))
+        lines.append(Line('#define sampler3D _tex3d'))
+        lines.append(Line('#define sampler2DArray _tx2darray'))
         lines.append(Line('#endif'))
         return lines
 
@@ -1016,6 +1186,10 @@ class HLSLGenerator :
             for tex in tb.textures :
                 if tex.type == 'sampler2D':
                     texType = 'Texture2D'
+                elif tex.type == 'sampler2DArray':
+                    texType = 'Texture2DArray'
+                elif tex.type == 'sampler3D':
+                    texType = 'Texture3D'
                 else :
                     texType = 'TextureCube'
                 lines.append(Line('{} _t_{} : register(t{});'.format(texType, tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
@@ -1050,6 +1224,14 @@ class HLSLGenerator :
                     lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
                         tex.name, tex.name, tex.name, tex.name, tex.name),
                         tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler2DArray' :
+                    lines.append(Line('_tex2darray {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                        tex.name, tex.name, tex.name, tex.name, tex.name),
+                        tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler3D':
+                    lines.append(Line('_tex3d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
+                        tex.name, tex.name, tex.name, tex.name, tex.name),
+                        tex.filePath, tex.lineNumber))
         return lines
 
     #---------------------------------------------------------------------------
@@ -1075,12 +1257,17 @@ class HLSLGenerator :
         for input in vs.inputs :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
+        if vs.hasVertexId :
+            lines.append(Line('in uint _iVertexID : SV_VertexID,'))
+        if vs.hasInstanceId :
+            lines.append(Line('in uint _iInstanceID : SV_InstanceID,'))
         for output in vs.outputs :
             l = 'out {} {} : {},'.format(output.type, output.name, output.name)
             lines.append(Line(l, output.filePath, output.lineNumber))
+        # NOTE: Point Size isn't actually supported in D3D11!
         if vs.hasPointSize :
             lines.append(Line('out float _oPointSize : PSIZE,'))
-        lines.append(Line('out vec4 _oPosition : SV_POSITION) {', vs.lines[0].path, vs.lines[0].lineNumber))
+        lines.append(Line('out vec4 _oPosition : SV_Position) {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(vs, lines)
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
@@ -1109,8 +1296,15 @@ class HLSLGenerator :
         for input in fs.inputs :
             l = 'in {} {} : {},'.format(input.type, input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
-        lines.append(Line('in float4 _fragcoord : SV_Position,'))
-        lines.append(Line('out vec4 _oColor : SV_TARGET) {', fs.lines[0].path, fs.lines[0].lineNumber))
+        if fs.hasFragCoord:
+            lines.append(Line('in float4 _fragcoord : SV_Position,'))
+        if fs.hasColor1:
+            lines.append(Line('out vec4 _oColor1 : SV_Target1,'))
+        if fs.hasColor2:
+            lines.append(Line('out vec4 _oColor2 : SV_Target2,'))
+        if fs.hasColor3:
+            lines.append(Line('out vec4 _oColor3 : SV_Target3,'))
+        lines.append(Line('out vec4 _oColor : SV_Target) {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
@@ -1146,6 +1340,8 @@ class MetalGenerator :
         lines.append(Line('};'))
         lines.append(Line('typedef _tex<texture2d<float,access::sample>> sampler2D;'))
         lines.append(Line('typedef _tex<texturecube<float,access::sample>> samplerCube;'))
+        lines.append(Line('typedef _tex<texture3d<float,access::sample>> sampler3D;'))
+        lines.append(Line('typedef _tex<texture2d_array<float,access::sample>> sampler2DArray;'))
         lines.append(Line('#endif'))
         return lines
 
@@ -1182,6 +1378,20 @@ class MetalGenerator :
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
                     lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
                         tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler3D' :
+                    lines.append(Line('texture3d<float,access::sample> _t_{} [[texture({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler2DArray' :
+                    lines.append(Line('texture2d_array<float,access::sample> _t_{} [[texture({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
+                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
+        if shd.hasVertexId :
+            lines.append(Line('uint vs_vertexid [[vertex_id]],'))
+        if shd.hasInstanceId :
+            lines.append(Line('uint vs_instanceid [[instance_id]],'))
         return lines
 
     #---------------------------------------------------------------------------
@@ -1193,6 +1403,12 @@ class MetalGenerator :
                         tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
                 elif tex.type == 'samplerCube' :
                     lines.append(Line('samplerCube {}(_t_{},_s_{});'.format(
+                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler3D' :
+                    lines.append(Line('sampler3D {}(_t_{},_s_{});'.format(
+                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
+                elif tex.type == 'sampler2DArray' :
+                    lines.append(Line('sampler2DArray {}(_t_{},_s_{});'.format(
                         tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
         return lines
 
@@ -1305,17 +1521,29 @@ class MetalGenerator :
             lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
         lines.append(Line('};'))
 
+        # write output struct
+        lines.append(Line('struct {}_fs_out_t {{'.format(fs.name)))
+        lines.append(Line('    float4 color0 [[color(0)]];'))
+        if fs.hasColor1:
+            lines.append(Line('    float4 color1 [[color(1)]];'))
+        if fs.hasColor2:
+            lines.append(Line('    float4 color2 [[color(2)]];'))
+        if fs.hasColor3:
+            lines.append(Line('    float4 color3 [[color(3)]];'))
+        lines.append(Line('};'))
+
         # write the main function
         for input in fs.inputs :
             l = '#define {} fs_in._vofi_{}'.format(input.name, input.name)
             lines.append(Line(l, input.filePath, input.lineNumber))
         for uniformDef in uniformDefs :
             lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
-        lines.append(Line('fragment float4 {}('.format(fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
+        lines.append(Line('fragment {}_fs_out_t {}('.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genFuncArgs(fs, lines)
-        lines.append(Line('float4 _fragcoord [[position]],'))
+        if fs.hasFragCoord:
+            lines.append(Line('float4 _fragcoord [[position]],'))
         lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
-        lines.append(Line('float4 _fo_color;'))
+        lines.append(Line('{}_fs_out_t _fo_color;'.format(fs.name)))
         lines = self.genLocalTexObjects(fs, lines)
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
@@ -1491,11 +1719,33 @@ class ShaderLibrary :
         Runs additional validation check after programs are resolved and before
         shader code is generated:
 
+        - check whether each vs and fs is part of a program
+
         - check whether vertex shader output signatures match fragment
         shader input signatures, this is a D3D11 requirement, signatures 
         must match exactly, even if the fragment shader doesn't use all output
         from the vertex shader
-        '''
+        '''        
+        for vs_name,vs in self.vertexShaders.iteritems() :
+            vs_found = False
+            for prog in self.programs.values() :
+                if vs_name == prog.vs :
+                    vs_found = True
+            if not vs_found :
+                util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
+                util.fmtError("vertex shader '{}' is not part of a program".format(vs_name), False)
+                fatalError = True
+
+        for fs_name,fs in self.fragmentShaders.iteritems() :
+            fs_found = False
+            for prog in self.programs.values() :
+                if fs_name == prog.fs :
+                    fs_found = True
+            if not fs_found :
+                util.setErrorLocation(fs.lines[0].path, fs.lines[0].lineNumber)
+                util.fmtError("fragment shader '{}' is not part of a program".format(fs_name), False)
+                fatalError = True
+            
         for prog in self.programs.values() :
             fatalError = False
             vs = self.vertexShaders[prog.vs]
@@ -1614,7 +1864,7 @@ def writeHeaderTop(f, shdLib) :
     f.write('/*  #version:{}#\n'.format(Version))
     f.write('    machine generated, do not edit!\n')
     f.write('*/\n')
-    f.write('#include "Gfx/Setup/ShaderSetup.h"\n')
+    f.write('#include "Gfx/Core/GfxTypes.h"\n')
     f.write('#include "glm/vec2.hpp"\n')
     f.write('#include "glm/vec3.hpp"\n')
     f.write('#include "glm/vec4.hpp"\n')
@@ -1644,7 +1894,7 @@ def writeProgramHeader(f, shdLib, program) :
         f.write('        struct {} {{\n'.format(ub.bindName))
         f.write('            static const int _bindSlotIndex = {};\n'.format(ub.bindSlot))
         f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const int64_t _layoutHash = {};\n'.format(ub.getHash()))
+        f.write('            static const uint32_t _layoutHash = {};\n'.format(ub.getHash()))
         for type in ub.uniformsByType :
             for uniform in ub.uniformsByType[type] :
                 if uniform.num == 1 :
@@ -1691,7 +1941,7 @@ def writeSourceTop(f, absSourcePath, shdLib) :
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     f.write('namespace Oryol {\n')
-    f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
+    f.write('#if ORYOL_D3D11\n')
     f.write('typedef unsigned char BYTE;\n')
     f.write('#endif\n')
 
@@ -1715,7 +1965,7 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         # for HLSL, the actual shader code has been compiled into a header by FXC
         # also write the generated shader source into a C comment as
         # human-readable version
-        f.write('#if ORYOL_D3D11 || ORYOL_D3D12\n')
+        f.write('#if ORYOL_D3D11\n')
         f.write('/*\n')
         f.write('{}_{}_src: \n\n'.format(shd.name, slVersion))
         for line in shd.generatedSource[slVersion] :
@@ -1740,39 +1990,15 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
-def writeVertexLayout(f, vs) :
+def writeInputVertexLayout(f, vs) :
     # writes a C++ VertexLayout definition into the generated source
     # code, this is used to match mesh vertex layouts with 
     # vertex shader input signatures (e.g. required in D3D11),
     # return the C++ name of the vertex layout
-    mapAttrName = {
-        'position':     'VertexAttr::Position',
-        'normal':       'VertexAttr::Normal',
-        'texcoord0':    'VertexAttr::TexCoord0',
-        'texcoord1':    'VertexAttr::TexCoord1',
-        'texcoord2':    'VertexAttr::TexCoord2',
-        'texcoord3':    'VertexAttr::TexCoord3',
-        'tangent':      'VertexAttr::Tangent',
-        'binormal':     'VertexAttr::Binormal',
-        'weights':      'VertexAttr::Weights',
-        'indices':      'VertexAttr::Indices',
-        'color0':       'VertexAttr::Color0',
-        'color1':       'VertexAttr::Color1',
-        'instance0':    'VertexAttr::Instance0',
-        'instance1':    'VertexAttr::Instance1',
-        'instance2':    'VertexAttr::Instance2',
-        'instance3':    'VertexAttr::Instance3'
-    }
-    mapAttrType = {
-        'float':    'VertexFormat::Float',
-        'vec2':     'VertexFormat::Float2',
-        'vec3':     'VertexFormat::Float3',
-        'vec4':     'VertexFormat::Float4'
-    }
-    layoutName = '{}_layout'.format(vs.name)
+    layoutName = '{}_input'.format(vs.name)
     f.write('    VertexLayout {};\n'.format(layoutName))
     for attr in vs.inputs :
-        f.write('    {}.Add({}, {});\n'.format(layoutName, mapAttrName[attr.name], mapAttrType[attr.type]))
+        f.write('    {}.Add({}, {});\n'.format(layoutName, attrOryolName[attr.name], attrOryolType[attr.type]))
     return layoutName
 
 #-------------------------------------------------------------------------------
@@ -1783,7 +2009,7 @@ def writeProgramSource(f, shdLib, prog) :
     f.write('    ShaderSetup setup("' + prog.name + '");\n')
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
-    vsInputLayout = writeVertexLayout(f, vs)
+    vsInputLayout = writeInputVertexLayout(f, vs)
     vsName = vs.name
     fsName = fs.name
     for slVersion in slVersions :
@@ -1791,21 +2017,22 @@ def writeProgramSource(f, shdLib, prog) :
         if isGLSL[slVersion] :
             f.write('    #if ORYOL_OPENGL\n')
         elif isHLSL[slVersion] :
-            f.write('    #if ORYOL_D3D11 || ORYOL_D3D12\n')
+            f.write('    #if ORYOL_D3D11\n')
         elif isMetal[slVersion] :
             f.write('    #if ORYOL_METAL\n')
             f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
         vsSource = '{}_{}_src'.format(vsName, slVersion)
         fsSource = '{}_{}_src'.format(fsName, slVersion)
         if isGLSL[slVersion] :
-            f.write('    setup.SetProgramFromSources({}, {}, {}, {});\n'.format(
-                slangType, vsInputLayout, vsSource, fsSource));
+            f.write('    setup.SetProgramFromSources({}, {}, {});\n'.format(
+                slangType, vsSource, fsSource));
         elif isHLSL[slVersion] :
-            f.write('    setup.SetProgramFromByteCode({}, {}, {}, sizeof({}), {}, sizeof({}));\n'.format(
-                slangType, vsInputLayout, vsSource, vsSource, fsSource, fsSource))
+            f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+                slangType, vsSource, vsSource, fsSource, fsSource))
         elif isMetal[slVersion] :
-            f.write('    setup.SetProgramFromLibrary({}, {}, "{}", "{}");\n'.format(
-                slangType, vsInputLayout, vsName, fsName))
+            f.write('    setup.SetProgramFromLibrary({}, "{}", "{}");\n'.format(
+                slangType, vsName, fsName))
+        f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
         f.write('    #endif\n');
 
     # add uniform layouts to setup object
@@ -1827,11 +2054,7 @@ def writeProgramSource(f, shdLib, prog) :
         layoutName = '{}_tblayout'.format(tb.bindName)
         f.write('    TextureBlockLayout {};\n'.format(layoutName))
         for tex in tb.textures :
-            if tex.type == 'sampler2D':
-                texType = 'Texture2D'
-            else :
-                texType = 'TextureCube'
-            f.write('    {}.Add("{}", TextureType::{}, {});\n'.format(layoutName, tex.name, texType, tex.bindSlot))
+            f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, tex.name, texOryolType[tex.type], tex.bindSlot))
         if tb.bindStage == 'vs' :
             stageName = 'VS'
         else :

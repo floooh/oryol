@@ -212,8 +212,7 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
     // setup depth/stencil buffer (if required)
     if (PixelFormat::None != this->gfxSetup.DepthFormat) {
         
-        D3D11_TEXTURE2D_DESC depthStencilDesc;
-        Memory::Clear(&depthStencilDesc, sizeof(depthStencilDesc));
+        D3D11_TEXTURE2D_DESC depthStencilDesc = { };
         depthStencilDesc.Width = width;
         depthStencilDesc.Height = height;
         depthStencilDesc.MipLevels = 1;
@@ -228,8 +227,7 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
         o_assert(SUCCEEDED(hr));
         o_assert_dbg(this->d3d11DepthStencilBuffer);
 
-        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-        Memory::Clear(&dsvDesc, sizeof(dsvDesc));
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = { };
         dsvDesc.Format = depthStencilDesc.Format;
         if (this->gfxSetup.SampleCount > 1) {
             dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;

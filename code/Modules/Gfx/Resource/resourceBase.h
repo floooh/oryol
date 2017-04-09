@@ -1,14 +1,11 @@
 #pragma once
+//------------------------------------------------------------------------------
+/**
+    @file Gfx/Resource/resourceBase.h
+    @brief Gfx module resource classes
+*/
 #include "Resource/Core/resourceBase.h"
-#include "Gfx/Setup/ShaderSetup.h"
-#include "Gfx/Setup/PipelineSetup.h"
-#include "Gfx/Setup/TextureSetup.h"
-#include "Gfx/Setup/MeshSetup.h"
-#include "Gfx/Attrs/TextureAttrs.h"
-#include "Core/Containers/StaticArray.h"
-#include "Gfx/Attrs/VertexBufferAttrs.h"
-#include "Gfx/Attrs/IndexBufferAttrs.h"
-#include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/GfxTypes.h"
 
 namespace Oryol {
 namespace _priv {
@@ -72,6 +69,28 @@ public:
     void Clear();    
     /// shader pointer
     shader* shd = nullptr;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::renderPassBase
+    @ingroup _priv
+    @brief base class for render-pass implementations
+*/
+class texture;
+class renderPassBase : public resourceBase<PassSetup> {
+public:
+    /// constructor
+    renderPassBase() { 
+        colorTextures.Fill(nullptr);
+    }
+    /// clear the object
+    void Clear();
+
+    /// color texture pointers
+    StaticArray<texture*, GfxConfig::MaxNumColorAttachments> colorTextures;
+    /// depth-stencil texture pointer
+    texture* depthStencilTexture = nullptr;
 };
 
 } // namespace _priv

@@ -13,19 +13,6 @@ namespace _priv {
     
 class glVertexAttr {
 public:
-    /// constructor
-    glVertexAttr() :
-        index(0),
-        enabled(0),
-        vbIndex(0),
-        divisor(0),
-        stride(0),
-        size(0),
-        normalized(0),
-        offset(0),
-        type(0) {
-        // empty
-    };
     /// test for equality
     bool operator==(const glVertexAttr& rhs) const {
         return (this->index == rhs.index) &&
@@ -43,15 +30,15 @@ public:
         return !operator==(rhs);
     };
 
-    uint8_t index;
-    uint8_t enabled;
-    uint8_t vbIndex;
-    uint8_t divisor;
-    uint8_t stride;
-    uint8_t size;
-    uint8_t normalized;
-    uint32_t offset;
-    GLenum type;
+    uint8_t index = 0;
+    uint8_t enabled = 0;
+    uint8_t vbIndex = 0;
+    uint8_t divisor = 0;
+    uint8_t stride = 0;
+    uint8_t size = 0;
+    uint8_t normalized = 0;
+    uint32_t offset = 0;
+    GLenum type = 0;
 };
 
 } // namespace _priv

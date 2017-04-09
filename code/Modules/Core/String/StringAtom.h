@@ -27,7 +27,7 @@ public:
     /// construct from raw string (slow)
     StringAtom(const char* str);
     /// construct from raw string (slow)
-    StringAtom(const uchar* str);
+    StringAtom(const unsigned char* str);
     /// copy-constructor (fast if rhs was created in same thread)
     StringAtom(const StringAtom& rhs);
     /// move-constructor
@@ -42,7 +42,7 @@ public:
     /// assign raw string (slow)
     void operator=(const char* rhs);
     /// assign raw string (slow)
-    void operator=(const uchar* rhs);
+    void operator=(const unsigned char* rhs);
     /// assign from String object (slow)
     void operator=(const String& rhs);
     
@@ -58,9 +58,9 @@ public:
     /// inequality operator with raw string (SLOW!)
     bool operator!=(const char* rhs) const;
     /// equality operator with raw string (SLOW!)
-    bool operator==(const uchar* rhs) const;
+    bool operator==(const unsigned char* rhs) const;
     /// inequality operator with raw string (SLOW!)
-    bool operator!=(const uchar* rhs) const;
+    bool operator!=(const unsigned char* rhs) const;
     /// equality operator with String (SLOW!)
     bool operator==(const String& rhs) const;
     /// inequality operator with String (SLOW!)
@@ -74,7 +74,7 @@ public:
     bool Empty() const;
     /// get length
     int Length() const;
-    /// get contained c-string
+    /// get contained C-string (static lifetime)
     const char* AsCStr() const;
     /// get String (slow because string object must be constructed)
     String AsString() const;
@@ -110,7 +110,7 @@ StringAtom::StringAtom(const char* rhs) {
 
 //------------------------------------------------------------------------------
 inline
-StringAtom::StringAtom(const uchar* rhs) {
+StringAtom::StringAtom(const unsigned char* rhs) {
     this->setupFromCString((const char*) rhs);
 }
 
@@ -161,7 +161,7 @@ StringAtom::operator=(const char* rhs) {
 
 //------------------------------------------------------------------------------
 inline void
-StringAtom::operator=(const uchar* rhs) {
+StringAtom::operator=(const unsigned char* rhs) {
     this->Clear();
     this->setupFromCString((const char*)rhs);
 }
@@ -190,7 +190,7 @@ StringAtom::operator!=(const char* rhs) const {
 
 //------------------------------------------------------------------------------
 inline bool
-StringAtom::operator==(const uchar* rhs) const {
+StringAtom::operator==(const unsigned char* rhs) const {
     return operator==((const char*) rhs);
 }
 

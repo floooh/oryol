@@ -15,8 +15,6 @@ class pipeline;
 
 class pipelineFactoryBase {
 public:
-    /// constructor
-    pipelineFactoryBase();
     /// destructor
     ~pipelineFactoryBase();
 
@@ -24,8 +22,6 @@ public:
     void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
-    /// return true if factory has been setup
-    bool IsValid() const;
     /// setup shader resource
     ResourceState::Code SetupResource(pipeline& pip);
     /// destroy the shader
@@ -33,7 +29,7 @@ public:
     
 protected:
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
 
 } // namespace _priv

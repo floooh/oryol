@@ -22,7 +22,7 @@ public:
 private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
-    Id plasmaRenderTarget;
+    Id plasmaRenderPass;
     DrawState plasmaDrawState;
     DrawState planeDrawState;
     
@@ -31,38 +31,8 @@ private:
     PlaneShader::VSParams planeVSParams;
     PlasmaShader::FSParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
-    ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(VertexTextureApp);
-
-//------------------------------------------------------------------------------
-AppState::Code
-VertexTextureApp::OnRunning() {
-    
-    this->plasmaFSParams.Time += 1.0f / 60.0f;
-    this->planeVSParams.ModelViewProjection = this->computeMVP(glm::vec2(0.0f, 0.0f));
-
-    // render plasma to offscreen render target
-    Gfx::ApplyRenderTarget(this->plasmaRenderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->plasmaDrawState);
-    Gfx::ApplyUniformBlock(this->plasmaFSParams);
-    Gfx::Draw();
-
-    // render displacement mapped plane shape
-    Gfx::ApplyDefaultRenderTarget();
-    Gfx::ApplyDrawState(this->planeDrawState);
-    Gfx::ApplyUniformBlock(this->planeVSParams);
-    Gfx::Draw();
-
-    Dbg::DrawTextBuffer();
-    Gfx::CommitFrame();
-    
-    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -73,12 +43,14 @@ VertexTextureApp::OnInit() {
     
     // FIXME: need a way to check number of vertex texture units
     
-    // create RGBA offscreen render target which holds the plasma
-    auto rtSetup = TextureSetup::RenderTarget(256, 256);
-    rtSetup.ColorFormat = PixelFormat::RGBA8;
+    // create RGBA offscreen render pass which holds the plasma
+    auto rtSetup = TextureSetup::RenderTarget2D(256, 256, PixelFormat::RGBA8);
     rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    this->plasmaRenderTarget = Gfx::CreateResource(rtSetup);
+    Id plasmaTex = Gfx::CreateResource(rtSetup);
+    auto passSetup = PassSetup::From(plasmaTex);
+    passSetup.DefaultAction.DontCareColor(0);
+    this->plasmaRenderPass = Gfx::CreateResource(passSetup);
 
     // setup draw state for offscreen rendering to float render target
     auto quadSetup = MeshSetup::FullScreenQuad();
@@ -91,9 +63,10 @@ VertexTextureApp::OnInit() {
     
     // draw state for a 256x256 plane
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Plane(3.0f, 3.0f, 255);
     this->planeDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id planeShader = Gfx::CreateResource(PlaneShader::Setup());
@@ -102,7 +75,7 @@ VertexTextureApp::OnInit() {
     psPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     psPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState.Pipeline = Gfx::CreateResource(psPlane);
-    this->planeDrawState.VSTexture[PlaneTextures::Texture] = this->plasmaRenderTarget;
+    this->planeDrawState.VSTexture[PlaneTextures::Texture] = plasmaTex;
     
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -111,6 +84,36 @@ VertexTextureApp::OnInit() {
     this->plasmaFSParams.Time = 0.0f;
 
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+VertexTextureApp::OnRunning() {
+    
+    this->plasmaFSParams.Time += 1.0f / 60.0f;
+    this->planeVSParams.ModelViewProjection = this->computeMVP(glm::vec2(0.0f, 0.0f));
+
+    // render plasma to offscreen render target
+    Gfx::BeginPass(this->plasmaRenderPass);
+    Gfx::ApplyDrawState(this->plasmaDrawState);
+    Gfx::ApplyUniformBlock(this->plasmaFSParams);
+    Gfx::Draw();
+    Gfx::EndPass();
+
+    // render displacement mapped plane shape
+    Gfx::BeginPass();
+    Gfx::ApplyDrawState(this->planeDrawState);
+    Gfx::ApplyUniformBlock(this->planeVSParams);
+    Gfx::Draw();
+    Dbg::DrawTextBuffer();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

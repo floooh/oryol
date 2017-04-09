@@ -7,11 +7,9 @@
     
     @see displayMgr
 */
-#include "Gfx/Setup/GfxSetup.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Core/Containers/Map.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/GfxEvent.h"
 #include <functional>
 
 namespace Oryol {
@@ -24,8 +22,6 @@ public:
     /// event handler id
     typedef unsigned int eventHandlerId;
 
-    /// constructor
-    displayMgrBase();
     /// destructor
     ~displayMgrBase();
     
@@ -58,12 +54,12 @@ protected:
 
     GfxSetup gfxSetup;
     DisplayAttrs displayAttrs;
-    eventHandlerId uniqueIdCounter;
+    eventHandlerId uniqueIdCounter = 0;
     Map<eventHandlerId, eventHandler> handlers;
     gfxPointers pointers;
-    bool displayValid;
-    int curFramebufferWidth;  // used to detect display size changes
-    int curFramebufferHeight; // used to detect display size changes
+    bool displayValid = false;
+    int curFramebufferWidth = 0;    // used to detect display size changes
+    int curFramebufferHeight = 0;   // used to detect display size changes
 };
     
 } // namespace _priv

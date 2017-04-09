@@ -7,16 +7,9 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/ClearState.h"
-#include "Gfx/Core/BlendState.h"
-#include "Gfx/Core/DepthStencilState.h"
-#include "Gfx/Core/RasterizerState.h"
-#include "Gfx/Core/PrimitiveGroup.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Attrs/DisplayAttrs.h"
-#include "Gfx/Attrs/ImageDataAttrs.h"
-#include "Gfx/Setup/GfxSetup.h"
+#include "Gfx/Resource/resource.h"
 #include "glm/vec4.hpp"
 #include "Gfx/Core/GfxConfig.h"
 #include "Gfx/mtl/mtlReleaseQueue.h"
@@ -24,11 +17,6 @@
 
 namespace Oryol {
 namespace _priv {
-
-class texture;
-class pipeline;
-class mesh;
-class textureBlock;
 
 class mtlRenderer {
 public:
@@ -43,18 +31,21 @@ public:
     void discard();
     /// return true if renderer has been setup
     bool isValid() const;
-    
+
     /// reset the internal state cache
-    void resetStateCache();
+    void resetStateCache(); 
     /// test if a feature is supported
     bool queryFeature(GfxFeature::Code feat) const;
     /// commit current frame
     void commitFrame();
-    /// get the current render target attributes
-    const DisplayAttrs& renderTargetAttrs() const;
+    /// get the current render pass attributes
+    const DisplayAttrs& renderPassAttrs() const;
 
-    /// apply a render target (default or offscreen)
-    void applyRenderTarget(texture* rt, const ClearState& clearState);
+    /// begin rendering pass (both ptrs can be nullptr)
+    void beginPass(renderPass* pass, const PassAction* action);
+    /// end current rendering pass
+    void endPass();
+
     /// apply viewport
     void applyViewPort(int x, int y, int width, int height, bool originTopLeft);
     /// apply scissor rect
@@ -62,17 +53,15 @@ public:
     /// apply draw state
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
-    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
     /// apply a texture block
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
+
     /// submit a draw call with primitive group index in current mesh
-    void draw(int primGroupIndex);
+    void draw(int primGroupIndex, int numInstances);
     /// submit a draw call with direct primitive group
-    void draw(const PrimitiveGroup& primGroup);
-    /// submit a draw call for instanced rendering with primitive group index in current mesh
-    void drawInstanced(int primGroupIndex, int numInstances);
-    /// submit a draw call for instanced rendering with direct primitive group
-    void drawInstanced(const PrimitiveGroup& primGroup, int numInstances);
+    void draw(int baseElementIndex, int numElements, int numInstances);
+
     /// update vertex data
     void updateVertices(mesh* msh, const void* data, int numBytes);
     /// update index data
@@ -84,6 +73,8 @@ public:
 
     /// defered-release a render resource
     void releaseDeferred(ORYOL_OBJC_ID obj);
+    /// check if command buffer exists, create if not
+    void checkCreateCommandBuffer();
 
     #if ORYOL_MACOS
     static const int MtlUniformAlignment = 256;
@@ -98,8 +89,8 @@ public:
     int frameIndex;
     int curFrameRotateIndex;
 
-    bool rtValid;
-    DisplayAttrs rtAttrs;
+    bool rpValid;
+    DisplayAttrs rpAttrs;
     
     pipeline* curPipeline;
     mesh* curPrimaryMesh;
@@ -109,12 +100,12 @@ public:
     ORYOL_OBJC_TYPED_ID(MTLDevice) mtlDevice;
     ORYOL_OBJC_TYPED_ID(MTLCommandQueue) commandQueue;
     ORYOL_OBJC_TYPED_ID(MTLCommandBuffer) curCommandBuffer;
-    ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curCommandEncoder;
+    ORYOL_OBJC_TYPED_ID(MTLRenderCommandEncoder) curRenderCmdEncoder;
 
     // rotated global uniform buffers
     uint8_t* curUniformBufferPtr;
     int curUniformBufferOffset;
-    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MtlMaxInflightFrames> uniformBuffers;
+    StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MaxInflightFrames> uniformBuffers;
 
     // deferred-release-queue, release gfx resources when no longer in use by GPU
     mtlReleaseQueue releaseQueue;

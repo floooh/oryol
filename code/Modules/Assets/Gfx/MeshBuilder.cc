@@ -31,9 +31,9 @@ MeshBuilder::Begin() {
     const int vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
     const int ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
     int allSize = vbSize + ibSize;
-    meshSetup.DataVertexOffset = 0;
+    meshSetup.VertexDataOffset = 0;
     if (ibSize > 0) {
-        meshSetup.DataIndexOffset = vbSize;
+        meshSetup.IndexDataOffset = vbSize;
     }
     
     // setup the data buffer object

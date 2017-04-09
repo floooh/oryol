@@ -111,6 +111,7 @@ mtlTexture::Clear() {
     this->mtlTextures.Fill(nil);
     this->mtlSamplerState = nil;
     this->mtlDepthTex = nil;
+    this->mtlMSAATex = nil;
 }
 
 } // namespace _priv

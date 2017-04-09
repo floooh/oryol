@@ -9,7 +9,7 @@
 </head>
 <body>
   <div class="game-title">${name}<span class="game-subtitle"><a class="game-sdk-link" href="http://kripken.github.io/emscripten-site/">asm.js</a></span></div>
-  <div class="game-rainbow"></div>
+  <div class="${separator}"></div>
 
   <div class="nav-bar" style="width:400px">
     <ul class="nav-list">
@@ -17,8 +17,8 @@
         <li class="nav-item"><a class="nav-link" style="width:90px" href="${source}" target="_blank">source</a></li>
         <li class="nav-item"><a class="nav-link" style="width:90px" onclick="callAsEventHandler('enter_soft_fullscreen')" href="javascript:void(0);">expand</a></li>
         <li class="nav-item"><a class="nav-link" style="width:130px" onclick="callAsEventHandler('enter_fullscreen')" href="javascript:void(0);">fullscreen</a></li>
-        <div class="break"></div>
     </ul>
+    <div class="break"></div>
   </div>
 
   <div class="game-border">

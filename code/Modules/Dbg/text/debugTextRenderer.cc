@@ -130,8 +130,8 @@ debugTextRenderer::drawTextBuffer() {
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
         DbgTextShader::VSParams vsParams;
-        const float w = 8.0f / Gfx::RenderTargetAttrs().FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / Gfx::RenderTargetAttrs().FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
+        const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
 
         Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
@@ -172,7 +172,7 @@ debugTextRenderer::setupFontTexture() {
     }
     
     // setup texture, pixel format is 8bpp uncompressed
-    auto texSetup = TextureSetup::FromPixelData(imgWidth, imgHeight, 1, TextureType::Texture2D, PixelFormat::L8);
+    auto texSetup = TextureSetup::FromPixelData2D(imgWidth, imgHeight, 1, PixelFormat::L8);
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
@@ -191,10 +191,10 @@ debugTextRenderer::setupTextMesh() {
     
     // setup an empty mesh, only vertices
     int maxNumVerts = MaxNumChars * 6;
-    this->vertexLayout
-        .Add(VertexAttr::Position, VertexFormat::Float4)
-        .Add(VertexAttr::Color0, VertexFormat::UByte4N);
-
+    this->vertexLayout = {
+        { VertexAttr::Position, VertexFormat::Float4 },
+        { VertexAttr::Color0, VertexFormat::UByte4N }
+    };
     o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
     MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
     setup.Layout = this->vertexLayout;
@@ -218,9 +218,9 @@ debugTextRenderer::setupTextPipeline() {
     // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
     // for different render targets and quickly select them before
     // text rendering
-    ps.BlendState.ColorFormat = Gfx::RenderTargetAttrs().ColorPixelFormat;
-    ps.BlendState.DepthFormat = Gfx::RenderTargetAttrs().DepthPixelFormat;
-    ps.RasterizerState.SampleCount = Gfx::RenderTargetAttrs().SampleCount;
+    ps.BlendState.ColorFormat = Gfx::PassAttrs().ColorPixelFormat;
+    ps.BlendState.DepthFormat = Gfx::PassAttrs().DepthPixelFormat;
+    ps.RasterizerState.SampleCount = Gfx::PassAttrs().SampleCount;
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 }
 
@@ -249,7 +249,7 @@ debugTextRenderer::convertStringToVertices(const String& str) {
     const int numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
     const char* ptr = str.AsCStr();
     for (int charIndex = 0; charIndex < numChars; charIndex++) {
-        uchar c = (uchar) ptr[charIndex];
+        unsigned char c = (uchar) ptr[charIndex];
         
         // control character?
         if (c < 0x20) {
@@ -284,10 +284,10 @@ debugTextRenderer::convertStringToVertices(const String& str) {
                         else if (escCode == 2) {
                             // change color
                             o_assert((charIndex + 5) < numChars);
-                            uchar r = (uchar) ptr[charIndex + 2];
-                            uchar g = (uchar) ptr[charIndex + 3];
-                            uchar b = (uchar) ptr[charIndex + 4];
-                            uchar a = (uchar) ptr[charIndex + 5];
+                            uint8_t r = (uint8_t) ptr[charIndex + 2];
+                            uint8_t g = (uint8_t) ptr[charIndex + 3];
+                            uint8_t b = (uint8_t) ptr[charIndex + 4];
+                            uint8_t a = (uint8_t) ptr[charIndex + 5];
                             charIndex += 5;
                             rgba = (a<<24) | (b << 16) | (g << 8) | (r);
                         }

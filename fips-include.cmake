@@ -2,6 +2,7 @@
 set(ORYOL_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # cmake options
+option(ORYOL_SAMPLES "Build Oryol samples" ON)
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/data/" CACHE STRING "Sample data URL")
 option(ORYOL_DEBUG_SHADERS "Enable/disable debug info for shaders" OFF)
 if (FIPS_MACOS OR FIPS_LINUX OR FIPS_ANDROID)
@@ -45,7 +46,7 @@ if (FIPS_OSX)
     endif()
 endif()
 
-# use D3D11/D3D12 on Windows?
+# use D3D11 on Windows?
 if (FIPS_WINDOWS)
     if (FIPS_UWP)
         set(d3d11_default ON)
@@ -56,22 +57,26 @@ if (FIPS_WINDOWS)
     if (ORYOL_USE_D3D11)
         set(ORYOL_D3D11 1)
     endif()
-    option(ORYOL_USE_D3D12 "Use D3D12 3D API on Windows" OFF)
-    if (ORYOL_USE_D3D12)
-        set(ORYOL_D3D12 1)
-    endif()
 endif()
 
 # use OpenGL?
-if (NOT ORYOL_METAL AND NOT ORYOL_D3D11 AND NOT ORYOL_D3D12)
+if (NOT ORYOL_METAL AND NOT ORYOL_D3D11)
     set(ORYOL_OPENGL 1)
     if (FIPS_RASPBERRYPI)
         set(ORYOL_OPENGLES2 1)
     elseif (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS)
         set(ORYOL_OPENGL_CORE_PROFILE 1)
-    elseif (FIPS_IOS OR FIPS_PNACL)
+    elseif (FIPS_IOS)
+        set(ORYOL_OPENGLES3 1)
+    elseif (FIPS_PNACL)
         set(ORYOL_OPENGLES2 1)
-    elseif (FIPS_ANDROID)
+    elseif (FIPS_EMSCRIPTEN)
+        if (FIPS_EMSCRIPTEN_USE_WEBGL2)
+            set(ORYOL_OPENGLES3 1)
+        else()
+            set(ORYOL_OPENGLES2 1)
+        endif()
+    elseif (FIPS_ANDROID) 
         set(ORYOL_OPENGLES3 1)
     elseif (FIPS_EMSCRIPTEN) 
         if (FIPS_EMSCRIPTEN_USE_WEBGL2)
@@ -141,11 +146,6 @@ if (ORYOL_D3D11)
     add_definitions(-DORYOL_D3D11=1)
 endif()
 
-# D3D12 defines
-if (ORYOL_D3D12)
-    add_definitions(-DORYOL_D3D12=1)
-endif()
-
 # OpenAL defines
 if (ORYOL_OPENAL)
     add_definitions(-DORYOL_OPENAL=1)
@@ -201,3 +201,10 @@ macro(oryol_shader shd)
     fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE ARGS ${args})
 endmacro()
 
+#-------------------------------------------------------------------------------
+#   Add a sample to the samples webpage 
+#
+file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
+macro(oryol_add_web_sample name desc type image src)
+    file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
+endmacro()

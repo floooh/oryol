@@ -109,11 +109,12 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     Log::Info("emscDisplayMgr: alpha=%d, depth=%d, stencil=%d, antialias=%d\n", 
         ctxAttrs.alpha, ctxAttrs.depth, ctxAttrs.stencil, ctxAttrs.antialias);
     
-    // first try to get an WebGL2 context (only if WebGL is enabled)
+    // first try to get an WebGL2 context
+    glCaps::Flavour glFlavour = glCaps::GLES3;
+    ctxAttrs.minorVersion = 0;
     #if ORYOL_OPENGLES3
     Log::Info("emscDisplayMgr: trying to create WebGL2 context...\n");
     ctxAttrs.majorVersion = 2;
-    ctxAttrs.minorVersion = 0;
     this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
     if (this->ctx) {
         Log::Info("emscDisplayMgr: using WebGL2 context\n");
@@ -122,18 +123,15 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     #endif
     {
         // WebGL2 context creation failed, try WebGL1
-        #if ORYOL_OPENGLES3
-        Log::Info("emscDisplayMgr: WebGL2 context creation failed, trying WebGL...\n");
-        #else
-        Log::Info("emscDisplayMgr: creating WebGL1 context...\n");
-        #endif
+        Log::Info("emscDisplayMgr: using WebGL1 context...\n");
         ctxAttrs.majorVersion = 1;
         this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
+        glFlavour = glCaps::GLES2;
     }
     o_assert2(this->ctx > 0, "Failed to create WebGL context");
     emscripten_webgl_make_context_current(this->ctx);
 
-    glCaps::Setup();
+    glCaps::Setup(glFlavour);
 }
 
 //------------------------------------------------------------------------------

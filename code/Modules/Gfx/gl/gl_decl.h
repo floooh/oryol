@@ -22,5 +22,8 @@ typedef float GLclampf;
 typedef double GLdouble;
 typedef double GLclampd;
 typedef void GLvoid;
+#ifndef GL_INVALID_INDEX
+#define GL_INVALID_INDEX 0xFFFFFFFFu
+#endif
 #endif
 

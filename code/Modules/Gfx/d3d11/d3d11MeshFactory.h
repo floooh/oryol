@@ -7,7 +7,7 @@
 */
 #include "Resource/ResourceState.h"
 #include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/d3d11/d3d11_decl.h"
 
 namespace Oryol {
@@ -24,11 +24,7 @@ public:
     void Setup(const gfxPointers& ptrs);
     /// discard the factory
     void Discard();
-    /// return true if the object has been setup
-    bool IsValid() const;
 
-    /// setup resource
-    ResourceState::Code SetupResource(mesh& mesh);
     /// setup with 'raw' data
     ResourceState::Code SetupResource(mesh& mesh, const void* data, int size);
     /// discard the resource

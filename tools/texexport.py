@@ -52,6 +52,14 @@ def ensureDstDirectory() :
         os.makedirs(TexDstDirectory)
 
 #-------------------------------------------------------------------------------
+def needsExport(srcPath, dstPath) :
+    if not os.path.isfile(dstPath) :
+        return True
+    if os.stat(srcPath).st_mtime >= os.stat(dstPath).st_mtime :
+        return True
+    return False
+
+#-------------------------------------------------------------------------------
 def toDDS(srcFilename, dstFilename, linearGamma, fmt, rgbFmt=None) :
     '''
     Convert a file to DDS format
@@ -61,6 +69,8 @@ def toDDS(srcFilename, dstFilename, linearGamma, fmt, rgbFmt=None) :
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
     print('=== toDDS: {} => {}:'.format(srcPath, dstPath))
+    if not needsExport(srcPath, dstPath) :
+        return
     cmdLine = [ddsTool, '-'+fmt]
     if rgbFmt != None :
         cmdLine.append('-rgbfmt')
@@ -86,8 +96,13 @@ def toCubeDDS(srcDir, srcExt, dstFilename, linearGamma, fmt, rgbFmt=None) :
 
     # call nvassemble to generate an uncompressed cube map...
     cmdLine = [nvassemble, '-cube']
+    dirty = False
     for src in srcFiles :
-        cmdLine.append(TexSrcDirectory + '/' + srcDir + '/' + src + '.' + srcExt)
+        srcPath = TexSrcDirectory + '/' + srcDir + '/' + src + '.' + srcExt
+        dirty |= needsExport(srcPath, dstPath)
+        cmdLine.append(srcPath)
+    if not dirty :
+        return
     cmdLine.append('-o')
     cmdLine.append(dstPath)
     subprocess.call(args=cmdLine)
@@ -116,6 +131,8 @@ def toPVR(srcFilename, dstFilename, format) :
     srcPath = TexSrcDirectory + '/' + srcFilename
     dstPath = TexDstDirectory + '/' + dstFilename
     print('=== toPVR: {} => {}:'.format(srcPath, dstPath))
+    if not needsExport(srcPath, dstPath) :
+        return
     cmdLine = [pvrTool, '-i', srcPath, '-o', dstPath, '-square', '+', '-pot', '+', '-m', '-mfilter', 'cubic', '-f', format ]
     subprocess.call(args=cmdLine)
 
@@ -136,8 +153,13 @@ def toCubePVR(srcDir, srcExt, dstFilename, format) :
 
     cmdLine = [pvrTool, '-i']
     inputFiles = ''
+    dirty = False
     for src in srcFiles :
-        inputFiles += TexSrcDirectory + '/' + srcDir + '/' + src + '.' + srcExt + ','
+        srcPath = TexSrcDirectory + '/' + srcDir + '/' + src + '.' + srcExt
+        dirty |= needsExport(srcPath, dstPath)
+        inputFiles += srcPath + ','
+    if not dirty:
+        return
     inputFiles = inputFiles[:-1]
     cmdLine.append(inputFiles)
     cmdLine.append('-o')
@@ -169,6 +191,9 @@ def toETC(srcFilename, dstFilename, format) :
     dstPath  = TexDstDirectory + '/' + dstFilename
     tmpPath  = tempfile.gettempdir() + '/' + tmpFilename
     print('=== toETC2: {} => {} => {}:'.format(srcPath, tmpPath, dstPath))
+
+    if not needsExport(srcPath, dstPath) :
+        return
 
     # first convert file to PPM format
     subprocess.call(args=[convTool, srcPath, tmpPath])

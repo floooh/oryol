@@ -199,8 +199,10 @@ ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id) {
 template<class RESOURCE, class SETUP> RESOURCE*
 ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
     o_assert_dbg(this->isValid);
+    if (!id.IsValid()) {
+        return nullptr;
+    }
     o_assert_dbg(id.Type == this->resourceType);
-    
     const auto& slot = this->slots[id.SlotIndex];
     if (id == slot.Id) {
         if (ResourceState::Valid == slot.State) {

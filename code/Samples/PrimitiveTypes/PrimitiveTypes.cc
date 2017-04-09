@@ -44,8 +44,8 @@ createIndexMesh(int numIndices, const void* data, int dataSize) {
     setup.NumVertices = 0;
     setup.NumIndices = numIndices;
     setup.IndicesType = IndexType::Index16;
-    setup.DataVertexOffset = InvalidIndex;
-    setup.DataIndexOffset = 0;
+    setup.VertexDataOffset = InvalidIndex;
+    setup.IndexDataOffset = 0;
     return Gfx::CreateResource(setup, data, dataSize);
 }
 
@@ -74,9 +74,10 @@ PrimitiveTypesApp::OnInit() {
     MeshBuilder meshBuilder;
     meshBuilder.NumVertices = NumVertices;
     meshBuilder.IndicesType = IndexType::None;
-    meshBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::UByte4N);
+    meshBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::UByte4N }
+    };
     meshBuilder.Begin();
     const float dx = 1.0f / NumX;
     const float dy = 1.0f / NumY;
@@ -217,7 +218,7 @@ PrimitiveTypesApp::OnRunning() {
     this->vsParams.ModelViewProjection = this->proj * this->view * model;
 
     // render the currently selected drawstate
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     int num = 0;
     switch (this->curPrimType) {
         case PrimitiveType::Points: num = NumVertices; break;
@@ -283,6 +284,7 @@ PrimitiveTypesApp::OnRunning() {
     }
 
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
 
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

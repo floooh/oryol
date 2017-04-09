@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
+#include "Core/Core.h"
 #include "Gfx/Gfx.h"
 
 using namespace Oryol;

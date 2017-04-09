@@ -27,7 +27,7 @@ AppState::Code
 BlendTestApp::OnRunning() {
     
     // draw checkboard background
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->bgDrawState);
     Gfx::Draw();
 
@@ -45,6 +45,7 @@ BlendTestApp::OnRunning() {
             Gfx::Draw();
         }
     }
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?
@@ -56,7 +57,7 @@ AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(1024, 768, "Oryol Blend Sample");
-    gfxSetup.SetPoolSize(GfxResourceType::Pipeline, 512);
+    gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] =  512;
     Gfx::Setup(gfxSetup);
 
     // create pipeline object for a patterned background
@@ -70,9 +71,10 @@ BlendTestApp::OnInit() {
     MeshBuilder meshBuilder;
     meshBuilder.NumVertices = 3;
     meshBuilder.IndicesType = IndexType::None;
-    meshBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Color0, VertexFormat::Float4);
+    meshBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
     meshBuilder.PrimitiveGroups.Add(0, 3);
     meshBuilder.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.05f, 0.5f)

@@ -35,9 +35,8 @@ PackedNormalsApp::OnRunning() {
     this->angleY += 0.01f;
     this->angleX += 0.02f;
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-
     static const glm::vec3 positions[] = {
         glm::vec3(-1.0, 1.0f, -6.0f),
         glm::vec3(1.0f, 1.0f, -6.0f),
@@ -51,6 +50,7 @@ PackedNormalsApp::OnRunning() {
         Gfx::ApplyUniformBlock(this->params);
         Gfx::Draw(primGroupIndex++);
     }
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -62,9 +62,10 @@ PackedNormalsApp::OnInit() {
     Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N }
+    };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)

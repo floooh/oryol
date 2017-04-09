@@ -19,49 +19,22 @@ public:
     AppState::Code OnCleanup();
     
 private:
-    Id renderTarget;
+    Id renderPass;
     DrawState offscreenDrawState;
     DrawState copyDrawState;
     glm::mat4 view;
     glm::mat4 proj;
     OffscreenShader::FSParams offscreenFSParams;
     TimePoint lastFrameTimePoint;
-    ClearState noClearState = ClearState::ClearNone();
 };
 OryolMain(TextureFloatApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-TextureFloatApp::OnRunning() {
-
-    this->offscreenFSParams.Time += 1.0f / 60.0f;
-    
-    // render plasma to offscreen render target, do not clear
-    Gfx::ApplyRenderTarget(this->renderTarget, this->noClearState);
-    Gfx::ApplyDrawState(this->offscreenDrawState);
-    Gfx::ApplyUniformBlock(this->offscreenFSParams);
-    Gfx::Draw();
-    
-    // copy fullscreen quad
-    Gfx::ApplyDefaultRenderTarget(this->noClearState);
-    Gfx::ApplyDrawState(this->copyDrawState);
-    Gfx::Draw();
-
-    Dbg::DrawTextBuffer();
-    Gfx::CommitFrame();
-    
-    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(512, 512, "Oryol Float Texture Sample"));
+    auto gfxSetup = GfxSetup::Window(512, 512, "Oryol Float Texture Sample");
+    Gfx::Setup(gfxSetup);
     Dbg::Setup();
 
     // check required extensions
@@ -71,11 +44,13 @@ TextureFloatApp::OnInit() {
     
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
-    auto rtSetup = TextureSetup::RelSizeRenderTarget(1.0f, 1.0f);
-    rtSetup.ColorFormat = PixelFormat::RGBA32F;
+    auto rtSetup = TextureSetup::RenderTarget2D(gfxSetup.Width, gfxSetup.Height, PixelFormat::RGBA32F);
     rtSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     rtSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
-    this->renderTarget = Gfx::CreateResource(rtSetup);
+    Id rt = Gfx::CreateResource(rtSetup);
+    auto passSetup = PassSetup::From(rt);
+    passSetup.DefaultAction.DontCareColor(0);
+    this->renderPass = Gfx::CreateResource(passSetup);
 
     // fullscreen mesh, we'll reuse this several times
     auto quadSetup = MeshSetup::FullScreenQuad();
@@ -95,7 +70,7 @@ TextureFloatApp::OnInit() {
     Id copyShader = Gfx::CreateResource(CopyShader::Setup());
     ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
     this->copyDrawState.Pipeline = Gfx::CreateResource(ps);
-    this->copyDrawState.FSTexture[Textures::Texture] = this->renderTarget;
+    this->copyDrawState.FSTexture[Textures::Texture] = rt;
 
     // setup static transform matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -104,6 +79,34 @@ TextureFloatApp::OnInit() {
     this->view = glm::mat4();
 
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+TextureFloatApp::OnRunning() {
+
+    this->offscreenFSParams.Time += 1.0f / 60.0f;
+    
+    // render plasma to offscreen render target, do not clear
+    Gfx::BeginPass(this->renderPass);
+    Gfx::ApplyDrawState(this->offscreenDrawState);
+    Gfx::ApplyUniformBlock(this->offscreenFSParams);
+    Gfx::Draw();
+    Gfx::EndPass();
+    
+    // copy fullscreen quad
+    Gfx::BeginPass();
+    Gfx::ApplyDrawState(this->copyDrawState);
+    Gfx::Draw();
+    Dbg::DrawTextBuffer();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
+    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

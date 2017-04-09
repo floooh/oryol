@@ -22,7 +22,7 @@ public:
     /// clear the object (called from meshFactory::DestroyResource())
     void Clear();
 
-    static const int NumSlots = GfxConfig::MtlMaxInflightFrames;
+    static const int NumSlots = GfxConfig::MaxInflightFrames;
     struct buffer {
         buffer();
         int updateFrameIndex;
@@ -95,7 +95,7 @@ public:
     /// clear the object
     void Clear();
 
-    static const int NumSlots = GfxConfig::MtlMaxInflightFrames;
+    static const int NumSlots = GfxConfig::MaxInflightFrames;
     int updateFrameIndex;
     uint8_t numSlots;
     uint8_t activeSlot;
@@ -103,6 +103,17 @@ public:
 
     ORYOL_OBJC_TYPED_ID(MTLSamplerState) mtlSamplerState;
     ORYOL_OBJC_TYPED_ID(MTLTexture) mtlDepthTex;
+    ORYOL_OBJC_TYPED_ID(MTLTexture) mtlMSAATex;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::mtlRenderPass
+    @ingroup _priv
+    @brief Metal implementation of renderPass
+*/
+class mtlRenderPass : public renderPassBase {
+    // empty
 };
 
 } // namespace _priv

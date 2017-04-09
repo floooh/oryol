@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Core/VertexLayout.h"
+#include "Gfx/Core/GfxTypes.h"
 
 using namespace Oryol;
 
@@ -48,4 +48,23 @@ TEST(VertexLayoutTest) {
     layout.Clear();
     CHECK(layout.Empty());
     CHECK(0 == layout.NumComponents());
+
+    VertexLayout l0({
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Float3 },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    });
+    CHECK(l0.ComponentIndexByVertexAttr(VertexAttr::Position) == 0);
+    CHECK(l0.ComponentIndexByVertexAttr(VertexAttr::Normal) == 1);
+    CHECK(l0.ComponentIndexByVertexAttr(VertexAttr::TexCoord0) == 2);
+
+    VertexLayout l1;
+    l1.Add({
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Tangent, VertexFormat::Byte4N },
+    }).EnableInstancing();
+    CHECK(l1.ComponentIndexByVertexAttr(VertexAttr::Position) == 0);
+    CHECK(l1.ComponentIndexByVertexAttr(VertexAttr::Tangent) == 1);
+    CHECK(l1.StepFunction == VertexStepFunction::PerInstance);
 }
+

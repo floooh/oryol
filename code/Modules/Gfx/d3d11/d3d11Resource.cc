@@ -100,9 +100,9 @@ d3d11Texture::~d3d11Texture() {
     o_assert_dbg(nullptr == this->d3d11Texture2D);
     o_assert_dbg(nullptr == this->d3d11ShaderResourceView);
     o_assert_dbg(nullptr == this->d3d11SamplerState);
-    o_assert_dbg(nullptr == this->d3d11RenderTargetView);
-    o_assert_dbg(nullptr == this->d3d11DepthBufferTexture);
-    o_assert_dbg(nullptr == this->d3d11DepthStencilView);
+    o_assert_dbg(nullptr == this->d3d11DepthStencilTexture);
+    o_assert_dbg(nullptr == this->d3d11MSAATexture2D);
+    o_assert_dbg(DXGI_FORMAT_UNKNOWN == this->d3d11ColorFormat);
 }
 
 //------------------------------------------------------------------------------
@@ -112,8 +112,31 @@ d3d11Texture::Clear() {
     this->d3d11Texture2D = nullptr;
     this->d3d11ShaderResourceView = nullptr;
     this->d3d11SamplerState = nullptr;
-    this->d3d11RenderTargetView = nullptr;
-    this->d3d11DepthBufferTexture = nullptr;
+    this->d3d11DepthStencilTexture = nullptr;
+    this->d3d11MSAATexture2D = nullptr;
+    this->d3d11ColorFormat = DXGI_FORMAT_UNKNOWN;
+}
+
+//==============================================================================
+d3d11RenderPass::d3d11RenderPass() {
+    this->d3d11RenderTargetViews.Fill(nullptr);
+}
+
+//------------------------------------------------------------------------------
+d3d11RenderPass::~d3d11RenderPass() {
+    #if ORYOL_DEBUG
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        o_assert(nullptr == this->d3d11RenderTargetViews[i]);
+    }
+    o_assert(nullptr == this->d3d11DepthStencilView);
+    #endif
+}
+
+//------------------------------------------------------------------------------
+void
+d3d11RenderPass::Clear() {
+    renderPassBase::Clear();
+    this->d3d11RenderTargetViews.Fill(nullptr);
     this->d3d11DepthStencilView = nullptr;
 }
 

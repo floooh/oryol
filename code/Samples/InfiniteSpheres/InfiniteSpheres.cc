@@ -14,8 +14,8 @@ using namespace Oryol;
 
 class InfiniteSpheresApp : public App {
 public:
-    AppState::Code OnRunning();
     AppState::Code OnInit();
+    AppState::Code OnRunning();
     AppState::Code OnCleanup();
     
 private:
@@ -24,9 +24,12 @@ private:
 
     DrawState offscreenDrawState;
     DrawState displayDrawState;
-    Id renderTargets[2];
+    struct {
+        Id texture;
+        Id pass;
+    } passInfo[2];
     Shader::VSParams vsParams;
-    ClearState clearState = ClearState::ClearAll(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
+    PassAction passAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -38,68 +41,31 @@ OryolMain(InfiniteSpheresApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-InfiniteSpheresApp::OnRunning() {
-    
-    // update angles
-    this->angleY += 0.01f;
-    this->angleX += 0.02f;
-    this->frameIndex++;
-    const int index0 = this->frameIndex % 2;
-    const int index1 = (this->frameIndex + 1) % 2;
-    const Id& rt0 = this->renderTargets[index0];
-    const Id& rt1 = this->renderTargets[index1];
-    
-    // render sphere to offscreen render target, using the other render target as
-    // source texture
-    glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
-    Gfx::ApplyRenderTarget(rt0);
-    this->offscreenDrawState.FSTexture[Textures::Texture] = rt1;
-    Gfx::ApplyDrawState(this->offscreenDrawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw();
-    
-    // ...and again to display
-    model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
-    Gfx::ApplyDefaultRenderTarget(this->clearState);
-    this->displayDrawState.FSTexture[Textures::Texture] = rt0;
-    Gfx::ApplyDrawState(this->displayDrawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw();
-    
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample");
-    gfxSetup.ClearHint = this->clearState;
     Gfx::Setup(gfxSetup);
 
     // create 2 ping-pong offscreen render targets
-    auto rtSetup = TextureSetup::RenderTarget(512, 512);
-    rtSetup.ColorFormat = PixelFormat::RGBA8;
-    rtSetup.DepthFormat = PixelFormat::DEPTH;
+    auto rtSetup = TextureSetup::RenderTarget2D(512, 512, PixelFormat::RGBA8, PixelFormat::DEPTH);
     rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
     rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
     for (int i = 0; i < 2; i++) {
-        this->renderTargets[i] = Gfx::CreateResource(rtSetup);
+        Id tex = Gfx::CreateResource(rtSetup);
+        this->passInfo[i].texture = tex;
+        auto rpSetup = PassSetup::From(tex, tex);
+        this->passInfo[i].pass = Gfx::CreateResource(rpSetup);
     }
 
     // create a sphere shape mesh
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Sphere(0.75f, 72, 40);
     Id sphere = Gfx::CreateResource(shapeBuilder.Build());
     this->offscreenDrawState.Mesh[0] = sphere;
@@ -129,6 +95,44 @@ InfiniteSpheresApp::OnInit() {
     this->view = glm::mat4();
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+InfiniteSpheresApp::OnRunning() {
+    
+    // update angles
+    this->angleY += 0.01f;
+    this->angleX += 0.02f;
+    this->frameIndex++;
+    const int index0 = this->frameIndex % 2;
+    const int index1 = (this->frameIndex + 1) % 2;
+
+    // render sphere to offscreen render target, using the other render target as
+    // source texture
+    glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
+    this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
+    Gfx::BeginPass(this->passInfo[index0].pass);
+    this->offscreenDrawState.FSTexture[Textures::Texture] = this->passInfo[index1].texture;
+    Gfx::ApplyDrawState(this->offscreenDrawState);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::Draw();
+    Gfx::EndPass();
+    
+    // ...and again to display
+    model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
+    this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
+    Gfx::BeginPass(this->passAction);
+    this->displayDrawState.FSTexture[Textures::Texture] = this->passInfo[index0].texture;
+    Gfx::ApplyDrawState(this->displayDrawState);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::Draw();
+    Gfx::EndPass();
+    
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

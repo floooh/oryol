@@ -58,7 +58,7 @@ GamepadExplorerApp::OnInit() {
 //------------------------------------------------------------------------------
 AppState::Code
 GamepadExplorerApp::OnRunning() {
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     
     // Gamepad0 Gamepad1 Gamepad2 Gamepad3
     Dbg::Print("\n\t\t");
@@ -122,6 +122,7 @@ GamepadExplorerApp::OnRunning() {
     }
 
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }

@@ -31,5 +31,13 @@ pipelineBase::Clear() {
     resourceBase::Clear();
 }
 
+//------------------------------------------------------------------------------
+void
+renderPassBase::Clear() {
+    this->colorTextures.Fill(nullptr);
+    this->depthStencilTexture = nullptr;
+    resourceBase::Clear();
+}
+
 } // namespace _priv
 } // namespace Oryol

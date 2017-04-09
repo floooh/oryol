@@ -6,7 +6,7 @@
     @brief GL capabilities and extension wrapper
 */
 #include "Core/Types.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
@@ -25,7 +25,9 @@ public:
         MaxCombinedTextureImageUnits,
         MaxVertexTextureImageUnits,
         MaxFragmentUniformComponents,
-        
+        MaxUniformBufferBindings,
+        UniformBufferOffsetAlignment,
+
         NumLimits,
     };
 
@@ -38,6 +40,12 @@ public:
         TextureHalfFloat,
         InstancedArrays,
         DebugOutput,
+        MSAARenderTargets,
+        MapBuffer,
+        PackedVertexFormat_10_2,
+        MultipleRenderTarget,
+        Texture3D,
+        TextureArray,
 
         NumFeatures,
     };
@@ -48,8 +56,16 @@ public:
         SeverityLow,
     };
 
+    enum Flavour {
+        GL_3_3_CORE,
+        GLES2,
+        GLES3,
+
+        InvalidFlavour,
+    };
+
     /// setup the info values
-    static void Setup();
+    static void Setup(Flavour flav);
     /// discard the info values
     static void Discard();
     /// check if object has been setup
@@ -61,6 +77,8 @@ public:
     static bool HasFeature(Feature f);
     /// test if a texture format is supported
     static bool HasTextureFormat(PixelFormat::Code fmt);
+    /// return true if GL version matches 'flavour'
+    static bool IsFlavour(Flavour flav);
 
     /// enable debug output (GL_ARB_debug_output)
     static void EnableDebugOutput(Severity s);
@@ -78,11 +96,11 @@ public:
 
 private:
     /// setup the limit values
-    static void setupLimits();
+    static void setupLimits(Flavour flav);
     /// setup the feature flags
-    static void setupFeatures();
+    static void setupFeatures(Flavour flav);
     /// dump general GL info (extensions, constants, ...)
-    static void printInfo();
+    static void printInfo(Flavour flav);
     /// print a GL string, optionally replace spaces with newlines
     static void printString(GLenum glEnum, const char* name, bool replaceSpaceWithNewLine);
     /// print a 1..4 dimensional integer value
@@ -91,6 +109,7 @@ private:
     static struct state_t {
         bool isValid = false;
         bool isDebugOutputEnabled = false;
+        Flavour flavour = InvalidFlavour;
         int intLimits[NumLimits] = { };
         bool features[NumFeatures] = { };
     } state;
@@ -99,6 +118,7 @@ private:
 //------------------------------------------------------------------------------
 inline int
 glCaps::IntLimit(Limit l) {
+    o_assert_dbg(state.isValid);
     o_assert_range_dbg(l, NumLimits);
     return state.intLimits[l];
 }
@@ -106,8 +126,16 @@ glCaps::IntLimit(Limit l) {
 //------------------------------------------------------------------------------
 inline bool
 glCaps::HasFeature(Feature f) {
+    o_assert_dbg(state.isValid);
     o_assert_dbg(f < NumFeatures);
     return state.features[f];
+}
+
+//------------------------------------------------------------------------------
+inline bool
+glCaps::IsFlavour(Flavour flav) {
+    o_assert_dbg(state.isValid);
+    return flav == state.flavour;
 }
 
 } // namespace _priv

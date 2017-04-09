@@ -37,10 +37,7 @@
     @see VertexWriter, ShapeBuilder
 */
 #include "Core/Types.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/VertexLayout.h"
-#include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Setup/MeshSetup.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Assets/Gfx/VertexWriter.h"
 #include "Resource/Core/SetupAndData.h"
 

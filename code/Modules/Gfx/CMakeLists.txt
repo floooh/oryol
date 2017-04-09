@@ -24,35 +24,14 @@ endif() # ORYOL_OPENGL
 fips_begin_module(Gfx)
     fips_vs_warning_level(3)
     fips_files(Gfx.cc Gfx.h)
-    fips_dir(Attrs)
-    fips_files(
-        DisplayAttrs.h
-        IndexBufferAttrs.h
-        TextureAttrs.h
-        VertexBufferAttrs.h
-        ImageDataAttrs.h
-    )
     fips_dir(Core)
     fips_files(
         displayMgrBase.cc displayMgrBase.h
-        BlendState.h
-        ClearState.cc ClearState.h
-        DrawState.h
-        DepthStencilState.h
-        SamplerState.h
-        Enums.h
-        PrimitiveGroup.h
-        RasterizerState.h
-        StencilState.h
-        VertexLayout.cc VertexLayout.h
-        UniformBlockLayout.cc UniformBlockLayout.h
-        TextureBlockLayout.cc TextureBlockLayout.h
+        GfxTypes.cc GfxTypes.h
         displayMgr.h
         renderer.h
         gfxPointers.h
         GfxConfig.h
-        GfxEvent.h
-        GfxFrameInfo.h
     )
     fips_dir(Resource)
     fips_files(
@@ -61,18 +40,10 @@ fips_begin_module(Gfx)
         resource.h
         factory.h
         pipelineFactoryBase.cc pipelineFactoryBase.h
-        gfxResourceContainerBase.cc gfxResourceContainerBase.h
-        gfxResourceContainer.h 
+        renderPassFactoryBase.cc renderPassFactoryBase.h
+        gfxResourceContainer.h gfxResourceContainer.cc 
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
-    )
-    fips_dir(Setup)
-    fips_files(
-        PipelineSetup.cc PipelineSetup.h
-        GfxSetup.cc GfxSetup.h
-        MeshSetup.cc MeshSetup.h
-        ShaderSetup.cc ShaderSetup.h
-        TextureSetup.cc TextureSetup.h
     )
     if (ORYOL_OPENGL)
         fips_dir(gl)
@@ -84,13 +55,14 @@ fips_begin_module(Gfx)
             glShaderFactory.cc glShaderFactory.h
             glRenderer.cc glRenderer.h
             glTextureFactory.cc glTextureFactory.h
+            glRenderPassFactory.cc glRenderPassFactory.h
             glTypes.cc glTypes.h
             glVertexAttr.h
             gl_decl.h
             gl_impl.h
         )
     endif()
-    if (NOT FIPS_UWP AND (ORYOL_D3D11 OR ORYOL_D3D12))
+    if (NOT FIPS_UWP AND ORYOL_D3D11)
         fips_dir(win)
         fips_files(
             win_decl.h
@@ -109,26 +81,8 @@ fips_begin_module(Gfx)
             d3d11ShaderFactory.cc d3d11ShaderFactory.h
             d3d11TextureFactory.cc d3d11TextureFactory.h
             d3d11PipelineFactory.h d3d11PipelineFactory.cc
+            d3d11RenderPassFactory.h d3d11RenderPassFactory.cc
             d3d11Renderer.cc d3d11Renderer.h
-        )
-    endif()
-    if (ORYOL_D3D12)
-        fips_dir(d3d12)
-        fips_files(
-            d3d12_impl.h d3d12_decl.h
-            d3d12Config.h
-            d3d12ResAllocator.cc d3d12ResAllocator.h
-            d3d12DescAllocator.cc d3d12DescAllocator.h
-            d3d12SamplerCache.cc d3d12SamplerCache.h
-            d3d12Types.cc d3d12Types.h
-            d3d12DisplayMgr.cc d3d12DisplayMgr.h
-            d3d12Resource.cc d3d12Resource.h
-            d3d12MeshFactory.cc d3d12MeshFactory.h
-            d3d12ShaderFactory.cc d3d12ShaderFactory.h
-            d3d12PipelineFactory.cc d3d12PipelineFactory.h
-            d3d12TextureFactory.cc d3d12TextureFactory.h
-            d3d12Renderer.cc d3d12Renderer.h
-            fasthash.h
         )
     endif()
     if (ORYOL_METAL)
@@ -183,11 +137,12 @@ fips_begin_module(Gfx)
     if (ORYOL_D3D11)
         fips_libs(d3d11)
     endif()
-    if (ORYOL_D3D12)
-        fips_libs(d3d12 dxgi)
-    endif()
     fips_deps(Resource Core)
 fips_end_module()
+if (FIPS_MSVC)
+    # forcing value to bool
+    target_compile_options(Gfx PRIVATE "/wd4800")
+endif()
 
 fips_begin_unittest(Gfx)
     fips_vs_warning_level(3)

@@ -21,6 +21,7 @@ class meshPool;
 class shaderPool;
 class texturePool;
 class pipelinePool;
+class renderPassPool;
 
 struct gfxPointers {
     class renderer* renderer = nullptr;
@@ -30,6 +31,7 @@ struct gfxPointers {
     class shaderPool* shaderPool = nullptr;
     class texturePool* texturePool = nullptr;
     class pipelinePool* pipelinePool = nullptr;
+    class renderPassPool* renderPassPool = nullptr;
 };
 
 } // namespace _priv

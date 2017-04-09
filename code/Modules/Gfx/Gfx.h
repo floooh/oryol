@@ -9,19 +9,21 @@
     @brief Gfx module facade
 */
 #include "Core/RunLoop.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/gfxResourceContainer.h"
-#include "Gfx/Setup/GfxSetup.h"
-#include "Gfx/Core/ClearState.h"
-#include "Gfx/Core/DrawState.h"
-#include "Gfx/Core/Enums.h"
-#include "Gfx/Core/PrimitiveGroup.h"
-#include "Gfx/Core/renderer.h"
-#include "Gfx/Core/GfxFrameInfo.h"
+#include "Gfx/Core/GfxTypes.h"
+#include "Resource/ResourceLabel.h"
+#include "Resource/Core/ResourceLoader.h"
 #include "Resource/Core/SetupAndData.h"
-#include "glm/vec4.hpp"
+#include "Resource/ResourceInfo.h"
+#include "Resource/ResourcePoolInfo.h"
 
 namespace Oryol {
+
+namespace _priv {
+class gfxResourceContainer;
+class pipeline;
+class texture;
+class mesh;
+}
     
 class Gfx {
 public:
@@ -36,9 +38,9 @@ public:
     static bool QuitRequested();
 
     /// event handler callback typedef
-    typedef _priv::displayMgrBase::eventHandler EventHandler;
+    typedef std::function<void(const GfxEvent&)> EventHandler;
     /// event handler id typedef
-    typedef _priv::displayMgrBase::eventHandlerId EventHandlerId;
+    typedef unsigned int EventHandlerId;
     /// subscribe to display events
     static EventHandlerId Subscribe(EventHandler handler);
     /// unsubscribe from display events
@@ -48,8 +50,8 @@ public:
     static const class GfxSetup& GfxSetup();
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
-    /// get the current render target attributes (default or offscreen)
-    static const struct DisplayAttrs& RenderTargetAttrs();
+    /// get the current render pass attributes (default or offscreen)
+    static const struct DisplayAttrs& PassAttrs();
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
 
@@ -83,10 +85,17 @@ public:
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
 
-    /// apply the default render target and perform clear-actions
-    static void ApplyDefaultRenderTarget(const ClearState& clearState=ClearState());
-    /// apply an offscreen render target and perform clear-actions
-    static void ApplyRenderTarget(const Id& id, const ClearState& clearState=ClearState());
+    /// begin rendering to default render pass
+    static void BeginPass();
+    /// begin rendering to default render pass with override clear values
+    static void BeginPass(const PassAction& action);
+    /// begin offscreen rendering
+    static void BeginPass(const Id& passId);
+    /// begin offscreen rendering with override clear colors
+    static void BeginPass(const Id& passId, const PassAction& action);
+    /// finish rendering to current pass
+    static void EndPass();
+
     /// apply view port
     static void ApplyViewPort(int x, int y, int width, int height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in Pipeline object)
@@ -102,8 +111,6 @@ public:
     static void UpdateIndices(const Id& id, const void* data, int numBytes);
     /// update dynamic texture image data (complete replace)
     static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read current framebuffer pixels into client memory, SLOW!!! (not supported on all platforms)
-    static void ReadPixels(void* ptr, int numBytes);
     
     /// submit a draw call with primitive group index
     static void Draw(int primGroupIndex=0, int numInstances=1);
@@ -112,46 +119,44 @@ public:
 
     /// commit (and display) the current frame
     static void CommitFrame();
-    /// reset internal state (must be called when directly rendering through the native 3D API)
+    /// reset the native 3D-API state-cache
     static void ResetStateCache();
 
     /// direct access to resource container (private interface for resource loaders)
-    static _priv::gfxResourceContainer& resource();
+    static _priv::gfxResourceContainer* resource();
 
 private:
     #if ORYOL_DEBUG
+    /// validate texture setup params
+    static void validateTextureSetup(const TextureSetup& setup, const void* data, int size);
+    /// validate mesh setup params
+    static void validateMeshSetup(const MeshSetup& setup, const void* data, int size);
+    /// validate pipeline setup params
+    static void validatePipelineSetup(const PipelineSetup& setup);
+    /// validate render pass setup params
+    static void validatePassSetup(const PassSetup& setup);
+    /// validate shader setup params
+    static void validateShaderSetup(const ShaderSetup& setup);
     /// validate mesh binding
     static void validateMeshes(_priv::pipeline* pip, _priv::mesh** meshes, int numMeshes);
     /// validate texture binding
     static void validateTextures(ShaderStage::Code stage, _priv::pipeline* pip, _priv::texture** textures, int numTextures);
     #endif
-    /// private generic apply texture block method
-    template<class T> static void applyTextureBlock(const T& tb);
-
-    struct _state {
-        class GfxSetup gfxSetup;
-        GfxFrameInfo gfxFrameInfo;
-        RunLoop::Id runLoopId = RunLoop::InvalidId;
-        _priv::displayMgr displayManager;
-        class _priv::renderer renderer;
-        _priv::gfxResourceContainer resourceContainer;
-    };
-    static _state* state;
+    /// apply uniform block, non-template version
+    static void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
 };
 
 //------------------------------------------------------------------------------
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
-    o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumApplyUniformBlock++;
-    state->renderer.applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8_t*) &ub, sizeof(ub));
+    applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8_t*)&ub, sizeof(ub));
 }
 
 //------------------------------------------------------------------------------
 template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup) {
     o_assert_dbg(IsValid());
-    return state->resourceContainer.Create(setup);
+    return CreateResource(setup, nullptr, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -159,7 +164,7 @@ template<class SETUP> inline Id
 Gfx::CreateResource(const SETUP& setup, const Buffer& data) {
     o_assert_dbg(IsValid());
     o_assert_dbg(!data.Empty());
-    return state->resourceContainer.Create(setup, data.Data(), data.Size());
+    return CreateResource(setup, data.Data(), data.Size());
 }
 
 //------------------------------------------------------------------------------
@@ -167,15 +172,6 @@ template<class SETUP> inline Id
 Gfx::CreateResource(const SetupAndData<SETUP>& setupAndData) {
     o_assert_dbg(IsValid());
     return CreateResource(setupAndData.Setup, setupAndData.Data);
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup, const void* data, int size) {
-    o_assert_dbg(IsValid());
-    o_assert_dbg(nullptr != data);
-    o_assert_dbg(size > 0);
-    return state->resourceContainer.Create(setup, data, size);
 }
 
 } // namespace Oryol

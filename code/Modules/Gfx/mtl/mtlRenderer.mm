@@ -6,7 +6,7 @@
 #include "mtlTypes.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Core/UniformBlockLayout.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Resource/resource.h"
 
 namespace Oryol {
@@ -19,7 +19,7 @@ mtlRenderer::mtlRenderer() :
 valid(false),
 frameIndex(0),
 curFrameRotateIndex(0),
-rtValid(false),
+rpValid(false),
 curPipeline(nullptr),
 curPrimaryMesh(nullptr),
 curMTLPrimitiveType(MTLPrimitiveTypeTriangle),
@@ -27,7 +27,7 @@ curMTLIndexType(MTLIndexTypeUInt16),
 mtlDevice(nil),
 commandQueue(nil),
 curCommandBuffer(nil),
-curCommandEncoder(nil),
+curRenderCmdEncoder(nil),
 curUniformBufferPtr(nullptr),
 curUniformBufferOffset(0) {
     // empty
@@ -49,14 +49,14 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->releaseQueue.setup();
 
     // frame-sync semaphore
-    mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MtlMaxInflightFrames);
+    mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MaxInflightFrames);
 
     // setup central metal objects
     this->mtlDevice = osBridge::ptr()->mtlDevice;
     this->commandQueue = [this->mtlDevice newCommandQueue];
 
     // create global rotated uniform buffers
-    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         this->uniformBuffers[i] = [this->mtlDevice
             newBufferWithLength:setup.GlobalUniformBufferSize
             options:mtlTypes::asBufferResourceOptions(Usage::Stream)];
@@ -71,10 +71,10 @@ mtlRenderer::discard() {
     o_assert_dbg(this->valid);
 
     // wait for the final frame to finish
-    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
     }
-    for (int i = 0; i < GfxConfig::MtlMaxInflightFrames; i++) {
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
     this->releaseQueue.discard();
@@ -109,6 +109,11 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
         case GfxFeature::TextureFloat:
         case GfxFeature::Instancing:
         case GfxFeature::OriginTopLeft:
+        case GfxFeature::MSAARenderTargets:
+        case GfxFeature::PackedVertexFormat_10_2:
+        case GfxFeature::MultipleRenderTarget:
+        case GfxFeature::Texture3D:
+        case GfxFeature::TextureArray:
             return true;
         default:
             return false;
@@ -119,19 +124,16 @@ mtlRenderer::queryFeature(GfxFeature::Code feat) const {
 void
 mtlRenderer::commitFrame() {
     o_assert_dbg(this->valid);
+    o_assert_dbg(nil == this->curRenderCmdEncoder);
     o_assert_dbg(nil != this->curCommandBuffer);
 
-    this->rtValid = false;
+    this->rpValid = false;
 
     // commit the global uniform buffer updates
     #if ORYOL_MACOS
     [this->uniformBuffers[this->curFrameRotateIndex] didModifyRange:NSMakeRange(0, this->curUniformBufferOffset)];
     #endif
-
-    if (nil != this->curCommandEncoder) {
-        [this->curCommandEncoder endEncoding];
-        [this->curCommandBuffer presentDrawable:[osBridge::ptr()->mtkView currentDrawable]];
-    }
+    [this->curCommandBuffer presentDrawable:[osBridge::ptr()->mtkView currentDrawable]];
     __block dispatch_semaphore_t blockSema = mtlInflightSemaphore;
     [this->curCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         dispatch_semaphore_signal(blockSema);
@@ -139,13 +141,13 @@ mtlRenderer::commitFrame() {
     [this->curCommandBuffer commit];
 
     // rotate to next uniform buffer
-    if (++this->curFrameRotateIndex >= GfxConfig::MtlMaxInflightFrames) {
+    if (++this->curFrameRotateIndex >= GfxConfig::MaxInflightFrames) {
         this->curFrameRotateIndex = 0;
     }
 
     this->frameIndex++;
     this->curUniformBufferOffset = 0;
-    this->curCommandEncoder = nil;
+    this->curRenderCmdEncoder = nil;
     this->curCommandBuffer = nil;
     this->curUniformBufferPtr = nullptr;
     this->curPipeline = nullptr;
@@ -154,27 +156,27 @@ mtlRenderer::commitFrame() {
 
 //------------------------------------------------------------------------------
 const DisplayAttrs&
-mtlRenderer::renderTargetAttrs() const {
+mtlRenderer::renderPassAttrs() const {
     o_assert_dbg(this->valid);
-    return this->rtAttrs;
+    return this->rpAttrs;
 }
 
 //------------------------------------------------------------------------------
 void
 mtlRenderer::applyViewPort(int x, int y, int width, int height, bool originTopLeft) {
     o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
 
     MTLViewport vp;
     vp.originX = (double) x;
-    vp.originY = (double) (originTopLeft ? y : (this->rtAttrs.FramebufferHeight - (y + height)));
+    vp.originY = (double) (originTopLeft ? y : (this->rpAttrs.FramebufferHeight - (y + height)));
     vp.width   = (double) width;
     vp.height  = (double) height;
     vp.znear   = 0.0;
     vp.zfar    = 1.0;
-    [this->curCommandEncoder setViewport:vp];
+    [this->curRenderCmdEncoder setViewport:vp];
 }
 
 //------------------------------------------------------------------------------
@@ -184,18 +186,18 @@ mtlRenderer::applyScissorRect(int x, int y, int width, int height, bool originTo
     o_assert_dbg(width >= 0);
     o_assert_dbg(height >= 0);
 
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
 
     // clip against frame buffer size
-    x = std::min(std::max(0, x), this->rtAttrs.FramebufferWidth - 1);
-    y = std::min(std::max(0, y), this->rtAttrs.FramebufferHeight - 1);
-    if ((x + width) > this->rtAttrs.FramebufferWidth) {
-        width = this->rtAttrs.FramebufferWidth - x;
+    x = std::min(std::max(0, x), this->rpAttrs.FramebufferWidth - 1);
+    y = std::min(std::max(0, y), this->rpAttrs.FramebufferHeight - 1);
+    if ((x + width) > this->rpAttrs.FramebufferWidth) {
+        width = this->rpAttrs.FramebufferWidth - x;
     }
-    if ((y + height) > this->rtAttrs.FramebufferHeight) {
-        height = this->rtAttrs.FramebufferHeight - y;
+    if ((y + height) > this->rpAttrs.FramebufferHeight) {
+        height = this->rpAttrs.FramebufferHeight - y;
     }
     if (width <= 0) {
         width = 1;
@@ -206,21 +208,19 @@ mtlRenderer::applyScissorRect(int x, int y, int width, int height, bool originTo
 
     MTLScissorRect rect;
     rect.x = x;
-    rect.y = originTopLeft ? y : this->rtAttrs.FramebufferHeight - (y + height);
+    rect.y = originTopLeft ? y : this->rpAttrs.FramebufferHeight - (y + height);
     rect.width = width;
     rect.height = height;
 
     // need to clip against render target
-    [this->curCommandEncoder setScissorRect:rect];
+    [this->curRenderCmdEncoder setScissorRect:rect];
 }
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
+mtlRenderer::checkCreateCommandBuffer() {
     o_assert_dbg(this->valid);
-
-    // create command buffer if this is the first call in the current frame
-    if (this->curCommandBuffer == nil) {
+    if (nil == this->curCommandBuffer) {
         // block until the oldest frame in flight has finished
         dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
         // safely destroy released GPU resources
@@ -228,92 +228,134 @@ mtlRenderer::applyRenderTarget(texture* rt, const ClearState& clearState) {
         // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
+}
 
-    // finish previous command encoder (from previous render pass)
-    if (this->curCommandEncoder != nil) {
-        [this->curCommandEncoder endEncoding];
-        this->curCommandEncoder = nil;
+//------------------------------------------------------------------------------
+void
+mtlRenderer::beginPass(renderPass* pass, const PassAction* action) {
+    o_assert_dbg(this->valid);
+    o_assert_dbg(nil == this->curRenderCmdEncoder);
+    o_assert_dbg(action);
+
+    // create command buffer if this is the first call in the current frame
+    this->checkCreateCommandBuffer();
+
+    // get the base pointer for the uniform buffer, this only happens once per frame
+    if (nullptr == this->curUniformBufferPtr) {
+        this->curUniformBufferPtr = (uint8*)[this->uniformBuffers[this->curFrameRotateIndex] contents];
     }
 
     // default, or offscreen render target?
     MTLRenderPassDescriptor* passDesc = nil;
-    if (nullptr == rt) {
+    if (nullptr == pass) {
         // default render target
         passDesc = [osBridge::ptr()->mtkView currentRenderPassDescriptor];
-        this->rtAttrs = this->pointers.displayMgr->GetDisplayAttrs();
+        this->rpAttrs = this->pointers.displayMgr->GetDisplayAttrs();
     }
     else {
         passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
-        this->rtAttrs = DisplayAttrs::FromTextureAttrs(rt->textureAttrs);
+        o_assert_dbg(pass->colorTextures[0]);
+        this->rpAttrs = DisplayAttrs::FromTextureAttrs(pass->colorTextures[0]->textureAttrs);
     }
     if (passDesc) {
-        this->rtValid = true;
+        this->rpValid = true;
     }
     else {
         // pass descriptor will not be valid if window is minimized
         return;
     }
 
-    // init renderpass descriptor
-    if (rt) {
-        passDesc.colorAttachments[0].texture = rt->mtlTextures[0];
-    }
-    if (clearState.Actions & ClearState::ColorBit) {
-        passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
-        const glm::vec4& c = clearState.Color;
-        passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
+    // initialize renderpass descriptor
+    if (pass) {
+        // offscreen, might be multiple-rendertarget
+        for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+            if (pass->colorTextures[i]) {
+                const auto& colorAtt = pass->Setup.ColorAttachments[i];
+                bool isMSAA = pass->colorTextures[i]->textureAttrs.SampleCount > 1;
+                passDesc.colorAttachments[i].loadAction = mtlTypes::asLoadAction(action, i, false);
+                passDesc.colorAttachments[i].storeAction = isMSAA ? MTLStoreActionMultisampleResolve:MTLStoreActionStore;
+                const glm::vec4& c = action->Color[i];
+                passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
+                if (isMSAA) {
+                    // render to MSAA render target...
+                    o_assert_dbg(pass->colorTextures[i]->mtlMSAATex);
+                    passDesc.colorAttachments[i].texture = pass->colorTextures[i]->mtlMSAATex;
+                    passDesc.colorAttachments[i].resolveTexture = pass->colorTextures[i]->mtlTextures[0];
+                    passDesc.colorAttachments[i].resolveLevel = colorAtt.MipLevel;
+                }
+                else {
+                    // render to non-MSAA render target...
+                    passDesc.colorAttachments[i].texture = pass->colorTextures[i]->mtlTextures[0];
+                    passDesc.colorAttachments[i].level = colorAtt.MipLevel;
+                }
+                switch (pass->colorTextures[i]->textureAttrs.Type) {
+                    case TextureType::TextureCube:
+                    case TextureType::TextureArray:
+                        passDesc.colorAttachments[i].slice = pass->Setup.ColorAttachments[i].Slice;
+                        break;
+                    case TextureType::Texture3D:
+                        passDesc.colorAttachments[i].depthPlane = pass->Setup.ColorAttachments[i].Slice;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if (PixelFormat::IsDepthFormat(this->rpAttrs.DepthPixelFormat)) {
+            passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth;
+        }
+        else if (PixelFormat::IsDepthStencilFormat(this->rpAttrs.DepthPixelFormat)) {
+            passDesc.depthAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth; 
+            passDesc.stencilAttachment.texture = pass->depthStencilTexture->mtlDepthTex;
+            passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.stencilAttachment.clearStencil = action->Stencil;
+        }
     }
     else {
-        passDesc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
-    }
-
-    if (PixelFormat::IsDepthFormat(this->rtAttrs.DepthPixelFormat)) {
-        if (rt) {
-            passDesc.depthAttachment.texture = rt->mtlDepthTex;
+        // default framebuffer
+        passDesc.colorAttachments[0].loadAction = mtlTypes::asLoadAction(action, 0, false);
+        const glm::vec4& c = action->Color[0];
+        passDesc.colorAttachments[0].clearColor = MTLClearColorMake(c.x, c.y, c.z, c.w);
+        if (PixelFormat::IsDepthFormat(this->gfxSetup.DepthFormat)) {
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth;
         }
-        if (clearState.Actions & ClearState::DepthBit) {
-            passDesc.depthAttachment.loadAction = MTLLoadActionClear;
-            passDesc.depthAttachment.clearDepth = clearState.Depth;
-        }
-        else {
-            passDesc.depthAttachment.loadAction = MTLLoadActionDontCare;
-        }
-    }
-
-    if (PixelFormat::IsDepthStencilFormat(this->rtAttrs.DepthPixelFormat)) {
-        if (rt) {
-            passDesc.stencilAttachment.texture = rt->mtlDepthTex;
-        }
-        if (clearState.Actions & ClearState::StencilBit) {
-            passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
-            passDesc.stencilAttachment.clearStencil = clearState.Stencil;
-        }
-        else {
-            passDesc.stencilAttachment.loadAction = MTLLoadActionDontCare;
+        else if (PixelFormat::IsDepthStencilFormat(this->gfxSetup.DepthFormat)) {
+            passDesc.depthAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.depthAttachment.clearDepth = action->Depth;
+            passDesc.stencilAttachment.loadAction = mtlTypes::asLoadAction(action, 0, true);
+            passDesc.stencilAttachment.clearStencil = action->Stencil;
         }
     }
 
     // create command encoder for this render pass
     // this might return nil if the window is minimized
-    this->curCommandEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
-
-    // bind uniform buffer to shader stages, only needs to happen once
-    if (nil != this->curCommandEncoder) {
+    this->curRenderCmdEncoder = [this->curCommandBuffer renderCommandEncoderWithDescriptor:passDesc];
+    if (nil != this->curRenderCmdEncoder) {
         for (int bindSlot = 0; bindSlot < GfxConfig::MaxNumUniformBlocksPerStage; bindSlot++) {
-            [this->curCommandEncoder
+            [this->curRenderCmdEncoder
                 setVertexBuffer:this->uniformBuffers[this->curFrameRotateIndex]
                 offset:0
                 atIndex:bindSlot];
-            [this->curCommandEncoder
+            [this->curRenderCmdEncoder
                 setFragmentBuffer:this->uniformBuffers[this->curFrameRotateIndex]
                 offset:0
                 atIndex:bindSlot];
         }
     }
+}
 
-    // get the base pointer for the uniform buffer, this only happens once per frame
-    if (nullptr == this->curUniformBufferPtr) {
-        this->curUniformBufferPtr = (uint8*)[this->uniformBuffers[this->curFrameRotateIndex] contents];
+//------------------------------------------------------------------------------
+void
+mtlRenderer::endPass() {
+    o_assert_dbg(this->valid);
+    if (nil != this->curRenderCmdEncoder) {
+        [this->curRenderCmdEncoder endEncoding];
+        this->curRenderCmdEncoder = nil;
     }
 }
 
@@ -324,7 +366,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     o_assert_dbg(pip);
     o_assert_dbg(meshes && (numMeshes > 0));
 
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     // if any of the meshes are still loading, cancel the next draw-call
@@ -336,9 +378,9 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     }
     o_assert_dbg(pip->mtlRenderPipelineState);
     o_assert_dbg(pip->mtlDepthStencilState);
-    o_assert2_dbg(pip->Setup.BlendState.ColorFormat == this->rtAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
-    o_assert2_dbg(pip->Setup.BlendState.DepthFormat == this->rtAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
-    o_assert2_dbg(pip->Setup.RasterizerState.SampleCount == this->rtAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
+    o_assert2_dbg(pip->Setup.BlendState.ColorFormat == this->rpAttrs.ColorPixelFormat, "ColorFormat in BlendState must match current render target!\n");
+    o_assert2_dbg(pip->Setup.BlendState.DepthFormat == this->rpAttrs.DepthPixelFormat, "DepthFormat in BlendSTate must match current render target!\n");
+    o_assert2_dbg(pip->Setup.RasterizerState.SampleCount == this->rpAttrs.SampleCount, "SampleCount in RasterizerState must match current render target!\n");
 
     // need to store draw state and first mesh for later draw call
     this->curPipeline = pip;
@@ -349,13 +391,13 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     const glm::vec4& bc = pip->Setup.BlendColor;
     const RasterizerState& rs = pip->Setup.RasterizerState;
     const DepthStencilState& dss = pip->Setup.DepthStencilState;
-    [this->curCommandEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
-    [this->curCommandEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
-    [this->curCommandEncoder setStencilReferenceValue:dss.StencilRef];
+    [this->curRenderCmdEncoder setBlendColorRed:bc.x green:bc.y blue:bc.z alpha:bc.w];
+    [this->curRenderCmdEncoder setCullMode:mtlTypes::asCullMode(rs.CullFaceEnabled, rs.CullFace)];
+    [this->curRenderCmdEncoder setStencilReferenceValue:dss.StencilRef];
 
     // apply state objects
-    [this->curCommandEncoder setRenderPipelineState:pip->mtlRenderPipelineState];
-    [this->curCommandEncoder setDepthStencilState:pip->mtlDepthStencilState];
+    [this->curRenderCmdEncoder setRenderPipelineState:pip->mtlRenderPipelineState];
+    [this->curRenderCmdEncoder setDepthStencilState:pip->mtlDepthStencilState];
 
     // apply vertex buffers
     for (int meshIndex = 0; meshIndex < GfxConfig::MaxNumInputMeshes; meshIndex++) {
@@ -365,10 +407,10 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
         if (msh) {
             // note: vb.mtlBuffers[vb.activeSlot] can be nil!
             const auto& vb = msh->buffers[mesh::vb];
-            [this->curCommandEncoder setVertexBuffer:vb.mtlBuffers[vb.activeSlot] offset:0 atIndex:vbSlotIndex];
+            [this->curRenderCmdEncoder setVertexBuffer:vb.mtlBuffers[vb.activeSlot] offset:0 atIndex:vbSlotIndex];
         }
         else {
-            [this->curCommandEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
+            [this->curRenderCmdEncoder setVertexBuffer:nil offset:0 atIndex:vbSlotIndex];
         }
     }
 
@@ -381,9 +423,9 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_t layoutHash, const uint8_t* ptr, int byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -408,10 +450,10 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, int64_
     uint8* dstPtr = this->curUniformBufferPtr + this->curUniformBufferOffset;
     std::memcpy(dstPtr, ptr, byteSize);
     if (ShaderStage::VS == bindStage) {
-        [this->curCommandEncoder setVertexBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curRenderCmdEncoder setVertexBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     else {
-        [this->curCommandEncoder setFragmentBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
+        [this->curRenderCmdEncoder setFragmentBufferOffset:this->curUniformBufferOffset atIndex:bindSlot];
     }
     this->curUniformBufferOffset = Memory::RoundUp(this->curUniformBufferOffset + byteSize, MtlUniformAlignment);
 }
@@ -422,7 +464,7 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int 
     o_assert_dbg(this->valid);
     o_assert_dbg(((ShaderStage::VS == bindStage) && (numTextures <= GfxConfig::MaxNumVertexTextures)) ||
                  ((ShaderStage::FS == bindStage) && (numTextures <= GfxConfig::MaxNumFragmentTextures)));
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -441,25 +483,25 @@ mtlRenderer::applyTextures(ShaderStage::Code bindStage, texture** textures, int 
     // apply textures and samplers
     if (ShaderStage::VS == bindStage) {
         for (int i = 0; i < numTextures; i++) {
-            const texture* tex = textures[i];
-            [this->curCommandEncoder setVertexTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
-            [this->curCommandEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
+            texture* tex = textures[i];
+            [this->curRenderCmdEncoder setVertexTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
+            [this->curRenderCmdEncoder setVertexSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
     else {
         for (int i = 0; i < numTextures; i++) {
-            const texture* tex = textures[i];
-            [this->curCommandEncoder setFragmentTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
-            [this->curCommandEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
+            texture* tex = textures[i];
+            [this->curRenderCmdEncoder setFragmentTexture:tex->mtlTextures[tex->activeSlot] atIndex:i];
+            [this->curRenderCmdEncoder setFragmentSamplerState:tex->mtlSamplerState atIndex:i];
         }
     }
 }
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
+mtlRenderer::draw(int baseElementIndex, int numElements, int numInstances) {
     o_assert_dbg(this->valid);
-    if (nil == this->curCommandEncoder) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -468,17 +510,17 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
     if (IndexType::None == msh->indexBufferAttrs.Type) {
-        [this->curCommandEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
-            vertexStart:primGroup.BaseElement
-            vertexCount:primGroup.NumElements
+        [this->curRenderCmdEncoder drawPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
+            vertexStart:baseElementIndex
+            vertexCount:numElements
             instanceCount:numInstances];
     }
     else {
         const auto& ib = msh->buffers[mesh::ib];
         o_assert_dbg(nil != ib.mtlBuffers[ib.activeSlot]);
-        NSUInteger indexBufferOffset = primGroup.BaseElement * IndexType::ByteSize(msh->indexBufferAttrs.Type);
-        [this->curCommandEncoder drawIndexedPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
-            indexCount:primGroup.NumElements
+        NSUInteger indexBufferOffset = baseElementIndex * IndexType::ByteSize(msh->indexBufferAttrs.Type);
+        [this->curRenderCmdEncoder drawIndexedPrimitives:(MTLPrimitiveType)this->curMTLPrimitiveType
+            indexCount:numElements
             indexType:(MTLIndexType)this->curMTLIndexType
             indexBuffer:ib.mtlBuffers[ib.activeSlot]
             indexBufferOffset:indexBufferOffset
@@ -488,8 +530,8 @@ mtlRenderer::drawInstanced(const PrimitiveGroup& primGroup, int numInstances) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::drawInstanced(int primGroupIndex, int numInstances) {
-    if (nil == this->curCommandEncoder) {
+mtlRenderer::draw(int primGroupIndex, int numInstances) {
+    if (nil == this->curRenderCmdEncoder) {
         return;
     }
     if (nullptr == this->curPipeline) {
@@ -503,19 +545,7 @@ mtlRenderer::drawInstanced(int primGroupIndex, int numInstances) {
         return;
     }
     const PrimitiveGroup& primGroup = msh->primGroups[primGroupIndex];
-    this->drawInstanced(primGroup, numInstances);
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::draw(const PrimitiveGroup& primGroup) {
-    this->drawInstanced(primGroup, 1);
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::draw(int primGroupIndex) {
-    this->drawInstanced(primGroupIndex, 1);
+    this->draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
 }
 
 //------------------------------------------------------------------------------
@@ -600,7 +630,7 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
     o_assert_dbg(TextureType::Texture2D == attrs.Type);
     o_assert_dbg(Usage::Immutable != attrs.TextureUsage);
     o_assert_dbg(!PixelFormat::IsCompressedFormat(attrs.ColorFormat));
-    o_assert_dbg(offsetsAndSizes.NumMipMaps == attrs.NumMipMaps);
+    o_assert_dbg(offsetsAndSizes.NumMipMaps <= attrs.NumMipMaps);
     o_assert_dbg(offsetsAndSizes.NumFaces == 1);
 
     texRotateActiveSlot(tex, this->frameIndex);

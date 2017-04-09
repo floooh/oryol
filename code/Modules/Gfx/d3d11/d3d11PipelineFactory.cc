@@ -54,8 +54,7 @@ d3d11PipelineFactory::SetupResource(pipeline& pip) {
     // create state objects (NOTE: creating the same state will return
     // the same d3d11 state object, so no need to implement our own reuse)
     const RasterizerState& rastState = pip.Setup.RasterizerState;
-    D3D11_RASTERIZER_DESC rastDesc;
-    Memory::Clear(&rastDesc, sizeof(rastDesc));
+    D3D11_RASTERIZER_DESC rastDesc = { };
     rastDesc.FillMode = D3D11_FILL_SOLID;
     rastDesc.CullMode = d3d11Types::asCullMode(rastState.CullFaceEnabled, rastState.CullFace);
     rastDesc.FrontCounterClockwise = FALSE;  // OpenGL convention
@@ -70,8 +69,7 @@ d3d11PipelineFactory::SetupResource(pipeline& pip) {
     o_assert_dbg(nullptr != pip.d3d11RasterizerState);
 
     const DepthStencilState& dsState = pip.Setup.DepthStencilState;
-    D3D11_DEPTH_STENCIL_DESC dsDesc;
-    Memory::Clear(&dsDesc, sizeof(dsDesc));
+    D3D11_DEPTH_STENCIL_DESC dsDesc = { };
     dsDesc.DepthEnable = TRUE;      // FIXME: have DepthTestEnable in RasterizerState?
     dsDesc.DepthWriteMask = dsState.DepthWriteEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     dsDesc.DepthFunc = d3d11Types::asComparisonFunc(dsState.DepthCmpFunc);
@@ -91,8 +89,8 @@ d3d11PipelineFactory::SetupResource(pipeline& pip) {
     o_assert_dbg(nullptr != pip.d3d11DepthStencilState);
 
     const BlendState& blendState = pip.Setup.BlendState;
-    D3D11_BLEND_DESC blendDesc;
-    Memory::Clear(&blendDesc, sizeof(blendDesc));
+    o_assert(blendState.MRTCount < GfxConfig::MaxNumColorAttachments);
+    D3D11_BLEND_DESC blendDesc = { };
     blendDesc.AlphaToCoverageEnable = FALSE;
     blendDesc.IndependentBlendEnable = FALSE;
     blendDesc.RenderTarget[0].BlendEnable = blendState.BlendEnabled;

@@ -10,12 +10,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-pipelineFactoryBase::pipelineFactoryBase() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 pipelineFactoryBase::~pipelineFactoryBase() {
     o_assert_dbg(!this->isValid);
 }
@@ -34,12 +28,6 @@ pipelineFactoryBase::Discard() {
     o_assert_dbg(this->isValid);
     this->pointers = gfxPointers();
     this->isValid = false;
-}
-
-//------------------------------------------------------------------------------
-bool
-pipelineFactoryBase::IsValid() const {
-    return this->isValid;
 }
 
 //------------------------------------------------------------------------------

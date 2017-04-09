@@ -40,9 +40,10 @@ SensorsApp::OnInit() {
     
     // create a 3D cube
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::Normal, VertexFormat::Byte4N);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Normal, VertexFormat::Byte4N }
+    };
     shapeBuilder.Box(2.0, 2.0, 2.0, 1);
     this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shader::Setup());
@@ -75,7 +76,7 @@ SensorsApp::computeMVP() {
 AppState::Code
 SensorsApp::OnRunning() {
     
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     this->vsParams.ModelViewProjection = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
@@ -91,6 +92,7 @@ SensorsApp::OnRunning() {
     Dbg::PrintF(" yaw: %.3f, pitch: %.3f, roll: %.3f\n\r", ypr.x, ypr.y, ypr.z);
     Dbg::PrintF(" frame time: %.3fms", frameTime.AsMilliSeconds());
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     // continue running or quit?

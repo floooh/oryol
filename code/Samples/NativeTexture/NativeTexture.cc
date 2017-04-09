@@ -9,6 +9,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "shaders.h"
+#include <cstring>
 
 // need to access GL API directly
 #if ORYOL_OPENGL
@@ -59,9 +60,10 @@ NativeTextureApp::OnInit() {
 
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout
-        .Add(VertexAttr::Position, VertexFormat::Float3)
-        .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::TexCoord0, VertexFormat::Float2 }
+    };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4);
     this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
     Id shd = Gfx::CreateResource(Shader::Setup());
@@ -142,11 +144,12 @@ NativeTextureApp::OnRunning() {
     updAttrs.Sizes[0][0] = sizeof(this->Buffer);
     Gfx::UpdateTexture(this->drawState.FSTexture[0], this->Buffer, updAttrs);
 
-    Gfx::ApplyDefaultRenderTarget();
+    Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     this->params.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->params);
     Gfx::Draw();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -179,13 +182,14 @@ NativeTextureApp::computeMVP(const glm::vec3& pos) {
 AppState::Code
 NativeTextureApp::notSupported() {
     const char* msg = "This demo needs GL\n";
-    int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(strlen(msg)))/2;
+    int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(std::strlen(msg)))/2;
     int y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
-    Gfx::ApplyDefaultRenderTarget(ClearState::ClearAll(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
     Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
     Dbg::CursorPos(uint8_t(x), uint8_t(y));
     Dbg::Print(msg);
     Dbg::DrawTextBuffer();
+    Gfx::EndPass();
     Gfx::CommitFrame();
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }

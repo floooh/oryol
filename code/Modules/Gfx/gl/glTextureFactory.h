@@ -6,7 +6,7 @@
     @brief private: GL implementation of textureFactory
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Setup/TextureSetup.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
 
@@ -17,8 +17,6 @@ class texture;
     
 class glTextureFactory {
 public:
-    /// constructor
-    glTextureFactory();
     /// destructor
     ~glTextureFactory();
     
@@ -29,8 +27,6 @@ public:
     /// return true if the object has been setup
     bool IsValid() const;
 
-    /// setup resource
-    ResourceState::Code SetupResource(texture& tex);
     /// setup with input data
     ResourceState::Code SetupResource(texture& tex, const void* data, int32_t size);
     /// discard the resource
@@ -41,18 +37,14 @@ public:
 
 private:
     /// helper method to setup texture params on GL texture
-    void setupTextureParams(const TextureSetup& setup, GLuint glTex);
+    void setupTextureParams(const TextureSetup& setup, GLenum glTexTarget, GLuint glTex);
     /// helper method to setup texture params on GL texture
     void setupTextureAttrs(texture& tex);
-    /// create a render target
-    ResourceState::Code createRenderTarget(texture& tex);
-    /// create texture from raw pixel data
-    ResourceState::Code createFromPixelData(texture& tex, const void* data, int32_t size);
-    /// create an empty texture (cannot be an immutable texture)
-    ResourceState::Code createEmptyTexture(texture& tex);
+    /// create a texture with or without associated data
+    ResourceState::Code createTexture(texture& tex, const void* data, int32_t size);
 
     gfxPointers pointers;
-    bool isValid;
+    bool isValid = false;
 };
     
 } // namespace _priv

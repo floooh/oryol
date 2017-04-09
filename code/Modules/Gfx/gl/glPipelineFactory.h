@@ -7,7 +7,7 @@
 */
 #include "Gfx/Resource/pipelineFactoryBase.h"
 #include "Gfx/gl/gl_decl.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxTypes.h"
 
 namespace Oryol {
 namespace _priv {
@@ -22,13 +22,6 @@ public:
 private:
     /// setup the GL vertex attribute declaration
     void glSetupVertexAttrs(pipeline& pip);
-
-    /// table to convert VertexFormat to GL vertex attr size, type, normalized
-    static const struct VertexFormatTable {
-        GLint size;
-        GLenum type;
-        GLboolean normalized;
-    } vertexFormatTable[VertexFormat::NumVertexFormats];
 };
 
 } // namespace _priv

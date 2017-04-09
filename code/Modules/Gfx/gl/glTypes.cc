@@ -3,8 +3,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Gfx/gl/gl_impl.h"
-#include "glTypes.h"
 #include "Core/Assertion.h"
+#include "glTypes.h"
+#include "glCaps.h"
 
 namespace Oryol {
 namespace _priv {
@@ -18,29 +19,30 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
         case PixelFormat::RGBA4:
         case PixelFormat::RGBA32F:
         case PixelFormat::RGBA16F:
+        case PixelFormat::R10G10B10A2:
             return GL_RGBA;
             
         case PixelFormat::RGB8:
         case PixelFormat::R5G6B5:
             return GL_RGB;
-            
+
         case PixelFormat::L8:
-            #if ORYOL_OPENGLES2 || ORYOL_EMSCRIPTEN
+        case PixelFormat::R32F:
+        case PixelFormat::R16F:
+            if (glCaps::IsFlavour(glCaps::GLES2)) {
                 return GL_LUMINANCE;
-            #else
+            }
+            else
+            {
                 return GL_RED;
-            #endif
+            }
             
         case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT;
             
         case PixelFormat::DEPTHSTENCIL:
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN 
-            return GL_DEPTH_STENCIL_OES;
-            #else
             return GL_DEPTH_STENCIL;
-            #endif
-            
+
         case PixelFormat::DXT1:
             return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
         case PixelFormat::DXT3:
@@ -69,53 +71,69 @@ glTypes::asGLTexImageFormat(PixelFormat::Code c) {
 //------------------------------------------------------------------------------
 GLenum
 glTypes::asGLTexImageInternalFormat(PixelFormat::Code c) {
-    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
-    return glTypes::asGLTexImageFormat(c);
+    #if ORYOL_OPENGLES2
+        return glTypes::asGLTexImageFormat(c);
     #else
-    switch (c) {
-        case PixelFormat::RGBA8:
-            return GL_RGBA8;
-        case PixelFormat::R5G5B5A1:
-            return GL_RGB5_A1;
-        case PixelFormat::RGBA4:
-            return GL_RGBA4;
-        case PixelFormat::RGBA32F:
-            return GL_RGBA32F;
-        case PixelFormat::RGBA16F:
-            return GL_RGBA16F;
-        case PixelFormat::RGB8:
-            return GL_RGB8;
-        case PixelFormat::L8:
-            return GL_R8;
-        case PixelFormat::DEPTH:
-            return GL_DEPTH_COMPONENT16;
-        case PixelFormat::DEPTHSTENCIL:
-            return GL_DEPTH24_STENCIL8;
-        case PixelFormat::R5G6B5:
-            return GL_RGB5;
-        case PixelFormat::DXT1:
-            return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
-        case PixelFormat::DXT3:
-            return 0x83F2;      // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-        case PixelFormat::DXT5:
-            return 0x83F3;      // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-        case PixelFormat::PVRTC2_RGB:
-            return 0x8C01;      // GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
-        case PixelFormat::PVRTC4_RGB:
-            return 0x8C00;      // GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
-        case PixelFormat::PVRTC2_RGBA:
-            return 0x8C03;      // GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
-        case PixelFormat::PVRTC4_RGBA:
-            return 0x8C02;      // GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
-        case PixelFormat::ETC2_RGB8:
-            return 0x9274;      // GL_COMPRESSED_RGB8_ETC2
-        case PixelFormat::ETC2_SRGB8:
-            return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
-            
-        default:
-            o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
-            return 0;
-    }
+        if (glCaps::IsFlavour(glCaps::GLES2)) {
+            return glTypes::asGLTexImageFormat(c);
+        }
+        else
+        {
+            switch (c) {
+                case PixelFormat::RGBA8:
+                    return GL_RGBA8;
+                case PixelFormat::R5G5B5A1:
+                    return GL_RGB5_A1;
+                case PixelFormat::RGBA4:
+                    return GL_RGBA4;
+                case PixelFormat::R10G10B10A2:
+                    return GL_RGB10_A2;
+                case PixelFormat::RGBA32F:
+                    return GL_RGBA32F;
+                case PixelFormat::RGBA16F:
+                    return GL_RGBA16F;
+                case PixelFormat::R32F:
+                    return GL_R32F;
+                case PixelFormat::R16F:
+                    return GL_R16F;
+                case PixelFormat::RGB8:
+                    return GL_RGB8;
+                case PixelFormat::L8:
+                    return GL_R8;
+                case PixelFormat::DEPTH:
+                    return GL_DEPTH_COMPONENT16;
+                case PixelFormat::DEPTHSTENCIL:
+                    return GL_DEPTH24_STENCIL8;
+                case PixelFormat::R5G6B5:
+                    #if ORYOL_OPENGLES3
+                        return GL_RGB565;
+                    #else
+                        return GL_RGB5;
+                    #endif
+                case PixelFormat::DXT1:
+                    return 0x83F1;      // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+                case PixelFormat::DXT3:
+                    return 0x83F2;      // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+                case PixelFormat::DXT5:
+                    return 0x83F3;      // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+                case PixelFormat::PVRTC2_RGB:
+                    return 0x8C01;      // GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+                case PixelFormat::PVRTC4_RGB:
+                    return 0x8C00;      // GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+                case PixelFormat::PVRTC2_RGBA:
+                    return 0x8C03;      // GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG
+                case PixelFormat::PVRTC4_RGBA:
+                    return 0x8C02;      // GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+                case PixelFormat::ETC2_RGB8:
+                    return 0x9274;      // GL_COMPRESSED_RGB8_ETC2
+                case PixelFormat::ETC2_SRGB8:
+                    return 0x9275;      // GL_COMPRESSED_SRGB8_ETC2
+                    
+                default:
+                    o_error("glTypes::asGLTexImageFormat(): invalid param!\n");
+                    return 0;
+            }
+        }
     #endif
 }
 
@@ -124,20 +142,23 @@ GLenum
 glTypes::asGLTexImageType(PixelFormat::Code c) {
     switch (c) {
         case PixelFormat::RGBA32F:
+        case PixelFormat::R32F:
             return GL_FLOAT;
         
         case PixelFormat::RGBA16F:
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
-            return GL_HALF_FLOAT_OES;
-            #else
+        case PixelFormat::R16F:
             return GL_HALF_FLOAT;
-            #endif
             
         case PixelFormat::RGBA8:
         case PixelFormat::RGB8:
         case PixelFormat::L8:
             return GL_UNSIGNED_BYTE;
-            
+
+        #if !ORYOL_OPENGLES2
+        case PixelFormat::R10G10B10A2:
+            return GL_UNSIGNED_INT_2_10_10_10_REV;
+        #endif
+
         case PixelFormat::R5G5B5A1:
             return GL_UNSIGNED_SHORT_5_5_5_1;
             
@@ -151,12 +172,8 @@ glTypes::asGLTexImageType(PixelFormat::Code c) {
             return GL_UNSIGNED_SHORT;
             
         case PixelFormat::DEPTHSTENCIL:
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
-            return GL_UNSIGNED_INT_24_8_OES;
-            #else
             return GL_UNSIGNED_INT_24_8;
-            #endif
-            
+
         default:
             o_error("glTypes::asGLTexImageType(): invalid param!\n");
             return 0;
@@ -171,11 +188,7 @@ glTypes::asGLDepthAttachmentFormat(PixelFormat::Code c) {
         case PixelFormat::DEPTH:
             return GL_DEPTH_COMPONENT16;
         case PixelFormat::DEPTHSTENCIL:
-            #if ORYOL_OPENGLES2 && !ORYOL_EMSCRIPTEN
-            return GL_DEPTH24_STENCIL8_OES;
-            #else
             return GL_DEPTH24_STENCIL8;
-            #endif
         default:
             o_error("glTypes::asGLRenderbufferFormat(): invalid param!\n");
             return 0;
@@ -205,6 +218,24 @@ glTypes::asGLPrimitiveType(PrimitiveType::Code c) {
         case PrimitiveType::TriangleStrip:  return GL_TRIANGLE_STRIP;
         default:
             o_error("glTypes::asGLPrimitiveType(): invalid param!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLPrimitiveMode(PrimitiveType::Code c) {
+    switch (c) {
+        case PrimitiveType::Points:
+            return GL_POINTS;
+        case PrimitiveType::Lines:
+        case PrimitiveType::LineStrip:
+            return GL_LINES;
+        case PrimitiveType::Triangles:
+        case PrimitiveType::TriangleStrip:
+            return GL_TRIANGLES;
+        default:
+            o_error("glTypes::asGLPrimitiveMode(): invalid param!\n");
             return 0;
     }
 }
@@ -255,10 +286,11 @@ GLenum
 glTypes::asGLTextureTarget(TextureType::Code c) {
     switch (c) {
         case TextureType::Texture2D:    return GL_TEXTURE_2D;
+        case TextureType::TextureCube:  return GL_TEXTURE_CUBE_MAP;
         #if !ORYOL_OPENGLES2
         case TextureType::Texture3D:    return GL_TEXTURE_3D;
+        case TextureType::TextureArray: return GL_TEXTURE_2D_ARRAY;
         #endif
-        case TextureType::TextureCube:  return GL_TEXTURE_CUBE_MAP;
         default:
             o_error("glTypes::asGLTextureTarget(): invalid param!\n");
             return 0;
@@ -275,6 +307,19 @@ glTypes::asGLBufferUsage(Usage::Code c) {
         default:
             o_error("glTypes::asGLBufferUsage(): invalid param!\n");
             return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+GLenum
+glTypes::asGLCubeFaceTarget(int faceIndex) {
+    switch (faceIndex) {
+        case 0: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+        case 1: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+        case 2: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+        case 3: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+        case 4: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+        default: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
     }
 }
 

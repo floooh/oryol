@@ -16,7 +16,9 @@ struct DXGI_SWAP_CHAIN_DESC1;
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
+struct ID3D11Resource;
 struct ID3D11Texture2D;
+struct ID3D11Texture3D;
 struct ID3D11ShaderResourceView;
 struct ID3D11RenderTargetView;
 struct ID3D11DepthStencilView;
@@ -42,3 +44,4 @@ typedef enum D3D11_FILTER D3D11_FILTER;
 typedef enum D3D11_TEXTURE_ADDRESS_MODE D3D11_TEXTURE_ADDRESS_MODE;
 typedef enum D3D_PRIMITIVE_TOPOLOGY D3D_PRIMITIVE_TOPOLOGY;
 typedef D3D_PRIMITIVE_TOPOLOGY D3D11_PRIMITIVE_TOPOLOGY;
+typedef struct D3D11_SUBRESOURCE_DATA D3D11_SUBRESOURCE_DATA;

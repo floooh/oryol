@@ -178,7 +178,7 @@ StringConverter::UTF8ToWide(const unsigned char* src) {
 //------------------------------------------------------------------------------
 WideString
 StringConverter::UTF8ToWide(const String& src) {
-    return UTF8ToWide((uchar*)src.AsCStr(), src.Length());
+    return UTF8ToWide((unsigned char*)src.AsCStr(), src.Length());
 }
 
 //------------------------------------------------------------------------------

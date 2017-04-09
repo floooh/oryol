@@ -1,17 +1,26 @@
 body {
     margin: 0;
-    background-color: #19A3FF;
+    background-color: ${background};
 }
 
 /** sample header styling **/
 .title {    
     text-align: center;
-    text-shadow: 3px 2px #BAE3FF;
+    text-shadow: 3px 2px #E3E3E3;
     font-family: 'Racing Sans One';
     font-size: 80px;
     background-color: white;
     min-width: 500px;
     margin-top: 0px;
+}
+.subtitle {
+    text-align: center;
+    font-family: 'Racing Sans One';
+    font-size: 40px;
+    background-color: rgba(0, 0, 0, 0); /*transparent background*/
+    min-width: 500px;
+    margin-top: 0px;
+    padding-left: 20px;
 }
 .cr {
     position: relative;
@@ -19,11 +28,17 @@ body {
     left: 3px;
     font-size: 30px;
 }
-.rainbow {
+.rainbow-separator {
     margin-top: -10px;
     height: 14px;
     background: linear-gradient(red,orange,yellow,green,blue);
 }
+.simple-separator {
+    margin-top: -2px;
+    height: 3px;
+    background: black;
+}
+
 
 /** navigation bar **/
 .nav-bar {
@@ -161,7 +176,7 @@ a.thumb-link:hover, a.thumb-link:active {
     text-decoration: none;
     color: black;
 }
-.game-rainbow {
+.game-rainbow-separator {
     margin-top: 0px;
     height: 10px;
     background: linear-gradient(red,orange,yellow,green,blue);

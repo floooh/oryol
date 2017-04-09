@@ -15,11 +15,14 @@ mtlTypes::asRenderTargetColorFormat(PixelFormat::Code fmt) {
     //
     switch (fmt) {
         case PixelFormat::RGBA8:
+            // this is a bit of a hack since the default backbuffer format is BGRA8
             return MTLPixelFormatBGRA8Unorm;
         case PixelFormat::RGBA32F:
             return MTLPixelFormatRGBA32Float;
         case PixelFormat::RGBA16F:
             return MTLPixelFormatRGBA16Float;
+        case PixelFormat::R10G10B10A2:
+            return MTLPixelFormatRGB10A2Unorm;
         default:
             return MTLPixelFormatInvalid;
     }
@@ -56,6 +59,7 @@ MTLPixelFormat
 mtlTypes::asTextureFormat(PixelFormat::Code fmt) {
     switch (fmt) {
         case PixelFormat::RGBA8:    return MTLPixelFormatRGBA8Unorm;
+        case PixelFormat::R10G10B10A2:  return MTLPixelFormatRGB10A2Unorm;
         case PixelFormat::RGBA32F:  return MTLPixelFormatRGBA32Float;
         case PixelFormat::RGBA16F:  return MTLPixelFormatRGBA16Float;
         case PixelFormat::L8:       return MTLPixelFormatR8Unorm;
@@ -80,6 +84,7 @@ mtlTypes::asTextureType(TextureType::Code type) {
         case TextureType::Texture2D:    return MTLTextureType2D;
         case TextureType::Texture3D:    return MTLTextureType3D;
         case TextureType::TextureCube:  return MTLTextureTypeCube;
+        case TextureType::TextureArray: return MTLTextureType2DArray;
         default:
             o_error("mtlTypes::asTextureType(): invalid value!\n");
             return MTLTextureType1D;
@@ -264,6 +269,7 @@ mtlTypes::asVertexFormat(VertexFormat::Code fmt) {
         case VertexFormat::Short2N:     return MTLVertexFormatShort2Normalized;
         case VertexFormat::Short4:      return MTLVertexFormatShort4;
         case VertexFormat::Short4N:     return MTLVertexFormatShort4Normalized;
+        case VertexFormat::UInt10_2N:   return MTLVertexFormatUInt1010102Normalized;
         default:
             o_error("mtlTypes::asVertexFormat(): invalid value!\n");
             return MTLVertexFormatFloat;
@@ -317,6 +323,35 @@ mtlTypes::asPrimitiveType(PrimitiveType::Code c) {
         default:
             o_error("mtlTypes::asPrimitiveType(): invalid value!\n");
             return MTLPrimitiveTypePoint;
+    }
+}
+
+//------------------------------------------------------------------------------
+MTLLoadAction
+mtlTypes::asLoadAction(const PassAction* action, int colorIndex, bool depthStencil) {
+    o_assert_dbg(action);
+    o_assert_range_dbg(colorIndex, GfxConfig::MaxNumColorAttachments);
+    if (depthStencil) {
+        if (action->Flags & PassAction::ClearDS) {
+            return MTLLoadActionClear;
+        }
+        else if (action->Flags & PassAction::LoadDS) {
+            return MTLLoadActionLoad;
+        }
+        else {
+            return MTLLoadActionDontCare;
+        }
+    }
+    else {
+        if (action->Flags & (PassAction::ClearC0<<colorIndex)) {
+            return MTLLoadActionClear;
+        }
+        else if (action->Flags & (PassAction::LoadC0<<colorIndex)) {
+            return MTLLoadActionLoad;
+        }
+        else {
+            return MTLLoadActionDontCare;
+        }
     }
 }
 

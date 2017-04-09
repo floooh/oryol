@@ -10,8 +10,7 @@
 #include "Resource/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
 #include "Core/Threading/RWLock.h"
-#include "Gfx/Core/VertexLayout.h"
-#include "Gfx/Core/DrawState.h"
+#include "Gfx/Gfx.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
 #include <cstdarg>

@@ -46,10 +46,12 @@ glShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
     this->pointers.renderer->invalidateShaderState();
 
-    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+    #if ORYOL_OPENGLES2
     const ShaderLang::Code slang = ShaderLang::GLSL100;
+    #elif ORYOL_OPENGLES3
+    const ShaderLang::Code slang = glCaps::IsFlavour(glCaps::GLES3) ? ShaderLang::GLSLES3 : ShaderLang::GLSL100;
     #elif ORYOL_OPENGL_CORE_PROFILE
-    const ShaderLang::Code slang = ShaderLang::GLSL150;
+    const ShaderLang::Code slang = ShaderLang::GLSL330;
     #else
     const ShaderLang::Code slang = ShaderLang::GLSL120;
     #endif
@@ -85,7 +87,7 @@ glShaderFactory::SetupResource(shader& shd) {
     }
     ORYOL_GL_CHECK_ERROR();
     #endif
-        
+
     // link the program
     ::glLinkProgram(glProg);
     ORYOL_GL_CHECK_ERROR();
@@ -107,7 +109,8 @@ glShaderFactory::SetupResource(shader& shd) {
         Memory::Free(logBuffer);
     }
     #endif
-        
+    ORYOL_GL_CHECK_ERROR();
+
     // if linking failed, stop the app
     if (!linkStatus) {
         o_warn("Failed to link program '%s'\n", setup.Locator.Location().AsCStr());
@@ -131,6 +134,7 @@ glShaderFactory::SetupResource(shader& shd) {
             shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
         }
     }
+    ORYOL_GL_CHECK_ERROR();
 
     // resolve texture locations
     int glTextureLocation = 0;
@@ -153,7 +157,8 @@ glShaderFactory::SetupResource(shader& shd) {
             }
         }
     }
-        
+    ORYOL_GL_CHECK_ERROR();
+
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     // resolve attrib locations
     for (int32 i = 0; i < VertexAttr::NumVertexAttrs; i++) {
@@ -161,6 +166,7 @@ glShaderFactory::SetupResource(shader& shd) {
         shd.bindAttribLocation((VertexAttr::Code)i, loc);
     }
     #endif
+
     this->pointers.renderer->invalidateShaderState();
     return ResourceState::Valid;
 }

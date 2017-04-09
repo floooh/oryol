@@ -14,6 +14,7 @@
 #define VC_EXTRALEAN (1)
 #define WIN32_LEAN_AND_MEAN (1)
 #define NOUSER (1)
+#define NOMINMAX
 #include <Windows.h>
 #elif ORYOL_UWP
 #include "Core/uwp/uwpBridge.h"

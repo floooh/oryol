@@ -63,7 +63,6 @@ def writeFile(f, lines) :
 #-------------------------------------------------------------------------------
 def run(cmd) :
     # run a generic command an capture stdout
-    print('cmd: {}'.format(cmd))
     child = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     out = ''
     while True :

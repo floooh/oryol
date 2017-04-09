@@ -6,7 +6,7 @@
     @brief OpenGL type conversion helpers
 */
 #include "Core/Types.h"
-#include "Gfx/Core/Enums.h"
+#include "Gfx/Core/GfxTypes.h"
 #include "Gfx/gl/gl_decl.h"
 
 namespace Oryol {
@@ -26,6 +26,8 @@ public:
     static GLenum asGLIndexType(IndexType::Code c);
     /// convert Oryol primitive type to GL primitive type
     static GLenum asGLPrimitiveType(PrimitiveType::Code c);
+    /// convert Oryol primitive type to GL primitive mode (points, lines, triangles)
+    static GLenum asGLPrimitiveMode(PrimitiveType::Code c);
     /// convert Oryol shader type to GL shader type
     static GLenum asGLShaderStage(ShaderStage::Code c);
     /// convert Oryol texture filter to GL texture filter
@@ -36,6 +38,8 @@ public:
     static GLenum asGLTextureTarget(TextureType::Code c);
     /// convert Oryol usage to GL buffer usage
     static GLenum asGLBufferUsage(Usage::Code c);
+    /// convert cubemap face index to texture target
+    static GLenum asGLCubeFaceTarget(int faceIndex);
 };
     
 } // namespace _priv

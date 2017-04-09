@@ -5,6 +5,7 @@
 #include "VertexWriter.h"
 #include "Core/Assertion.h"
 #include "glm/glm.hpp"
+#include "glm/gtc/packing.hpp"
 
 namespace Oryol {
 
@@ -105,6 +106,12 @@ VertexWriter::Write(uint8_t* dst, VertexFormat::Code fmt, float x, float y, floa
         *p++ = packed.y;
         *p++ = packed.z;
         *p++ = packed.w;
+        return (uint8_t*) p;
+    }
+    else if (VertexFormat::UInt10_2N == fmt) {
+        glm::uint32 packed = glm::packUnorm3x10_1x2(glm::vec4(x, y, z, w));
+        uint32_t* p = (uint32_t*) dst;
+        *p++ = packed;
         return (uint8_t*) p;
     }
     else {
