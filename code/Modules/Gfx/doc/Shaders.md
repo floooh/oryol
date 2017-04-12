@@ -43,7 +43,7 @@ mat4 mvp ModelViewProjection
 
 // the fragment shader, this takes a vec4 color from the
 // vertex shader (the number, order and types of fragment
-shader inputs must match the vertex shader outputs)
+// shader inputs must match the vertex shader outputs)
 @fs fs
 @in vec4 color
     _color = color;
@@ -70,13 +70,13 @@ fips_end_app()
 
 After a _fips gen_ the new shader will be evaluated when the project
 is built, and a C++ header/source pair will be generated
-(in this case the generated pair would be shader.h / shader.cc).
+(in this case the generated pair would be shaders.h / shaders.cc).
 
 The generated source code contains the code to create
 a ready-to-use shader resource object:
 
 ```cpp
-#include "shader.h"
+#include "shaders.h"
 ...
 Id shd = Gfx::CreateResource(Shader::Setup());
 ...

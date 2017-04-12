@@ -281,7 +281,16 @@ TEST(ArrayTest) {
     CHECK(array2[3] == 7);
     CHECK(array2[4] == 9);
     CHECK(array2[5] == 11);
-    
+    std::sort(array2.begin(), array2.end(), [](int a, int b) {
+        return b < a;
+    });
+    CHECK(array2[0] == 11);
+    CHECK(array2[1] == 9);
+    CHECK(array2[2] == 7);
+    CHECK(array2[3] == 3);
+    CHECK(array2[4] == 2);
+    CHECK(array2[5] == 1);
+
     // FindIndexLinear
     CHECK(array2.FindIndexLinear(3) == 2);
     CHECK(array2.FindIndexLinear(7, 0, 3) == InvalidIndex);

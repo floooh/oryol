@@ -13,7 +13,7 @@ with a focus on ease-of-use over 'explicitness'.
 ### Resource Concepts
 
 For a general overview of resource objects in Oryol, 
-please read the [Resource module documentation](../../Resources/README.md).
+please read the [Resource module documentation](../../Resource/README.md).
 
 ### Gfx Module Resource Types
 
