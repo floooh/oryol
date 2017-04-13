@@ -107,7 +107,7 @@ TEST(InlineArrayTest) {
     CHECK(arr1[2].val == 3);
     // EVIL, DON'T DO THIS in actual code
     for (int i = 3; i < 10; i++) {
-        CHECK(arr1.begin()[i].val == 0);
+        CHECK(arr1.begin()[i].val == 1);
     }
 
     arr2 = std::move(arr0);
@@ -117,7 +117,7 @@ TEST(InlineArrayTest) {
     CHECK(arr2[2].val == 3);
     // EVIL, DON'T DO THIS in actual code
     for (int i = 3; i < 10; i++) {
-        CHECK(arr2.begin()[i].val == 0);
+        CHECK(arr2.begin()[i].val == 1);
     }
 }
 
