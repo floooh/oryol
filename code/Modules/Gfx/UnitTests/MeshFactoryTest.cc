@@ -49,7 +49,7 @@ TEST(MeshFactoryTest) {
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    mb.PrimitiveGroups.Add(0, 6);
+    mb.PrimitiveGroups = { { 0, 6 } };
     mb.Begin()
         .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
         .Vertex(1, VertexAttr::Position, 1.0f, 0.0f, 0.0f)  // top-right
@@ -90,7 +90,7 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.Type == IndexType::Index16);
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::Immutable);
     CHECK(mesh.indexBufferAttrs.ByteSize() == 12);
-    CHECK(mesh.numPrimGroups == 1);
+    CHECK(mesh.primGroups.Size() == 1);
     CHECK(mesh.primGroups[0].BaseElement == 0);
     CHECK(mesh.primGroups[0].NumElements == 6);
     #if ORYOL_OPENGL
@@ -107,7 +107,7 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.NumIndices == 0);
     CHECK(mesh.indexBufferAttrs.Type == IndexType::InvalidIndexType);
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::InvalidUsage);
-    CHECK(mesh.numPrimGroups == 0);
+    CHECK(mesh.primGroups.Empty());
     factory.Discard();
     renderer.discard();
     displayManager.DiscardDisplay();

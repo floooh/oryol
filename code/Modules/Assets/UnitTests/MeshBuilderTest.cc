@@ -19,7 +19,7 @@ TEST(MeshBuilderTest) {
     mb.Layout
         .Add(VertexAttr::Position, VertexFormat::Float3)
         .Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    mb.PrimitiveGroups.Add(0, 6);
+    mb.PrimitiveGroups = { { 0, 6 } };
     mb.Begin()
         // positions
         .Vertex(0, VertexAttr::Position, 0.0f, 0.0f, 0.0f)  // top-left
@@ -53,9 +53,9 @@ TEST(MeshBuilderTest) {
     CHECK(meshSetup.Layout.ComponentAt(0).Format == VertexFormat::Float3);
     CHECK(meshSetup.Layout.ComponentAt(1).Attr == VertexAttr::TexCoord0);
     CHECK(meshSetup.Layout.ComponentAt(1).Format == VertexFormat::Float2);
-    CHECK(meshSetup.NumPrimitiveGroups() == 1);
-    CHECK(meshSetup.PrimitiveGroup(0).BaseElement == 0);
-    CHECK(meshSetup.PrimitiveGroup(0).NumElements == 6);
+    CHECK(meshSetup.PrimitiveGroups.Size() == 1);
+    CHECK(meshSetup.PrimitiveGroups[0].BaseElement == 0);
+    CHECK(meshSetup.PrimitiveGroups[0].NumElements == 6);
     
     // see MeshBuilder header for those sizes
     const uint32_t vbufSize = 4 * 5 * sizeof(float);
