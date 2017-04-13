@@ -126,25 +126,6 @@ Running the Triangle sample will start a local web server and launch the
 sample in the default web browser. It may be necessary to manually 
 refresh the browser page (F5).
 
-#### Portable Native Client (PNaCl):
-
-Building for PNaCl is currently only supported on OSX and Linux.
-
-**Linux Note**: on Linux you need to the 32-bit C runtime libs first, e.g. on
-a Debian based distribution:
-
-* sudo apt-get install lib32stdc++6
-
-```bash
-> cd oryol
-> ./fips setup nacl
-...
-> ./fips build pnacl-make-release
-...
-> ./fips run Triangle pnacl-make-release
-> _
-```
-
 #### iOS
 
 To compile and debug Oryol directly in Xcode (provided iOS development
@@ -176,8 +157,7 @@ with fips.
 
 ### Building the Web Samples HTML page
 
-To build the complete samples web page (provided you have a working emscripten,
-PNaCl and Android SDK installation):
+To build the complete samples web page (provided you have a working emscripten installation):
 
 ```
 > cd oryol

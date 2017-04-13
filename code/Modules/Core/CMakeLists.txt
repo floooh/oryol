@@ -102,13 +102,6 @@ fips_begin_module(Core)
         fips_files(osxBridge.h osxBridge.mm osxInputDefs.h)
         fips_frameworks_osx(Cocoa Metal MetalKit QuartzCore)
     endif()
-    if (FIPS_PNACL)
-        fips_dir(pnacl)
-        fips_files(
-            pnaclInstance.cc pnaclInstance.h
-            pnaclModule.cc pnaclModule.h
-        )
-    endif()
     fips_dir(.)
     fips_files(Trace.h Trace.cc)
     if (FIPS_PROFILING AND (FIPS_LINUX OR FIPS_MACOS OR FIPS_WINDOWS))

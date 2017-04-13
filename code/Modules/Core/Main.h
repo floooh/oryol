@@ -20,8 +20,6 @@
 #include "Core/uwp/uwpBridge.h"
 #elif ORYOL_ANDROID
 #include "Core/android/android_native_app_glue.h"
-#elif ORYOL_PNACL
-#include "Core/pnacl/pnaclModule.h"
 #endif
 #include "Core/App.h"
 #include "Core/String/WideString.h"
@@ -61,19 +59,6 @@ void android_main(struct android_app* app_) { \
     clazz* app = Memory::New<clazz>(); \
     app->StartMainLoop(); \
     Oryol::Memory::Delete<clazz>(app); \
-}
-#elif ORYOL_PNACL
-#define OryolMain(clazz) \
-namespace pp \
-{ \
-    Module* CreateModule() \
-    { \
-        return Memory::New<Oryol::_priv::pnaclModule>(); \
-    }; \
-} \
-void PNaclAppCreator() {\
-    static clazz* app = Memory::New<clazz>(); \
-    app->StartMainLoop(); \
 }
 #else
 #define OryolMain(clazz) \

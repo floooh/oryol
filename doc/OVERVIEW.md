@@ -4,7 +4,7 @@
 
 Let's get the bullet-point checklist out of the way first :)
 
-- currently runs on iOS, Android, emscripten, PNaCl, Win32, Win64 (not WinRT), OSX and Linux
+- currently runs on iOS, Android, emscripten, Win32, Win64 (not UWP), OSX and Linux
 with some features lagging behind on some platforms
 - builds on Linux, OSX, Windows with native IDE support (QtCreator, Xcode, VStudio)
 - cmake based build system with a frontend python script

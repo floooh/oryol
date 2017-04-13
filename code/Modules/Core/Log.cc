@@ -15,11 +15,8 @@
 #if ORYOL_ANDROID
 #include <android/log.h>
 #endif
-#if ORYOL_PNACL
-#include "Core/pnacl/pnaclInstance.h"
-#endif
 
-#if ORYOL_WINDOWS || ORYOL_PNACL
+#if ORYOL_WINDOWS
 const int LogBufSize = 4 * 1024;
 #endif
 
@@ -158,7 +155,7 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
             }
             __android_log_vprint(pri, "oryol", msg, args);
         #else
-            #if ORYOL_WINDOWS || ORYOL_PNACL
+            #if ORYOL_WINDOWS
             va_list argsCopy;
             va_copy(argsCopy, args);
             #endif
@@ -167,25 +164,12 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
             // va_list, so we made a copy before if necessary
             std::vprintf(msg, args);
 
-            #if ORYOL_WINDOWS || ORYOL_PNACL
+            #if ORYOL_WINDOWS
                 char buf[LogBufSize];
                 std::vsnprintf(buf, sizeof(buf), msg, argsCopy);
                 #if ORYOL_WINDOWS
                     buf[LogBufSize - 1] = 0;
                     OutputDebugStringA(buf);
-                #elif ORYOL_PNACL
-                    // replace non-jsonable characters 
-                    char* p = buf;
-                    do {
-                        if (*p == '"') *p = '\'';
-                        else if (*p == '\n') *p = ' ';
-                    }
-                    while (*p++);
-                    char json[LogBufSize + 64];
-                    std::snprintf(json, sizeof(json), "{\"msg\":\"log\",\"val\":\"%s\"}", buf); 
-                    if (pnaclInstance::HasInstance()) {
-                        pnaclInstance::Instance()->putMsg(json);
-                    }
                 #endif
             #endif
         #endif
@@ -217,14 +201,6 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int line, co
                             cond, msg ? msg : "none", file, line, func, callstack);
                 buf[LogBufSize - 1] = 0;
                 OutputDebugStringA(buf);
-            #elif ORYOL_PNACL
-                if (pnaclInstance::HasInstance()) {
-                    char buf[LogBufSize];
-                    std::snprintf(buf, sizeof(buf), "{\"msg\":\"log\",\"val\":\"\n\n*** ORYOL ASSERT: %s\n  msg=%s\n  file=%s\n  line=%d\n  func=%s  callstack:\n%s\n\"}",
-                                  cond, msg ? msg : "none", file, line, func, callstack);
-                    buf[LogBufSize - 1] = 0;                
-                    pnaclInstance::Instance()->putMsg(buf);
-                }
             #endif
         #endif
     }

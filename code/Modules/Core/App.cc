@@ -9,8 +9,6 @@
 #include "Core/Trace.h"
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
-#elif ORYOL_PNACL
-#include "Core/pnacl/pnaclInstance.h"
 #elif ORYOL_IOS
 #include "Core/ios/iosBridge.h"
 #elif ORYOL_MACOS && ORYOL_METAL
@@ -82,8 +80,6 @@ App::StartMainLoop() {
             // empty
         }
         this->androidBridge->onStop();
-    #elif ORYOL_PNACL
-        pnaclInstance::Instance()->startMainLoop(this);
     #elif ORYOL_UWP
         // do nothing here
     #else
@@ -92,9 +88,7 @@ App::StartMainLoop() {
         }
     #endif
 
-    // NOTE: PNaCl and UWP are the only platform where StartMainLoop
-    // returns while the app continues running!
-    #if !(ORYOL_PNACL || ORYOL_UWP)
+    #if !ORYOL_UWP
     Log::Info("<= App::StartMainLoop()\n");
     Core::Discard();
     #endif

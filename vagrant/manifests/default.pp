@@ -1,6 +1,6 @@
 #
 #   Puppet manifest to setup Oryol dev environment
-#   for compiling to native Linux, emscripten and PNaCl
+#   for compiling to native Linux and emscripten
 #
 
 # essential packages

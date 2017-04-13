@@ -45,12 +45,6 @@ namespace Oryol {
 namespace _priv {
 class displayMgr : public iosDisplayMgr { };
 } }
-#elif ORYOL_PNACL
-#include "Gfx/pnacl/pnaclDisplayMgr.h"
-namespace Oryol {
-namespace _priv {
-class displayMgr : public pnaclDisplayMgr { };
-} }
 #else
 #include "Gfx/Core/displayMgrBase.h"
 namespace Oryol {

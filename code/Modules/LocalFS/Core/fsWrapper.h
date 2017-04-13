@@ -6,7 +6,7 @@
     @brief file-system wrapper frontend class
 */
 
-#if ORYOL_EMSCRIPTEN || ORYOL_PNACL
+#if ORYOL_EMSCRIPTEN
 #include "LocalFS/dummy/dummyFSWrapper.h"
 namespace Oryol {
 namespace _priv {

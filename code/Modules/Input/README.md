@@ -15,7 +15,6 @@ iOS             | -        | -     | -       | YES   | YES
 Android         | -        | -     | -       | YES   | YES
 HTML5 (desktop) | YES      | YES   | YES     | -     | - 
 HTML5 (mobile)  | -        | -     | -       | YES   | YES
-PNaCl           | YES      | YES   | -       | -     | -
 RaspberryPi     | YES      | YES   | -       | -     | -
 
 > NOTE: gamepad support on OSX and Windows is currently only

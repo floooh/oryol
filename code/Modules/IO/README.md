@@ -145,7 +145,7 @@ may be instantiated multiple times in separate IO threads (where and
 how often a FileSystem object is instantianed is an implementation detail
 which differs between platforms).
 
-> NOTE: There's one important caveat on web platforms like HTML5 or PNaCl:
+> NOTE: There's one important caveat on HTML5:
 > both platforms are limited by the 'same-origin policy', which basically
 > means that a web page must only load assets from the same domain it was
 > served from. For this reason, the current implementation of HTTPFileSystem

@@ -15,9 +15,4 @@
 #define __STRICT_ANSI__
 #endif
 
-// and another workaround for PNaCl which requires __STRICT_ANSI__
-// to be undefined :/
-#if ORYOL_PNACL && defined(__STRICT_ANSI__)
-#undef __STRICT_ANSI__
-#endif
 #include <cstddef>

@@ -13,11 +13,6 @@
 #elif ORYOL_IOS
 #include <OpenGLES/ES3/gl.h>
 #include <OpenGLES/ES3/glext.h>
-#elif ORYOL_PNACL
-#define GL_GLEXT_PROTOTYPES
-#include "GLES2/gl2.h"
-#include "GLES2/gl2ext.h"
-#include <ppapi/gles2/gl2ext_ppapi.h>
 #elif ORYOL_EMSCRIPTEN
     #if ORYOL_OPENGLES2
     #define GL_GLEXT_PROTOTYPES
