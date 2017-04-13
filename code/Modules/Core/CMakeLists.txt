@@ -37,6 +37,7 @@ fips_begin_module(Core)
         Set.h
         StaticArray.h
         elementBuffer.h
+        InlineArray.h
     )
     fips_dir(Memory)
     fips_files(Memory.cc Memory.h poolAllocator.h)
@@ -125,6 +126,7 @@ fips_begin_unittest(Core)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
+        InlineArrayTest.cc
         StackTraceTest.cc
         BufferTest.cc
         ArgsTest.cc
