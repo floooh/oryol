@@ -70,17 +70,17 @@ public:
     /// get number of free slots at back of array
     int Spare() const;
     
-    /// read/write access single element
+    /// read/write access an existing element
     TYPE& operator[](int index);
-    /// read-only access single element
+    /// read-only access to existing element
     const TYPE& operator[](int index) const;
-    /// read/write access to first element
+    /// read/write access to first element (must exists)
     TYPE& Front();
-    /// read-only access to first element
+    /// read-only access to first element (must exist)
     const TYPE& Front() const;
-    /// read/write access to last element
+    /// read/write access to last element (must exist)
     TYPE& Back();
-    /// read-only access to last element
+    /// read-only access to last element (must exist)
     const TYPE& Back() const;
 
     /// increase capacity to hold at least numElements more elements
