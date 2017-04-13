@@ -539,7 +539,7 @@ mtlRenderer::draw(int primGroupIndex, int numInstances) {
     }
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
-    if (primGroupIndex >= msh->numPrimGroups) {
+    if (primGroupIndex >= msh->primGroups.Size()) {
         // this may happen if rendering a placeholder which doesn't have
         // as many materials as the original mesh
         return;

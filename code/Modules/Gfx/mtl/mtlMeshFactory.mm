@@ -105,16 +105,6 @@ mtlMeshFactory::setupAttrs(mesh& msh) {
 }
 
 //------------------------------------------------------------------------------
-void
-mtlMeshFactory::setupPrimGroups(mesh& msh) {
-    msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
-    o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int i = 0; i < msh.numPrimGroups; i++) {
-        msh.primGroups[i] = msh.Setup.PrimitiveGroup(i);
-    }
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 mtlMeshFactory::createMesh(mesh& msh, const void* data, int size) {
     o_assert_dbg(nil == msh.buffers[mesh::vb].mtlBuffers[0]);
@@ -123,7 +113,7 @@ mtlMeshFactory::createMesh(mesh& msh, const void* data, int size) {
     o_assert_dbg(1 == msh.buffers[mesh::ib].numSlots);
 
     this->setupAttrs(msh);
-    this->setupPrimGroups(msh);
+    msh.primGroups = msh.Setup.PrimitiveGroups;
     const uint8* ptr = (const uint8*) data;
 
     // create vertex buffer
@@ -179,8 +169,7 @@ mtlMeshFactory::createFullscreenQuad(mesh& msh) {
     ibAttrs.BufferUsage = Usage::Immutable;
     msh.indexBufferAttrs = ibAttrs;
 
-    msh.numPrimGroups = 1;
-    msh.primGroups[0] = PrimitiveGroup(0, 6);
+    msh.primGroups = { { 0, 6 } };
 
     const float topV = msh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
     const float botV = msh.Setup.FullScreenQuadFlipV ? 1.0f : 0.0f;
