@@ -7,12 +7,11 @@ import subprocess
 import glob
 from string import Template
 
-from mod import log, util, project, emscripten, android, nacl
+from mod import log, util, project, emscripten, android
 from tools import texexport
 
 # what to build
 BuildEmscripten = True
-BuildPNaCl = False 
 BuildWasm = True
 ExportAssets = True
 ExtensionSamples = True
@@ -32,7 +31,6 @@ BackgroundColor = '#42A5F5'
 
 # build configuration
 EmscConfig  = 'webgl2-emsc-ninja-release'
-PNaclConfig = 'pnacl-ninja-release'
 WasmConfig  = 'webgl2-wasm-ninja-release'
 
 #-------------------------------------------------------------------------------
@@ -45,7 +43,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         samples = yaml.load(f.read())
 
     # create directories
-    for platform in ['asmjs', 'wasm', 'pnacl'] :
+    for platform in ['asmjs', 'wasm'] :
         platform_dir = '{}/{}'.format(webpage_dir, platform)
         if not os.path.isdir(platform_dir) :
             os.makedirs(platform_dir)
@@ -78,8 +76,6 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             content += '    <ul class="thumb-list">\n'
             if BuildEmscripten and 'emscripten' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="asmjs/{}.html">asm.js</a></li>\n'.format(name)
-            if BuildPNaCl and 'pnacl' in types :
-                content += '      <li class="thumb-item"><a class="thumb-link" href="pnacl/{}.html">pnacl</a></li>\n'.format(name)
             if BuildWasm and 'emscripten' in types :
                 content += '      <li class="thumb-item"><a class="thumb-link" href="wasm/{}.html">wasm</a></li>\n'.format(name)
             content += '    </ul>\n'
@@ -101,7 +97,7 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
         f.write(css)
 
     # copy other required files
-    for name in ['dummy.jpg', 'emsc.js', 'pnacl.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
+    for name in ['dummy.jpg', 'emsc.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
         log.info('> copy file: {}'.format(name))
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
@@ -145,24 +141,6 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                 with open('{}/wasm/{}.html'.format(webpage_dir, name), 'w') as f :
                     f.write(html)
 
-    # generate PNaCl HTML pages
-    if BuildPNaCl and nacl.check_exists(fips_dir) :
-        pnacl_deploy_dir = '{}/fips-deploy/oryol/{}'.format(ws_dir, PNaclConfig)
-        for sample in samples :
-            name = sample['name']
-            if name != '__end__' and 'pnacl' in sample['type'] :
-                log.info('> generate PNaCl HTML page: {}'.format(name))
-                for ext in ['nmf', 'pexe'] :
-                    src_path = '{}/{}.{}'.format(pnacl_deploy_dir, name, ext)
-                    if os.path.isfile(src_path) :
-                        shutil.copy(src_path, '{}/pnacl/'.format(webpage_dir))
-                with open(proj_dir + '/web/pnacl.html', 'r') as f :
-                    templ = Template(f.read())
-                src_url = GitHubSamplesURL + sample['src'];
-                html = templ.safe_substitute(name=name, source=src_url, separator=GameSeparator)
-                with open('{}/pnacl/{}.html'.format(webpage_dir, name), 'w') as f :
-                    f.write(html)
-
     # copy the screenshots
     for sample in samples :
         if sample['name'] != '__end__' :
@@ -195,9 +173,6 @@ def build_deploy_webpage(fips_dir, proj_dir, rebuild) :
         os.makedirs(webpage_dir)
 
     # compile samples
-    if BuildPNaCl and nacl.check_exists(fips_dir) :
-        project.gen(fips_dir, proj_dir, PNaclConfig)
-        project.build(fips_dir, proj_dir, PNaclConfig)
     if BuildEmscripten and emscripten.check_exists(fips_dir) :
         project.gen(fips_dir, proj_dir, EmscConfig)
         project.build(fips_dir, proj_dir, EmscConfig)
