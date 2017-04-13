@@ -281,6 +281,14 @@ TEST(ArrayTest) {
     CHECK(array2[3] == 7);
     CHECK(array2[4] == 9);
     CHECK(array2[5] == 11);
+    
+    // FindIndexLinear
+    CHECK(array2.FindIndexLinear(3) == 2);
+    CHECK(array2.FindIndexLinear(7, 0, 3) == InvalidIndex);
+    CHECK(array2.FindIndexLinear(7, 3, InvalidIndex) == 3);
+    CHECK(array2.FindIndexLinear(11) == 5);
+    
+    // reverse sort
     std::sort(array2.begin(), array2.end(), [](int a, int b) {
         return b < a;
     });
@@ -291,12 +299,6 @@ TEST(ArrayTest) {
     CHECK(array2[4] == 2);
     CHECK(array2[5] == 1);
 
-    // FindIndexLinear
-    CHECK(array2.FindIndexLinear(3) == 2);
-    CHECK(array2.FindIndexLinear(7, 0, 3) == InvalidIndex);
-    CHECK(array2.FindIndexLinear(7, 3, InvalidIndex) == 3);
-    CHECK(array2.FindIndexLinear(11) == 5);
-    
     // construct from initializer list
     Array<String> array4( { "Bla", "Blub", "Blob", "Blubber" } );
     CHECK(array4.Size() == 4);
