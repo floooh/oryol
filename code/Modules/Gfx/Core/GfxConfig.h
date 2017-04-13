@@ -21,7 +21,7 @@ public:
     /// max number of input meshes
     static const int MaxNumInputMeshes = 4;
     /// maximum number of primitive groups for one mesh
-    static const int MaxNumPrimGroups = 8;
+    static const int MaxNumPrimGroups = 32;
     /// max number of uniform blocks per stage
     static const int MaxNumUniformBlocksPerStage = 4;
     /// maximum number of textures on vertex shader stage

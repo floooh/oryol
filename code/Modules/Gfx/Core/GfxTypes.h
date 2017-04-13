@@ -11,6 +11,7 @@
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "Core/Containers/StaticArray.h"
+#include "Core/Containers/InlineArray.h"
 #include "Gfx/Core/GfxConfig.h"
 #include "glm/vec4.hpp"
 #include <initializer_list>
@@ -1318,12 +1319,6 @@ public:
     bool ShouldSetupEmpty() const;
     /// check if should setup fullscreen quad mesh
     bool ShouldSetupFullScreenQuad() const;
-    /// add a primitive group (required for CreateEmpty)
-    void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
-    /// get number of primitive groups
-    int NumPrimitiveGroups() const;
-    /// get primitive group at index
-    const class PrimitiveGroup& PrimitiveGroup(int index) const;
     /// vertex-data usage
     Usage::Code VertexUsage = Usage::InvalidUsage;
     /// index-data usage
@@ -1346,9 +1341,9 @@ public:
     int VertexDataOffset = 0;
     /// index data byte offset in data (default: InvalidIndex, no index data provided)
     int IndexDataOffset = 0;
+    /// primitive groups
+    InlineArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> PrimitiveGroups;
 private:
-    int numPrimGroups = 0;
-    class PrimitiveGroup primGroups[GfxConfig::MaxNumPrimGroups];
     bool setupFromFile = false;
     bool setupFromData = false;
     bool setupEmpty = false;

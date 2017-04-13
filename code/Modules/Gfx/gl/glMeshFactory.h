@@ -40,8 +40,6 @@ public:
 private:
     /// helper method to populate vertex/index attr structs
     void setupAttrs(mesh& msh);
-    /// helper method to populate primitive groups
-    void setupPrimGroups(mesh& msh);
     /// helper method to create vertex or index buffer
     GLuint createBuffer(GLenum type, const void* data, uint32_t dataSize, Usage::Code usage);
 

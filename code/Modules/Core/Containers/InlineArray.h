@@ -77,8 +77,8 @@ private:
     /// check if enough room is avaible to add n items, fatal error otherwise
     void checkRoom(int numItems) const;
 
-    TYPE items[CAPACITY];
     int size;
+    TYPE items[CAPACITY];
 };
 
 //------------------------------------------------------------------------------

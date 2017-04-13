@@ -19,8 +19,7 @@ void
 meshBase::Clear() {
     this->vertexBufferAttrs = VertexBufferAttrs();
     this->indexBufferAttrs = IndexBufferAttrs();
-    this->primGroups.Fill(PrimitiveGroup());
-    this->numPrimGroups = 0;
+    this->primGroups.Clear();
     resourceBase::Clear();
 }
 

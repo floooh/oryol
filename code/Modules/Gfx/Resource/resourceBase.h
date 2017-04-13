@@ -47,10 +47,8 @@ public:
     VertexBufferAttrs vertexBufferAttrs;
     /// index buffer attributes
     IndexBufferAttrs indexBufferAttrs;
-    /// number of primitive groups
-    int numPrimGroups = 0;
     /// primitive groups
-    StaticArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> primGroups;
+    InlineArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> primGroups;
     
     /// clear the object
     void Clear();

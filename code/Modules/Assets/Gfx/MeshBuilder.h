@@ -40,6 +40,7 @@
 #include "Gfx/Core/GfxTypes.h"
 #include "Assets/Gfx/VertexWriter.h"
 #include "Resource/Core/SetupAndData.h"
+#include "Core/Containers/InlineArray.h"
 
 namespace Oryol {
 
@@ -54,7 +55,7 @@ public:
     /// read/write access to vertex layout
     class VertexLayout Layout;
     /// primitive groups (at least one must be defined)
-    Array<PrimitiveGroup> PrimitiveGroups;
+    InlineArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> PrimitiveGroups;
     /// vertex data usage
     Usage::Code VertexUsage = Usage::Immutable;
     /// index data usage

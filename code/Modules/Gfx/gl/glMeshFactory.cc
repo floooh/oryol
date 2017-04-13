@@ -106,8 +106,7 @@ glMeshFactory::createFullscreenQuad(mesh& mesh) {
     ibAttrs.BufferUsage = Usage::Immutable;
     mesh.indexBufferAttrs = ibAttrs;
 
-    mesh.numPrimGroups = 1;
-    mesh.primGroups[0] = PrimitiveGroup(0, 6);
+    mesh.primGroups = { { 0, 6 } };
 
     // vertices
     const float topV = mesh.Setup.FullScreenQuadFlipV ? 0.0f : 1.0f;
@@ -152,16 +151,6 @@ glMeshFactory::setupAttrs(mesh& msh) {
 }
 
 //------------------------------------------------------------------------------
-void
-glMeshFactory::setupPrimGroups(mesh& msh) {
-    msh.numPrimGroups = msh.Setup.NumPrimitiveGroups();
-    o_assert_dbg(msh.numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    for (int i = 0; i < msh.numPrimGroups; i++) {
-        msh.primGroups[i] = msh.Setup.PrimitiveGroup(i);
-    }
-}
-
-//------------------------------------------------------------------------------
 ResourceState::Code
 glMeshFactory::createMesh(mesh& mesh, const void* data, int size) {
     o_assert_dbg(0 == mesh.buffers[mesh::vb].glBuffers[0]);
@@ -170,7 +159,7 @@ glMeshFactory::createMesh(mesh& mesh, const void* data, int size) {
     o_assert_dbg(1 == mesh.buffers[mesh::ib].numSlots);
 
     this->setupAttrs(mesh);
-    this->setupPrimGroups(mesh);
+    mesh.primGroups = mesh.Setup.PrimitiveGroups;
     const auto& vbAttrs = mesh.vertexBufferAttrs;
     const auto& ibAttrs = mesh.indexBufferAttrs;
     const uint8_t* ptr = (const uint8_t*)data;

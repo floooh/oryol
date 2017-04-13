@@ -982,24 +982,6 @@ bool MeshSetup::ShouldSetupFullScreenQuad() const {
 }
 
 //------------------------------------------------------------------------------
-void MeshSetup::AddPrimitiveGroup(const class PrimitiveGroup& primGroup) {
-    o_assert(this->setupEmpty || this->setupFromData);
-    o_assert(this->numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    this->primGroups[this->numPrimGroups++] = primGroup;
-}
-
-//------------------------------------------------------------------------------
-int MeshSetup::NumPrimitiveGroups() const {
-    return this->numPrimGroups;
-}
-
-//------------------------------------------------------------------------------
-const class PrimitiveGroup& MeshSetup::PrimitiveGroup(int index) const {
-    o_assert_range(index, GfxConfig::MaxNumPrimGroups);
-    return this->primGroups[index];
-}
-
-//------------------------------------------------------------------------------
 PipelineSetup PipelineSetup::FromShader(const Id& shd) {
     o_assert_dbg(shd.IsValid());
     PipelineSetup setup;

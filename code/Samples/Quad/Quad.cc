@@ -46,7 +46,7 @@ QuadApp::OnInit() {
         { VertexAttr::Position, VertexFormat::Float3 },
         { VertexAttr::Color0, VertexFormat::Float4 }
     };
-    meshSetup.AddPrimitiveGroup({0, 6});
+    meshSetup.PrimitiveGroups = { {0, 6} };
     meshSetup.VertexDataOffset = 0;
     meshSetup.IndexDataOffset = offsetof(data_t, indices);
     this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, &data, sizeof(data));

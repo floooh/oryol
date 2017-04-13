@@ -24,7 +24,7 @@ bool
 OmshParser::Parse(const void* ptr, uint32_t size, MeshSetup& outSetup) {
     o_assert_dbg(ptr);
     o_assert_dbg(size > 4);
-    o_assert_dbg(outSetup.NumPrimitiveGroups() == 0);
+    o_assert_dbg(outSetup.PrimitiveGroups.Empty());;
     o_assert_dbg(outSetup.Layout.Empty());
 
     // size must be multiple of 4
@@ -93,7 +93,7 @@ OmshParser::Parse(const void* ptr, uint32_t size, MeshSetup& outSetup) {
         u32Ptr++;
         primGroup.BaseElement = *u32Ptr++;
         primGroup.NumElements = *u32Ptr++;
-        outSetup.AddPrimitiveGroup(primGroup);
+        outSetup.PrimitiveGroups.Add(primGroup);
     }
 
     // check if enough data for vertices

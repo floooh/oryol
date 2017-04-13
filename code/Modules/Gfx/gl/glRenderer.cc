@@ -711,7 +711,7 @@ glRenderer::draw(int primGroupIndex, int numInstances) {
     }
     const mesh* msh = this->curPrimaryMesh;
     o_assert_dbg(msh);
-    if (primGroupIndex >= msh->numPrimGroups) {
+    if (primGroupIndex >= msh->primGroups.Size()) {
         // this may happen if trying to render a placeholder which doesn't
         // have as many materials as the original mesh, anyway, this isn't
         // a serious error

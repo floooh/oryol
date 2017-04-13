@@ -23,9 +23,7 @@ MeshBuilder::Begin() {
     meshSetup.NumVertices = this->NumVertices;
     meshSetup.NumIndices = this->NumIndices;
     meshSetup.IndicesType = this->IndicesType;
-    for (const auto& primGroup : this->PrimitiveGroups) {
-        meshSetup.AddPrimitiveGroup(primGroup);
-    }
+    meshSetup.PrimitiveGroups = this->PrimitiveGroups;
     
     // compute the required stream size
     const int vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);

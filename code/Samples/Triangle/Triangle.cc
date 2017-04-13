@@ -51,7 +51,7 @@ TriangleApp::OnInit() {
         { VertexAttr::Position, VertexFormat::Float3 },
         { VertexAttr::Color0, VertexFormat::Float4 }
     };
-    meshSetup.AddPrimitiveGroup({0, 3});
+    meshSetup.PrimitiveGroups =  { {0, 3} };
     this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, vertices, sizeof(vertices));
 
     // create shader and pipeline-state-object

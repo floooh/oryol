@@ -440,7 +440,7 @@ Gfx::validateMeshes(pipeline* pip, mesh** meshes, int num) {
             if ((mshIndex > 0) && (msh->indexBufferAttrs.Type != IndexType::None)) {
                 o_error("invalid drawState: input mesh at slot '%d' has indices, only allowed for slot 0!\n", mshIndex);
             }
-            if ((mshIndex > 0) && (msh->numPrimGroups > 0)) {
+            if ((mshIndex > 0) && (msh->primGroups.Size() > 0)) {
                 o_error("invalid mesh block: input mesh at slot '%d' has primitive groups, only allowed for slot 0!\n", mshIndex);
             }
             const int numComps = msh->vertexBufferAttrs.Layout.NumComponents();

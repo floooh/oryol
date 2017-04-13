@@ -6,7 +6,7 @@
 #include "Core/String/String.h"
 #include "Gfx/Core/GfxTypes.h"
 #include "Gfx/gl/gl_impl.h"
-#include <array>
+#include "Core/Containers/StaticArray.h"
 
 using namespace Oryol;
 
@@ -119,7 +119,7 @@ TEST(PixelFormatChannelBitsTest) {
             (pf != PixelFormat::R16F) &&
             (pf != PixelFormat::R32F) &&
             (pf != PixelFormat::R10G10B10A2)) {
-            std::array<PixelChannel::Bits, 6> channels = { {PixelChannel::Red, PixelChannel::Green, PixelChannel::Blue, PixelChannel::Alpha, PixelChannel::Depth, PixelChannel::Stencil} };
+            StaticArray<PixelChannel::Bits, 6> channels = { {PixelChannel::Red, PixelChannel::Green, PixelChannel::Blue, PixelChannel::Alpha, PixelChannel::Depth, PixelChannel::Stencil} };
             for (PixelChannel::Bits chn : channels) {
                 CHECK(PixelFormat::NumBits((PixelFormat::Code)pf, chn) == 0);
             }
