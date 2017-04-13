@@ -3,9 +3,7 @@
 //------------------------------------------------------------------------------
 #if ORYOL_WINDOWS
 #define HAVE_BACKTRACE (0)
-#if !ORYOL_UWP
 #define HAVE_STACKWALKER (1)
-#endif
 #elif ORYOL_EMSCRIPTEN||ORYOL_ANDROID
 #define HAVE_BACKTRACE (0)
 #define HAVE_STACKWALKER (0)

@@ -5,13 +5,7 @@
     @ingroup _priv
     @brief frontend inputMgr class
 */
-#if ORYOL_UWP
-#include "Input/uwp/uwpInputMgr.h"
-namespace Oryol {
-namespace _priv {
-class inputMgr : public uwpInputMgr { };
-} }
-#elif ORYOL_D3D11
+#if ORYOL_D3D11
 #include "Input/win/winInputMgr.h"
 namespace Oryol {
 namespace _priv {

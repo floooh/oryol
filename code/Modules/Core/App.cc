@@ -80,18 +80,13 @@ App::StartMainLoop() {
             // empty
         }
         this->androidBridge->onStop();
-    #elif ORYOL_UWP
-        // do nothing here
     #else
         while (AppState::InvalidAppState != this->curState) {
             this->onFrame();
         }
     #endif
-
-    #if !ORYOL_UWP
     Log::Info("<= App::StartMainLoop()\n");
     Core::Discard();
-    #endif
 }
 
 //------------------------------------------------------------------------------

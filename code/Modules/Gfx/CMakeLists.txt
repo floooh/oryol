@@ -62,7 +62,7 @@ fips_begin_module(Gfx)
             gl_impl.h
         )
     endif()
-    if (NOT FIPS_UWP AND ORYOL_D3D11)
+    if (ORYOL_D3D11)
         fips_dir(win)
         fips_files(
             win_decl.h

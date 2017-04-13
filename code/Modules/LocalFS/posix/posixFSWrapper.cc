@@ -5,9 +5,7 @@
 #include "posixFSWrapper.h"
 #include "Core/String/StringBuilder.h"
 #include <stdio.h>
-#if !ORYOL_UWP
 #include "LocalFS/whereami/whereami.h"
-#endif
 #if ORYOL_WINDOWS
 #include <direct.h>
 #else
@@ -78,24 +76,19 @@ posixFSWrapper::close(handle h) {
 //------------------------------------------------------------------------------
 String
 posixFSWrapper::getExecutableDir() {
-    #if ORYOL_UWP
-        // FIXME
+    char buf[4096];
+    int length = wai_getExecutablePath(buf, sizeof(buf), nullptr);
+    if (length > 0) {
+        StringBuilder strBuilder(buf, 0, length);
+        strBuilder.SubstituteAll("\\", "/");
+        int slashIndex = strBuilder.FindLastOf(0, length, "/");
+        o_assert((slashIndex > 0) && (slashIndex < (strBuilder.Length()-1)));
+        String result(strBuilder.AsCStr(), 0, slashIndex+1);
+        return result;
+    }
+    else {
         return String();
-    #else
-        char buf[4096];
-        int length = wai_getExecutablePath(buf, sizeof(buf), nullptr);
-        if (length > 0) {
-            StringBuilder strBuilder(buf, 0, length);
-            strBuilder.SubstituteAll("\\", "/");
-            int slashIndex = strBuilder.FindLastOf(0, length, "/");
-            o_assert((slashIndex > 0) && (slashIndex < (strBuilder.Length()-1)));
-            String result(strBuilder.AsCStr(), 0, slashIndex+1);
-            return result;
-        }
-        else {
-            return String();
-        }
-    #endif
+    }
 }
 
 //------------------------------------------------------------------------------
