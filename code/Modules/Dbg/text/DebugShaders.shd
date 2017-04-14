@@ -22,7 +22,7 @@ sampler2D tex Texture
     vec2 screenPos = position.xy * glyphSize;
     screenPos.x -= 1.0;
     screenPos.y = 1.0 - screenPos.y;
-    _position = vec4(screenPos, 0.5, 1.0);
+    gl_Position = vec4(screenPos, 0.5, 1.0);
     uv = position.zw * vec2(8.0 / 1024.0, 1.0);  // one glyph is 8 pixels wide
     color = color0;
 @end

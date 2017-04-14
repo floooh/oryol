@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 84
+Version = 86
 
 import os
 import sys
@@ -67,178 +67,6 @@ glslVersionNumber = {
     'glsles3': 300,
     'hlsl5': None,
     'metal': None
-}
-
-# declare language-specific mapping macros
-slMacros = {
-    'glsl100': {
-        'ORYOL_GLSL': '(1)',
-        'ORYOL_HLSL': '(0)',
-        'ORYOL_METALSL': '(0)',
-        'ORYOL_GLSL_VERSION': '(100)',
-        '_vertexid': '(0)',
-        '_instanceid': '(0)',
-        '_position': 'gl_Position',
-        '_pointsize': 'gl_PointSize',
-        '_color': 'gl_FragColor',
-        '_color1': 'gl_FragColor',
-        '_color2': 'gl_FragColor',
-        '_color3': 'gl_FragColor',
-        '_fragcoord': 'gl_FragCoord',
-        '_const': 'const',
-        '_func': '',
-        'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
-        'sampler2DArray': 'sampler2D',  # hack to hide invalid sampler types
-        'mul(m,v)': '(m*v)',
-        'tex2D(s, t)': 'texture2D(s,t)',
-        'tex3D(s, t)': 'vec4(0.0)',
-        'tex2DArray(s, t)': 'vec4(0.0)',
-        'texCUBE(s, t)': 'textureCube(s,t)',
-        'tex2Dvs(s, t)': 'texture2D(s,t)',
-        'tex3Dvs(s, t)': 'vec4(0.0)',
-        'tex2DArrayvs(s, t)': 'vec4(0.0)',
-    },
-    'glsl120': {
-        'ORYOL_GLSL': '(1)',
-        'ORYOL_HLSL': '(0)',
-        'ORYOL_METALSL': '(0)',
-        'ORYOL_GLSL_VERSION': '(120)',
-        '_vertexid': 'gl_VertexID',
-        '_instanceid': 'gl_InstanceID',
-        '_position': 'gl_Position',
-        '_pointsize': 'gl_PointSize',
-        '_color': 'gl_FragColor',
-        '_color1': 'gl_FragColor',
-        '_color2': 'gl_FragColor',
-        '_color3': 'gl_FragColor',
-        '_fragcoord': 'gl_FragCoord',
-        '_const': 'const',
-        '_func': '',
-        'sampler3D': 'sampler2D',       # hack to hide invalid sampler types
-        'sampler2DArray': 'sampler2D',  # hack to hide invalid sampler types
-        'mul(m,v)': '(m*v)',
-        'tex2D(s, t)': 'texture2D(s,t)',
-        'tex3D(s, t)': 'vec4(0.0)',
-        'tex2DArray(s, t)': 'vec4(0.0)',
-        'texCUBE(s, t)': 'textureCube(s,t)',
-        'tex2Dvs(s, t)': 'texture2D(s,t)',
-        'tex3Dvs(s, t)': 'vec4(0.0)',
-        'tex2DArrayvs(s, t)': 'vec4(0.0)',
-    },
-    'glsl330': {
-        'ORYOL_GLSL': '(1)',
-        'ORYOL_HLSL': '(0)',
-        'ORYOL_METALSL': '(0)',
-        'ORYOL_GLSL_VERSION': '(330)',
-        '_vertexid': 'gl_VertexID',
-        '_instanceid': 'gl_InstanceID',
-        '_position': 'gl_Position',
-        '_pointsize': 'gl_PointSize',
-        '_color': '_FragColor',
-        '_color1': '_FragColor1',
-        '_color2': '_FragColor2',
-        '_color3': '_FragColor3',
-        '_fragcoord': 'gl_FragCoord',
-        '_const': 'const',
-        '_func': '',
-        'mul(m,v)': '(m*v)',
-        'tex2D(s, t)': 'texture(s,t)',
-        'tex3D(s, t)': 'texture(s,t)',
-        'tex2DArray(s, t)': 'texture(s,t)',
-        'texCUBE(s, t)': 'texture(s,t)',
-        'tex2Dvs(s, t)': 'texture(s,t)',
-        'tex3Dvs(s, t)': 'texture(s,t)',
-        'tex2DArrayvs(s, t)': 'texture(s,t)',
-    },
-    'glsles3': {
-        'ORYOL_GLSL': '(1)',
-        'ORYOL_HLSL': '(0)',
-        'ORYOL_METALSL': '(0)',
-        'ORYOL_GLSL_VERSION': '(300)',
-        '_vertexid': 'gl_VertexID',
-        '_instanceid': 'gl_InstanceID',
-        '_position': 'gl_Position',
-        '_pointsize': 'gl_PointSize',
-        '_color': '_FragColor',
-        '_color1': '_FragColor1',
-        '_color2': '_FragColor2',
-        '_color3': '_FragColor3',
-        '_fragcoord': 'gl_FragCoord',
-        '_const': 'const',
-        '_func': '',
-        'mul(m,v)': '(m*v)',
-        'tex2D(s, t)': 'texture(s,t)',
-        'tex3D(s, t)': 'texture(s,t)',
-        'tex2DArray(s, t)': 'texture(s,t)',
-        'texCUBE(s, t)': 'texture(s,t)',
-        'tex2Dvs(s, t)': 'texture(s,t)',
-        'tex3Dvs(s, t)': 'texture(s,t)',
-        'tex2DArrayvs(s, t)': 'texture(s,t)',
-    },
-    'hlsl5': {
-        'ORYOL_GLSL': '(0)',
-        'ORYOL_HLSL': '(1)',
-        'ORYOL_METALSL': '(0)',
-        '_vertexid': '_iVertexID',
-        '_instanceid': '_iInstanceID',
-        '_position': '_oPosition',
-        '_pointsize': '_oPointSize',
-        '_color': '_oColor',
-        '_color1': '_oColor1',
-        '_color2': '_oColor2',
-        '_color3': '_oColor3',
-        '_const': 'static const',
-        '_func': '',
-        'vec2': 'float2',
-        'vec3': 'float3',
-        'vec4': 'float4',
-        'mat2': 'float2x2',
-        'mat3': 'float3x3',
-        'mat4': 'float4x4',
-        'tex2D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
-        'tex3D(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
-        'tex2DArray(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
-        'texCUBE(_obj, _t)': '_obj.t.Sample(_obj.s,_t)',
-        'tex2Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
-        'tex3Dvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
-        'tex2DArrayvs(_obj, _t)': '_obj.t.SampleLevel(_obj.s,_t,0.0)',
-        'mix(a,b,c)': 'lerp(a,b,c)',
-        'mod(x,y)': '(x-y*floor(x/y))',
-        'fract(x)': 'frac(x)'
-    },
-    'metal': {
-        'ORYOL_GLSL': '(0)',
-        'ORYOL_HLSL': '(0)',
-        'ORYOL_METALSL': '(1)',
-        '_vertexid': 'vs_vertexid',
-        '_instanceid': 'vs_instanceid',
-        '_position': 'vs_out._vofi_position',
-        '_pointsize': 'vs_out._vofi_pointsize',
-        '_color': '_fo_color.color0',
-        '_color0': '_fo_color.color0',
-        '_color1': '_fo_color.color1',
-        '_color2': '_fo_color.color2',
-        '_color3': '_fo_color.color3',
-        '_const': 'constant',
-        '_func': 'static',
-        'bool': 'int',
-        'vec2': 'float2',
-        'vec3': 'float3',
-        'vec4': 'float4',
-        'mat2': 'float2x2',
-        'mat3': 'float3x3',
-        'mat4': 'float4x4',
-        'mul(m,v)': '(m*v)',
-        'mod(x,y)': '(x-y*floor(x/y))',
-        'tex2D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
-        'tex2DArray(_obj, _t)': '_obj.t.sample(_obj.s,_t.xy,(uint)_t.z)',
-        'texCUBE(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
-        'tex3D(_obj, _t)': '_obj.t.sample(_obj.s,_t)',
-        'tex2Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
-        'tex3Dvs(_obj, _t)': '_obj.t.sample(_obj.s,_t,level(0))',
-        'tex2DArrayvs(_obj, _t)': '_obj.t.sample(_obj.s,_t.xy,(uint)_t.z,level(0))',
-        'discard': 'discard_fragment()'
-    }
 }
 
 validVsInNames = [
@@ -571,14 +399,7 @@ class Shader(Snippet) :
         self.inputs = []
         self.outputs = []
         self.resolvedDeps = []
-        self.generatedSource = {}
-        self.hasPointSize = False
-        self.hasVertexId = False
-        self.hasInstanceId = False
-        self.hasColor1 = False
-        self.hasColor2 = False
-        self.hasColor3 = False
-        self.hasFragCoord = False
+        self.generatedSource = None
 
     def dump(self) :
         Snippet.dump(self)
@@ -656,14 +477,6 @@ class Parser :
         self.current = None
         self.stack = []
         self.inComment = False
-        rx_str = '[\s\w,;=+-/%()*{}\[\]]*'
-        self.regexPointSize = re.compile('^{}_pointsize{}$'.format(rx_str, rx_str))
-        self.regexVertexId = re.compile('^{}_vertexid{}$'.format(rx_str, rx_str))
-        self.regexInstanceId = re.compile('^{}_instanceid{}$'.format(rx_str, rx_str))
-        self.regexColor1 = re.compile('^{}_color1{}$'.format(rx_str, rx_str))
-        self.regexColor2 = re.compile('^{}_color2{}$'.format(rx_str, rx_str))
-        self.regexColor3 = re.compile('^{}_color3{}$'.format(rx_str, rx_str))
-        self.regexFragCoord = re.compile('^{}_fragcoord{}$'.format(rx_str, rx_str))
 
     #---------------------------------------------------------------------------
     def stripComments(self, line) :
@@ -945,27 +758,6 @@ class Parser :
         return line
 
     #---------------------------------------------------------------------------
-    def parseSpecialKeyword(self, line) :
-        '''
-        Checks for special keywords in line, and set internal flags.
-        '''
-        if self.current is not None :
-            if self.regexPointSize.match(line) :
-                self.current.hasPointSize = True
-            if self.regexVertexId.match(line) :
-                self.current.hasVertexId = True
-            if self.regexInstanceId.match(line) :
-                self.current.hasInstanceId = True
-            if self.regexColor1.match(line) :
-                self.current.hasColor1 = True
-            if self.regexColor2.match(line) :
-                self.current.hasColor2 = True
-            if self.regexColor3.match(line) :
-                self.current.hasColor3 = True
-            if self.regexFragCoord.match(line) :
-                self.current.hasFragCoord = True
-
-    #---------------------------------------------------------------------------
     def parseLine(self, line) :
         '''
         Parse a single line.
@@ -973,7 +765,6 @@ class Parser :
         line = self.stripComments(line)
         if line != '':
             line = self.parseTags(line)
-            self.parseSpecialKeyword(line)
             if line != '':
                 if self.current is not None:
                     self.current.lines.append(Line(line, self.fileName, self.lineNumber))
@@ -999,7 +790,8 @@ class Parser :
 #-------------------------------------------------------------------------------
 class GLSLGenerator :
     '''
-    Generate vertex and fragment shader source code for GLSL dialects
+    Generate vertex and fragment shader source code for generic GLSL
+    as input to glslangValidator for SPIR-V generation.
     '''
     def __init__(self, shaderLib) :
         self.shaderLib = shaderLib
@@ -1011,63 +803,43 @@ class GLSLGenerator :
         return dstLines
 
     #---------------------------------------------------------------------------
-    def genUniforms(self, shd, slVersion, lines) :
+    def genUniforms(self, shd, lines) :
         # no GLSL uniform blocks
         for ub in shd.uniformBlocks :
+            lines.append(Line('uniform {} {{'.format(ub.name), ub.filePath, ub.lineNumber))
             for type in ub.uniformsByType :
                 for uniform in ub.uniformsByType[type] :
                     if uniform.num == 1 :
-                        lines.append(Line('uniform {} {};'.format(uniform.type, uniform.name), 
+                        lines.append(Line('    {} {};'.format(uniform.type, uniform.name), 
                             uniform.filePath, uniform.lineNumber))
                     else :
-                        lines.append(Line('uniform {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
+                        lines.append(Line('    {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
                             uniform.filePath, uniform.lineNumber))
+            lines.append(Line('};'));
         for tb in shd.textureBlocks :
+            lines.append(Line('uniform {} {{'.format(tb.name), tb.filePath, tb.lineNumber))
             for tex in tb.textures :
-                lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
+                lines.append(Line('    {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
+            lines.append(Line('};'))
         return lines 
 
     #---------------------------------------------------------------------------
-    def genVertexShaderSource(self, vs, slVersion) :
+    def genVertexShaderSource(self, vs) :
         lines = []
 
         # version tag
-        if slVersion == 'glsles3' :
-            lines.append(Line('#version 300 es'))
-        elif glslVersionNumber[slVersion] > 100 :
-            lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
-
-        # write compatibility macros
-        for macro in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(macro, slMacros[slVersion][macro])))
-
-        # precision modifiers 
-        # (NOTE: GLSL spec says that GL_FRAGMENT_PRECISION_HIGH is also avl. in vertex language)
-        if slVersion == 'glsl100' or slVersion == 'glsles3' :
-            if vs.highPrecision :
-                if slVersion == 'glsl100' :
-                    lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
-                for type in vs.highPrecision :
-                    lines.append(Line('precision highp {};'.format(type)))
-                if slVersion == 'glsl100' :
-                    lines.append(Line('#endif'))
+        lines.append(Line('#version 330'))
 
         # write uniform definition 
-        lines = self.genUniforms(vs, slVersion, lines)
+        lines = self.genUniforms(vs, lines)
 
         # write vertex shader inputs
         for input in vs.inputs :
-            if glslVersionNumber[slVersion] < 130 :
-                lines.append(Line('attribute {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-            else :
-                lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
+            lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
 
         # write vertex shader outputs
         for output in vs.outputs :
-            if glslVersionNumber[slVersion] < 130 :
-                lines.append(Line('varying {} {};'.format(output.type, output.name), output.filePath, output.lineNumber))
-            else :
-                lines.append(Line('out {} {};'.format(output.type, output.name), output.filePath, output.lineNumber))
+            lines.append(Line('out {} {};'.format(output.type, output.name), output.filePath, output.lineNumber))
 
         # write blocks the vs depends on
         for dep in vs.resolvedDeps :
@@ -1077,55 +849,30 @@ class GLSLGenerator :
         lines.append(Line('void main() {', vs.lines[0].path, vs.lines[0].lineNumber))
         lines = self.genLines(lines, vs.lines)
         lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
-        vs.generatedSource[slVersion] = lines
+        vs.generatedSource = lines
 
     #---------------------------------------------------------------------------
-    def genFragmentShaderSource(self, fs, slVersion) :
+    def genFragmentShaderSource(self, fs) :
         lines = []
 
         # version tag
-        if slVersion == 'glsles3' :
-            lines.append(Line('#version 300 es'))
-        elif glslVersionNumber[slVersion] > 100 :
-            lines.append(Line('#version {}'.format(glslVersionNumber[slVersion])))
-
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # precision modifiers
-        if slVersion == 'glsl100' or slVersion == 'glsles3' :
-            lines.append(Line('precision mediump float;'))
-            if fs.highPrecision :
-                if 'glsl100' == slVersion :
-                    lines.append(Line('#ifdef GL_FRAGMENT_PRECISION_HIGH'))
-                for type in fs.highPrecision :
-                    lines.append(Line('precision highp {};'.format(type)))
-                if 'glsl100' == slVersion :
-                    lines.append(Line('#endif'))
+        lines.append(Line('#version 330'))
 
         # write uniform definition
-        lines = self.genUniforms(fs, slVersion, lines)
+        lines = self.genUniforms(fs, lines)
 
         # write fragment shader inputs
         for input in fs.inputs :
-            if glslVersionNumber[slVersion] < 130 :
-                lines.append(Line('varying {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-            else :
-                lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
+            lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
 
         # write the fragcolor output
-        if glslVersionNumber[slVersion] >= 130 :
-            if glslVersionNumber[slVersion] >= 300 :
-                lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
-                if fs.hasColor1 :
-                    lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
-                if fs.hasColor2 :
-                    lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
-                if fs.hasColor3 :
-                    lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
-            else :
-                lines.append(Line('out vec4 _FragColor;'))
+        lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
+        #if fs.hasColor1 :
+        #    lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
+        #if fs.hasColor2 :
+        #    lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
+        #if fs.hasColor3 :
+        #    lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1135,424 +882,7 @@ class GLSLGenerator :
         lines.append(Line('void main() {', fs.lines[0].path, fs.lines[0].lineNumber))
         lines = self.genLines(lines, fs.lines)
         lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
-        fs.generatedSource[slVersion] = lines
-
-#-------------------------------------------------------------------------------
-class HLSLGenerator :
-    '''
-    Generate vertex and fragment shader source code for HLSL dialects
-    '''
-    def __init__(self, shaderLib) :
-        self.shaderLib = shaderLib
-
-    #---------------------------------------------------------------------------
-    def genLines(self, dstLines, srcLines) :
-        for srcLine in srcLines :
-            dstLines.append(srcLine)
-        return dstLines
-
-    #---------------------------------------------------------------------------
-    def genHeader(self, lines) :
-        lines.append(Line('#ifndef ORYOL_HLSL_TYPES'))
-        lines.append(Line('#define ORYOL_HLSL_TYPES'))
-        lines.append(Line('class _tex2d {'))
-        lines.append(Line('    Texture2D t;'))
-        lines.append(Line('    SamplerState s;'))
-        lines.append(Line('};'))
-        lines.append(Line('class _texcube {'))
-        lines.append(Line('    TextureCube t;'))
-        lines.append(Line('    SamplerState s;'))
-        lines.append(Line('};'))
-        lines.append(Line('class _tex3d {'))
-        lines.append(Line('    Texture3D t;'))
-        lines.append(Line('    SamplerState s;'))
-        lines.append(Line('};'))
-        lines.append(Line('class _tex2darray {'))
-        lines.append(Line('    Texture2DArray t;'))
-        lines.append(Line('    SamplerState s;'))
-        lines.append(Line('};'))
-        lines.append(Line('#define sampler2D _tex2d'))
-        lines.append(Line('#define samplerCube _texcube'))
-        lines.append(Line('#define sampler3D _tex3d'))
-        lines.append(Line('#define sampler2DArray _tx2darray'))
-        lines.append(Line('#endif'))
-        return lines
-
-    #---------------------------------------------------------------------------
-    def genUniforms(self, shd, lines) :
-       
-        # write textures
-        for tb in shd.textureBlocks :
-            for tex in tb.textures :
-                if tex.type == 'sampler2D':
-                    texType = 'Texture2D'
-                elif tex.type == 'sampler2DArray':
-                    texType = 'Texture2DArray'
-                elif tex.type == 'sampler3D':
-                    texType = 'Texture3D'
-                else :
-                    texType = 'TextureCube'
-                lines.append(Line('{} _t_{} : register(t{});'.format(texType, tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                lines.append(Line('SamplerState _s_{} : register(s{});'.format(tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-
-        # write uniform blocks
-        for uBlock in shd.uniformBlocks :
-            lines.append(Line('cbuffer {} : register(b{}) {{'.format(uBlock.name, uBlock.bindSlot), uBlock.filePath, uBlock.lineNumber))
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if uniform.num == 1 :
-                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), 
-                            uniform.filePath, uniform.lineNumber))
-                    else :
-                        lines.append(Line('  {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
-                            uniform.filePath, uniform.lineNumber))
-                    # pad vec3's to 16 bytes
-                    if type == 'vec3' :
-                        lines.append(Line('  float _pad_{};'.format(uniform.name)))
-            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
-        return lines
-     
-    #---------------------------------------------------------------------------
-    def genLocalTexObjects(self, shd, lines) :
-        for tb in shd.textureBlocks :
-            for tex in tb.textures :
-                if tex.type == 'sampler2D' :
-                    lines.append(Line('_tex2d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
-                        tex.name, tex.name, tex.name, tex.name, tex.name),
-                        tex.filePath, tex.lineNumber))
-                elif tex.type == 'samplerCube' :
-                    lines.append(Line('_texcube {}; {}.t=_t_{}; {}.s=_s_{};'.format(
-                        tex.name, tex.name, tex.name, tex.name, tex.name),
-                        tex.filePath, tex.lineNumber))
-                elif tex.type == 'sampler2DArray' :
-                    lines.append(Line('_tex2darray {}; {}.t=_t_{}; {}.s=_s_{};'.format(
-                        tex.name, tex.name, tex.name, tex.name, tex.name),
-                        tex.filePath, tex.lineNumber))
-                elif tex.type == 'sampler3D':
-                    lines.append(Line('_tex3d {}; {}.t=_t_{}; {}.s=_s_{};'.format(
-                        tex.name, tex.name, tex.name, tex.name, tex.name),
-                        tex.filePath, tex.lineNumber))
-        return lines
-
-    #---------------------------------------------------------------------------
-    def genVertexShaderSource(self, vs, slVersion) :
-        lines = []
-        
-        # write header source
-        lines = self.genHeader(lines)
-
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write uniform blocks as cbuffers
-        lines = self.genUniforms(vs, lines)
-
-        # write code blocks the vs depends on
-        for dep in vs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-    
-        # write the main() function
-        lines.append(Line('void main(', vs.lines[0].path, vs.lines[0].lineNumber))
-        for input in vs.inputs :
-            l = 'in {} {} : {},'.format(input.type, input.name, input.name)
-            lines.append(Line(l, input.filePath, input.lineNumber))
-        if vs.hasVertexId :
-            lines.append(Line('in uint _iVertexID : SV_VertexID,'))
-        if vs.hasInstanceId :
-            lines.append(Line('in uint _iInstanceID : SV_InstanceID,'))
-        for output in vs.outputs :
-            l = 'out {} {} : {},'.format(output.type, output.name, output.name)
-            lines.append(Line(l, output.filePath, output.lineNumber))
-        # NOTE: Point Size isn't actually supported in D3D11!
-        if vs.hasPointSize :
-            lines.append(Line('out float _oPointSize : PSIZE,'))
-        lines.append(Line('out vec4 _oPosition : SV_Position) {', vs.lines[0].path, vs.lines[0].lineNumber))
-        lines = self.genLocalTexObjects(vs, lines)
-        lines = self.genLines(lines, vs.lines)
-        lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
-        vs.generatedSource[slVersion] = lines
-
-    #---------------------------------------------------------------------------
-    def genFragmentShaderSource(self, fs, slVersion) :
-        lines = []
-
-        # write header source
-        lines = self.genHeader(lines)
-
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write uniform blocks as cbuffers
-        lines = self.genUniforms(fs, lines)
-
-        # write blocks the fs depends on
-        for dep in fs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-        
-        # write the main function
-        lines.append(Line('void main(', fs.lines[0].path, fs.lines[0].lineNumber))
-        for input in fs.inputs :
-            l = 'in {} {} : {},'.format(input.type, input.name, input.name)
-            lines.append(Line(l, input.filePath, input.lineNumber))
-        if fs.hasFragCoord:
-            lines.append(Line('in float4 _fragcoord : SV_Position,'))
-        if fs.hasColor1:
-            lines.append(Line('out vec4 _oColor1 : SV_Target1,'))
-        if fs.hasColor2:
-            lines.append(Line('out vec4 _oColor2 : SV_Target2,'))
-        if fs.hasColor3:
-            lines.append(Line('out vec4 _oColor3 : SV_Target3,'))
-        lines.append(Line('out vec4 _oColor : SV_Target) {', fs.lines[0].path, fs.lines[0].lineNumber))
-        lines = self.genLocalTexObjects(fs, lines)
-        lines = self.genLines(lines, fs.lines)
-        lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
-        fs.generatedSource[slVersion] = lines
-
-#-------------------------------------------------------------------------------
-class MetalGenerator :
-    '''
-    Generate vertex and fragment shader source code for Metal shader language
-    '''
-    def __init__(self, shaderLib) :
-        self.shaderLib = shaderLib
-
-    #---------------------------------------------------------------------------
-    def genLines(self, dstLines, srcLines) :
-        for srcLine in srcLines :
-            dstLines.append(srcLine)
-        return dstLines
-
-    #---------------------------------------------------------------------------
-    def genHeader(self, lines) :
-        # write general Metal declarations at top of shader
-        lines.append(Line('#ifndef _ORYOL_METAL_HEADER'))
-        lines.append(Line('#define _ORYOL_METAL_HEADER'))
-        lines.append(Line('#include <metal_stdlib>'))
-        lines.append(Line('#include <simd/simd.h>'))
-        lines.append(Line('using namespace metal;'))
-        lines.append(Line('template<typename TYPE> class _tex {'))
-        lines.append(Line('public:'))
-        lines.append(Line('    _tex(TYPE t_, sampler s_) : t(t_), s(s_) {};'))
-        lines.append(Line('    TYPE t;'))
-        lines.append(Line('    sampler s;'))
-        lines.append(Line('};'))
-        lines.append(Line('typedef _tex<texture2d<float,access::sample>> sampler2D;'))
-        lines.append(Line('typedef _tex<texturecube<float,access::sample>> samplerCube;'))
-        lines.append(Line('typedef _tex<texture3d<float,access::sample>> sampler3D;'))
-        lines.append(Line('typedef _tex<texture2d_array<float,access::sample>> sampler2DArray;'))
-        lines.append(Line('#endif'))
-        return lines
-
-    #---------------------------------------------------------------------------
-    def genUniforms(self, shd, lines) :
-        uniformDefs = {}
-        for uBlock in shd.uniformBlocks :
-            lines.append(Line('struct {}_{}_t {{'.format(shd.name, uBlock.name), uBlock.filePath, uBlock.lineNumber))
-            for type in uBlock.uniformsByType :
-                for uniform in uBlock.uniformsByType[type] :
-                    if uniform.num == 1 :
-                        lines.append(Line('  {} {};'.format(uniform.type, uniform.name), 
-                            uniform.filePath, uniform.lineNumber))
-                    else :
-                        lines.append(Line('  {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
-                            uniform.filePath, uniform.lineNumber))
-                    uniformDefs[uniform.name] = '{}.{}'.format(uBlock.name, uniform.name)
-            lines.append(Line('};', uBlock.filePath, uBlock.lineNumber))
-        return lines, uniformDefs
-
-    #---------------------------------------------------------------------------
-    def genFuncArgs(self, shd, lines) :
-        for uBlock in shd.uniformBlocks :
-            lines.append(Line('constant {}_{}_t& {} [[buffer({})]],'.format(shd.name, uBlock.name, uBlock.name, uBlock.bindSlot)))
-        for tb in shd.textureBlocks :
-            for tex in tb.textures :
-                if tex.type == 'sampler2D' :
-                    lines.append(Line('texture2d<float,access::sample> _t_{} [[texture({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                elif tex.type == 'samplerCube' :
-                    lines.append(Line('texturecube<float,access::sample> _t_{} [[texture({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                elif tex.type == 'sampler3D' :
-                    lines.append(Line('texture3d<float,access::sample> _t_{} [[texture({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                elif tex.type == 'sampler2DArray' :
-                    lines.append(Line('texture2d_array<float,access::sample> _t_{} [[texture({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-                    lines.append(Line('sampler _s_{} [[sampler({})]],'.format(
-                        tex.name, tex.bindSlot), tex.filePath, tex.lineNumber))
-        if shd.hasVertexId :
-            lines.append(Line('uint vs_vertexid [[vertex_id]],'))
-        if shd.hasInstanceId :
-            lines.append(Line('uint vs_instanceid [[instance_id]],'))
-        return lines
-
-    #---------------------------------------------------------------------------
-    def genLocalTexObjects(self, shd, lines) :
-        for tb in shd.textureBlocks :
-            for tex in tb.textures :
-                if tex.type == 'sampler2D' :
-                    lines.append(Line('sampler2D {}(_t_{},_s_{});'.format(
-                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
-                elif tex.type == 'samplerCube' :
-                    lines.append(Line('samplerCube {}(_t_{},_s_{});'.format(
-                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
-                elif tex.type == 'sampler3D' :
-                    lines.append(Line('sampler3D {}(_t_{},_s_{});'.format(
-                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
-                elif tex.type == 'sampler2DArray' :
-                    lines.append(Line('sampler2DArray {}(_t_{},_s_{});'.format(
-                        tex.name, tex.name, tex.name), tex.filePath, tex.lineNumber))
-        return lines
-
-    #---------------------------------------------------------------------------
-    def genVertexShaderSource(self, vs, slVersion) :
-        lines = []
-
-        lines = self.genHeader(lines)
-
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write uniform blocks as cbuffers
-        lines, uniformDefs = self.genUniforms(vs, lines)
-
-        # write blocks the vs depends on
-        # (Metal specific: protect against multiple inclusion)
-        for dep in vs.resolvedDeps :
-            guard = '_ORYOL_BLOCK_{}'.format(self.shaderLib.codeBlocks[dep].name)
-            lines.append(Line('#ifndef {}'.format(guard)))
-            lines.append(Line('#define {}'.format(guard)))
-            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-            lines.append(Line('#endif'))
-   
-        # write vertex shader input attributes
-        vertex_attrs = {
-            'position':     0,
-            'normal':       1,
-            'texcoord0':    2,
-            'texcoord1':    3,
-            'texcoord2':    4,
-            'texcoord3':    5,
-            'tangent':      6,
-            'binormal':     7,
-            'weights':      8,
-            'indices':      9,
-            'color0':       10,
-            'color1':       11,
-            'instance0':    12,
-            'instance1':    13,
-            'instance2':    14,
-            'instance3':    15
-        }
-
-        # write vertex shader in/out structs
-        lines.append(Line('struct {}_vs_in_t {{'.format(vs.name)))
-        for input in vs.inputs :
-            l = '    {} _vi_{} [[ attribute({}) ]];'.format(input.type, input.name, vertex_attrs[input.name])
-            lines.append(Line(l, input.filePath, input.lineNumber))
-        lines.append(Line('};'))
-        lines.append(Line('struct {}_vs_out_t {{'.format(vs.name)))
-        lines.append(Line('    float4 _vofi_position [[position]];'))
-        if vs.hasPointSize :
-            lines.append(Line('    float _vofi_pointsize [[point_size]];'))
-        for output in vs.outputs :
-            lines.append(Line('    {} _vofi_{};'.format(output.type, output.name), output.filePath, output.lineNumber))
-        lines.append(Line('};'))
-
-        # write the main() function
-        for input in vs.inputs :
-            l = '#define {} vs_in._vi_{}'.format(input.name, input.name)
-            lines.append(Line(l, input.filePath, input.lineNumber))
-        for output in vs.outputs :
-            l = '#define {} vs_out._vofi_{}'.format(output.name, output.name)
-            lines.append(Line(l, output.filePath, output.lineNumber))
-        for uniformDef in uniformDefs :
-            lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
-
-        lines.append(Line('vertex {}_vs_out_t {}('.format(vs.name, vs.name), vs.lines[0].path, vs.lines[0].lineNumber))
-        lines = self.genFuncArgs(vs, lines)
-        lines.append(Line('{}_vs_in_t vs_in [[stage_in]]) {{'.format(vs.name)))
-        lines.append(Line('{}_vs_out_t vs_out;'.format(vs.name)))
-        lines = self.genLocalTexObjects(vs, lines)
-        lines = self.genLines(lines, vs.lines)
-        lines.append(Line('return vs_out;', vs.lines[-1].path, vs.lines[-1].lineNumber))
-        lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
-        for input in vs.inputs :
-            lines.append(Line('#undef {}'.format(input.name), input.filePath, input.lineNumber))
-        for output in vs.outputs :
-            lines.append(Line('#undef {}'.format(output.name), output.filePath, output.lineNumber))
-        for uniformDef in uniformDefs :
-            lines.append(Line('#undef {}'.format(uniformDef)))
-        vs.generatedSource[slVersion] = lines
-
-    #---------------------------------------------------------------------------
-    def genFragmentShaderSource(self, fs, slVersion) :
-        lines = []
-
-        lines = self.genHeader(lines)
-        
-        # write compatibility macros
-        for func in slMacros[slVersion] :
-            lines.append(Line('#define {} {}'.format(func, slMacros[slVersion][func])))
-
-        # write uniform blocks as cbuffers
-        lines, uniformDefs = self.genUniforms(fs, lines)
-
-        # write blocks the fs depends on
-        for dep in fs.resolvedDeps :
-            guard = '{}_INCLUDED'.format(self.shaderLib.codeBlocks[dep].name)
-            lines.append(Line('#ifndef {}'.format(guard)))
-            lines.append(Line('#define {}'.format(guard)))
-            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-            lines.append(Line('#endif'))
-
-        # write fragment shader input structure
-        lines.append(Line('struct {}_fs_in_t {{'.format(fs.name)))
-        for input in fs.inputs :
-            lines.append(Line('    {} _vofi_{};'.format(input.type, input.name), input.filePath, input.lineNumber))
-        lines.append(Line('};'))
-
-        # write output struct
-        lines.append(Line('struct {}_fs_out_t {{'.format(fs.name)))
-        lines.append(Line('    float4 color0 [[color(0)]];'))
-        if fs.hasColor1:
-            lines.append(Line('    float4 color1 [[color(1)]];'))
-        if fs.hasColor2:
-            lines.append(Line('    float4 color2 [[color(2)]];'))
-        if fs.hasColor3:
-            lines.append(Line('    float4 color3 [[color(3)]];'))
-        lines.append(Line('};'))
-
-        # write the main function
-        for input in fs.inputs :
-            l = '#define {} fs_in._vofi_{}'.format(input.name, input.name)
-            lines.append(Line(l, input.filePath, input.lineNumber))
-        for uniformDef in uniformDefs :
-            lines.append(Line('#define {} {}'.format(uniformDef, uniformDefs[uniformDef])))
-        lines.append(Line('fragment {}_fs_out_t {}('.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
-        lines = self.genFuncArgs(fs, lines)
-        if fs.hasFragCoord:
-            lines.append(Line('float4 _fragcoord [[position]],'))
-        lines.append(Line('{}_fs_in_t fs_in [[stage_in]]) {{'.format(fs.name, fs.name), fs.lines[0].path, fs.lines[0].lineNumber))
-        lines.append(Line('{}_fs_out_t _fo_color;'.format(fs.name)))
-        lines = self.genLocalTexObjects(fs, lines)
-        lines = self.genLines(lines, fs.lines)
-        lines.append(Line('return _fo_color;', fs.lines[-1].path, fs.lines[-1].lineNumber))
-        lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
-        for input in fs.inputs :
-            lines.append(Line('#undef {}'.format(input.name), input.filePath, input.lineNumber))
-        for uniformDef in uniformDefs :
-            lines.append(Line('#undef {}'.format(uniformDef)))
-        fs.generatedSource[slVersion] = lines
+        fs.generatedSource = lines
 
 #-------------------------------------------------------------------------------
 class ShaderLibrary :
@@ -1775,87 +1105,24 @@ class ShaderLibrary :
         for all GLSL versions.
         '''
         gen = GLSLGenerator(self)
-        for slVersion in slVersions :
-            if isGLSL[slVersion] :
-                for vs in self.vertexShaders.values() :
-                    gen.genVertexShaderSource(vs, slVersion)
-                for fs in self.fragmentShaders.values() :
-                    gen.genFragmentShaderSource(fs, slVersion)
+        for vs in self.vertexShaders.values() :
+            gen.genVertexShaderSource(vs)
+        for fs in self.fragmentShaders.values() :
+            gen.genFragmentShaderSource(fs)
 
-    def generateShaderSourcesHLSL(self) :
-        '''
-        Generates vertex- and fragment-shader source for HLSL
-        '''
-        gen = HLSLGenerator(self)
-        for slVersion in slVersions :
-            if isHLSL[slVersion] :
-                for vs in self.vertexShaders.values() :
-                    gen.genVertexShaderSource(vs, slVersion)
-                for fs in self.fragmentShaders.values() :
-                    gen.genFragmentShaderSource(fs, slVersion)
-
-    def generateShaderSourcesMetal(self) :
-        '''
-        Generates vertex- and fragment shader source for Metal
-        '''
-        gen = MetalGenerator(self)
-        for slVersion in slVersions :
-            if isMetal[slVersion] :
-                for vs in self.vertexShaders.values() :
-                    gen.genVertexShaderSource(vs, slVersion)
-                for fs in self.fragmentShaders.values() :
-                    gen.genFragmentShaderSource(fs, slVersion)
-
-    def validateShadersGLSL(self) :
+    def validateShadersGLSL(self, out_hdr, args) :
         '''
         Run the shader sources through the GLSL reference compiler
         '''
-        for slVersion in slVersions :
-            if isGLSL[slVersion] :
-                for vs in self.vertexShaders.values() :
-                    srcLines = vs.generatedSource[slVersion]
-                    glslcompiler.validate(srcLines, 'vs', slVersion)
-                for fs in self.fragmentShaders.values() :
-                    srcLines = fs.generatedSource[slVersion]
-                    glslcompiler.validate(srcLines, 'fs', slVersion)
-
-    def validateAndWriteShadersHLSL(self, absHdrPath, args) :
-        '''
-        Run the shader sources through the HLSL compiler,
-        and let HLSL compiler generate shader byte code in header file
-        '''
-        rootPath = os.path.splitext(absHdrPath)[0]
-        for slVersion in slVersions :
-            if isHLSL[slVersion] :
-                for vs in self.vertexShaders.values() :
-                    srcLines = vs.generatedSource[slVersion]
-                    cName = vs.name + '_' + slVersion + '_src'
-                    outPath = rootPath + '_' + cName + '.h'
-                    hlslcompiler.validate(srcLines, 'vs', slVersion, outPath, cName, args)
-                for fs in self.fragmentShaders.values() :
-                    srcLines = fs.generatedSource[slVersion]
-                    cName = fs.name + '_' + slVersion + '_src'
-                    outPath = rootPath + '_' + cName + '.h'
-                    hlslcompiler.validate(srcLines, 'fs', slVersion, outPath, cName, args)
-
-    def validateAndWriteShadersMetal(self, absHdrPath) :
-        '''
-        Bundles all vertex- and fragment-shaders into a single metal source
-        file, compiles this into a binary library files which is 
-        written into a C header file as embedded byte code.
-        '''
-        srcLines = []
-        rootPath = os.path.splitext(absHdrPath)[0]
-        for slVersion in slVersions :
-            if isMetal[slVersion] :
-                for vs in self.vertexShaders.values() :
-                    srcLines.extend(vs.generatedSource[slVersion])
-                for fs in self.fragmentShaders.values() :
-                    srcLines.extend(fs.generatedSource[slVersion])
-            if len(srcLines) > 0 :
-                outPath = rootPath + '.h'
-                cName = slVersion + '_lib'
-                metalcompiler.validate(util.getEnv('target_platform'), srcLines, outPath, cName)
+        # generate a base name for the intermediate shader source
+        base_path = os.path.splitext(out_hdr)[0]
+        base_path += '_glsl'
+        for vs in self.vertexShaders.values() :
+            vs_base_path = base_path + '_vs'
+            glslcompiler.validate(vs.generatedSource, 'vs', vs_base_path, args)
+        for fs in self.fragmentShaders.values() :
+            fs_base_path = base_path + '_fs'
+            glslcompiler.validate(fs.generatedSource, 'fs', fs_base_path, args)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -2088,13 +1355,11 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.validate()
         shaderLibrary.generateShaderSourcesGLSL()
-        shaderLibrary.generateShaderSourcesHLSL()
-        shaderLibrary.generateShaderSourcesMetal()
-        shaderLibrary.validateShadersGLSL()
-        if platform.system() == 'Windows' :
-            shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
-        if platform.system() == 'Darwin' :
-            shaderLibrary.validateAndWriteShadersMetal(out_hdr)
+        shaderLibrary.validateShadersGLSL(out_hdr, args)
+#        if platform.system() == 'Windows' :
+#            shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
+#        if platform.system() == 'Darwin' :
+#            shaderLibrary.validateAndWriteShadersMetal(out_hdr)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
 

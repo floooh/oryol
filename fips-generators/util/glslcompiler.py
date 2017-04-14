@@ -56,16 +56,13 @@ def parseOutput(output, lines) :
             hasError = True
 
             # extract generated shader source column, line and message
-            colStartIndex = 7
-            colEndIndex = outLine.find(':', colStartIndex)
-            if colEndIndex == -1 :
+            lineStartIndex = outLine.find(':', 6) + 1
+            if lineStartIndex == 0:
                 continue
-            lineStartIndex = colEndIndex + 1
             lineEndIndex = outLine.find(':', lineStartIndex)
             if lineEndIndex == -1 :
                 continue
             msgStartIndex = lineEndIndex + 1
-            colNr = int(outLine[colStartIndex:colEndIndex])
             lineNr = int(outLine[lineStartIndex:lineEndIndex])
             msg = outLine[msgStartIndex:]
 
@@ -85,7 +82,7 @@ def parseOutput(output, lines) :
             print(line.content)
         sys.exit(10) 
 
-def validate(lines, type, glslVersion) :
+def validate(lines, type, base_path, args) :
     '''
     Validate a vertex-/fragment-shader pair for a given glsl version.
     '''
@@ -93,14 +90,13 @@ def validate(lines, type, glslVersion) :
         'vs': '.vert',
         'fs': '.frag'
     }
-    f = tempfile.NamedTemporaryFile(suffix=ext[type], delete=False)
-    writeFile(f, lines)
-    f.close()
-
+    src_path = base_path + ext[type]
+    dst_path = base_path + '.spv'
+    with open(src_path, 'w') as f:
+        writeFile(f, lines)
     toolPath = getToolsBinPath() + 'glslangValidator'
-    cmd = [toolPath, f.name]
+    cmd = [toolPath, '-G', '-o', dst_path, src_path]
     output = callValidator(cmd)
-    os.unlink(f.name)
     parseOutput(output, lines)
 
 
