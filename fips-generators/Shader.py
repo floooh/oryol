@@ -4,15 +4,11 @@ Code generator for shader libraries.
 
 Version = 86
 
-import os
-import sys
-import glob
-import re
-import platform
+import os, sys, glob, re, platform
 from pprint import pprint
 from collections import OrderedDict
 import genutil as util
-from util import glslcompiler
+from util import glslcompiler, spirvcross
 import zlib # only for crc32
 
 if platform.system() == 'Windows' :
@@ -817,10 +813,8 @@ class GLSLGenerator :
                             uniform.filePath, uniform.lineNumber))
             lines.append(Line('};'));
         for tb in shd.textureBlocks :
-            lines.append(Line('uniform {} {{'.format(tb.name), tb.filePath, tb.lineNumber))
             for tex in tb.textures :
-                lines.append(Line('    {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
-            lines.append(Line('};'))
+                lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
         return lines 
 
     #---------------------------------------------------------------------------
@@ -866,7 +860,7 @@ class GLSLGenerator :
             lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
 
         # write the fragcolor output
-        lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
+        # lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
         #if fs.hasColor1 :
         #    lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
         #if fs.hasColor2 :
@@ -1110,19 +1104,21 @@ class ShaderLibrary :
         for fs in self.fragmentShaders.values() :
             gen.genFragmentShaderSource(fs)
 
-    def validateShadersGLSL(self, out_hdr, args) :
+    def compile(self, out_hdr, args) :
         '''
         Run the shader sources through the GLSL reference compiler
+        to compile to SPIR-V
         '''
         # generate a base name for the intermediate shader source
         base_path = os.path.splitext(out_hdr)[0]
-        base_path += '_glsl'
         for vs in self.vertexShaders.values() :
-            vs_base_path = base_path + '_vs'
-            glslcompiler.validate(vs.generatedSource, 'vs', vs_base_path, args)
+            vs_base_path = base_path + '_' + vs.name
+            glslcompiler.compile(vs.generatedSource, 'vs', vs_base_path, args)
+            spirvcross.compile(vs_base_path, args)
         for fs in self.fragmentShaders.values() :
-            fs_base_path = base_path + '_fs'
-            glslcompiler.validate(fs.generatedSource, 'fs', fs_base_path, args)
+            fs_base_path = base_path + '_' + fs.name
+            glslcompiler.compile(fs.generatedSource, 'fs', fs_base_path, args)
+            spirvcross.compile(fs_base_path, args)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -1355,11 +1351,11 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.validate()
         shaderLibrary.generateShaderSourcesGLSL()
-        shaderLibrary.validateShadersGLSL(out_hdr, args)
+        shaderLibrary.compile(out_hdr, args)
 #        if platform.system() == 'Windows' :
 #            shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
 #        if platform.system() == 'Darwin' :
 #            shaderLibrary.validateAndWriteShadersMetal(out_hdr)
-        generateSource(out_src, shaderLibrary)
-        generateHeader(out_hdr, shaderLibrary)
+#        generateSource(out_src, shaderLibrary)
+#        generateHeader(out_hdr, shaderLibrary)
 

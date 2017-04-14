@@ -34,7 +34,7 @@ sampler2D tex Texture
 @use_texture_block textures
 @in vec2 uv
 @in vec4 color
-    _color = tex2D(tex, uv).xxxx * color;
+    gl_FragColor = texture(tex, uv).xxxx * color;
 @end
 
 @program DbgTextShader vsDbgText fsDbgText

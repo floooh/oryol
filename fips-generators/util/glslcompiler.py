@@ -2,14 +2,10 @@
 Simple python wrapper for the GLSL reference compiler.
 '''
 
-import subprocess
-import tempfile
-import platform
-import os
-import sys
+import subprocess, platform, os, sys
 import genutil as util
 
-def getToolsBinPath() :
+def getToolPath() :
     path = os.path.dirname(os.path.abspath(__file__))
     if platform.system() == 'Windows' :
         path += '/../../tools/win32/'
@@ -22,19 +18,13 @@ def getToolsBinPath() :
             path +=  '/../../tools/linux/'
     else :
         error("Unknown host system {}".format(platform.system()))
-    return path;
+    return path + 'glslangValidator'
 
 def writeFile(f, lines) :
-    '''
-    Write an array of lines to a file.
-    '''
     for line in lines :
         f.write(str.encode(line.content + '\n'))
 
-def callValidator(cmd) :
-    ''' 
-    call the GLSL reference compiler and return its output
-    '''
+def call(cmd) :
     child = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out = ''
     while True :
@@ -82,10 +72,8 @@ def parseOutput(output, lines) :
             print(line.content)
         sys.exit(10) 
 
-def validate(lines, type, base_path, args) :
-    '''
-    Validate a vertex-/fragment-shader pair for a given glsl version.
-    '''
+def compile(lines, type, base_path, args) :
+    # compile GLSL source file to SPIR-V
     ext = {
         'vs': '.vert',
         'fs': '.frag'
@@ -94,9 +82,8 @@ def validate(lines, type, base_path, args) :
     dst_path = base_path + '.spv'
     with open(src_path, 'w') as f:
         writeFile(f, lines)
-    toolPath = getToolsBinPath() + 'glslangValidator'
-    cmd = [toolPath, '-G', '-o', dst_path, src_path]
-    output = callValidator(cmd)
+    cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
+    output = call(cmd)
     parseOutput(output, lines)
 
 
