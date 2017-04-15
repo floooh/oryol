@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 86
+Version = 90
 
 import os, sys, glob, re, platform
 from pprint import pprint
@@ -860,13 +860,10 @@ class GLSLGenerator :
             lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
 
         # write the fragcolor output
-        # lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
-        #if fs.hasColor1 :
-        #    lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
-        #if fs.hasColor2 :
-        #    lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
-        #if fs.hasColor3 :
-        #    lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
+#        lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
+#        lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
+#        lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
+#        lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1109,7 +1106,8 @@ class ShaderLibrary :
         glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, args)
         spirvcross.compile(shd_base_path, args)
         if platform.system() == 'Darwin':
-            metalcompiler.compile(shd.generatedSource, shd_base_path, args)
+            c_name = '{}_{}_{}'.format(shd.name, shd_type, 'metallib')
+            metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
 
     def compile(self, out_hdr, args) :
         base_path = os.path.splitext(out_hdr)[0]
@@ -1214,12 +1212,16 @@ def writeSourceBottom(f, shdLib) :
 #-------------------------------------------------------------------------------
 def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
     # note: shd is either a VertexShader or FragmentShader object
+    base_path = os.path.splitext(absPath)[0] + '_' + shd.name
     if isGLSL[slVersion] :
         # GLSL source code is directly inlined for runtime-compilation
         f.write('#if ORYOL_OPENGL\n')
         f.write('static const char* {}_{}_src = \n'.format(shd.name, slVersion))
-        for line in shd.generatedSource[slVersion] :
-            f.write('"{}\\n"\n'.format(line.content))
+        glsl_src_path = '{}.{}.glsl'.format(base_path, slVersion)
+        with open(glsl_src_path, 'r') as rf:
+            lines = rf.read().splitlines()
+            for line in lines:
+                f.write('"{}\\n"\n'.format(line))
         f.write(';\n')
         f.write('#endif\n')
     elif isHLSL[slVersion] :
@@ -1228,24 +1230,31 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         # human-readable version
         f.write('#if ORYOL_D3D11\n')
         f.write('/*\n')
-        f.write('{}_{}_src: \n\n'.format(shd.name, slVersion))
-        for line in shd.generatedSource[slVersion] :
-            f.write('{}\n'.format(line.content))
+        hlsl_src_path = base_path + '.hlsl'
+        with open(hlsl_src_path, 'r') as rf:
+            lines = rf.read().splitlines()
+            for line in lines:
+                line = line.replace('/*', '__').replace('*/', '__')
+                f.write('"{}\\n"\n'.format(line))
         f.write('*/\n')
         rootPath = os.path.splitext(absPath)[0]
-        f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
+        # f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
+        f.write('#error "FIXME"\n')
         f.write('#endif\n')
     elif isMetal[slVersion] :
         # for Metal, the shader has been compiled into a binary shader
         # library file, which needs to be embedded into the C header
         f.write('#if ORYOL_METAL\n')
         f.write('/*\n')
-        f.write("Metal source for '{}'\n".format(shd.name))
-        for line in shd.generatedSource[slVersion] :
-            f.write('{}\n'.format(line.content))
+        metal_src_path = base_path + '.metal'
+        metal_bin_path = base_path + '.metallib.h'
+        with open(metal_src_path, 'r') as rf:
+            lines = rf.read().splitlines()
+            for line in lines:
+                line = line.replace('/*', '__').replace('*/', '__')
+                f.write('"{}\\n"\n'.format(line))
         f.write('*/\n')
-        rootPath = os.path.splitext(absPath)[0]
-        f.write('#include "{}.metallib.h"\n'.format(rootPath))
+        f.write('#include "{}"\n'.format(metal_bin_path))
         f.write('#endif\n')
     else :
         util.fmtError("Invalid shader language id")
@@ -1281,7 +1290,6 @@ def writeProgramSource(f, shdLib, prog) :
             f.write('    #if ORYOL_D3D11\n')
         elif isMetal[slVersion] :
             f.write('    #if ORYOL_METAL\n')
-            f.write('    setup.SetLibraryByteCode({}, metal_lib, sizeof(metal_lib));\n'.format(slangType))
         vsSource = '{}_{}_src'.format(vsName, slVersion)
         fsSource = '{}_{}_src'.format(fsName, slVersion)
         if isGLSL[slVersion] :
@@ -1291,8 +1299,10 @@ def writeProgramSource(f, shdLib, prog) :
             f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                 slangType, vsSource, vsSource, fsSource, fsSource))
         elif isMetal[slVersion] :
-            f.write('    setup.SetProgramFromLibrary({}, "{}", "{}");\n'.format(
-                slangType, vsName, fsName))
+            vs_c_name = '{}_vs_metallib'.format(vs.name)
+            fs_c_name = '{}_fs_metallib'.format(fs.name)
+            f.write('    setup.SetProgramFromLibraries({}, {}, sizeof({}), "main0", {}, sizeof({}), "main0");\n'.format(
+                slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
         f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
         f.write('    #endif\n');
 
@@ -1350,10 +1360,6 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary.validate()
         shaderLibrary.generateShaderSourcesGLSL()
         shaderLibrary.compile(out_hdr, args)
-#        if platform.system() == 'Windows' :
-#            shaderLibrary.validateAndWriteShadersHLSL(out_hdr, args)
-#        if platform.system() == 'Darwin' :
-#            shaderLibrary.validateAndWriteShadersMetal(out_hdr)
-#        generateSource(out_src, shaderLibrary)
-#        generateHeader(out_hdr, shaderLibrary)
+        generateSource(out_src, shaderLibrary)
+        generateHeader(out_hdr, shaderLibrary)
 

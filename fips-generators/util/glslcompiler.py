@@ -57,7 +57,10 @@ def parseOutput(output, lines) :
             if lineEndIndex == -1 :
                 continue
             msgStartIndex = lineEndIndex + 1
-            lineNr = int(outLine[lineStartIndex:lineEndIndex])
+            try:
+                lineNr = int(outLine[lineStartIndex:lineEndIndex])
+            except ValueError:
+                continue
             msg = outLine[msgStartIndex:]
 
             # map to original location

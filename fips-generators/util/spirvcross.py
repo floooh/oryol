@@ -24,22 +24,22 @@ def compile(base_path, args):
     tool = getToolPath()
 
     # GLSL ES 100
-    dst_path = base_path + '.es100.glsl'
+    dst_path = base_path + '.glsl100.glsl'
     cmd = [ tool, '--output', dst_path, src_path, '--es', '--version', '100' ]
     subprocess.call(cmd)    
 
     # GLSL ES 300
-    dst_path = base_path + '.es300.glsl'
+    dst_path = base_path + '.glsles3.glsl'
     cmd = [ tool, '--output', dst_path, src_path, '--es', '--version', '300']
     subprocess.call(cmd)
 
     # GLSL 120
-    dst_path = base_path + '.gl120.glsl'
+    dst_path = base_path + '.glsl120.glsl'
     cmd = [ tool, '--output', dst_path, src_path, '--version', '120']
     subprocess.call(cmd)
 
     # GLSL 330
-    dst_path = base_path + '.gl330.glsl'
+    dst_path = base_path + '.glsl330.glsl'
     cmd = [ tool, '--output', dst_path, src_path, '--version', '330']
     subprocess.call(cmd)
 

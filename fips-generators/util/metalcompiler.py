@@ -152,7 +152,7 @@ def writeBinHeader(in_bin, out_hdr, c_name) :
         out_file.write('\n};\n')
 
 #-------------------------------------------------------------------------------
-def compile(lines, base_path, args) :
+def compile(lines, base_path, c_name, args) :
    
     platform = util.getEnv('target_platform')
     if platform != 'ios' and platform != 'osx' :
@@ -182,5 +182,5 @@ def compile(lines, base_path, args) :
     parseOutput(output, lines)
     output += ar(platform, metal_air_path, metal_lib_path)
     output += link(platform, metal_lib_path, metal_bin_path)
-    writeBinHeader(metal_bin_path, c_header_path, 'metallib')
+    writeBinHeader(metal_bin_path, c_header_path, c_name)
 

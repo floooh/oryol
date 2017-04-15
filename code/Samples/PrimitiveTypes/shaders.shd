@@ -8,14 +8,14 @@ float psize PointSize
 @in vec4 position
 @in vec4 color0
 @out vec4 color
-    _position = mul(mvp, position);
-    _pointsize = psize;
+    gl_Position = mvp * position;
+    gl_PointSize = psize;
     color = color0;
 @end
 
 @fs fs
 @in vec4 color
-    _color = color;
+    gl_FragColor = color;
 @end
 
 @program Shader vs fs

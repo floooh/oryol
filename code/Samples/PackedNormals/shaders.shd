@@ -12,13 +12,13 @@ mat4 mvp ModelViewProjection
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
-    _position = mul(mvp, position);
+    gl_Position = mvp * position;
     nrm = normal;
 @end
 
 @fs fs
 @in vec4 nrm
-    _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
+    gl_FragColor = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
 @end
 
 @program Shader vs fs
