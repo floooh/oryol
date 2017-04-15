@@ -5,6 +5,7 @@ Simple python wrapper for the GLSL reference compiler.
 import subprocess, platform, os, sys
 import genutil as util
 
+#-------------------------------------------------------------------------------
 def getToolPath() :
     path = os.path.dirname(os.path.abspath(__file__))
     if platform.system() == 'Windows' :
@@ -20,10 +21,12 @@ def getToolPath() :
         error("Unknown host system {}".format(platform.system()))
     return path + 'glslangValidator'
 
+#-------------------------------------------------------------------------------
 def writeFile(f, lines) :
     for line in lines :
         f.write(str.encode(line.content + '\n'))
 
+#-------------------------------------------------------------------------------
 def call(cmd) :
     child = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out = ''
@@ -33,6 +36,7 @@ def call(cmd) :
             break
     return out
 
+#-------------------------------------------------------------------------------
 def parseOutput(output, lines) :
     '''
     Parse error output lines from the GLSL reference compiler,
@@ -72,6 +76,7 @@ def parseOutput(output, lines) :
             print(line.content)
         sys.exit(10) 
 
+#-------------------------------------------------------------------------------
 def compile(lines, type, base_path, args) :
     # compile GLSL source file to SPIR-V
     ext = {

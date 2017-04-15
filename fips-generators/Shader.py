@@ -1104,21 +1104,19 @@ class ShaderLibrary :
         for fs in self.fragmentShaders.values() :
             gen.genFragmentShaderSource(fs)
 
+    def compile_shader(self, shd, shd_type, base_path, args):
+        shd_base_path = base_path + '_' + shd.name
+        glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, args)
+        spirvcross.compile(shd_base_path, args)
+        if platform.system() == 'Darwin':
+            metalcompiler.compile(shd.generatedSource, shd_base_path, args)
+
     def compile(self, out_hdr, args) :
-        '''
-        Run the shader sources through the GLSL reference compiler
-        to compile to SPIR-V
-        '''
-        # generate a base name for the intermediate shader source
         base_path = os.path.splitext(out_hdr)[0]
-        for vs in self.vertexShaders.values() :
-            vs_base_path = base_path + '_' + vs.name
-            glslcompiler.compile(vs.generatedSource, 'vs', vs_base_path, args)
-            spirvcross.compile(vs_base_path, args)
-        for fs in self.fragmentShaders.values() :
-            fs_base_path = base_path + '_' + fs.name
-            glslcompiler.compile(fs.generatedSource, 'fs', fs_base_path, args)
-            spirvcross.compile(fs_base_path, args)
+        for vs in self.vertexShaders.values():
+            self.compile_shader(vs, 'vs', base_path, args)
+        for fs in self.fragmentShaders.values():
+            self.compile_shader(fs, 'fs', base_path, args)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :

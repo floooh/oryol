@@ -44,7 +44,7 @@ def compile(base_path, args):
     subprocess.call(cmd)
 
     # MetalSL
-    dst_path = base_path + '.msl'
+    dst_path = base_path + '.metal'
     cmd = [ tool, '--output', dst_path, src_path, '--msl']
     subprocess.call(cmd)
 
