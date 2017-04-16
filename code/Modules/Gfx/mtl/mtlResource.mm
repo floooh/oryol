@@ -65,7 +65,8 @@ mtlShader::mtlShader() {
 //------------------------------------------------------------------------------
 mtlShader::~mtlShader() {
 #if ORYOL_DEBUG
-    o_assert_dbg(nil == this->mtlLibrary);
+    o_assert_dbg(nil == this->mtlVertexShaderLibrary);
+    o_assert_dbg(nil == this->mtlFragmentShaderLibrary);
     o_assert_dbg(nil == this->mtlVertexShader);
     o_assert_dbg(nil == this->mtlFragmentShader);
 #endif
@@ -74,7 +75,8 @@ mtlShader::~mtlShader() {
 //------------------------------------------------------------------------------
 void
 mtlShader::Clear() {
-    this->mtlLibrary = nil;
+    this->mtlVertexShaderLibrary = nil;
+    this->mtlFragmentShaderLibrary = nil;
     this->mtlVertexShader = nil;
     this->mtlFragmentShader = nil;
     shaderBase::Clear();

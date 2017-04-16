@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 90
+Version = 91
 
 import os, sys, glob, re, platform
 from pprint import pprint
@@ -1301,7 +1301,7 @@ def writeProgramSource(f, shdLib, prog) :
         elif isMetal[slVersion] :
             vs_c_name = '{}_vs_metallib'.format(vs.name)
             fs_c_name = '{}_fs_metallib'.format(fs.name)
-            f.write('    setup.SetProgramFromLibraries({}, {}, sizeof({}), "main0", {}, sizeof({}), "main0");\n'.format(
+            f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}), "main0", "main0");\n'.format(
                 slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
         f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
         f.write('    #endif\n');

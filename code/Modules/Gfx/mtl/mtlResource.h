@@ -74,7 +74,8 @@ public:
     /// clear the object
     void Clear();
 
-    ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlLibrary;
+    ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlVertexShaderLibrary;
+    ORYOL_OBJC_TYPED_ID(MTLLibrary) mtlFragmentShaderLibrary;
     ORYOL_OBJC_TYPED_ID(MTLFunction) mtlVertexShader;
     ORYOL_OBJC_TYPED_ID(MTLFunction) mtlFragmentShader;
 };

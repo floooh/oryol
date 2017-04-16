@@ -1429,19 +1429,13 @@ public:
     /// set shader program from vertex- and fragment-shader sources
     void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// set shader program from precompiled shader byte code
-    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes);
-    /// set shader program from a metal-style shader library
-    void SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc);
+    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc=nullptr, const char* fsFunc=nullptr);
     /// set vertex shader input layout
     void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
     void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture block
     void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage);
-    /// set metal-style library byte code
-    void SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes);
-    /// get metal-style library byte code
-    void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
     /// get the vertex shader input layout
     const VertexLayout& InputLayout() const;
     /// get program vertex shader source (only valid if setup from sources)
@@ -1453,9 +1447,9 @@ public:
     /// get program fragment shader byte code, returns nullptr if no byte code exists
     void FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
     /// get vertex shader name (if using metal-style shader library
-    const String& VertexShaderFunc(ShaderLang::Code slang) const;
+    const StringAtom& VertexShaderFunc(ShaderLang::Code slang) const;
     /// get fragment shader name (if using metal-style shader library
-    const String& FragmentShaderFunc(ShaderLang::Code slang) const;
+    const StringAtom& FragmentShaderFunc(ShaderLang::Code slang) const;
     /// get number of uniform blocks
     int NumUniformBlocks() const;
     /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
@@ -1482,8 +1476,8 @@ private:
     struct programEntry {
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
-        StaticArray<String, ShaderLang::NumShaderLangs> vsFuncs;
-        StaticArray<String, ShaderLang::NumShaderLangs> fsFuncs;
+        StaticArray<StringAtom, ShaderLang::NumShaderLangs> vsFuncs;
+        StaticArray<StringAtom, ShaderLang::NumShaderLangs> fsFuncs;
         struct byteCodeEntry {
             const void* ptr = nullptr;
             uint32_t size = 0;
@@ -1504,8 +1498,6 @@ private:
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
     };
     static const int MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
-    int libraryByteCodeSize = 0;
-    const void* libraryByteCode = nullptr;
     programEntry program;
     int numUniformBlocks = 0;
     StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;

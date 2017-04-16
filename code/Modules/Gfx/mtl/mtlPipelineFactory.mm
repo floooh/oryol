@@ -43,19 +43,24 @@ mtlPipelineFactory::createRPS(pipeline& pip) {
 
     // create vertex-descriptor object
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
+    const VertexLayout& shdLayout = pip.shd->Setup.InputLayout();
     for (int meshSlotIndex = 0; meshSlotIndex < GfxConfig::MaxNumInputMeshes; meshSlotIndex++) {
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshSlotIndex + GfxConfig::MaxNumUniformBlocksPerStage;
-        const VertexLayout& layout = pip.Setup.Layouts[meshSlotIndex];
-        for (int compIndex = 0; compIndex < layout.NumComponents(); compIndex++) {
-            const auto& comp = layout.ComponentAt(compIndex);
-            vtxDesc.attributes[comp.Attr].format = mtlTypes::asVertexFormat(comp.Format);
-            vtxDesc.attributes[comp.Attr].bufferIndex = vbSlotIndex;
-            vtxDesc.attributes[comp.Attr].offset = layout.ComponentByteOffset(compIndex);
+        const VertexLayout& meshLayout = pip.Setup.Layouts[meshSlotIndex];
+        for (int meshCompIndex = 0; meshCompIndex < meshLayout.NumComponents(); meshCompIndex++) {
+            const auto& comp = meshLayout.ComponentAt(meshCompIndex);
+            // find matching component in shader's vertex shader input layout
+            int vsCompIndex = shdLayout.ComponentIndexByVertexAttr(comp.Attr);
+            if (InvalidIndex != vsCompIndex) {
+                vtxDesc.attributes[vsCompIndex].format = mtlTypes::asVertexFormat(comp.Format);
+                vtxDesc.attributes[vsCompIndex].bufferIndex = vbSlotIndex;
+                vtxDesc.attributes[vsCompIndex].offset = meshLayout.ComponentByteOffset(meshCompIndex);
+            }
         }
-        vtxDesc.layouts[vbSlotIndex].stride = layout.ByteSize();
-        vtxDesc.layouts[vbSlotIndex].stepFunction = mtlTypes::asVertexStepFunc(layout.StepFunction);
-        vtxDesc.layouts[vbSlotIndex].stepRate = layout.StepRate;
+        vtxDesc.layouts[vbSlotIndex].stride = meshLayout.ByteSize();
+        vtxDesc.layouts[vbSlotIndex].stepFunction = mtlTypes::asVertexStepFunc(meshLayout.StepFunction);
+        vtxDesc.layouts[vbSlotIndex].stepRate = meshLayout.StepRate;
     }
 
     // create renderpipeline-state
@@ -85,7 +90,7 @@ mtlPipelineFactory::createRPS(pipeline& pip) {
     NSError* err = NULL;
     pip.mtlRenderPipelineState = [this->pointers.renderer->mtlDevice newRenderPipelineStateWithDescriptor:rpDesc error:&err];
     if (!pip.mtlRenderPipelineState) {
-        o_error("mtlDrawStateFactory: failed to create MTLRenderPipelineState with:\n  %s\n", err.localizedDescription.UTF8String);
+        o_error("mtlPipelineFactory: failed to create MTLRenderPipelineState with:\n  %s\n", err.localizedDescription.UTF8String);
     }
 }
 

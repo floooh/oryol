@@ -1043,21 +1043,25 @@ void ShaderSetup::SetProgramFromSources(ShaderLang::Code slang, const String& vs
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes) {
+void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc, const char* fsFunc) {
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
     this->program.vsByteCode[slang].ptr = vsByteCode;
     this->program.vsByteCode[slang].size = vsNumBytes;
     this->program.fsByteCode[slang].ptr = fsByteCode;
     this->program.fsByteCode[slang].size = fsNumBytes;
-}
-
-//------------------------------------------------------------------------------
-void ShaderSetup::SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc) {
-    o_assert_dbg(ShaderLang::Metal == slang);
-    o_assert_dbg(vsFunc && fsFunc);
-    this->program.vsFuncs[slang] = vsFunc;
-    this->program.fsFuncs[slang] = fsFunc;
+    if (vsFunc) {
+        this->program.vsFuncs[slang] = vsFunc;
+    }
+    else {
+        this->program.vsFuncs[slang].Clear();
+    }
+    if (fsFunc) {
+        this->program.fsFuncs[slang] = fsFunc;
+    }
+    else {
+        this->program.fsFuncs[slang].Clear();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1088,22 +1092,6 @@ void ShaderSetup::AddTextureBlock(const StringAtom& name, const class TextureBlo
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes) {
-    o_assert_dbg(ShaderLang::Metal == slang);
-    o_assert_dbg(nullptr != byteCode);
-    o_assert_dbg(numBytes > 0);
-    this->libraryByteCode = byteCode;
-    this->libraryByteCodeSize = numBytes;
-}
-
-//------------------------------------------------------------------------------
-void ShaderSetup::LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-    o_assert_dbg(ShaderLang::Metal == slang);
-    outPtr = this->libraryByteCode;
-    outSize = this->libraryByteCodeSize;
-}
-
-//------------------------------------------------------------------------------
 const VertexLayout& ShaderSetup::InputLayout() const {
     return this->program.vsInputLayout;
 }
@@ -1131,13 +1119,13 @@ void ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& ou
 }
 
 //------------------------------------------------------------------------------
-const String& ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
+const StringAtom& ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
     o_assert_dbg(ShaderLang::Metal == slang);
     return this->program.vsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------
-const String& ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
+const StringAtom& ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
     o_assert_dbg(ShaderLang::Metal == slang);
     return this->program.fsFuncs[slang];
 }

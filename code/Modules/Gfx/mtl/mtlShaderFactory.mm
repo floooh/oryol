@@ -41,27 +41,34 @@ mtlShaderFactory::IsValid() const {
 ResourceState::Code
 mtlShaderFactory::SetupResource(shader& shd) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(nil == shd.mtlLibrary);
+    o_assert_dbg(nil == shd.mtlVertexShaderLibrary);
+    o_assert_dbg(nil == shd.mtlFragmentShaderLibrary);
 
     const ShaderLang::Code slang = ShaderLang::Metal;
     const ShaderSetup& setup = shd.Setup;
-    const void* libraryByteCode = nullptr;
-    uint32 libraryByteCodeSize = 0;
-    setup.LibraryByteCode(slang, libraryByteCode, libraryByteCodeSize);
-    o_assert_dbg(nullptr != libraryByteCode);
-    o_assert_dbg(libraryByteCodeSize > 0);
+    const void* vsLibraryByteCode = nullptr;
+    uint32_t vsLibraryByteCodeSize = 0;
+    setup.VertexShaderByteCode(slang, vsLibraryByteCode, vsLibraryByteCodeSize);
+    o_assert_dbg(vsLibraryByteCode && (vsLibraryByteCodeSize > 0));
+    const void* fsLibraryByteCode = nullptr;
+    uint32_t fsLibraryByteCodeSize = 0;
+    setup.FragmentShaderByteCode(slang, fsLibraryByteCode, fsLibraryByteCodeSize);
+    o_assert_dbg(fsLibraryByteCode && (fsLibraryByteCodeSize > 0));
 
     // first create the shader library (one library per bundle)
     NSError* err = 0;
-    dispatch_data_t libData = dispatch_data_create(libraryByteCode, libraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-    shd.mtlLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:libData error:&err];
+    dispatch_data_t vsLibData = dispatch_data_create(vsLibraryByteCode, vsLibraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
+    shd.mtlVertexShaderLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:vsLibData error:&err];
+    o_assert(nil == err);
+    dispatch_data_t fsLibData = dispatch_data_create(fsLibraryByteCode, fsLibraryByteCodeSize, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
+    shd.mtlFragmentShaderLibrary = [this->pointers.renderer->mtlDevice newLibraryWithData:fsLibData error:&err];
     o_assert(nil == err);
 
     // create vertex and fragment shader function objects
-    const String& vsName = setup.VertexShaderFunc(slang);
-    shd.mtlVertexShader = [shd.mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:vsName.AsCStr()]];
-    const String& fsName = setup.FragmentShaderFunc(slang);
-    shd.mtlFragmentShader = [shd.mtlLibrary newFunctionWithName:[NSString stringWithUTF8String:fsName.AsCStr()]];
+    const StringAtom& vsName = setup.VertexShaderFunc(slang);
+    shd.mtlVertexShader = [shd.mtlVertexShaderLibrary newFunctionWithName:[NSString stringWithUTF8String:vsName.AsCStr()]];
+    const StringAtom& fsName = setup.FragmentShaderFunc(slang);
+    shd.mtlFragmentShader = [shd.mtlFragmentShaderLibrary newFunctionWithName:[NSString stringWithUTF8String:fsName.AsCStr()]];
 
     return ResourceState::Valid;
 }
@@ -76,8 +83,11 @@ mtlShaderFactory::DestroyResource(shader& shd) {
     if (nil != shd.mtlFragmentShader) {
         this->pointers.renderer->releaseDeferred(shd.mtlFragmentShader);
     }
-    if (nil != shd.mtlLibrary) {
-        this->pointers.renderer->releaseDeferred(shd.mtlLibrary);
+    if (nil != shd.mtlVertexShaderLibrary) {
+        this->pointers.renderer->releaseDeferred(shd.mtlVertexShaderLibrary);
+    }
+    if (nil != shd.mtlFragmentShaderLibrary) {
+        this->pointers.renderer->releaseDeferred(shd.mtlFragmentShaderLibrary);
     }
     shd.Clear();
 }
