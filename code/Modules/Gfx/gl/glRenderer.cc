@@ -1031,84 +1031,95 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
     o_assert_dbg(layout.ByteSize() == byteSize);
     #endif
 
-    // for each uniform in the uniform block:
-    const int numUniforms = layout.NumComponents();
-    for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-        const auto& comp = layout.ComponentAt(uniformIndex);
-        const uint8_t* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
-        GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
-        if (-1 != glLoc) {
-            switch (comp.Type) {
-                case UniformType::Float:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const float val = *(const float*)valuePtr;
-                        ::glUniform1f(glLoc, val);
-                    }
-                    break;
-
-                case UniformType::Vec2:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::vec2& val = *(const glm::vec2*) valuePtr;
-                        ::glUniform2f(glLoc, val.x, val.y);
-                    }
-                    break;
-
-                case UniformType::Vec3:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::vec3& val = *(const glm::vec3*)valuePtr;
-                        ::glUniform3f(glLoc, val.x, val.y, val.z);
-                    }
-                    break;
-
-                case UniformType::Vec4:
-                    {
-                        const glm::vec4& val = *(const glm::vec4*)valuePtr;
-                        if (comp.Num > 1) {
-                            ::glUniform4fv(glLoc, comp.Num, glm::value_ptr(val));
+    #if !ORYOL_OPENGLES2
+    if (!glCaps::IsFlavour(glCaps::GLES2)) {
+        // use uniform buffers?
+        GLuint ub = shd->getUniformBuffer(bindStage, bindSlot);
+        ::glBindBuffer(GL_UNIFORM_BUFFER, ub);
+        ::glBufferData(GL_UNIFORM_BUFFER, byteSize, ptr, GL_DYNAMIC_DRAW);
+    }
+    else
+    #endif
+    {
+        // for each uniform in the uniform block:
+        const int numUniforms = layout.NumComponents();
+        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+            const auto& comp = layout.ComponentAt(uniformIndex);
+            const uint8_t* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
+            GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
+            if (-1 != glLoc) {
+                switch (comp.Type) {
+                    case UniformType::Float:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const float val = *(const float*)valuePtr;
+                            ::glUniform1f(glLoc, val);
                         }
-                        else {
-                            ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                        break;
+
+                    case UniformType::Vec2:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::vec2& val = *(const glm::vec2*) valuePtr;
+                            ::glUniform2f(glLoc, val.x, val.y);
                         }
-                    }
-                    break;
+                        break;
 
-                case UniformType::Mat2:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::mat2& val = *(const glm::mat2*)valuePtr;
-                        ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                    }
-                    break;
+                    case UniformType::Vec3:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::vec3& val = *(const glm::vec3*)valuePtr;
+                            ::glUniform3f(glLoc, val.x, val.y, val.z);
+                        }
+                        break;
 
-                case UniformType::Mat3:
-                    {
-                        o_assert_dbg(1 == comp.Num);
-                        const glm::mat3& val = *(const glm::mat3*)valuePtr;
-                        ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                    }
-                    break;
+                    case UniformType::Vec4:
+                        {
+                            const glm::vec4& val = *(const glm::vec4*)valuePtr;
+                            if (comp.Num > 1) {
+                                ::glUniform4fv(glLoc, comp.Num, glm::value_ptr(val));
+                            }
+                            else {
+                                ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
+                            }
+                        }
+                        break;
 
-                case UniformType::Mat4:
-                    {
-                        const glm::mat4& val = *(const glm::mat4*)valuePtr;
-                        ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
-                    }
-                    break;
+                    case UniformType::Mat2:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::mat2& val = *(const glm::mat2*)valuePtr;
+                            ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                        }
+                        break;
 
-                case UniformType::Bool:
-                    {
-                        // NOTE: bools are actually stored as int32 in the uniform block struct
-                        const int val = *(const int*)valuePtr;
-                        ::glUniform1i(glLoc, val);
-                    }
-                    break;
+                    case UniformType::Mat3:
+                        {
+                            o_assert_dbg(1 == comp.Num);
+                            const glm::mat3& val = *(const glm::mat3*)valuePtr;
+                            ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
+                        }
+                        break;
 
-                default:
-                    o_error("FIXME: invalid uniform type!\n");
-                    break;
+                    case UniformType::Mat4:
+                        {
+                            const glm::mat4& val = *(const glm::mat4*)valuePtr;
+                            ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
+                        }
+                        break;
+
+                    case UniformType::Bool:
+                        {
+                            // NOTE: bools are actually stored as int32 in the uniform block struct
+                            const int val = *(const int*)valuePtr;
+                            ::glUniform1i(glLoc, val);
+                        }
+                        break;
+
+                    default:
+                        o_error("FIXME: invalid uniform type!\n");
+                        break;
+                }
             }
         }
     }

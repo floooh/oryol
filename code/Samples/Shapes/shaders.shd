@@ -12,7 +12,7 @@ mat4 mvp ModelViewProjection
 @in vec4 position
 @in vec4 color0
 @out vec4 color
-    gl_Position = mvp * position;
+    gl_Position = params.mvp * position;
     color = color0;
 @end
 

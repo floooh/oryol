@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 91
+Version = 96
 
 import os, sys, glob, re, platform
 from pprint import pprint
@@ -802,7 +802,7 @@ class GLSLGenerator :
     def genUniforms(self, shd, lines) :
         # no GLSL uniform blocks
         for ub in shd.uniformBlocks :
-            lines.append(Line('uniform {} {{'.format(ub.name), ub.filePath, ub.lineNumber))
+            lines.append(Line('uniform {}_t {{'.format(ub.name), ub.filePath, ub.lineNumber))
             for type in ub.uniformsByType :
                 for uniform in ub.uniformsByType[type] :
                     if uniform.num == 1 :
@@ -811,7 +811,7 @@ class GLSLGenerator :
                     else :
                         lines.append(Line('    {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
                             uniform.filePath, uniform.lineNumber))
-            lines.append(Line('};'));
+            lines.append(Line('}} {};'.format(ub.name)));
         for tb in shd.textureBlocks :
             for tex in tb.textures :
                 lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
@@ -858,12 +858,6 @@ class GLSLGenerator :
         # write fragment shader inputs
         for input in fs.inputs :
             lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-
-        # write the fragcolor output
-#        lines.append(Line('layout (location = 0) out vec4 _FragColor;'))
-#        lines.append(Line('layout (location = 1) out vec4 _FragColor1;'))
-#        lines.append(Line('layout (location = 2) out vec4 _FragColor2;'))
-#        lines.append(Line('layout (location = 3) out vec4 _FragColor3;'))
 
         # write blocks the fs depends on
         for dep in fs.resolvedDeps :
@@ -1280,6 +1274,7 @@ def writeProgramSource(f, shdLib, prog) :
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
     vsInputLayout = writeInputVertexLayout(f, vs)
+    f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
     vsName = vs.name
     fsName = fs.name
     for slVersion in slVersions :
@@ -1303,7 +1298,6 @@ def writeProgramSource(f, shdLib, prog) :
             fs_c_name = '{}_fs_metallib'.format(fs.name)
             f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}), "main0", "main0");\n'.format(
                 slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
-        f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
         f.write('    #endif\n');
 
     # add uniform layouts to setup object

@@ -9,6 +9,7 @@
 #include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
+#include "Core/String/StringBuilder.h"
 
 namespace Oryol {
 namespace _priv {
@@ -37,6 +38,7 @@ private:
     GLuint compileShader(ShaderStage::Code stage, const char* sourceString, int sourceLen) const;
 
     gfxPointers pointers;
+    StringBuilder strBuilder;
     bool isValid = false;
 };
     

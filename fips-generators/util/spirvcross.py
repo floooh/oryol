@@ -30,17 +30,17 @@ def compile(base_path, args):
 
     # GLSL ES 300
     dst_path = base_path + '.glsles3.glsl'
-    cmd = [ tool, '--output', dst_path, src_path, '--es', '--version', '300']
+    cmd = [ tool, '--output', dst_path, src_path, '--es', '--version', '300' ]
     subprocess.call(cmd)
 
     # GLSL 120
     dst_path = base_path + '.glsl120.glsl'
-    cmd = [ tool, '--output', dst_path, src_path, '--version', '120']
+    cmd = [ tool, '--output', dst_path, src_path, '--version', '120' ]
     subprocess.call(cmd)
 
     # GLSL 330
     dst_path = base_path + '.glsl330.glsl'
-    cmd = [ tool, '--output', dst_path, src_path, '--version', '330']
+    cmd = [ tool, '--output', dst_path, src_path, '--version', '330' ]
     subprocess.call(cmd)
 
     # MetalSL

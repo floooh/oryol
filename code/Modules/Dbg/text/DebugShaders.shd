@@ -19,7 +19,7 @@ sampler2D tex Texture
 @in vec4 color0
 @out vec2 uv
 @out vec4 color
-    vec2 screenPos = position.xy * glyphSize;
+    vec2 screenPos = position.xy * vsParams.glyphSize;
     screenPos.x -= 1.0;
     screenPos.y = 1.0 - screenPos.y;
     gl_Position = vec4(screenPos, 0.5, 1.0);
