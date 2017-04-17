@@ -130,9 +130,10 @@ glShaderFactory::SetupResource(shader& shd) {
             const StringAtom& ubName = setup.UniformBlockName(ubIndex);
             int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
             int ubArrayIndex = shd.uniformBlockArrayIndex(ubBindStage, ubBindSlot);
-            ::glGenBuffers(1, &shd.uniformBuffers[ubArrayIndex]);
+            shd.uniformBlockMappings[ubArrayIndex].uniformBufferIndex = ubIndex;
+            ::glGenBuffers(1, &shd.uniformBlockMappings[ubArrayIndex].uniformBuffer);
             ORYOL_GL_CHECK_ERROR();
-            ::glBindBufferBase(GL_UNIFORM_BUFFER, ubIndex, shd.uniformBuffers[ubArrayIndex]);
+            ::glBindBufferBase(GL_UNIFORM_BUFFER, ubIndex, shd.uniformBlockMappings[ubArrayIndex].uniformBuffer);
             ORYOL_GL_CHECK_ERROR();
             this->strBuilder.Format(256, "%s_t", ubName.AsCStr());
             GLuint blockIndex = ::glGetUniformBlockIndex(glProg, this->strBuilder.AsCStr());
@@ -141,6 +142,10 @@ glShaderFactory::SetupResource(shader& shd) {
                 o_warn("Uniform block '%s' not found\n", ubName.AsCStr());
             }
             ::glUniformBlockBinding(glProg, blockIndex, ubIndex);
+            ORYOL_GL_CHECK_ERROR();
+
+            // allocate required uniform buffer space
+            ::glGetActiveUniformBlockiv(glProg, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &shd.uniformBlockMappings[ubArrayIndex].dataSize);
             ORYOL_GL_CHECK_ERROR();
         }
     }
@@ -208,9 +213,9 @@ glShaderFactory::DestroyResource(shader& shd) {
     }
     #if !ORYOL_OPENGLES2
     if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        for (const auto& ub : shd.uniformBuffers) {
-            if (ub) {
-                ::glDeleteBuffers(1, &ub);
+        for (const auto& item : shd.uniformBlockMappings) {
+            if (item.uniformBuffer) {
+                ::glDeleteBuffers(1, &item.uniformBuffer);
             }
         }
     }

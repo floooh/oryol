@@ -580,7 +580,21 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
         this->rasterizerState = newState;
         ORYOL_GL_CHECK_ERROR();
     }
+
+    // bind program and uniform buffers
     this->useProgram(pip->shd->glProgram);
+    #if !ORYOL_OPENGLES2
+    if (!glCaps::IsFlavour(glCaps::GLES2)) {
+        const int numUniformBlocks = pip->shd->Setup.NumUniformBlocks();
+        for (int i = 0; i < numUniformBlocks; i++) {
+            const ShaderStage::Code ubBindStage = pip->shd->Setup.UniformBlockBindStage(i);
+            const int ubBindSlot = pip->shd->Setup.UniformBlockBindSlot(i);
+            GLuint ub = pip->shd->getUniformBuffer(ubBindStage, ubBindSlot);
+            GLuint ubIndex = pip->shd->getUniformBufferIndex(ubBindStage, ubBindSlot);
+            ::glBindBufferBase(GL_UNIFORM_BUFFER, ubIndex, ub);
+        }
+    }
+    #endif
 
     // need to store primary mesh with primitive group defs for later draw call
     this->curPrimaryMesh = meshes[0];
@@ -1033,10 +1047,20 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
 
     #if !ORYOL_OPENGLES2
     if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        // use uniform buffers?
+        // FIXME FIXME FIXME: this code sucks
+        // use uniform buffers
         GLuint ub = shd->getUniformBuffer(bindStage, bindSlot);
         ::glBindBuffer(GL_UNIFORM_BUFFER, ub);
-        ::glBufferData(GL_UNIFORM_BUFFER, byteSize, ptr, GL_DYNAMIC_DRAW);
+        GLint ubSize = shd->getUniformBlockSize(bindStage, bindSlot);
+        if (byteSize != ubSize) {
+            o_assert_dbg(int(sizeof(this->uniformBlockScratch)) >= byteSize);
+            // need to go through a temporary copy
+            Memory::Copy(ptr, this->uniformBlockScratch, byteSize);
+            ::glBufferData(GL_UNIFORM_BUFFER, ubSize, this->uniformBlockScratch, GL_DYNAMIC_DRAW);
+        }
+        else {
+            ::glBufferData(GL_UNIFORM_BUFFER, ubSize, ptr, GL_DYNAMIC_DRAW);
+        }
     }
     else
     #endif

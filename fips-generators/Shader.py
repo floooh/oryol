@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 96
+Version = 97
 
 import os, sys, glob, re, platform
 from pprint import pprint
@@ -1095,20 +1095,20 @@ class ShaderLibrary :
         for fs in self.fragmentShaders.values() :
             gen.genFragmentShaderSource(fs)
 
-    def compile_shader(self, shd, shd_type, base_path, args):
+    def compile_shader(self, input, shd, shd_type, base_path, args):
         shd_base_path = base_path + '_' + shd.name
         glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, args)
-        spirvcross.compile(shd_base_path, args)
+        spirvcross.compile(input, shd_base_path, args)
         if platform.system() == 'Darwin':
             c_name = '{}_{}_{}'.format(shd.name, shd_type, 'metallib')
             metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
 
-    def compile(self, out_hdr, args) :
+    def compile(self, input, out_hdr, args) :
         base_path = os.path.splitext(out_hdr)[0]
         for vs in self.vertexShaders.values():
-            self.compile_shader(vs, 'vs', base_path, args)
+            self.compile_shader(input, vs, 'vs', base_path, args)
         for fs in self.fragmentShaders.values():
-            self.compile_shader(fs, 'fs', base_path, args)
+            self.compile_shader(input, fs, 'fs', base_path, args)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -1335,6 +1335,8 @@ def generateSource(absSourcePath, shdLib) :
     f = open(absSourcePath, 'w') 
     writeSourceTop(f, absSourcePath, shdLib)
     for slVersion in slVersions :
+        if isHLSL[slVersion]:
+            continue
         for vs in shdLib.vertexShaders.values() :
             writeShaderSource(f, absSourcePath, shdLib, vs, slVersion)
         for fs in shdLib.fragmentShaders.values() :
@@ -1353,7 +1355,7 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.validate()
         shaderLibrary.generateShaderSourcesGLSL()
-        shaderLibrary.compile(out_hdr, args)
+        shaderLibrary.compile(input, out_hdr, args)
         generateSource(out_src, shaderLibrary)
         generateHeader(out_hdr, shaderLibrary)
 

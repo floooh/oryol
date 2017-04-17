@@ -53,7 +53,7 @@ glShader::Clear() {
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     this->attribMapping.Fill(-1);
     #endif
-    this->uniformBuffers.Fill(0);
+    this->uniformBlockMappings.Fill(ubInfo());
     this->uniformMappings.Fill(-1);
     shaderBase::Clear();
 }

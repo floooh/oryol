@@ -8,16 +8,16 @@ mat4 mvp ModelViewProjection
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
-    _position = mul(mvp, position);
+    gl_Position = offscreenVSParams.mvp * position;
     nrm = normal;
 @end
 
 @fs offscreenFS
 @in vec4 nrm
     vec3 c = abs(nrm.xyz) * vec3(0.5,0.5,0.5) + vec3(0.5,0.5,0.5);
-    _color = vec4(c.x, 0.0, 0.0, 1.0);
-    _color1 = vec4(0.0, c.y, 0.0, 1.0);
-    _color2 = vec4(0.0, 0.0, c.z, 1.0);
+    gl_FragData[0] = vec4(c.x, 0.0, 0.0, 1.0);
+    gl_FragData[1] = vec4(0.0, c.y, 0.0, 1.0);
+    gl_FragData[2] = vec4(0.0, 0.0, c.z, 1.0);
 @end
 
 @program OffscreenShader offscreenVS offscreenFS
@@ -31,7 +31,7 @@ sampler2D tex Texture
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    _position = position;
+    gl_Position = position;
     uv = texcoord0;
 @end
 
@@ -57,10 +57,10 @@ vec2 offsets Offsets
 @out vec2 uvRed
 @out vec2 uvGreen
 @out vec2 uvBlue
-    _position = mul(mvp, position);
-    nrm = normalize(mul(mvp, normal));
-    uvRed = texcoord0 + vec2(offsets.x, 0.0);
-    uvGreen = texcoord0 + vec2(0.0, offsets.y);
+    gl_Position = displayVSParams.mvp * position;
+    nrm = normalize(displayVSParams.mvp * normal);
+    uvRed = texcoord0 + vec2(displayVSParams.offsets.x, 0.0);
+    uvGreen = texcoord0 + vec2(0.0, displayVSParams.offsets.y);
     uvBlue = texcoord0;
 @end
 
@@ -76,11 +76,11 @@ sampler2D blueTex Blue
 @in vec2 uvRed
 @in vec2 uvGreen
 @in vec2 uvBlue
-    vec4 red = tex2D(redTex, uvRed);
-    vec4 green = tex2D(greenTex, uvGreen);
-    vec4 blue = tex2D(blueTex, uvBlue);
+    vec4 red = texture(redTex, uvRed);
+    vec4 green = texture(greenTex, uvGreen);
+    vec4 blue = texture(blueTex, uvBlue);
     vec4 c = vec4(red.xyz + green.xyz + blue.xyz, 1.0);
-    _color = c;
+    gl_FragColor = c;
 @end
 
 @program DisplayShader displayVS displayFS

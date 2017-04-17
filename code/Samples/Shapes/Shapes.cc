@@ -66,7 +66,7 @@ ShapeApp::OnInit() {
     shapeBuilder.RandomColors = true;
     shapeBuilder.Layout = {
         { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
+        { VertexAttr::Color0, VertexFormat::UByte4N }
     };
     shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)

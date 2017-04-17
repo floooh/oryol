@@ -10,7 +10,7 @@
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv0
-    _position = position;
+    gl_Position = position;
     uv0 = texcoord0;
 @end
 
@@ -18,7 +18,7 @@
 @in vec2 uv0
     vec2 xy = fract(uv0 * 32.0) * 0.5 + 0.25;
     float f = xy.x * xy.y;
-    _color = vec4(f, f, f, 1.0);
+    gl_FragColor = vec4(f, f, f, 1.0);
 @end
 
 @program BGShader backgroundVS backgroundFS
@@ -35,13 +35,13 @@ vec4 translate Translate
 @in vec4 position
 @in vec4 color0
 @out vec4 color
-    _position = position + translate;
+    gl_Position = position + params.translate;
     color = color0;
 @end
 
 @fs triangleFS
 @in vec4 color
-    _color = color;
+    gl_FragColor = color;
 @end
 
 @program TriShader triangleVS triangleFS

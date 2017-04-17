@@ -19,13 +19,13 @@ sampler2D tex Texture
 @in vec4 position
 @in vec4 normal
 @out vec4 nrm
-    _position = mul(mvp, position);
+    gl_Position = vsParams.mvp * position;
     nrm = normal;
 @end
 
 @fs offscreenFS
 @in vec4 nrm
-    _color = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
+    gl_FragColor = vec4(nrm.xyz * 0.5 + 0.5, 1.0);
 @end
 
 @program OffscreenShader offscreenVS offscreenFS
@@ -40,18 +40,18 @@ sampler2D tex Texture
 @in vec2 texcoord0
 @out vec2 uv
 @out vec4 nrm
-    _position = mul(mvp, position);
+    gl_Position = vsParams.mvp * position;
     uv = texcoord0;
-    nrm = normalize(mul(mvp, normal));
+    nrm = normalize(vsParams.mvp * normal);
 @end
 
 @fs displayFS
 @use_texture_block textures
 @in vec2 uv
 @in vec4 nrm
-    vec4 c = tex2D(tex, uv * vec2(20.0, 10.0));
+    vec4 c = texture(tex, uv * vec2(20.0, 10.0));
     float l = clamp(dot(nrm.xyz, normalize(vec3(1.0, 1.0, -1.0))), 0.0, 1.0) * 2.0;
-    _color = vec4(c.xyz * (l + 0.25), 1.0);
+    gl_FragColor = vec4(c.xyz * (l + 0.25), 1.0);
 @end
 
 @program DisplayShader displayVS displayFS

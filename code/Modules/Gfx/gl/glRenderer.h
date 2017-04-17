@@ -144,6 +144,9 @@ private:
     StaticArray<GLuint, MaxTextureSamplers> samplers;
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
+    #if !ORYOL_OPENGLES2
+    uint8_t uniformBlockScratch[4096];
+    #endif
 };
 
 //------------------------------------------------------------------------------
