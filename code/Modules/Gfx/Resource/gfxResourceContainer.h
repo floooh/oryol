@@ -66,6 +66,8 @@ public:
 
     /// per-frame update (update resource pools and pending loaders)
     void update();
+    /// destroy a single resource
+    void destroyResource(const Id& id);
 
     gfxPointers pointers;
     class meshFactory meshFactory;
@@ -80,7 +82,7 @@ public:
     class renderPassPool renderPassPool;
     RunLoop::Id runLoopId = RunLoop::InvalidId;
     Array<Ptr<ResourceLoader>> pendingLoaders;
-    Array<ResourceLabel> destroyQueue;
+    Array<Id> destroyQueue;
 };
 
 //------------------------------------------------------------------------------

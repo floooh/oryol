@@ -55,6 +55,7 @@ void
 Gfx::Discard() {
     o_assert_dbg(IsValid());
     o_assert_dbg(!state->inPass);
+    state->resourceContainer.GarbageCollect();
     state->resourceContainer.Destroy(ResourceLabel::All);
     Core::PreRunLoop()->Remove(state->runLoopId);
     state->renderer.discard();
