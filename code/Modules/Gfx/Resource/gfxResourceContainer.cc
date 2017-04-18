@@ -280,90 +280,101 @@ gfxResourceContainer::Load(const Ptr<ResourceLoader>& loader) {
 void
 gfxResourceContainer::DestroyDeferred(const ResourceLabel& label) {
     o_assert_dbg(this->isValid());
-    this->destroyQueue.Add(label);
+    Array<Id> ids = this->registry.Remove(label);
+    if (ids.Size() > 0) {
+        this->destroyQueue.Reserve(ids.Size());
+        for (const Id& id : ids) {
+            this->destroyQueue.Add(id);
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 gfxResourceContainer::GarbageCollect() {
-    for (const ResourceLabel& label : this->destroyQueue) {
-        this->Destroy(label);
+    for (const Id& id : this->destroyQueue) {
+        this->destroyResource(id);
     }
     this->destroyQueue.Clear();
 }
 
 //------------------------------------------------------------------------------
 void
+gfxResourceContainer::destroyResource(const Id& id) {
+    switch (id.Type) {
+        case GfxResourceType::Texture:
+        {
+            if (ResourceState::Valid == this->texturePool.QueryState(id)) {
+                texture* tex = this->texturePool.Lookup(id);
+                if (tex) {
+                    this->textureFactory.DestroyResource(*tex);
+                }
+            }
+            this->texturePool.Unassign(id);
+        }
+        break;
+            
+        case GfxResourceType::Mesh:
+        {
+            if (ResourceState::Valid == this->meshPool.QueryState(id)) {
+                mesh* msh = this->meshPool.Lookup(id);
+                if (msh) {
+                    this->meshFactory.DestroyResource(*msh);
+                }
+            }
+            this->meshPool.Unassign(id);
+        }
+        break;
+            
+        case GfxResourceType::Shader:
+        {
+            if (ResourceState::Valid == this->shaderPool.QueryState(id)) {
+                shader* shd = this->shaderPool.Lookup(id);
+                if (shd) {
+                    this->shaderFactory.DestroyResource(*shd);
+                }
+            }
+            this->shaderPool.Unassign(id);
+        }
+        break;
+            
+        case GfxResourceType::Pipeline:
+        {
+            if (ResourceState::Valid == this->pipelinePool.QueryState(id)) {
+                pipeline* pip = this->pipelinePool.Lookup(id);
+                if (pip) {
+                    this->pipelineFactory.DestroyResource(*pip);
+                }
+            }
+            this->pipelinePool.Unassign(id);
+        }
+        break;
+
+        case GfxResourceType::RenderPass:
+        {
+            if (ResourceState::Valid == this->renderPassPool.QueryState(id)) {
+                renderPass* rp = this->renderPassPool.Lookup(id);
+                if (rp) {
+                    this->renderPassFactory.DestroyResource(*rp);
+                }
+            }
+            this->renderPassPool.Unassign(id);
+        }
+        break;
+
+        default:
+            o_assert(false);
+            break;
+    }
+}
+
+//------------------------------------------------------------------------------
+void
 gfxResourceContainer::Destroy(const ResourceLabel& label) {
     o_assert_dbg(this->isValid());
-    
     Array<Id> ids = this->registry.Remove(label);
     for (const Id& id : ids) {
-        switch (id.Type) {
-            case GfxResourceType::Texture:
-            {
-                if (ResourceState::Valid == this->texturePool.QueryState(id)) {
-                    texture* tex = this->texturePool.Lookup(id);
-                    if (tex) {
-                        this->textureFactory.DestroyResource(*tex);
-                    }
-                }
-                this->texturePool.Unassign(id);
-            }
-            break;
-                
-            case GfxResourceType::Mesh:
-            {
-                if (ResourceState::Valid == this->meshPool.QueryState(id)) {
-                    mesh* msh = this->meshPool.Lookup(id);
-                    if (msh) {
-                        this->meshFactory.DestroyResource(*msh);
-                    }
-                }
-                this->meshPool.Unassign(id);
-            }
-            break;
-                
-            case GfxResourceType::Shader:
-            {
-                if (ResourceState::Valid == this->shaderPool.QueryState(id)) {
-                    shader* shd = this->shaderPool.Lookup(id);
-                    if (shd) {
-                        this->shaderFactory.DestroyResource(*shd);
-                    }
-                }
-                this->shaderPool.Unassign(id);
-            }
-            break;
-                
-            case GfxResourceType::Pipeline:
-            {
-                if (ResourceState::Valid == this->pipelinePool.QueryState(id)) {
-                    pipeline* pip = this->pipelinePool.Lookup(id);
-                    if (pip) {
-                        this->pipelineFactory.DestroyResource(*pip);
-                    }
-                }
-                this->pipelinePool.Unassign(id);
-            }
-            break;
-
-            case GfxResourceType::RenderPass:
-            {
-                if (ResourceState::Valid == this->renderPassPool.QueryState(id)) {
-                    renderPass* rp = this->renderPassPool.Lookup(id);
-                    if (rp) {
-                        this->renderPassFactory.DestroyResource(*rp);
-                    }
-                }
-                this->renderPassPool.Unassign(id);
-            }
-            break;
-
-            default:
-                o_assert(false);
-                break;
-        }
+        this->destroyResource(id);
     }
 }
     

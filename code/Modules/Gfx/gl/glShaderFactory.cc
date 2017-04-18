@@ -82,8 +82,12 @@ glShaderFactory::SetupResource(shader& shd) {
     /// attributes which exist in the shader (may be with more shader source generation)
     #if !ORYOL_GL_USE_GETATTRIBLOCATION
     o_assert_dbg(VertexAttr::NumVertexAttrs <= glCaps::IntLimit(glCaps::MaxVertexAttribs));
+    const VertexLayout& vsInputLayout = setup.InputLayout();
     for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        ::glBindAttribLocation(glProg, i, VertexAttr::ToString((VertexAttr::Code)i));
+        VertexAttr::Code attr = (VertexAttr::Code)i;
+        if (vsInputLayout.Contains(attr)) {
+            ::glBindAttribLocation(glProg, i, VertexAttr::ToString(attr));
+        }
     }
     ORYOL_GL_CHECK_ERROR();
     #endif

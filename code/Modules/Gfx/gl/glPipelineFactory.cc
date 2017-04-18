@@ -65,28 +65,31 @@ glPipelineFactory::glSetupVertexAttrs(pipeline& pip) {
     }
 
     // convert input mesh vertex layout components to glVertexAttrs
+    const VertexLayout& vsInputLayout = pip.shd->Setup.InputLayout();
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumInputMeshes; layoutIndex++) {
         const VertexLayout& layout = pip.Setup.Layouts[layoutIndex];
         const int numComps = layout.NumComponents();
         if (numComps > 0) {
             for (int compIndex = 0; compIndex < numComps; compIndex++) {
                 const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
-                o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
-                glVertexAttr& glAttr = pip.glAttrs[comp.Attr];
-                o_assert_dbg(!glAttr.enabled);
-                glAttr.enabled = GL_TRUE;
-                glAttr.vbIndex = layoutIndex;
-                if (VertexStepFunction::PerVertex == layout.StepFunction) {
-                    glAttr.divisor = 0;
+                if (vsInputLayout.Contains(comp.Attr)) {
+                    o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
+                    glVertexAttr& glAttr = pip.glAttrs[comp.Attr];
+                    o_assert_dbg(!glAttr.enabled);
+                    glAttr.enabled = GL_TRUE;
+                    glAttr.vbIndex = layoutIndex;
+                    if (VertexStepFunction::PerVertex == layout.StepFunction) {
+                        glAttr.divisor = 0;
+                    }
+                    else {
+                        glAttr.divisor = layout.StepRate;
+                    }
+                    glAttr.stride = layout.ByteSize();
+                    glAttr.offset = layout.ComponentByteOffset(compIndex);
+                    glAttr.size   = vertexFormatTable[comp.Format].size;
+                    glAttr.type   = vertexFormatTable[comp.Format].type;
+                    glAttr.normalized = vertexFormatTable[comp.Format].normalized;
                 }
-                else {
-                    glAttr.divisor = layout.StepRate;
-                }
-                glAttr.stride = layout.ByteSize();
-                glAttr.offset = layout.ComponentByteOffset(compIndex);
-                glAttr.size   = vertexFormatTable[comp.Format].size;
-                glAttr.type   = vertexFormatTable[comp.Format].type;
-                glAttr.normalized = vertexFormatTable[comp.Format].normalized;
             }
         }
     }
