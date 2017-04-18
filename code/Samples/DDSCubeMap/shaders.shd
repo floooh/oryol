@@ -15,7 +15,7 @@ samplerCube tex Texture
 @in vec3 normal
 @out vec3 nrm
 {
-    _position = mul(mvp, position);
+    gl_Position = vsParams.mvp * position;
     nrm = normal;
 }
 @end
@@ -24,7 +24,7 @@ samplerCube tex Texture
 @use_texture_block textures
 @in vec3 nrm
 {
-    _color = texCUBE(tex, nrm);
+    gl_FragColor = texture(tex, nrm);
 }
 @end
 

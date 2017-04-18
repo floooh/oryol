@@ -15,13 +15,13 @@ vec4 particleTranslate Translate
 @in vec4 position
 @in vec4 color0
 @out vec4 color
-    _position = mul(mvp, (position + particleTranslate));
+    gl_Position = perFrameParams.mvp * (position + perParticleParams.particleTranslate);
     color = color0;
 @end
 
 @fs fs
 @in vec4 color
-    _color = color;
+    gl_FragColor = color;
 @end
 
 @program Shader vs fs

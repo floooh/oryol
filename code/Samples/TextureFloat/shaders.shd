@@ -17,19 +17,19 @@
 //               https://github.com/ashima/webgl-noise
 //
 
-_func vec3 mod289(vec3 x) {
+vec3 mod289(vec3 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
-_func vec2 mod289(vec2 x) {
+vec2 mod289(vec2 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
-_func vec3 permute(vec3 x) {
+vec3 permute(vec3 x) {
     return mod289(((x*34.0)+1.0)*x);
 }
 
-_func float snoise(vec2 v)
+float snoise(vec2 v)
 {
     const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
     0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
@@ -88,7 +88,7 @@ float time Time
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    _position = position;
+    gl_Position = position;
     uv = texcoord0;
 @end
 
@@ -98,9 +98,9 @@ float time Time
 @use_code_block NoiseUtil
 @in vec2 uv
 
-    vec2 dx = vec2(time, 0.0);
-    vec2 dy = vec2(0.0, time);
-    vec2 dxy = vec2(time, time);
+    vec2 dx = vec2(fsParams.time, 0.0);
+    vec2 dy = vec2(0.0, fsParams.time);
+    vec2 dxy = vec2(fsParams.time, fsParams.time);
     
     float red;
     red  = (snoise((uv * 1.5) + dx) * 0.5) + 0.5;
@@ -118,7 +118,7 @@ float time Time
     blue += snoise((uv * 5.0) - dxy) * 0.15;
     
     // scale by 100 to check that the result isn't clamped to 1.0
-    _color = vec4(red, green, blue, 0.0) * 100.0;
+    gl_FragColor = vec4(red, green, blue, 0.0) * 100.0;
 @end
 
 @program OffscreenShader offscreenVS offscreenFS
@@ -134,7 +134,7 @@ sampler2D tex Texture
 @in vec4 position
 @in vec2 texcoord0
 @out vec2 uv
-    _position = position;
+    gl_Position = position;
     uv = texcoord0;
 @end
 
@@ -142,7 +142,7 @@ sampler2D tex Texture
 @use_texture_block textures
 @in vec2 uv
     // scale back to 0..1
-    _color = vec4(tex2D(tex, uv).xyz*0.01,1.0);
+    gl_FragColor = vec4(texture(tex, uv).xyz*0.01,1.0);
 @end
 
 @program CopyShader copyVS copyFS

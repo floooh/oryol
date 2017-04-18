@@ -8,7 +8,7 @@
 //
 @code_block lighting
 
-_func vec3 light(vec3 baseColor, vec3 eyeVec, vec3 normal, vec3 lightVec) {
+vec3 light(vec3 baseColor, vec3 eyeVec, vec3 normal, vec3 lightVec) {
 
     // ambient intensity
     float ambient = 0.25;
@@ -26,7 +26,7 @@ _func vec3 light(vec3 baseColor, vec3 eyeVec, vec3 normal, vec3 lightVec) {
     return baseColor * (diff+ambient) + vec3(spec,spec,spec);
 }
 
-_func vec3 gamma(vec3 c) {
+vec3 gamma(vec3 c) {
     float p = 1.0/2.2;
     return pow(c, vec3(p,p,p));
 }
@@ -53,12 +53,12 @@ vec3 eyePos EyePos
 @out vec3 worldEyePos
 @out vec3 worldLightDir
 @out vec4 color
-    _position = mul(mvp, position);
-    worldPosition = mul(model, position).xyz;
-    worldNormal = mul(model, vec4(normal, 0.0)).xyz;
-    worldEyePos = eyePos;
-    worldLightDir = lightDir;
-    color = shapeColor;
+    gl_Position = shapeVSParams.mvp * position;
+    worldPosition = vec4(shapeVSParams.model * position).xyz;
+    worldNormal = vec4(shapeVSParams.model * vec4(normal, 0.0)).xyz;
+    worldEyePos = shapeVSParams.eyePos;
+    worldLightDir = shapeVSParams.lightDir;
+    color = shapeVSParams.shapeColor;
 @end
 
 @fs shapeFS
@@ -71,7 +71,7 @@ vec3 eyePos EyePos
     vec3 eyeVec = normalize(worldEyePos - worldPosition);
     vec3 nrm = normalize(worldNormal);
     vec3 lightDir = normalize(worldLightDir);
-    _color = vec4(light(color.xyz, eyeVec, nrm, lightDir), 1.0);
+    gl_FragColor = vec4(light(color.xyz, eyeVec, nrm, lightDir), 1.0);
 @end
 
 @fs shapeFSGamma
@@ -82,7 +82,7 @@ vec3 eyePos EyePos
 @in vec3 worldLightDir
 @in vec4 color
     vec3 eyeVec = normalize(worldEyePos - worldPosition);
-    _color = vec4(gamma(light(color.xyz, eyeVec, worldNormal, worldLightDir)), 1.0);
+    gl_FragColor = vec4(gamma(light(color.xyz, eyeVec, worldNormal, worldLightDir)), 1.0);
 @end
 
 @program ShapeShader shapeVS shapeFS
@@ -93,7 +93,7 @@ vec3 eyePos EyePos
 //
 @code_block util
 // Adapted from http://developer.download.nvidia.com/SDK/9.5/Samples/DEMOS/Direct3D9/src/HLSL_FresnelReflection/docs/FresnelReflection.pdf
-_func float fresnel(vec3 V, vec3 N, float R0)
+float fresnel(vec3 V, vec3 N, float R0)
 {
     float cosAngle = 1.0-max(dot(V, N), 0.0);
     float result = cosAngle * cosAngle;
@@ -123,11 +123,11 @@ samplerCube tex Texture
 @out vec3 worldNormal
 @out vec3 worldEyePos
 @out vec3 worldLightDir
-    _position = mul(mvp, position);
-    worldPosition = mul(model, position).xyz;
-    worldNormal = mul(model, vec4(normal, 0.0)).xyz;
-    worldEyePos = eyePos;
-    worldLightDir = lightDir;
+    gl_Position = sphereVSParams.mvp * position;
+    worldPosition = vec4(sphereVSParams.model * position).xyz;
+    worldNormal = vec4(sphereVSParams.model * vec4(normal, 0.0)).xyz;
+    worldEyePos = sphereVSParams.eyePos;
+    worldLightDir = sphereVSParams.lightDir;
 @end
 
 @fs sphereFS
@@ -144,10 +144,10 @@ samplerCube tex Texture
     // reflection, refraction and fresnel
     vec3 refl = reflect(-eyeVec, nrm);
     vec3 refr = refract(-eyeVec, nrm, 0.7);
-    vec4 reflectColor = texCUBE(tex, refl);
+    vec4 reflectColor = texture(tex, refl);
     vec4 refractColor;
     if (length(refr) > 0.0) {
-        refractColor = texCUBE(tex, refr);
+        refractColor = texture(tex, refr);
     }
     else {
         refractColor = reflectColor;
@@ -155,7 +155,7 @@ samplerCube tex Texture
     float fr = fresnel(eyeVec, nrm, 0.4);
     vec3 c = vec3(1.5, 1.2, 1.2) * fr * mix(refractColor.xyz, reflectColor.xyz, fr);
     c = light(c, eyeVec, nrm, normalize(worldLightDir));
-    _color = vec4(gamma(c), 1.0);
+    gl_FragColor = vec4(gamma(c), 1.0);
 @end
 
 @program SphereShader sphereVS sphereFS

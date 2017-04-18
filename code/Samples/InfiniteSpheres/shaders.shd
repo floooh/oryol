@@ -17,7 +17,7 @@ sampler2D tex Texture
 @in vec2 texcoord0
 @out vec4 nrm
 @out vec2 uv
-    _position = mul(mvp, position);
+    gl_Position = vsParams.mvp * position;
     nrm = normal;
     uv = texcoord0;
 @end
@@ -26,8 +26,8 @@ sampler2D tex Texture
 @use_texture_block textures
 @in vec4 nrm
 @in vec2 uv
-    vec4 texColor = tex2D(tex, uv * vec2(5.0, 3.0));
-    _color = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;
+    vec4 texColor = texture(tex, uv * vec2(5.0, 3.0));
+    gl_FragColor = ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor * texColor;
 @end
 
 @program Shader vs fs

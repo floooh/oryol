@@ -8,13 +8,13 @@
 //
 @code_block FSUtil
 // get particleId from current fragment coord
-_func float getParticleId(float bufferWidth, vec2 fragCoord) {
+float getParticleId(float bufferWidth, vec2 fragCoord) {
     vec2 xy = floor(fragCoord);
     return (xy.y * bufferWidth * 0.5) + (xy.x * 0.5);
 }
 
 // check if current fragment is a position or velocity
-_func bool atPosition(vec2 fragCoord) {
+bool atPosition(vec2 fragCoord) {
     // this should be either 0.0 or 1.0, but avoid an exact comparison
     return mod(floor(fragCoord.x), 2.0) < 0.5;
 }
@@ -24,7 +24,7 @@ struct particleStateUvs {
     vec2 posUv;
     vec2 velUv;
 };
-_func particleStateUvs getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCoord) {
+particleStateUvs getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCoord) {
     particleStateUvs result;
     if (atPos) {
         result.posUv = fragCoord / bufDims;
@@ -43,7 +43,7 @@ _func particleStateUvs getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCo
 //
 @code_block VSUtil
 // compute particle position uv coord from particleId
-_func vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
+vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
     float numParticlesAlongX = bufferDims.x * 0.5;
     float f = particleId / numParticlesAlongX;
     float fragCoordX = fract(f) * numParticlesAlongX * 2.0;
@@ -67,19 +67,19 @@ _func vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
 //               https://github.com/ashima/webgl-noise
 //
 @code_block Noise
-_func vec3 mod289(vec3 x) {
+vec3 mod289(vec3 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
-_func vec2 mod289(vec2 x) {
+vec2 mod289(vec2 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
-_func vec3 permute(vec3 x) {
+vec3 permute(vec3 x) {
     return mod289(((x*34.0)+1.0)*x);
 }
 
-_func float snoise(vec2 v)
+float snoise(vec2 v)
 {
     const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
     0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
@@ -135,7 +135,7 @@ _func float snoise(vec2 v)
 @vs fsqVS
 @in vec4 position
 {
-    _position = position;
+    gl_Position = position;
 }
 @end
 
@@ -156,19 +156,19 @@ vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 @use_code_block Noise FSUtil
 @use_uniform_block initParams
 {
-    if (atPosition(_fragcoord.xy)) {
+    if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
-        _color = vec4(0.0, 0.0, 0.0, 0.0);
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
         // select a pseudo random velocity vector, skewed along positive Y
-        float particleId = getParticleId(bufDims.x, _fragcoord.xy);
+        float particleId = getParticleId(initParams.bufDims.x, gl_FragCoord.xy);
         vec3 rnd = vec3(snoise(vec2(particleId, 0.0)),
                         snoise(vec2(0.0, particleId * 0.1)),
                         snoise(vec2(particleId * 0.1, particleId * 0.01)));
         rnd *= 0.5;
         rnd.y += 2.0; // skew velocity upwards
-        _color = vec4(rnd, 0.0);
+        gl_FragColor = vec4(rnd, 0.0);
     }
 }
 @end
@@ -197,26 +197,26 @@ sampler2D prevState PrevState
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
-    float particleId = getParticleId(bufDims.x, _fragcoord.xy);
-    if (particleId >= numParticles) {
+    float particleId = getParticleId(updateParams.bufDims.x, gl_FragCoord.xy);
+    if (particleId >= updateParams.numParticles) {
         discard;
     }
 
     // current fragment a position or velocity?
-    bool atPos = atPosition(_fragcoord.xy);
+    bool atPos = atPosition(gl_FragCoord.xy);
 
     // load previous position and velocity
-    particleStateUvs uvs = getParticleStateUvs(atPos, bufDims.xy, _fragcoord.xy);
-    vec4 pos = tex2D(prevState, uvs.posUv);
-    vec4 vel = tex2D(prevState, uvs.velUv);
+    particleStateUvs uvs = getParticleStateUvs(atPos, updateParams.bufDims.xy, gl_FragCoord.xy);
+    vec4 pos = texture(prevState, uvs.posUv);
+    vec4 vel = texture(prevState, uvs.velUv);
     if (atPos) {
         // update position
         pos += vel * frameTime;
-        _color = pos;
+        gl_FragColor = pos;
     }
     else {
         // update velocity
-        vec4 vel = tex2D(prevState, uvs.velUv);
+        vec4 vel = texture(prevState, uvs.velUv);
         vel.y -= 1.0 * frameTime;
         
         // check for collision
@@ -224,7 +224,7 @@ sampler2D prevState PrevState
             vel.y = -vel.y;
             vel *= 0.8;
         }
-        _color = vel;
+        gl_FragColor = vel;
     }
 }
 @end
@@ -259,10 +259,10 @@ sampler2D particleTex ParticleState
 @out vec4 color
 {
     float particleId = instance0;
-    vec2 posUv = posUvFromParticleId(particleId, bufDims);
-    vec4 particlePos = vec4(tex2Dvs(particleTex, posUv).xyz, 0.0);
+    vec2 posUv = posUvFromParticleId(particleId, drawParams.bufDims);
+    vec4 particlePos = vec4(texture(particleTex, posUv).xyz, 0.0);
 
-    _position = mul(mvp, (position + particlePos));
+    gl_Position = drawParams.mvp * (position + particlePos);
     color = color0;
 }
 @end
@@ -271,7 +271,7 @@ sampler2D particleTex ParticleState
 @fs drawFS
 @in vec4 color
 {
-    _color = color;
+    gl_FragColor = color;
 }
 @end
 
