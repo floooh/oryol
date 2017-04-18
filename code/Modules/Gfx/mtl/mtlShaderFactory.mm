@@ -70,6 +70,17 @@ mtlShaderFactory::SetupResource(shader& shd) {
     const StringAtom& fsName = setup.FragmentShaderFunc(slang);
     shd.mtlFragmentShader = [shd.mtlFragmentShaderLibrary newFunctionWithName:[NSString stringWithUTF8String:fsName.AsCStr()]];
 
+    // get the vertex shader attribute locations
+    shd.vsAttrIndices.Fill(InvalidIndex);
+    for (MTLVertexAttribute* mtlAttr in shd.mtlVertexShader.vertexAttributes) {
+        if (mtlAttr.active) {
+            VertexAttr::Code attr = VertexAttr::FromString(mtlAttr.name.UTF8String);
+            if (VertexAttr::InvalidVertexAttr != attr) {
+                shd.vsAttrIndices[attr] = int(mtlAttr.attributeIndex);
+            }
+        }
+    }
+
     return ResourceState::Valid;
 }
 

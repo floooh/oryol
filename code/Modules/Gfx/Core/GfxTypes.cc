@@ -355,6 +355,29 @@ const char* VertexAttr::ToString(Code c) {
 }
 
 //------------------------------------------------------------------------------
+VertexAttr::Code VertexAttr::FromString(const char* str) {
+    if (str) {
+        if (0 == std::strcmp("position", str)) return Position;
+        else if (0 == std::strcmp("normal", str)) return Normal;
+        else if (0 == std::strcmp("texcoord0", str)) return TexCoord0;
+        else if (0 == std::strcmp("texcoord1", str)) return TexCoord1;
+        else if (0 == std::strcmp("texcoord2", str)) return TexCoord2;
+        else if (0 == std::strcmp("texcoord3", str)) return TexCoord3;
+        else if (0 == std::strcmp("tangent", str)) return Tangent;
+        else if (0 == std::strcmp("binormal", str)) return Binormal;
+        else if (0 == std::strcmp("weights", str)) return Weights;
+        else if (0 == std::strcmp("indices", str)) return Indices;
+        else if (0 == std::strcmp("color0", str)) return Color0;
+        else if (0 == std::strcmp("color1", str)) return Color1;
+        else if (0 == std::strcmp("instance0", str)) return Instance0;
+        else if (0 == std::strcmp("instance1", str)) return Instance1;
+        else if (0 == std::strcmp("instance2", str)) return Instance2;
+        else if (0 == std::strcmp("instance3", str)) return Instance3;
+    }
+    return InvalidVertexAttr;
+}
+
+//------------------------------------------------------------------------------
 int VertexFormat::ByteSize(Code c) {
     switch (c) {
         case Float:

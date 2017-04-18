@@ -43,19 +43,18 @@ mtlPipelineFactory::createRPS(pipeline& pip) {
 
     // create vertex-descriptor object
     MTLVertexDescriptor* vtxDesc = [MTLVertexDescriptor vertexDescriptor];
-    const VertexLayout& shdLayout = pip.shd->Setup.InputLayout();
     for (int meshSlotIndex = 0; meshSlotIndex < GfxConfig::MaxNumInputMeshes; meshSlotIndex++) {
         // NOTE: vertex buffers are located after constant buffers
         const int vbSlotIndex = meshSlotIndex + GfxConfig::MaxNumUniformBlocksPerStage;
         const VertexLayout& meshLayout = pip.Setup.Layouts[meshSlotIndex];
         for (int meshCompIndex = 0; meshCompIndex < meshLayout.NumComponents(); meshCompIndex++) {
             const auto& comp = meshLayout.ComponentAt(meshCompIndex);
-            // find matching component in shader's vertex shader input layout
-            int vsCompIndex = shdLayout.ComponentIndexByVertexAttr(comp.Attr);
-            if (InvalidIndex != vsCompIndex) {
-                vtxDesc.attributes[vsCompIndex].format = mtlTypes::asVertexFormat(comp.Format);
-                vtxDesc.attributes[vsCompIndex].bufferIndex = vbSlotIndex;
-                vtxDesc.attributes[vsCompIndex].offset = meshLayout.ComponentByteOffset(meshCompIndex);
+            // find the vertex attribute index in the shader
+            int mtlAttrIndex = pip.shd->vsAttrIndices[comp.Attr];
+            if (InvalidIndex != mtlAttrIndex) {
+                vtxDesc.attributes[mtlAttrIndex].format = mtlTypes::asVertexFormat(comp.Format);
+                vtxDesc.attributes[mtlAttrIndex].bufferIndex = vbSlotIndex;
+                vtxDesc.attributes[mtlAttrIndex].offset = meshLayout.ComponentByteOffset(meshCompIndex);
             }
         }
         vtxDesc.layouts[vbSlotIndex].stride = meshLayout.ByteSize();

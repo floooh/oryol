@@ -79,6 +79,7 @@ mtlShader::Clear() {
     this->mtlFragmentShaderLibrary = nil;
     this->mtlVertexShader = nil;
     this->mtlFragmentShader = nil;
+    this->vsAttrIndices.Fill(InvalidIndex);
     shaderBase::Clear();
 }
 
