@@ -1,8 +1,10 @@
 '''
 Code generator for shader libraries.
+
+FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 97
+Version = 100
 
 import os, sys, glob, re, platform
 from pprint import pprint
@@ -1100,8 +1102,11 @@ class ShaderLibrary :
         glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, args)
         spirvcross.compile(input, shd_base_path, args)
         if platform.system() == 'Darwin':
-            c_name = '{}_{}_{}'.format(shd.name, shd_type, 'metallib')
+            c_name = '{}_{}_metallib'.format(shd.name, shd_type)
             metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
+        if platform.system() == 'Windows':
+            c_name = '{}_{}_hlsl5'.format(shd.name, shd_type)
+            hlslcompiler.compile(shd.generatedSource, shd_base_path, shd_type, c_name, args)
 
     def compile(self, input, out_hdr, args) :
         base_path = os.path.splitext(out_hdr)[0]
@@ -1225,15 +1230,14 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         f.write('#if ORYOL_D3D11\n')
         f.write('/*\n')
         hlsl_src_path = base_path + '.hlsl'
+        hlsl_bin_path = base_path + '.hlsl.h'
         with open(hlsl_src_path, 'r') as rf:
             lines = rf.read().splitlines()
             for line in lines:
                 line = line.replace('/*', '__').replace('*/', '__')
                 f.write('"{}\\n"\n'.format(line))
         f.write('*/\n')
-        rootPath = os.path.splitext(absPath)[0]
-        # f.write('#include "{}_{}_{}_src.h"\n'.format(rootPath, shd.name, slVersion))
-        f.write('#error "FIXME"\n')
+        f.write('#include "{}"\n'.format(hlsl_bin_path))
         f.write('#endif\n')
     elif isMetal[slVersion] :
         # for Metal, the shader has been compiled into a binary shader
@@ -1291,8 +1295,10 @@ def writeProgramSource(f, shdLib, prog) :
             f.write('    setup.SetProgramFromSources({}, {}, {});\n'.format(
                 slangType, vsSource, fsSource));
         elif isHLSL[slVersion] :
+            vs_c_name = '{}_vs_hlsl5'.format(vs.name)
+            fs_c_name = '{}_fs_hlsl5'.format(fs.name)
             f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
-                slangType, vsSource, vsSource, fsSource, fsSource))
+                slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
         elif isMetal[slVersion] :
             vs_c_name = '{}_vs_metallib'.format(vs.name)
             fs_c_name = '{}_fs_metallib'.format(fs.name)
@@ -1335,8 +1341,6 @@ def generateSource(absSourcePath, shdLib) :
     f = open(absSourcePath, 'w') 
     writeSourceTop(f, absSourcePath, shdLib)
     for slVersion in slVersions :
-        if isHLSL[slVersion]:
-            continue
         for vs in shdLib.vertexShaders.values() :
             writeShaderSource(f, absSourcePath, shdLib, vs, slVersion)
         for fs in shdLib.fragmentShaders.values() :

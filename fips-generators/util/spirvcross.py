@@ -62,6 +62,6 @@ def compile(input, base_path, args):
     run(cmd)
 
     # HLSL5
-#    dst_path = base_path + '.hlsl'
-#    cmd = [ tool, '--output', dst_path, src_path, '--hlsl', '--shader-model', '50']
-#    run(cmd)
+    dst_path = base_path + '.hlsl'
+    cmd = [ tool, '--output', dst_path, src_path, '--hlsl', '--shader-model', '50']
+    run(cmd)

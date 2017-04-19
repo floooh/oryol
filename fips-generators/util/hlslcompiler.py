@@ -4,11 +4,7 @@ Python wrapper for HLSL compiler (fxc.exe)
 NOTE: this module contains Windows specific code and should
 only be imported when running on Windows.
 '''
-import subprocess
-import tempfile
-import platform
-import os
-import sys
+import subprocess, platform, os, sys
 import genutil as util
 if sys.version_info[0] < 3:
     import _winreg as winreg
@@ -54,14 +50,6 @@ def findFxc() :
 
     except WindowsError :
         return None
-
-#-------------------------------------------------------------------------------
-def writeFile(f, lines) :
-    '''
-    Write an array of lines to a file.
-    '''
-    for line in lines :
-        f.write(line.content + '\n')
 
 #-------------------------------------------------------------------------------
 def callFxc(cmd) :
@@ -134,10 +122,7 @@ def parseOutput(output, lines) :
         sys.exit(10) 
 
 #-------------------------------------------------------------------------------
-def validate(lines, type, slVersion, outPath, cName, args) :
-    '''
-    Validate a vertex-/fragment-shader pair.
-    '''
+def compile(lines, base_path, type, c_name, args) :
     fxcPath = findFxc()
     if not fxcPath :
         util.fmtError("fxc.exe not found!\n")
@@ -150,12 +135,11 @@ def validate(lines, type, slVersion, outPath, cName, args) :
         'vs': 'vs_5_0',
         'fs': 'ps_5_0'
     }
-    rootPath = os.path.splitext(outPath)[0]
-    hlsl_src_path = rootPath + '.{}{}'.format(profile[type], ext[type])
-    with open(hlsl_src_path, 'w') as f :
-        writeFile(f, lines)
+    hlsl_src_path = base_path + '.hlsl'
+    out_path = base_path + '.hlsl.h'
 
-    cmd = [fxcPath, '/T', profile[type], '/Fh', outPath, '/Vn', cName]
+    # /Gec is backward compatibility mode
+    cmd = [fxcPath, '/T', profile[type], '/Fh', out_path, '/Vn', c_name, '/Gec']
     if 'debug' in args and args['debug'] == 'true' :
         cmd.extend(['/Zi', '/Od'])
     else :
@@ -164,4 +148,3 @@ def validate(lines, type, slVersion, outPath, cName, args) :
     
     output = callFxc(cmd)
     parseOutput(output, lines)
-
