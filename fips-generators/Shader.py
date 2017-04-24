@@ -4,13 +4,11 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 100
+Version = 2 
 
-import os, sys, glob, re, platform
-from pprint import pprint
-from collections import OrderedDict
+import os, platform, json
 import genutil as util
-from util import glslcompiler, spirvcross
+from util import glslcompiler, shdc
 import zlib # only for crc32
 
 if platform.system() == 'Windows' :
@@ -58,15 +56,6 @@ isMetal = {
     'metal': True
 }
 
-glslVersionNumber = {
-    'glsl100': 100,
-    'glsl120': 120,
-    'glsl330': 330,
-    'glsles3': 300,
-    'hlsl5': None,
-    'metal': None
-}
-
 validVsInNames = [
     'position', 'normal', 'texcoord0', 'texcoord1', 'texcoord2', 'texcoord3',
     'tangent', 'binormal', 'weights', 'indices', 'color0', 'color1',
@@ -82,9 +71,6 @@ validUniformTypes = [
     'mat4', 'mat3', 'mat2',
     'vec4', 'vec3', 'vec2',
     'float', 'int', 'bool'
-]
-validUniformArrayTypes = [
-    'mat4', 'vec4'
 ]
 
 uniformCType = {
@@ -149,24 +135,6 @@ texOryolType = {
 }
 
 #-------------------------------------------------------------------------------
-def dumpObj(obj) :
-    pprint(vars(obj))
-
-#---------------------------------------------------------------------------
-def checkListDup(name, objList) :
-    for obj in objList :
-        if name == obj.name :
-            return True
-    return False
-
-#-------------------------------------------------------------------------------
-def findByName(name, objList) :
-    for obj in objList :
-        if name == obj.name :
-            return obj
-    return None
-
-#-------------------------------------------------------------------------------
 class Line :
     '''
     A line object with mapping to a source file and line number.
@@ -186,9 +154,6 @@ class Snippet :
         self.name = None
         self.lines = []
         self.dependencies = []
-
-    def dump(self) :
-        dumpObj(self)
 
 #-------------------------------------------------------------------------------
 class Reference :
@@ -213,174 +178,6 @@ class CodeBlock(Snippet) :
     def getTag(self) :
         return 'code_block'
 
-    def dump(self) :
-        Snippet.dump(self)
-
-#-------------------------------------------------------------------------------
-class Uniform :
-    '''
-    A shader uniform definition.
-    '''
-    def __init__(self, type, num, name, bindName, filePath, lineNumber) :
-        self.type = type
-        self.name = name
-        self.bindName = bindName
-        self.filePath = filePath
-        self.lineNumber = lineNumber
-        self.num = num      # >1 if array
-
-    def dump(self) :
-        dumpObj(self)
-
-#-------------------------------------------------------------------------------
-class UniformBlock :
-    '''
-    A group of related shader uniforms.
-    '''
-    def __init__(self, name, bindName, filePath, lineNumber) :
-        self.name = name
-        self.bindName = bindName
-        self.bindStage = None
-        self.bindSlot = None
-        self.filePath = filePath
-        self.lineNumber = lineNumber
-        self.lines = []
-        self.uniforms = []
-        self.uniformsByType = OrderedDict()
-        # uniformsByType must be in the order of greatest to smallest
-        # type, with samplers at the start
-        for type in validUniformTypes :
-            self.uniformsByType[type] = []
-
-    def getTag(self) :
-        return 'uniform_block'
-    
-    def dump(self) :
-        dumpObj(self)
-        for uniform in self.uniforms :
-            dumpObj(uniform)
-        for type in self.uniformsByType :
-            for uniform in self.uniformsByType[type] :
-                dumpObj(uniform)
-
-    def parseUniformType(self, arg) :
-        return arg.split('[')[0]
-
-    def parseUniformArraySize(self, arg) :
-        tokens = arg.split('[')
-        if len(tokens) > 1 :
-            return int(tokens[1].strip(']'))
-        else : 
-            return 1
-
-    def parseUniforms(self) :
-        # parses the lines array into uniform objects
-        for line in self.lines :
-            util.setErrorLocation(line.path, line.lineNumber)
-            tokens = line.content.split()
-            if len(tokens) != 3:
-                util.fmtError("uniform must have 3 args (type name binding)")
-            type = self.parseUniformType(tokens[0])
-            num  = self.parseUniformArraySize(tokens[0])
-            name = tokens[1]
-            bind = tokens[2]
-            if type not in validUniformTypes :
-                util.fmtError("invalid uniform type '{}', must be one of '{}'!".format(type, ','.join(validUniformTypes)))
-            # additional type restrictions for uniform array types (because of alignment rules)
-            if num > 1 and type not in validUniformArrayTypes :
-                util.fmtError("invalid uniform array type '{}', must be '{}'!".format(type, ','.join(validUniformArrayTypes)))
-            if checkListDup(name, self.uniforms) :
-                util.fmtError("uniform '{}' already defined in '{}'!".format(name, self.name))
-            uniform = Uniform(type, num, name, bind, line.path, line.lineNumber)
-            self.uniforms.append(uniform)
-            self.uniformsByType[type].append(uniform)
-
-    def getHash(self) :
-        # returns an integer hash for the uniform block layout,
-        # this is used as runtime-type check in Gfx::ApplyUniformBlock
-        # to check whether a compatible block is set
-        hashString = ''
-        for type in self.uniformsByType :
-            for uniform in self.uniformsByType[type] :
-                hashString += type
-                hashString += str(uniform.num)
-        return zlib.crc32(hashString) & 0xFFFFFFFF
-
-#-------------------------------------------------------------------------------
-class Texture :
-    '''
-    A texture shader parameter
-    '''
-    def __init__(self, type, name, bindName, filePath, lineNumber) :
-        self.type = type
-        self.name = name
-        self.bindName = bindName
-        self.bindSlot = None
-        self.filePath = filePath
-        self.lineNumber = lineNumber
-
-    def dump(self) :
-        dumpObj(self)
-
-#-------------------------------------------------------------------------------
-class TextureBlock :
-    '''
-    A group of related textures.
-    '''
-    def __init__(self, name, bindName, filePath, lineNumber) :
-        self.name = name
-        self.bindName = bindName
-        self.bindStage = None
-        self.filePath = filePath
-        self.lineNumber = lineNumber
-        self.lines = []
-        self.textures = []
-
-    def getTag(self) :
-        return 'texture_block'
-    
-    def dump(self) :
-        dumpObj(self)
-        for tex in self.textures :
-            dumpObj(tex)
-
-    def parseTextures(self) :
-        # parses the lines array into uniform objects
-        for line in self.lines :
-            util.setErrorLocation(line.path, line.lineNumber)
-            tokens = line.content.split()
-            if len(tokens) != 3:
-                util.fmtError("texture must have 3 args (type name binding)")
-            type = tokens[0]
-            name = tokens[1]
-            bind = tokens[2]
-            if type not in validTextureTypes :
-                util.fmtError("invalid texture type '{}, must be one of '{}'!".format(type, ','.join(validTextureTypes)))
-            if checkListDup(name, self.textures) :
-                util.fmtError("texture '{}' already defined in '{}'!".format(name, self.name))
-            tex = Texture(type, name, bind, line.path, line.lineNumber)
-            self.textures.append(tex)
-
-#-------------------------------------------------------------------------------
-class Attr :
-    '''
-    A shader input or output attribute.
-    '''         
-    def __init__(self, type, name, filePath, lineNumber) :
-        self.type = type
-        self.name = name
-        self.filePath = filePath
-        self.lineNumber = lineNumber
-
-    def __eq__(self, other) :
-        return (self.type == other.type) and (self.name == other.name) 
-
-    def __ne__(self, other) :
-        return (self.type != other.type) or (self.name != other.name)
-
-    def dump(self) :
-        dumpObj(self)
-
 #-------------------------------------------------------------------------------
 class Shader(Snippet) :
     '''
@@ -389,36 +186,9 @@ class Shader(Snippet) :
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.highPrecision = []
-        self.uniformBlockRefs = []
-        self.uniformBlocks = []
-        self.textureBlockRefs = []
-        self.textureBlocks = []
-        self.inputs = []
-        self.outputs = []
         self.resolvedDeps = []
+        self.reflection = {}
         self.generatedSource = None
-
-    def dump(self) :
-        Snippet.dump(self)
-        print('UniformBlockRefs:')
-        for uniformBlockRef in self.uniformBlockRefs :
-            uniformBlockRef.dump()
-        print('UniformBlocks:')
-        for uniformBlock in self.uniformBlocks :
-            uniformBlock.dump()
-        print('TextureBlockRefs:')
-        for textureBlockRef in self.textureBlockRefs :
-            textureBlockRef.dump()
-        print('TextureBlocks:')
-        for textureBlock in self.textureBlocks :
-            textureBlock.dump()
-        print('Inputs:')
-        for input in self.inputs :
-            input.dump()
-        print('Outputs:')
-        for output in self.outputs :
-            output.dump()
 
 #-------------------------------------------------------------------------------
 class VertexShader(Shader) :
@@ -451,16 +221,11 @@ class Program() :
         self.name = name
         self.vs = vs
         self.fs = fs
-        self.uniformBlocks = []
-        self.textureBlocks = []
         self.filePath = filePath
         self.lineNumber = lineNumber        
 
     def getTag(self) :
         return 'program'
-
-    def dump(self) :
-        dumpObj(self)
 
 #-------------------------------------------------------------------------------
 class Parser :
@@ -547,34 +312,6 @@ class Parser :
         self.push(codeBlock)
 
     #---------------------------------------------------------------------------
-    def onUniformBlock(self, args) :
-        if self.current is not None :
-            util.fmtError("@uniform_block must be at top level (missing @end in '{}'?".format(self.current.name))
-        if len(args) != 2:
-            util.fmtError("@uniform_block must have 2 args (name bind)")
-        name = args[0]
-        bind = args[1]
-        if name in self.shaderLib.uniformBlocks  :
-            util.fmtError("@uniform_block '{}' already defined.".format(name))
-        ub = UniformBlock(name, bind, self.fileName, self.lineNumber)
-        self.shaderLib.uniformBlocks[name] = ub
-        self.push(ub)
-
-    #---------------------------------------------------------------------------
-    def onTextureBlock(self, args) :
-        if self.current is not None :
-            util.fmtError("@texture_block must be at top level (missing @end in '{}'?".format(self.current.name))
-        if len(args) != 2:
-            util.fmtError("@texture_block must have 2 args (name bind)")
-        name = args[0]
-        bind = args[1]
-        if name in self.shaderLib.textureBlocks :
-            util.fmtError("@texture_block '{}' already defined.".format(name))
-        tb = TextureBlock(name, bind, self.fileName, self.lineNumber)
-        self.shaderLib.textureBlocks[name] = tb
-        self.push(tb)
-
-    #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
         if len(args) != 1:
             util.fmtError("@vs must have 1 arg (name)")
@@ -613,46 +350,6 @@ class Parser :
         self.shaderLib.programs[name] = prog
 
     #---------------------------------------------------------------------------
-    def onIn(self, args) :
-        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
-            util.fmtError("@in must come after @vs or @fs!")
-        if len(args) != 2:
-            util.fmtError("@in must have 2 args (type name)")
-        type = args[0]
-        name = args[1]
-        if type not in validInOutTypes :
-            util.fmtError("invalid 'in' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes)))
-        if self.current.getTag() == 'vs' :
-            if name not in validVsInNames :
-                util.fmtError("invalid input attribute name '{}', must be one of '{}'!".format(name, ','.join(validVsInNames)))
-        if checkListDup(name, self.current.inputs) :
-            util.fmtError("@in '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.inputs.append(Attr(type, name, self.fileName, self.lineNumber))
-
-    #---------------------------------------------------------------------------
-    def onOut(self, args) :
-        if not self.current or not self.current.getTag() in ['vs'] :
-            util.fmtError("@out must come after @vs!")
-        if len(args) != 2:
-            util.fmtError("@out must have 2 args (type name)")
-        type = args[0]
-        name = args[1]
-        if type not in validInOutTypes :
-            util.fmtError("invalid 'out' type '{}', must be one of '{}'!".format(type, ','.join(validInOutTypes))) 
-        if checkListDup(name, self.current.outputs) :
-            util.fmtError("@out '{}' already defined in '{}'!".format(name, self.current.name))
-        self.current.outputs.append(Attr(type, name, self.fileName, self.lineNumber))
-
-    #---------------------------------------------------------------------------
-    def onPrecision(self, args) :
-        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
-            util.fmtError("@highp must come after @vs or @fs!")
-        if len(args) != 1:
-            util.fmtError("@highp must have 1 arg (type)")
-        type = args[0]
-        self.current.highPrecision.append(type)
-
-    #---------------------------------------------------------------------------
     def onUseCodeBlock(self, args) :
         if not self.current or not self.current.getTag() in ['code_block', 'vs', 'fs'] :
             util.fmtError("@use_code_block must come after @code_block, @vs or @fs!")
@@ -662,40 +359,6 @@ class Parser :
             self.current.dependencies.append(Reference(arg, self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
-    def onUseUniformBlock(self, args) :
-        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
-            util.fmtError("@use_uniform_block must come after @vs or @fs!")
-        if len(args) < 1:
-            util.fmtError("@use_uniform_block must have at least one arg!")
-        for arg in args :
-            if arg not in self.shaderLib.uniformBlocks :
-                util.fmtError("unknown uniform_block name '{}'".format(arg))
-            uniformBlock = self.shaderLib.uniformBlocks[arg]
-            if uniformBlock.bindStage is not None :
-                if uniformBlock.bindStage != self.current.getTag() :
-                    util.fmtError("uniform_block '{}' cannot be used both in @vs and @fs!".format(arg))
-            uniformBlock.bindStage = self.current.getTag()
-            self.current.uniformBlockRefs.append(Reference(arg, self.fileName, self.lineNumber))
-            self.current.uniformBlocks.append(uniformBlock)
-   
-    #---------------------------------------------------------------------------
-    def onUseTextureBlock(self, args) :
-        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
-            util.fmtError("@use_texture_block must come after @vs or @fs!")
-        if len(args) < 1 :
-            util.fmtError("@use_texture_block must have at least one arg!")
-        for arg in args :
-            if arg not in self.shaderLib.textureBlocks :
-                util.fmtError("unknown texture_block name '{}'".format(arg))
-            textureBlock = self.shaderLib.textureBlocks[arg]
-            if textureBlock.bindStage is not None :
-                if textureBlock.bindStage != self.current.getTag() :
-                    util.fmtError("texture_block '{}' cannot be used both in @vs and @fs!".format(arg))
-            textureBlock.bindStage = self.current.getTag()
-            self.current.textureBlockRefs.append(Reference(arg, self.fileName, self.lineNumber))
-            self.current.textureBlocks.append(textureBlock)
-
-    #---------------------------------------------------------------------------
     def onEnd(self, args) :
         if not self.current or not self.current.getTag() in ['uniform_block', 'texture_block', 'code_block', 'vs', 'fs', 'program'] :
             util.fmtError("@end must come after @uniform_block, @texture_block, @code_block, @vs, @fs or @program!")
@@ -703,10 +366,6 @@ class Parser :
             util.fmtError("@end must not have arguments")
         if self.current.getTag() in ['code_block', 'vs', 'fs'] and len(self.current.lines) == 0 :
             util.fmtError("no source code lines in @code_block, @vs or @fs section")
-        if self.current.getTag() == 'uniform_block' :
-            self.current.parseUniforms()
-        if self.current.getTag() == 'texture_block' :
-            self.current.parseTextures()
         self.pop()
 
     #---------------------------------------------------------------------------
@@ -719,7 +378,6 @@ class Parser :
                 util.fmtError("only whitespace allowed in front of tag")
             if line.find(';') != -1 :
                 util.fmtError("no semicolons allowed in tag lines")
-
             tagAndArgs = line[tagStartIndex+1 :].split()
             tag = tagAndArgs[0]
             args = tagAndArgs[1:]
@@ -731,20 +389,6 @@ class Parser :
                 self.onFragmentShader(args)
             elif tag == 'use_code_block':
                 self.onUseCodeBlock(args)
-            elif tag == 'use_uniform_block':
-                self.onUseUniformBlock(args)
-            elif tag == 'use_texture_block':
-                self.onUseTextureBlock(args)
-            elif tag == 'in':
-                self.onIn(args)
-            elif tag == 'out':
-                self.onOut(args)
-            elif tag == 'uniform_block':
-                self.onUniformBlock(args)
-            elif tag == 'texture_block':
-                self.onTextureBlock(args)
-            elif tag == 'highp' :
-                self.onPrecision(args)
             elif tag == 'program':
                 self.onProgram(args)
             elif tag == 'end':
@@ -786,7 +430,7 @@ class Parser :
             util.fmtError('missing @end at end of file')
 
 #-------------------------------------------------------------------------------
-class GLSLGenerator :
+class Generator :
     '''
     Generate vertex and fragment shader source code for generic GLSL
     as input to glslangValidator for SPIR-V generation.
@@ -795,80 +439,21 @@ class GLSLGenerator :
         self.shaderLib = shaderLib
 
     #---------------------------------------------------------------------------
-    def genLines(self, dstLines, srcLines) :
-        for srcLine in srcLines :
-            dstLines.append(srcLine)
-        return dstLines
-
-    #---------------------------------------------------------------------------
-    def genUniforms(self, shd, lines) :
-        # no GLSL uniform blocks
-        for ub in shd.uniformBlocks :
-            lines.append(Line('uniform {}_t {{'.format(ub.name), ub.filePath, ub.lineNumber))
-            for type in ub.uniformsByType :
-                for uniform in ub.uniformsByType[type] :
-                    if uniform.num == 1 :
-                        lines.append(Line('    {} {};'.format(uniform.type, uniform.name), 
-                            uniform.filePath, uniform.lineNumber))
-                    else :
-                        lines.append(Line('    {} {}[{}];'.format(uniform.type, uniform.name, uniform.num), 
-                            uniform.filePath, uniform.lineNumber))
-            lines.append(Line('}} {};'.format(ub.name)));
-        for tb in shd.textureBlocks :
-            for tex in tb.textures :
-                lines.append(Line('uniform {} {};'.format(tex.type, tex.name), tex.filePath, tex.lineNumber))
-        return lines 
-
-    #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs) :
         lines = []
-
-        # version tag
         lines.append(Line('#version 330'))
-
-        # write uniform definition 
-        lines = self.genUniforms(vs, lines)
-
-        # write vertex shader inputs
-        for input in vs.inputs :
-            lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-
-        # write vertex shader outputs
-        for output in vs.outputs :
-            lines.append(Line('out {} {};'.format(output.type, output.name), output.filePath, output.lineNumber))
-
-        # write blocks the vs depends on
         for dep in vs.resolvedDeps :
             lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-
-        # write vertex shader function
-        lines.append(Line('void main() {', vs.lines[0].path, vs.lines[0].lineNumber))
-        lines = self.genLines(lines, vs.lines)
-        lines.append(Line('}', vs.lines[-1].path, vs.lines[-1].lineNumber))
+        lines.extend(vs.lines)
         vs.generatedSource = lines
 
     #---------------------------------------------------------------------------
     def genFragmentShaderSource(self, fs) :
         lines = []
-
-        # version tag
         lines.append(Line('#version 330'))
-
-        # write uniform definition
-        lines = self.genUniforms(fs, lines)
-
-        # write fragment shader inputs
-        for input in fs.inputs :
-            lines.append(Line('in {} {};'.format(input.type, input.name), input.filePath, input.lineNumber))
-
-        # write blocks the fs depends on
         for dep in fs.resolvedDeps :
             lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-
-        # write fragment shader function
-        lines.append(Line('void main() {', fs.lines[0].path, fs.lines[0].lineNumber))
-        lines = self.genLines(lines, fs.lines)
-        lines.append(Line('}', fs.lines[-1].path, fs.lines[-1].lineNumber))
+        lines.extend(fs.lines)
         fs.generatedSource = lines
 
 #-------------------------------------------------------------------------------
@@ -879,46 +464,17 @@ class ShaderLibrary :
     def __init__(self, inputs) :
         self.sources = inputs
         self.codeBlocks = {}
-        self.uniformBlocks = {}
-        self.textureBlocks = {}
         self.vertexShaders = {}
         self.fragmentShaders = {}
         self.programs = {}
         self.current = None
 
-    def dump(self) :
-        dumpObj(self)
-        print('Blocks:')
-        for cb in self.codeBlocks.values() :
-            cb.dump()
-        print('UniformBlocks:')
-        for ub in self.uniformBlocks.values() :
-            ub.dump()
-        print('TextureBlocks:')
-        for tb in self.textureBlocks.values() :
-            tb.dump()
-        print('Vertex Shaders:')
-        for vs in self.vertexShaders.values() :
-            vs.dump()
-        print('Fragment Shaders:')
-        for fs in self.fragmentShaders.values() :
-            fs.dump()
-        print('Programs:')
-        for prog in self.programs.values() :
-            program.dump()
-
     def parseSources(self) :
-        '''
-        Parse one source file.
-        '''
         parser = Parser(self)
         for source in self.sources :            
             parser.parseSource(source)
 
     def resolveDeps(self, shd, dep) :
-        '''
-        Recursively resolve dependencies for a shader.
-        '''
         # just add new dependencies at the end of resolvedDeps,
         # and remove dups in a second pass after recursion
         if not dep.name in self.codeBlocks :
@@ -929,11 +485,6 @@ class ShaderLibrary :
             self.resolveDeps(shd, depdep)
 
     def removeDuplicateDeps(self, shd) :
-        '''
-        Remove duplicates from the resolvedDeps from the front.
-        While we're at it, reverse the order so that the
-        lowest level dependency comes first.
-        '''
         deps = []
         for dep in shd.resolvedDeps :
             if not dep in deps :
@@ -941,84 +492,7 @@ class ShaderLibrary :
         deps.reverse()
         shd.resolvedDeps = deps
 
-    def checkAddUniformBlock(self, uniformBlockRef, list) :
-        '''
-        Resolve a uniform block ref and add to list with sanity checks.
-        '''
-        if uniformBlockRef.name in self.uniformBlocks :
-            if not findByName(uniformBlockRef.name, list) :
-                uniformBlock = self.uniformBlocks[uniformBlockRef.name]
-                list.append(uniformBlock)
-        else :
-            util.setErrorLocation(uniformBlockRef.filePath, uniformBlockRef.lineNumber)
-            util.fmtError("uniform_block '%s' not found!".format(uniformBlockRef.name))
-
-    def checkAddTextureBlock(self, textureBlockRef, list) :
-        '''
-        Resolve a texture block ref and add to list with sanity checks
-        '''
-        if textureBlockRef.name in self.textureBlocks :
-            if not findByName(textureBlockRef.name, list) :
-                textureBlock = self.textureBlocks[textureBlockRef.name]
-                list.append(textureBlock)
-            else :
-                util.setErrorLocation(textureBlockRef.filePath, textureBlockRef.lineNumber)
-                util.fmtError("texture_block '%s' not found!".format(textureBlockRef.name))
-
-    def resolveUniformAndTextureBlocks(self, program) :
-        '''
-        Gathers all uniform- and texture-blocks from all shaders in the program
-        and assigns the bindStage
-        '''
-        if program.vs not in self.vertexShaders :
-            util.setErrorLocation(program.filePath, program.lineNumber)
-            util.fmtError("unknown vertex shader '{}'".format(program.vs))
-        for uniformBlockRef in self.vertexShaders[program.vs].uniformBlockRefs :
-            self.checkAddUniformBlock(uniformBlockRef, program.uniformBlocks)
-        for textureBlockRef in self.vertexShaders[program.vs].textureBlockRefs :
-            self.checkAddTextureBlock(textureBlockRef, program.textureBlocks)
-
-        if program.fs not in self.fragmentShaders :
-            util.setErrorLocation(program.filePath, program.lineNumber)
-            util.fmtError("unknown fragment shader '{}'".format(program.fs))
-        for uniformBlockRef in self.fragmentShaders[program.fs].uniformBlockRefs :
-            self.checkAddUniformBlock(uniformBlockRef, program.uniformBlocks)
-        for textureBlockRef in self.fragmentShaders[program.fs].textureBlockRefs :
-            self.checkAddTextureBlock(textureBlockRef, program.textureBlocks)
-    
-    def assignBindSlotIndices(self, program) :
-        '''
-        Assigns bindSlotIndex to uniform-blocks and
-        to textures inside texture blocks. These
-        are counted separately for the different shader stages (each
-        shader stage has its own bind slots)
-        '''
-        vsUBSlot = 0
-        fsUBSlot = 0
-        for ub in program.uniformBlocks :
-            if ub.bindStage == 'vs' :
-                ub.bindSlot = vsUBSlot
-                vsUBSlot += 1
-            else :
-                ub.bindSlot = fsUBSlot
-                fsUBSlot += 1
-        vsTexSlot = 0
-        fsTexSlot = 0
-        for tb in program.textureBlocks :
-            if tb.bindStage == 'vs' :
-                for tex in tb.textures :
-                    tex.bindSlot = vsTexSlot
-                    vsTexSlot += 1
-            else :
-                for tex in tb.textures :
-                    tex.bindSlot = fsTexSlot
-                    fsTexSlot += 1
-
     def resolveAllDependencies(self) :
-        '''
-        Resolve all dependencies for vertex- and fragment shaders.
-        This populates the resolvedDeps, uniformBlocks and textureBlocks arrays. 
-        '''
         for vs in self.vertexShaders.values() :
             for dep in vs.dependencies :
                 self.resolveDeps(vs, dep)
@@ -1027,9 +501,6 @@ class ShaderLibrary :
             for dep in fs.dependencies :
                 self.resolveDeps(fs, dep)
             self.removeDuplicateDeps(fs)
-        for program in self.programs.values() :
-            self.resolveUniformAndTextureBlocks(program)
-            self.assignBindSlotIndices(program)
 
     def validate(self) :
         '''
@@ -1037,11 +508,6 @@ class ShaderLibrary :
         shader code is generated:
 
         - check whether each vs and fs is part of a program
-
-        - check whether vertex shader output signatures match fragment
-        shader input signatures, this is a D3D11 requirement, signatures 
-        must match exactly, even if the fragment shader doesn't use all output
-        from the vertex shader
         '''        
         for vs_name,vs in self.vertexShaders.iteritems() :
             vs_found = False
@@ -1063,57 +529,36 @@ class ShaderLibrary :
                 util.fmtError("fragment shader '{}' is not part of a program".format(fs_name), False)
                 fatalError = True
             
-        for prog in self.programs.values() :
-            fatalError = False
-            vs = self.vertexShaders[prog.vs]
-            fs = self.fragmentShaders[prog.fs]
-            if len(vs.outputs) != len(fs.inputs) :
-                if len(fs.inputs) > 0 :
-                    util.setErrorLocation(fs.inputs[0].filePath, fs.inputs[0].lineNumber)
-                    util.fmtError("number of fs inputs doesn't match number of vs outputs", False)
-                    fatalError = True
-                if len(vs.outputs) > 0 :
-                    util.setErrorLocation(vs.outputs[0].filePath, vs.outputs[0].lineNumber)
-                    util.fmtError("number of vs outputs doesn't match number of fs inputs", False)
-                    fatalError = True
-                if fatalError :
-                    sys.exit(10)
-            else :
-                for index, outAttr in enumerate(vs.outputs) :
-                    if outAttr != fs.inputs[index] :
-                        util.setErrorLocation(fs.inputs[index].filePath, fs.inputs[index].lineNumber)
-                        util.fmtError("fs input doesn't match vs output (names, types and order must match)", False)
-                        util.setErrorLocation(outAttr.filePath, outAttr.lineNumber)
-                        util.fmtError("vs output doesn't match fs input (names, types and order must match)")
-
-    def generateShaderSourcesGLSL(self) :
-        '''
-        This generates the vertex- and fragment-shader source 
-        for all GLSL versions.
-        '''
-        gen = GLSLGenerator(self)
+    def generateShaderSources(self) :
+        gen = Generator(self)
         for vs in self.vertexShaders.values() :
             gen.genVertexShaderSource(vs)
         for fs in self.fragmentShaders.values() :
             gen.genFragmentShaderSource(fs)
 
-    def compile_shader(self, input, shd, shd_type, base_path, args):
+    def loadReflection(self, shd, base_path):
+        refl_path = base_path + '.json'
+        with open(refl_path, 'r') as f:
+            shd.reflection = json.load(f)
+
+    def compileShader(self, input, shd, shd_type, base_path, args):
         shd_base_path = base_path + '_' + shd.name
         glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, args)
-        spirvcross.compile(input, shd_base_path, args)
-        if platform.system() == 'Darwin':
-            c_name = '{}_{}_metallib'.format(shd.name, shd_type)
-            metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
-        if platform.system() == 'Windows':
-            c_name = '{}_{}_hlsl5'.format(shd.name, shd_type)
-            hlslcompiler.compile(shd.generatedSource, shd_base_path, shd_type, c_name, args)
+        shdc.compile(input, shd_base_path, args)
+        self.loadReflection(shd, shd_base_path)
+#        if platform.system() == 'Darwin':
+#            c_name = '{}_{}_metallib'.format(shd.name, shd_type)
+#            metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
+#        if platform.system() == 'Windows':
+#            c_name = '{}_{}_hlsl5'.format(shd.name, shd_type)
+#            hlslcompiler.compile(shd.generatedSource, shd_base_path, shd_type, c_name, args)
 
     def compile(self, input, out_hdr, args) :
         base_path = os.path.splitext(out_hdr)[0]
         for vs in self.vertexShaders.values():
-            self.compile_shader(input, vs, 'vs', base_path, args)
+            self.compileShader(input, vs, 'vs', base_path, args)
         for fs in self.fragmentShaders.values():
-            self.compile_shader(input, fs, 'fs', base_path, args)
+            self.compileShader(input, fs, 'fs', base_path, args)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
@@ -1358,8 +803,8 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
         shaderLibrary.validate()
-        shaderLibrary.generateShaderSourcesGLSL()
+        shaderLibrary.generateShaderSources()
         shaderLibrary.compile(input, out_hdr, args)
-        generateSource(out_src, shaderLibrary)
-        generateHeader(out_hdr, shaderLibrary)
+#        generateSource(out_src, shaderLibrary)
+#        generateHeader(out_hdr, shaderLibrary)
 
