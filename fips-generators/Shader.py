@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 2 
+Version = 4 
 
 import os, platform, json
 import genutil as util
@@ -18,7 +18,7 @@ if platform.system() == 'Darwin' :
     from util import metalcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3', 'hlsl5', 'metal' ]
+slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3'] # 'hlsl5', 'metal' ]
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
@@ -71,6 +71,11 @@ validUniformTypes = [
     'mat4', 'mat3', 'mat2',
     'vec4', 'vec3', 'vec2',
     'float', 'int', 'bool'
+]
+validUniformArrayTypes = [
+    'mat4', 'mat2',
+    'vec4', 'vec2',
+    'float', 'int'
 ]
 
 uniformCType = {
@@ -508,8 +513,10 @@ class ShaderLibrary :
         shader code is generated:
 
         - check whether each vs and fs is part of a program
+        - check vertex shader inputs for valid types and names
+        - check whether vertex shader output matches fragment shader input
         '''        
-        for vs_name,vs in self.vertexShaders.iteritems() :
+        for vs_name,vs in self.vertexShaders.items() :
             vs_found = False
             for prog in self.programs.values() :
                 if vs_name == prog.vs :
@@ -518,8 +525,7 @@ class ShaderLibrary :
                 util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
                 util.fmtError("vertex shader '{}' is not part of a program".format(vs_name), False)
                 fatalError = True
-
-        for fs_name,fs in self.fragmentShaders.iteritems() :
+        for fs_name,fs in self.fragmentShaders.items() :
             fs_found = False
             for prog in self.programs.values() :
                 if fs_name == prog.fs :
@@ -528,7 +534,44 @@ class ShaderLibrary :
                 util.setErrorLocation(fs.lines[0].path, fs.lines[0].lineNumber)
                 util.fmtError("fragment shader '{}' is not part of a program".format(fs_name), False)
                 fatalError = True
-            
+        for vs in self.vertexShaders.values():
+            util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
+            vs_inputs = vs.reflection['inputs']
+            for vs_input in vs_inputs:
+                if vs_input['name'] not in validVsInNames:
+                    util.fmtError("invalid vertex shader input name '{}', must be ({})".format(vs_input['name'], ','.join(validVsInNames)))
+                if vs_input['type'] not in validInOutTypes:
+                    util.fmtError("invalid vertex shader input type '{}', must be ({})".format(vs_input['type'], ','.join(validInOutTypes)))
+            for ub in vs.reflection['uniform_blocks']:
+                for m in ub['members']:
+                    validTypes = validUniformTypes if m['num']==1 else validUniformArrayTypes
+                    if m['type'] not in validTypes:
+                        util.fmtError("invalid uniform block member type '{}', must be ({})".format(m['type'], ','.join(validTypes)))
+        for fs in self.fragmentShaders.values():
+            util.setErrorLocation(fs.lines[0].path, fs.lines[0].lineNumber)
+            for ub in fs.reflection['uniform_blocks']:
+                for m in ub['members']:
+                    validTypes = validUniformTypes if m['num']==1 else validUniformArrayTypes
+                    if m['type'] not in validTypes:
+                        util.fmtError("invalid uniform block member type '{}', must be ({})".format(m['type'], ','.join(validTypes)))
+        for prog in self.programs.values():
+            vs = self.vertexShaders[prog.vs]
+            fs = self.fragmentShaders[prog.fs]
+            vs_outputs = vs.reflection['outputs']
+            fs_inputs = fs.reflection['inputs']
+            vs_fs_error = False
+            if len(vs_outputs) == len(fs_inputs):
+                for i in range(0, len(vs_outputs)):
+                    if vs_outputs[i]['name'] != fs_inputs[i]['name']:
+                        vs_fs_error = True
+                    if vs_outputs[i]['type'] != fs_inputs[i]['type']:
+                        vs_fs_error = True
+            else:
+                vs_fs_error = True
+            if vs_fs_error:
+                util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
+                util.fmtError("output of vs '{}' does not match input of fs '{}'".format(vs.name, fs.name))
+
     def generateShaderSources(self) :
         gen = Generator(self)
         for vs in self.vertexShaders.values() :
@@ -583,44 +626,40 @@ def writeHeaderBottom(f, shdLib) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def writeProgramHeader(f, shdLib, program) :
-    f.write('    class ' + program.name + ' {\n')
-    f.write('    public:\n')
-    
-    # write uniform block structs
-    for ub in program.uniformBlocks :
-        if ub.bindStage == 'vs' :
-            stageName = 'VS'
-        else :
-            stageName = 'FS'
-        f.write('        #pragma pack(push,1)\n')
-        f.write('        struct {} {{\n'.format(ub.bindName))
-        f.write('            static const int _bindSlotIndex = {};\n'.format(ub.bindSlot))
-        f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stageName))
-        f.write('            static const uint32_t _layoutHash = {};\n'.format(ub.getHash()))
-        for type in ub.uniformsByType :
-            for uniform in ub.uniformsByType[type] :
-                if uniform.num == 1 :
-                    f.write('            {} {};\n'.format(uniformCType[uniform.type], uniform.bindName))
-                else :
-                    f.write('            {} {}[{}];\n'.format(uniformCType[uniform.type], uniform.bindName, uniform.num))
-                # for vec3's we need to add a padding field, FIXME: would be good
-                # to try filling the padding fields with float params!
-                if type == 'vec3' :
-                    f.write('            float _pad_{};\n'.format(uniform.bindName))
-        f.write('        };\n')
-        f.write('        #pragma pack(pop)\n')
-    f.write('        static ShaderSetup Setup();\n')
-    f.write('    };\n')
+def getUniformBlockTypeHash(ub_refl):
+    hashString = ''
+    for member in ub_refl['members']:
+        hashString += member['type']
+        hashString += str(member['num'])
+    return zlib.crc32(hashString) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
-def writeTextureBlocksHeader(f, shdLib) :
-    # write texture bind slot constants
-    for tb in shdLib.textureBlocks.values() :
-        f.write('    struct {} {{\n'.format(tb.bindName))
-        for tex in tb.textures :
-            f.write('        static const int {} = {};\n'.format(tex.bindName, tex.bindSlot))
-        f.write('    };\n')
+def writeProgramHeader(f, shdLib, prog) :
+    f.write('    namespace ' + prog.name + ' {\n')
+    
+    # write uniform block structs
+    for stage in ['VS', 'FS']:
+        shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
+        refl = shd.reflection
+        for ub in refl['uniform_blocks']:
+            f.write('        #pragma pack(push,1)\n')
+            f.write('        struct {} {{\n'.format(ub['type']))
+            f.write('            static const int _bindSlotIndex = {};\n'.format(ub['slot']))
+            f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stage))
+            f.write('            static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
+            for m in ub['members']:
+                if m['num'] == 1:
+                    f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
+                else:
+                    f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name']))
+                if m['type'] == 'vec3':
+                    f.write('            float _pad_{};\n'.format(m['name']))
+            f.write('        };\n')
+            f.write('        #pragma pack(pop)\n')
+        for tex in refl['textures']:
+            f.write('        static const int {} = {};\n'.format(tex['name'], tex['slot']))
+    f.write('        static ShaderSetup Setup();\n')
+    f.write('    }\n')
 
 #-------------------------------------------------------------------------------
 def generateHeader(absHeaderPath, shdLib) :
@@ -628,7 +667,6 @@ def generateHeader(absHeaderPath, shdLib) :
     writeHeaderTop(f, shdLib)
     for prog in shdLib.programs.values() :
         writeProgramHeader(f, shdLib, prog)
-    writeTextureBlocksHeader(f, shdLib)
     writeHeaderBottom(f, shdLib)
     f.close()
 
@@ -710,8 +748,8 @@ def writeInputVertexLayout(f, vs) :
     # return the C++ name of the vertex layout
     layoutName = '{}_input'.format(vs.name)
     f.write('    VertexLayout {};\n'.format(layoutName))
-    for attr in vs.inputs :
-        f.write('    {}.Add({}, {});\n'.format(layoutName, attrOryolName[attr.name], attrOryolType[attr.type]))
+    for inp in vs.reflection['inputs'] :
+        f.write('    {}.Add({}, {});\n'.format(layoutName, attrOryolName[inp['name']], attrOryolType[inp['type']]))
     return layoutName
 
 #-------------------------------------------------------------------------------
@@ -752,32 +790,24 @@ def writeProgramSource(f, shdLib, prog) :
         f.write('    #endif\n');
 
     # add uniform layouts to setup object
-    for ub in prog.uniformBlocks :
-        layoutName = '{}_ublayout'.format(ub.bindName)
-        f.write('    UniformBlockLayout {};\n'.format(layoutName))
-        f.write('    {}.TypeHash = {};\n'.format(layoutName, ub.getHash()))
-        for type in ub.uniformsByType :
-            for uniform in ub.uniformsByType[type] :
-                if uniform.num == 1 :
-                    f.write('    {}.Add("{}", {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type]))
-                else :
-                    f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, uniform.name, uniformOryolType[uniform.type], uniform.num))
-        f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-            ub.name, layoutName, ub.bindName, ub.bindName))
-
-    # add texture layouts to setup objects
-    for tb in prog.textureBlocks :
-        layoutName = '{}_tblayout'.format(tb.bindName)
-        f.write('    TextureBlockLayout {};\n'.format(layoutName))
-        for tex in tb.textures :
-            f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, tex.name, texOryolType[tex.type], tex.bindSlot))
-        if tb.bindStage == 'vs' :
-            stageName = 'VS'
-        else :
-            stageName = 'FS'
-        f.write('    setup.AddTextureBlock("{}", {}, ShaderStage::{});\n'.format(
-            tb.name, layoutName, stageName))
-                
+    for stage in ['VS', 'FS']:
+        shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
+        refl = shd.reflection
+        # add uniform block layouts
+        for ub in refl['uniform_blocks']:
+            layoutName = '{}_ublayout'.format(ub['type'])
+            f.write('    UniformBlockLayout {};\n'.format(layoutName))
+            f.write('    {}.TypeHash = {};\n'.format(layoutName, getUniformBlockTypeHash(ub)))
+            for m in ub['members']:
+                if m['num'] == 1:
+                    f.write('    {}.Add("{}", {});\n'.format(layoutName, m['name'], uniformOryolType[m['type']]))
+                else:
+                    f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, m['name'], uniformOryolType[m['type']], m['num']))
+            f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+                ub['type'], layoutName, ub['type'], ub['type']))
+        # add textures layouts to setup objects
+        for tex in refl['textures']:
+            f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
     f.write('    return setup;\n')
     f.write('}\n')
 
@@ -793,7 +823,6 @@ def generateSource(absSourcePath, shdLib) :
     for prog in shdLib.programs.values() :
         writeProgramSource(f, shdLib, prog)
     writeSourceBottom(f, shdLib)  
-    
     f.close()
 
 #-------------------------------------------------------------------------------
@@ -802,9 +831,9 @@ def generate(input, out_src, out_hdr, args) :
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
         shaderLibrary.resolveAllDependencies()
-        shaderLibrary.validate()
         shaderLibrary.generateShaderSources()
         shaderLibrary.compile(input, out_hdr, args)
-#        generateSource(out_src, shaderLibrary)
-#        generateHeader(out_hdr, shaderLibrary)
+        shaderLibrary.validate()
+        generateSource(out_src, shaderLibrary)
+        generateHeader(out_hdr, shaderLibrary)
 
