@@ -93,9 +93,9 @@ public:
     /// get uniform location (-1 if not exists)
     GLint getUniformLocation(ShaderStage::Code bindStage, int bindSlot, int uniformIndex) const;
     /// get sampler index (InvalidIndex if not exists)
-    int getSamplerIndex(ShaderStage::Code bindStage, int textureIndex) const;
+    int getSamplerIndex(ShaderStage::Code bindStage, int bindSlot) const;
     /// compute sampler array index
-    static int samplerArrayIndex(ShaderStage::Code bindStage, int textureIndex);
+    static int samplerArrayIndex(ShaderStage::Code bindStage, int bindSlot);
 
     /// the GL shader program
     GLuint glProgram = 0;
@@ -156,14 +156,14 @@ glShader::getUniformLocation(ShaderStage::Code bindStage, int bindSlot, int unif
 
 //------------------------------------------------------------------------------
 inline int
-glShader::samplerArrayIndex(ShaderStage::Code bindStage, int textureIndex) {
-    return textureIndex + bindStage*MaxTexturesPerBlock;
+glShader::samplerArrayIndex(ShaderStage::Code bindStage, int bindSlot) {
+    return bindSlot + bindStage*MaxTexturesPerBlock;
 }
 
 //------------------------------------------------------------------------------
 inline int
-glShader::getSamplerIndex(ShaderStage::Code bindStage, int textureIndex) const {
-    return this->samplerMappings[samplerArrayIndex(bindStage, textureIndex)];
+glShader::getSamplerIndex(ShaderStage::Code bindStage, int bindSlot) const {
+    return this->samplerMappings[samplerArrayIndex(bindStage, bindSlot)];
 }
 
 //------------------------------------------------------------------------------

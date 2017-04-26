@@ -129,10 +129,10 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        DbgTextShader::VSParams vsParams;
+        DbgTextShader::vsParams vsParams;
         const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
-        vsParams.GlyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
+        vsParams.glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
 
         Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);
@@ -181,7 +181,7 @@ debugTextRenderer::setupFontTexture() {
     Id tex = Gfx::CreateResource(texSetup, data);
     o_assert_dbg(tex.IsValid());
     o_assert_dbg(Gfx::QueryResourceInfo(tex).State == ResourceState::Valid);
-    this->drawState.FSTexture[DbgTextures::Texture] = tex;
+    this->drawState.FSTexture[DbgTextShader::tex] = tex;
 }
 
 //------------------------------------------------------------------------------

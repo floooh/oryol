@@ -984,47 +984,6 @@ private:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::TextureBlockLayout
-    @ingroup Gfx
-    @brief describes the name, type and bindSlot of a group of related textures
-*/
-class TextureBlockLayout {
-public:
-    /// a TextureBlockLayout component describes a single texture entry
-    class Component {
-    public:
-        /// default constructor
-        Component() {};
-        /// construct from name, type and bindSlot
-        Component(const StringAtom& name, TextureType::Code type, int bindSlot);
-        /// return true if the component is valid
-        bool IsValid() const;
-
-        StringAtom Name; 
-        TextureType::Code Type = TextureType::InvalidTextureType;
-        int BindSlot = InvalidIndex;
-    };
-    /// clear the texture layout
-    void Clear();
-    /// return true if the layout is empty
-    bool Empty() const;
-    /// add a component to the layout
-    TextureBlockLayout& Add(const Component& comp);
-    /// add a component to the layout
-    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int bindSlot);
-    /// get number of components in the layout
-    int NumComponents() const;
-    /// find component index with matching bind slot, InvalidIndex if not match
-    int ComponentIndexForBindSlot(int bindSlot) const;
-    /// get component at index
-    const Component& ComponentAt(int index) const;
-private:
-    int numComps = 0;
-    StaticArray<Component, GfxConfig::MaxNumTextureBlockLayoutComponents> comps;
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::UniformBlockLayout
     @ingroup Gfx
     @brief describes the layout of an uniform block
@@ -1436,8 +1395,8 @@ public:
     void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
     void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
-    /// add a texture block
-    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage);
+    /// add a texture declaration
+    void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
     /// get the vertex shader input layout
     const VertexLayout& InputLayout() const;
     /// get program vertex shader source (only valid if setup from sources)
@@ -1464,16 +1423,18 @@ public:
     ShaderStage::Code UniformBlockBindStage(int index) const;
     /// get uniform block bind slot at index
     int UniformBlockBindSlot(int index) const;
-    /// get number of texture blocks
-    int NumTextureBlocks() const;
-    /// find texture block index by bind stage (return InvalidIndex if not found)
-    int TextureBlockIndexByStage(ShaderStage::Code bindStage) const;
-    /// get texture block name at index
-    const StringAtom& TextureBlockName(int index) const;
-    /// get texture block layout at index
-    const class TextureBlockLayout& TextureBlockLayout(int index) const;
-    /// get texture block shader stage at index
-    ShaderStage::Code TextureBlockBindStage(int index) const;
+    /// get number of textures
+    int NumTextures() const;
+    /// find texture index by bind stage and slot (return InvalidIndex if not found)
+    int TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
+    /// get texture name at index
+    const StringAtom& TextureName(int index) const;
+    /// get texture type at index 
+    TextureType::Code TextureType(int index) const;
+    /// get texture bind stage
+    ShaderStage::Code TextureBindStage(int index) const;
+    /// get texture bind slot
+    int TextureBindSlot(int index) const;
 private:
     struct programEntry {
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
@@ -1494,17 +1455,19 @@ private:
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
         int bindSlot = InvalidIndex;
     };
-    struct textureBlockEntry {
+    struct textureEntry {
         StringAtom name;
-        class TextureBlockLayout layout;
+        TextureType::Code type = TextureType::InvalidTextureType;
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+        int bindSlot = InvalidIndex;
     };
     static const int MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
+    static const int MaxNumTextures = GfxConfig::MaxNumVertexTextures + GfxConfig::MaxNumFragmentTextures;
     programEntry program;
     int numUniformBlocks = 0;
     StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;
-    int numTextureBlocks = 0;
-    StaticArray<textureBlockEntry, ShaderStage::NumShaderStages> textureBlocks;
+    int numTextures = 0;
+    StaticArray<textureEntry, MaxNumTextures> textures;
 };
 
 //------------------------------------------------------------------------------

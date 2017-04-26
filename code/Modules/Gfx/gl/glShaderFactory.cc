@@ -173,23 +173,20 @@ glShaderFactory::SetupResource(shader& shd) {
 
     // resolve texture locations
     int glTextureLocation = 0;
-    const int numTextureBlocks = setup.NumTextureBlocks();
-    for (int tbIndex = 0; tbIndex < numTextureBlocks; tbIndex++) {
-        const TextureBlockLayout& layout = setup.TextureBlockLayout(tbIndex);
-        ShaderStage::Code tbBindStage = setup.TextureBlockBindStage(tbIndex);
-        const int numTextures = layout.NumComponents();
-        for (int texIndex = 0; texIndex < numTextures; texIndex++) {
-            const TextureBlockLayout::Component& comp = layout.ComponentAt(texIndex);
-            const GLint glUniformLocation = ::glGetUniformLocation(glProg, comp.Name.AsCStr());
-            if (-1 != glUniformLocation) {
-                shd.bindSampler(tbBindStage, texIndex, glTextureLocation);
-                // set the sampler index in the shader program, this will never change
-                ::glUniform1i(glUniformLocation, glTextureLocation);
-                glTextureLocation++;
-            }
-            else {
-                Log::Warn("Shader uniform '%s' not found, will be ignored!\n", comp.Name.AsCStr());
-            }
+    const int numTextures = setup.NumTextures();
+    for (int texIndex = 0; texIndex < numTextures; texIndex++) {
+        ShaderStage::Code bindStage = setup.TextureBindStage(texIndex);
+        int bindSlot = setup.TextureBindSlot(texIndex);
+        const StringAtom& name = setup.TextureName(texIndex);
+        const GLint glUniformLocation = ::glGetUniformLocation(glProg, name.AsCStr()); 
+        if (-1 != glUniformLocation) {
+            shd.bindSampler(bindStage, bindSlot, glTextureLocation);
+            // set the sampler index in the shader program, this will never change
+            ::glUniform1i(glUniformLocation, glTextureLocation);
+            glTextureLocation++;
+        }
+        else {
+            Log::Warn("Sampler uniform '%s' not found on shader, will be ignored!\n", name.AsCStr());
         }
     }
     ORYOL_GL_CHECK_ERROR();

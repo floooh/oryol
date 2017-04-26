@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 4 
+Version = 6 
 
 import os, platform, json
 import genutil as util
@@ -588,6 +588,9 @@ class ShaderLibrary :
         shd_base_path = base_path + '_' + shd.name
         glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, args)
         shdc.compile(input, shd_base_path, args)
+        for slVersion in slVersions :
+            if isGLSL[slVersion]:
+                glslcompiler.validate(slVersion, shd_type, shd_base_path, args)
         self.loadReflection(shd, shd_base_path)
 #        if platform.system() == 'Darwin':
 #            c_name = '{}_{}_metallib'.format(shd.name, shd_type)
@@ -658,7 +661,7 @@ def writeProgramHeader(f, shdLib, prog) :
             f.write('        #pragma pack(pop)\n')
         for tex in refl['textures']:
             f.write('        static const int {} = {};\n'.format(tex['name'], tex['slot']))
-    f.write('        static ShaderSetup Setup();\n')
+    f.write('        extern ShaderSetup Setup();\n')
     f.write('    }\n')
 
 #-------------------------------------------------------------------------------

@@ -717,59 +717,6 @@ bool VertexLayout::Contains(VertexAttr::Code attr) const {
 }
 
 //------------------------------------------------------------------------------
-TextureBlockLayout::Component::Component(const StringAtom& name, TextureType::Code type, int bindSlot) :
-    Name(name), Type(type), BindSlot(bindSlot) 
-{ }
-
-//------------------------------------------------------------------------------
-bool TextureBlockLayout::Component::IsValid() const {
-    return this->Name.IsValid();
-}
-
-//------------------------------------------------------------------------------
-void TextureBlockLayout::Clear() {
-    this->comps.Fill(Component());
-    this->numComps = 0;
-}
-    
-//------------------------------------------------------------------------------
-bool TextureBlockLayout::Empty() const {
-    return 0 == this->numComps;
-}
-
-//------------------------------------------------------------------------------
-TextureBlockLayout& TextureBlockLayout::Add(const Component& comp) {
-    this->comps[this->numComps++] = comp;
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-TextureBlockLayout& TextureBlockLayout::Add(const StringAtom& name, TextureType::Code type, int bindSlot) {
-    this->comps[this->numComps++] = Component(name, type, bindSlot);
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-int TextureBlockLayout::NumComponents() const {
-    return this->numComps;
-}
-
-//------------------------------------------------------------------------------
-int TextureBlockLayout::ComponentIndexForBindSlot(int bindSlot) const {
-    for (int i = 0; i < this->numComps; i++) {
-        if (this->comps[i].BindSlot == bindSlot) {
-            return i;
-        }
-    }
-    return InvalidIndex;
-}
-
-//------------------------------------------------------------------------------
-const TextureBlockLayout::Component& TextureBlockLayout::ComponentAt(int index) const {
-    return this->comps[index];
-}
-
-//------------------------------------------------------------------------------
 UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type, int num):
     Name(name), Type(type), Num(num) {
     o_assert_dbg(this->Name.IsValid());
@@ -1106,12 +1053,14 @@ void ShaderSetup::AddUniformBlock(const StringAtom& name, const class UniformBlo
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddTextureBlock(const StringAtom& name, const class TextureBlockLayout& layout, ShaderStage::Code bindStage) {
+void ShaderSetup::AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(name.IsValid());
-    textureBlockEntry& entry = this->textureBlocks[this->numTextureBlocks++];
+    o_assert_dbg(bindSlot >= 0);
+    textureEntry& entry = this->textures[this->numTextures++];
     entry.name = name;
-    entry.layout = layout;
+    entry.type = type;
     entry.bindStage = bindStage;
+    entry.bindSlot = bindSlot;
 }
 
 //------------------------------------------------------------------------------
@@ -1190,15 +1139,15 @@ int ShaderSetup::UniformBlockBindSlot(int index) const {
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::NumTextureBlocks() const {
-    return this->numTextureBlocks;
+int ShaderSetup::NumTextures() const {
+    return this->numTextures;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
-    for (int i = 0; i < this->numTextureBlocks; i++) {
-        const auto& entry = this->textureBlocks[i];
-        if (entry.bindStage == bindStage) {
+int ShaderSetup::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
+    for (int i = 0; i < this->numTextures; i++) {
+        const auto& entry = this->textures[i];
+        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
             return i;
         }
     }
@@ -1206,18 +1155,23 @@ int ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::TextureBlockName(int index) const {
-    return this->textureBlocks[index].name;
+const StringAtom& ShaderSetup::TextureName(int index) const {
+    return this->textures[index].name;
 }
 
 //------------------------------------------------------------------------------
-const class TextureBlockLayout& ShaderSetup::TextureBlockLayout(int index) const {
-    return this->textureBlocks[index].layout;
+TextureType::Code ShaderSetup::TextureType(int index) const {
+    return this->textures[index].type;
 }
 
 //------------------------------------------------------------------------------
-ShaderStage::Code ShaderSetup::TextureBlockBindStage(int index) const {
-    return this->textureBlocks[index].bindStage;
+ShaderStage::Code ShaderSetup::TextureBindStage(int index) const {
+    return this->textures[index].bindStage;
+}
+
+//------------------------------------------------------------------------------
+int ShaderSetup::TextureBindSlot(int index) const {
+    return this->textures[index].bindSlot;
 }
 
 //------------------------------------------------------------------------------

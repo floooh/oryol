@@ -6,6 +6,13 @@ import subprocess, platform, os, sys
 import genutil as util
 
 #-------------------------------------------------------------------------------
+class Line :
+    def __init__(self, content, path='', lineNumber=0) :
+        self.content = content
+        self.path = path
+        self.lineNumber = lineNumber
+
+#-------------------------------------------------------------------------------
 def getToolPath() :
     path = os.path.dirname(os.path.abspath(__file__))
     if platform.system() == 'Windows' :
@@ -63,14 +70,12 @@ def parseOutput(output, lines) :
                 continue
             msg = outLine[msgStartIndex:]
 
-            # map to original location
+            # map to original location 
             lineIndex = lineNr - 1
             if lineIndex >= len(lines) :
                 lineIndex = len(lines) - 1
             srcPath = lines[lineIndex].path
             srcLineNr = lines[lineIndex].lineNumber
-            
-            # and output...
             util.setErrorLocation(srcPath, srcLineNr)
             util.fmtError(msg, False)
             
@@ -91,6 +96,24 @@ def compile(lines, type, base_path, args) :
     with open(src_path, 'w') as f:
         writeFile(f, lines)
     cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
+    output = call(cmd)
+    parseOutput(output, lines)
+
+#-------------------------------------------------------------------------------
+def validate(sl_version, type, base_path, args) :
+    # run validation over a generated GLSL source
+    src_path = "{}.{}.glsl".format(base_path, sl_version)
+    # since we can't map errors back to the original source file across
+    # SPIRV, show errors in the generated source instead
+    lines = []
+    with open(src_path, 'r') as f:
+        src_lines = f.readlines()
+        line_nr = 0
+        for line in src_lines:
+            lines.append(Line(line, src_path, line_nr))
+            line_nr += 1
+    stage = 'vert' if type == 'vs' else 'frag'
+    cmd = [getToolPath(), '-S', stage, src_path]
     output = call(cmd)
     parseOutput(output, lines)
 

@@ -6,9 +6,9 @@
 //  text vertex shader 
 //
 @vs vsDbgText
-uniform vsParams_t {
+uniform vsParams {
     vec2 glyphSize;
-} vsParams;
+};
 
 in vec4 position;
 in vec4 color0;
@@ -16,7 +16,7 @@ out vec2 uv;
 out vec4 color;
 
 void main() {
-    vec2 screenPos = position.xy * vsParams.glyphSize;
+    vec2 screenPos = position.xy * glyphSize;
     screenPos.x -= 1.0;
     screenPos.y = 1.0 - screenPos.y;
     gl_Position = vec4(screenPos, 0.5, 1.0);
