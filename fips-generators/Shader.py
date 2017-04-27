@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 6 
+Version = 7
 
 import os, platform, json
 import genutil as util
@@ -806,8 +806,8 @@ def writeProgramSource(f, shdLib, prog) :
                     f.write('    {}.Add("{}", {});\n'.format(layoutName, m['name'], uniformOryolType[m['type']]))
                 else:
                     f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, m['name'], uniformOryolType[m['type']], m['num']))
-            f.write('    setup.AddUniformBlock("{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-                ub['type'], layoutName, ub['type'], ub['type']))
+            f.write('    setup.AddUniformBlock("{}", "{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+                ub['type'], ub['name'], layoutName, ub['type'], ub['type']))
         # add textures layouts to setup objects
         for tex in refl['textures']:
             f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))

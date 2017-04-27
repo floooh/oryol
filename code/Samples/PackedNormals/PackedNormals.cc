@@ -20,7 +20,7 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     DrawState drawState;
-    Shader::Params params;
+    Shader::params params;
     glm::mat4 view;
     glm::mat4 proj;
     float angleX = 0.0f;
@@ -46,7 +46,7 @@ PackedNormalsApp::OnRunning() {
     };
     int primGroupIndex = 0;
     for (const auto& pos : positions) {
-        this->params.ModelViewProjection = this->computeMVP(pos);
+        this->params.mvp = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
         Gfx::Draw(primGroupIndex++);
     }

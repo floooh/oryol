@@ -1,21 +1,26 @@
-@uniform_block params Params
-mat4 mvp ModelViewProjection
-float psize PointSize
-@end
-
 @vs vs
-@use_uniform_block params
-@in vec4 position
-@in vec4 color0
-@out vec4 color
-    gl_Position = params.mvp * position;
-    gl_PointSize = params.psize;
+uniform params {
+    mat4 mvp;
+    float psize;
+};
+
+in vec4 position;
+in vec4 color0;
+out vec4 color;
+
+void main() {
+    gl_Position = mvp * position;
+    gl_PointSize = psize;
     color = color0;
+}
 @end
 
 @fs fs
-@in vec4 color
-    gl_FragColor = color;
+in vec4 color;
+out vec4 fragColor;
+void main() {
+    fragColor = color;
+}
 @end
 
 @program Shader vs fs

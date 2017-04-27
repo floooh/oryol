@@ -1040,12 +1040,13 @@ void ShaderSetup::SetInputLayout(const VertexLayout& vsInputLayout) {
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddUniformBlock(const StringAtom& name, const class UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot) {
-    o_assert_dbg(name.IsValid());
+void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, const class UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot) {
+    o_assert_dbg(type.IsValid());
     o_assert_dbg(!layout.Empty());
     o_assert_dbg(0 != layout.TypeHash);
     o_assert_dbg(bindSlot >= 0);
     uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
+    entry.type = type;
     entry.name = name;
     entry.layout = layout;
     entry.bindStage = bindStage;
@@ -1121,6 +1122,11 @@ int ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, in
 //------------------------------------------------------------------------------
 const StringAtom& ShaderSetup::UniformBlockName(int index) const {
     return this->uniformBlocks[index].name;
+}
+
+//------------------------------------------------------------------------------
+const StringAtom& ShaderSetup::UniformBlockType(int index) const {
+    return this->uniformBlocks[index].type;
 }
 
 //------------------------------------------------------------------------------

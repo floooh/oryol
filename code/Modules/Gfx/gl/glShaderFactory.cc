@@ -131,7 +131,7 @@ glShaderFactory::SetupResource(shader& shd) {
     if (!glCaps::IsFlavour(glCaps::GLES2)) {
         for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
             ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
-            const StringAtom& ubName = setup.UniformBlockName(ubIndex);
+            const StringAtom& ubType = setup.UniformBlockType(ubIndex);
             int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
             int ubArrayIndex = shd.uniformBlockArrayIndex(ubBindStage, ubBindSlot);
             shd.uniformBlockMappings[ubArrayIndex].uniformBufferIndex = ubIndex;
@@ -139,11 +139,10 @@ glShaderFactory::SetupResource(shader& shd) {
             ORYOL_GL_CHECK_ERROR();
             ::glBindBufferBase(GL_UNIFORM_BUFFER, ubIndex, shd.uniformBlockMappings[ubArrayIndex].uniformBuffer);
             ORYOL_GL_CHECK_ERROR();
-            this->strBuilder.Format(256, "%s_t", ubName.AsCStr());
-            GLuint blockIndex = ::glGetUniformBlockIndex(glProg, this->strBuilder.AsCStr());
+            GLuint blockIndex = ::glGetUniformBlockIndex(glProg, ubType.AsCStr());
             ORYOL_GL_CHECK_ERROR();
             if (blockIndex == GL_INVALID_INDEX) {
-                o_warn("Uniform block '%s' not found\n", ubName.AsCStr());
+                o_warn("Uniform block '%s' not found\n", ubType.AsCStr());
             }
             ::glUniformBlockBinding(glProg, blockIndex, ubIndex);
             ORYOL_GL_CHECK_ERROR();
@@ -153,23 +152,30 @@ glShaderFactory::SetupResource(shader& shd) {
             ORYOL_GL_CHECK_ERROR();
         }
     }
+    else
     #endif
-
-    // resolve uniform locations
-    for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
-        const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
-        ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
-        const StringAtom& ubName = setup.UniformBlockName(ubIndex);
-        int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-        const int numUniforms = layout.NumComponents();
-        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-            const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
-            this->strBuilder.Format(256, "%s.%s", ubName.AsCStr(), comp.Name.AsCStr());
-            const GLint glUniformLocation = ::glGetUniformLocation(glProg, strBuilder.AsCStr());
-            shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
+    {
+        // resolve 'traditional' uniform locations
+        for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
+            const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
+            ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
+            const StringAtom& ubName = setup.UniformBlockName(ubIndex);
+            int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
+            const int numUniforms = layout.NumComponents();
+            for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
+                const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
+                this->strBuilder.Format(256, "%s.%s", ubName.AsCStr(), comp.Name.AsCStr());
+                const GLint glUniformLocation = ::glGetUniformLocation(glProg, this->strBuilder.AsCStr());
+                if (-1 != glUniformLocation) {
+                    shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
+                }
+                else {
+                    Log::Warn("Sampler uniform '%s' not found on shader, will be ignored!\n", this->strBuilder.AsCStr());
+                }
+            }
         }
+        ORYOL_GL_CHECK_ERROR();
     }
-    ORYOL_GL_CHECK_ERROR();
 
     // resolve texture locations
     int glTextureLocation = 0;

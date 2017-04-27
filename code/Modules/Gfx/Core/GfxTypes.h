@@ -1005,7 +1005,7 @@ public:
         /// compute the byte size of the component
         int ByteSize() const;
 
-        StringAtom Name; 
+        StringAtom Name;
         UniformType::Code Type = UniformType::InvalidUniformType;
         int Num = 1;
     };
@@ -1394,7 +1394,7 @@ public:
     /// set vertex shader input layout
     void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
-    void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
+    void AddUniformBlock(const StringAtom& type, const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture declaration
     void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
     /// get the vertex shader input layout
@@ -1415,6 +1415,8 @@ public:
     int NumUniformBlocks() const;
     /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
     int UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
+    /// get uniform block type at index
+    const StringAtom& UniformBlockType(int index) const;
     /// get uniform block name at index
     const StringAtom& UniformBlockName(int index) const;
     /// get uniform block layout at index
@@ -1450,6 +1452,7 @@ private:
         VertexLayout vsInputLayout;
     };
     struct uniformBlockEntry {
+        StringAtom type;
         StringAtom name;
         class UniformBlockLayout layout;
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;

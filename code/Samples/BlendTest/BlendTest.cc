@@ -18,7 +18,7 @@ private:
     DrawState bgDrawState;
     Id triMesh;
     Id pipelines[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
-    TriShader::Params params;
+    TriShader::params params;
 };
 OryolMain(BlendTestApp);
 
@@ -37,8 +37,8 @@ BlendTestApp::OnRunning() {
     float d = 1.0f / BlendFactor::NumBlendFactors;
     for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
         for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            this->params.Translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
-            this->params.Translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
+            this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
+            this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
             triDrawState.Pipeline = this->pipelines[y][x];
             Gfx::ApplyDrawState(triDrawState);
             Gfx::ApplyUniformBlock(this->params);

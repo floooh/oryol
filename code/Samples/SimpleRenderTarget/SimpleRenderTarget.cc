@@ -23,8 +23,8 @@ private:
     Id renderPass;
     DrawState offscreenDrawState;
     DrawState displayDrawState;
-    OffscreenShader::VSParams offscreenParams;
-    DisplayShader::VSParams displayVSParams;
+    OffscreenShader::vsParams offscreenParams;
+    DisplayShader::vsParams displayVSParams;
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;
@@ -93,7 +93,7 @@ SimpleRenderTargetApp::OnInit() {
     disppsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     disppsSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->displayDrawState.Pipeline = Gfx::CreateResource(disppsSetup);
-    this->displayDrawState.FSTexture[Textures::Texture] = rtTexture;
+    this->displayDrawState.FSTexture[DisplayShader::tex] = rtTexture;
 
     // setup static transform matrices
     float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -116,7 +116,7 @@ SimpleRenderTargetApp::OnRunning() {
     // render donut to offscreen render target
     Gfx::BeginPass(this->renderPass);
     Gfx::ApplyDrawState(this->offscreenDrawState);
-    this->offscreenParams.ModelViewProjection = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
+    this->offscreenParams.mvp = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
     Gfx::Draw();
     Gfx::EndPass();
@@ -124,7 +124,7 @@ SimpleRenderTargetApp::OnRunning() {
     // render sphere to display, with offscreen render target as texture
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->displayDrawState);
-    this->displayVSParams.ModelViewProjection = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    this->displayVSParams.mvp = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
     Gfx::Draw();
     Gfx::EndPass();
