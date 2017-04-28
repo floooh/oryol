@@ -22,7 +22,7 @@ public:
     virtual AppState::Code OnCleanup();
 
     AppState::Code notSupported();
-    Shader::VSParams computeShaderParams();
+    Shader::vsParams computeShaderParams();
 
     DrawState drawState;
     int frameIndex = 0;
@@ -68,7 +68,7 @@ ArrayTextureApp::OnInit() {
     texSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     texSetup.ImageData.Sizes[0][0] = sizeof(data);
-    this->drawState.FSTexture[Textures::Texture] = Gfx::CreateResource(texSetup, data, sizeof(data));
+    this->drawState.FSTexture[Shader::tex] = Gfx::CreateResource(texSetup, data, sizeof(data));
 
     // build a cube mesh
     ShapeBuilder shapeBuilder;
@@ -128,14 +128,14 @@ ArrayTextureApp::OnCleanup() {
 }
 
 //------------------------------------------------------------------------------
-Shader::VSParams
+Shader::vsParams
 ArrayTextureApp::computeShaderParams() {
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
 
     float offset = float(this->frameIndex) * 0.001f;
-    vsParams.UVOffset0 = glm::vec2(offset, -offset);
-    vsParams.UVOffset1 = glm::vec2(-offset, offset);
-    vsParams.UVOffset2 = glm::vec2(0.0f, 0.0f);
+    vsParams.uvOffset0 = glm::vec2(offset, -offset);
+    vsParams.uvOffset1 = glm::vec2(-offset, offset);
+    vsParams.uvOffset2 = glm::vec2(0.0f, 0.0f);
 
     const glm::vec3 cubePos(0.0f, 0.0f, -2.5f);
     float angleX = glm::radians(0.25f * this->frameIndex);
@@ -143,7 +143,7 @@ ArrayTextureApp::computeShaderParams() {
     glm::mat4 model = glm::translate(glm::mat4(), cubePos);
     model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    vsParams.ModelViewProj = this->proj * model;
+    vsParams.mvp = this->proj * model;
 
     return vsParams;
 }

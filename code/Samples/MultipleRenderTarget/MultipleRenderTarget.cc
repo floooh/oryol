@@ -32,10 +32,10 @@ public:
     DrawState rt2DrawState;
 
     DrawState cubeDrawState;
-    OffscreenShader::VSParams cubeParams;
+    OffscreenShader::vsParams cubeParams;
 
     DrawState displayDrawState;
-    DisplayShader::VSParams displayParams;
+    DisplayShader::vsParams displayParams;
 
     glm::mat4 proj;
     float angleX = 0.0f;
@@ -114,13 +114,13 @@ MultipleRenderTargetApp::OnInit() {
     ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->rt0DrawState.Pipeline = Gfx::CreateResource(ps);
     this->rt0DrawState.Mesh[0] = quadMesh;
-    this->rt0DrawState.FSTexture[QuadTextures::Texture] = rt0;
+    this->rt0DrawState.FSTexture[QuadShader::tex] = rt0;
     this->rt1DrawState.Pipeline = this->rt0DrawState.Pipeline;
     this->rt1DrawState.Mesh[0] = quadMesh;
-    this->rt1DrawState.FSTexture[QuadTextures::Texture] = rt1;
+    this->rt1DrawState.FSTexture[QuadShader::tex] = rt1;
     this->rt2DrawState.Pipeline = this->rt0DrawState.Pipeline;
     this->rt2DrawState.Mesh[0] = quadMesh;
-    this->rt2DrawState.FSTexture[QuadTextures::Texture] = rt2;
+    this->rt2DrawState.FSTexture[QuadShader::tex] = rt2;
 
     // and finally create a draw state to render a plane to the
     // main display which samples the 3 offscreen render targets
@@ -132,9 +132,9 @@ MultipleRenderTargetApp::OnInit() {
     ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->displayDrawState.Pipeline = Gfx::CreateResource(ps);
     this->displayDrawState.Mesh[0] = cubeMesh;
-    this->displayDrawState.FSTexture[DisplayTextures::Red] = rt0;
-    this->displayDrawState.FSTexture[DisplayTextures::Green] = rt1;
-    this->displayDrawState.FSTexture[DisplayTextures::Blue] = rt2;
+    this->displayDrawState.FSTexture[DisplayShader::redTex] = rt0;
+    this->displayDrawState.FSTexture[DisplayShader::greenTex] = rt1;
+    this->displayDrawState.FSTexture[DisplayShader::blueTex] = rt2;
 
     this->proj = glm::perspectiveFov(glm::radians(45.0f), float(OffscreenWidth), float(OffscreenHeight), 0.01f, 100.0f);
 
@@ -153,9 +153,9 @@ MultipleRenderTargetApp::OnRunning() {
     // compute all the vertex shader uniforms
     this->angleY += 0.01f;
     this->angleX += 0.02f;
-    this->cubeParams.ModelViewProjection = this->computeMVP(this->angleX, this->angleY, glm::vec3(0, 0, -3));
-    this->displayParams.ModelViewProjection = this->computeMVP(this->angleX * 0.5f, this->angleY * 0.5f, glm::vec3(0.0f, 0.55f, -3.0f));
-    this->displayParams.Offsets = glm::sin(glm::vec2(this->angleX, this->angleY)) * 0.1f;
+    this->cubeParams.mvp = this->computeMVP(this->angleX, this->angleY, glm::vec3(0, 0, -3));
+    this->displayParams.mvp = this->computeMVP(this->angleX * 0.5f, this->angleY * 0.5f, glm::vec3(0.0f, 0.55f, -3.0f));
+    this->displayParams.offsets = glm::sin(glm::vec2(this->angleX, this->angleY)) * 0.1f;
 
     // render the cube into the 3 MRT render targets using a single draw call,
     // the fragment shader writes 3 colors, one for each color attachment

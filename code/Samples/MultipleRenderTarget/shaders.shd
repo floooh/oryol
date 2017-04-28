@@ -43,8 +43,9 @@ void main() {
 @fs quadFS
 uniform sampler2D tex;
 in vec2 uv;
+out vec4 fragColor;
 void main() {
-    _color = texture(tex, uv);
+    fragColor = texture(tex, uv);
 }
 @end
 
