@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 7
+Version = 8
 
 import os, platform, json
 import genutil as util
@@ -444,6 +444,11 @@ class Generator :
         self.shaderLib = shaderLib
 
     #---------------------------------------------------------------------------
+    def genLines(self, dstLines, srcLines) :
+        for srcLine in srcLines :
+            dstLines.append(srcLine)
+        return dstLines
+    #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs) :
         lines = []
         lines.append(Line('#version 330'))
@@ -554,6 +559,8 @@ class ShaderLibrary :
                     validTypes = validUniformTypes if m['num']==1 else validUniformArrayTypes
                     if m['type'] not in validTypes:
                         util.fmtError("invalid uniform block member type '{}', must be ({})".format(m['type'], ','.join(validTypes)))
+        '''
+        FIXME: order is not preserved!
         for prog in self.programs.values():
             vs = self.vertexShaders[prog.vs]
             fs = self.fragmentShaders[prog.fs]
@@ -571,6 +578,7 @@ class ShaderLibrary :
             if vs_fs_error:
                 util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
                 util.fmtError("output of vs '{}' does not match input of fs '{}'".format(vs.name, fs.name))
+        '''
 
     def generateShaderSources(self) :
         gen = Generator(self)
