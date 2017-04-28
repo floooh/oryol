@@ -36,53 +36,64 @@ vec3 gamma(vec3 c) {
 //------------------------------------------------------------------------------
 //  Render simple colored shapes
 //
-@uniform_block shapeVSParams VSParams
-mat4 mvp ModelViewProjection
-mat4 model Model
-vec4 shapeColor Color
-vec3 lightDir LightDir
-vec3 eyePos EyePos
-@end
-
 @vs shapeVS
-@use_uniform_block shapeVSParams
-@in vec4 position
-@in vec3 normal
-@out vec3 worldPosition
-@out vec3 worldNormal
-@out vec3 worldEyePos
-@out vec3 worldLightDir
-@out vec4 color
-    gl_Position = shapeVSParams.mvp * position;
-    worldPosition = vec4(shapeVSParams.model * position).xyz;
-    worldNormal = vec4(shapeVSParams.model * vec4(normal, 0.0)).xyz;
-    worldEyePos = shapeVSParams.eyePos;
-    worldLightDir = shapeVSParams.lightDir;
-    color = shapeVSParams.shapeColor;
+uniform vsParams {
+    mat4 mvp;
+    mat4 model;
+    vec4 shapeColor;
+    vec3 lightDir;
+    vec3 eyePos;
+};
+
+in vec4 position;
+in vec3 normal;
+out vec3 worldPosition;
+out vec3 worldNormal;
+out vec3 worldEyePos;
+out vec3 worldLightDir;
+out vec4 color;
+
+void main() {
+    gl_Position = mvp * position;
+    worldPosition = vec4(model * position).xyz;
+    worldNormal = vec4(model * vec4(normal, 0.0)).xyz;
+    worldEyePos = eyePos;
+    worldLightDir = lightDir;
+    color = shapeColor;
+}
 @end
 
 @fs shapeFS
 @use_code_block lighting
-@in vec3 worldPosition
-@in vec3 worldNormal
-@in vec3 worldEyePos
-@in vec3 worldLightDir
-@in vec4 color
+in vec3 worldPosition;
+in vec3 worldNormal;
+in vec3 worldEyePos;
+in vec3 worldLightDir;
+in vec4 color;
+out vec4 fragColor;
+
+void main() {
     vec3 eyeVec = normalize(worldEyePos - worldPosition);
     vec3 nrm = normalize(worldNormal);
     vec3 lightDir = normalize(worldLightDir);
-    gl_FragColor = vec4(light(color.xyz, eyeVec, nrm, lightDir), 1.0);
+    fragColor = vec4(light(color.xyz, eyeVec, nrm, lightDir), 1.0);
+}
 @end
 
 @fs shapeFSGamma
 @use_code_block lighting
-@in vec3 worldPosition
-@in vec3 worldNormal
-@in vec3 worldEyePos
-@in vec3 worldLightDir
-@in vec4 color
+
+in vec3 worldPosition;
+in vec3 worldNormal;
+in vec3 worldEyePos;
+in vec3 worldLightDir;
+in vec4 color;
+out vec4 fragColor;
+
+void main() {
     vec3 eyeVec = normalize(worldEyePos - worldPosition);
-    gl_FragColor = vec4(gamma(light(color.xyz, eyeVec, worldNormal, worldLightDir)), 1.0);
+    fragColor = vec4(gamma(light(color.xyz, eyeVec, worldNormal, worldLightDir)), 1.0);
+}
 @end
 
 @program ShapeShader shapeVS shapeFS
@@ -91,7 +102,33 @@ vec3 eyePos EyePos
 //------------------------------------------------------------------------------
 //  Render shape with reflection/refraction.
 //
-@code_block util
+@vs sphereVS
+uniform vsParams {
+    mat4 mvp;
+    mat4 model;
+    vec3 lightDir;
+    vec3 eyePos;
+};
+
+in vec4 position;
+in vec3 normal;
+out vec3 worldPosition;
+out vec3 worldNormal;
+out vec3 worldEyePos;
+out vec3 worldLightDir;
+
+void main() {
+    gl_Position = mvp * position;
+    worldPosition = vec4(model * position).xyz;
+    worldNormal = vec4(model * vec4(normal, 0.0)).xyz;
+    worldEyePos = eyePos;
+    worldLightDir = lightDir;
+}
+@end
+
+@fs sphereFS
+@use_code_block lighting
+
 // Adapted from http://developer.download.nvidia.com/SDK/9.5/Samples/DEMOS/Direct3D9/src/HLSL_FresnelReflection/docs/FresnelReflection.pdf
 float fresnel(vec3 V, vec3 N, float R0)
 {
@@ -102,42 +139,16 @@ float fresnel(vec3 V, vec3 N, float R0)
     result = clamp(result * (1.0 - R0) + R0, 0.0, 1.0);
     return result;
 }
-@end
 
-@uniform_block sphereVSParams VSParams
-mat4 mvp ModelViewProjection
-mat4 model Model
-vec3 lightDir LightDir
-vec3 eyePos EyePos
-@end
+uniform samplerCube tex;
 
-@texture_block textures Textures
-samplerCube tex Texture
-@end
+in vec3 worldPosition;
+in vec3 worldNormal;
+in vec3 worldEyePos;
+in vec3 worldLightDir;
+out vec4 fragColor;
 
-@vs sphereVS
-@use_uniform_block sphereVSParams
-@in vec4 position
-@in vec3 normal
-@out vec3 worldPosition
-@out vec3 worldNormal
-@out vec3 worldEyePos
-@out vec3 worldLightDir
-    gl_Position = sphereVSParams.mvp * position;
-    worldPosition = vec4(sphereVSParams.model * position).xyz;
-    worldNormal = vec4(sphereVSParams.model * vec4(normal, 0.0)).xyz;
-    worldEyePos = sphereVSParams.eyePos;
-    worldLightDir = sphereVSParams.lightDir;
-@end
-
-@fs sphereFS
-@use_texture_block textures
-@use_code_block lighting
-@use_code_block util
-@in vec3 worldPosition
-@in vec3 worldNormal
-@in vec3 worldEyePos
-@in vec3 worldLightDir
+void main() {
     vec3 eyeVec = normalize(worldEyePos.xyz - worldPosition.xyz);
     vec3 nrm = normalize(worldNormal.xyz);
 
@@ -155,7 +166,8 @@ samplerCube tex Texture
     float fr = fresnel(eyeVec, nrm, 0.4);
     vec3 c = vec3(1.5, 1.2, 1.2) * fr * mix(refractColor.xyz, reflectColor.xyz, fr);
     c = light(c, eyeVec, nrm, normalize(worldLightDir));
-    gl_FragColor = vec4(gamma(c), 1.0);
+    fragColor = vec4(gamma(c), 1.0);
+}
 @end
 
 @program SphereShader sphereVS sphereFS

@@ -34,7 +34,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     bool updateEnabled = true;
     int frameCount = 0;
     int curNumParticles = 0;
@@ -102,7 +102,7 @@ InstancingApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->vsParams.ModelViewProjection = this->proj * this->view * this->model;
+    this->vsParams.mvp = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------

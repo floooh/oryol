@@ -45,9 +45,9 @@ private:
     TimePoint lastFrameTimePoint;
     int curNumParticles = 0;
 
-    InitShader::FSParams initFSParams;
-    UpdateShader::FSParams updFSParams;
-    DrawShader::VSParams drawVSParams;
+    InitShader::fsParams initFSParams;
+    UpdateShader::fsParams updFSParams;
+    DrawShader::vsParams drawVSParams;
 };
 OryolMain(GPUParticlesApp);
 
@@ -145,9 +145,9 @@ GPUParticlesApp::OnInit() {
 
     // setup initial shader params
     const glm::vec2 bufferDims(ParticleBufferWidth, ParticleBufferHeight);
-    this->initFSParams.BufferDims = bufferDims;
-    this->updFSParams.BufferDims = bufferDims;
-    this->drawVSParams.BufferDims = bufferDims;
+    this->initFSParams.bufDims = bufferDims;
+    this->updFSParams.bufDims = bufferDims;
+    this->drawVSParams.bufDims = bufferDims;
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     for (int i = 0; i < 2; i++) {
@@ -185,8 +185,8 @@ GPUParticlesApp::OnRunning() {
     // - we use a scissor rect around the currently active particles to make this update
     //   a bit more efficient
     const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
-    this->updParticles.FSTexture[UpdateTextures::PrevState] = this->particleBuffer[readIndex].texture;
-    this->updFSParams.NumParticles = (float) this->curNumParticles;
+    this->updParticles.FSTexture[UpdateShader::prevState] = this->particleBuffer[readIndex].texture;
+    this->updFSParams.numParticles = (float) this->curNumParticles;
     Gfx::BeginPass(this->particleBuffer[drawIndex].pass);
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updParticles);
@@ -197,7 +197,7 @@ GPUParticlesApp::OnRunning() {
     // now the actual particle shape rendering:
     // - the new particle state texture is sampled in the vertex shader to obtain particle positions
     // - draw 'curNumParticles' instances of the basic particle shape through hardware-instancing
-    this->drawParticles.VSTexture[DrawTextures::ParticleState] = this->particleBuffer[drawIndex].texture;
+    this->drawParticles.VSTexture[DrawShader::particleTex] = this->particleBuffer[drawIndex].texture;
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawParticles);
     Gfx::ApplyUniformBlock(this->drawVSParams);
@@ -219,7 +219,7 @@ GPUParticlesApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawVSParams.ModelViewProjection = this->proj * this->view * this->model;
+    this->drawVSParams.mvp = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------

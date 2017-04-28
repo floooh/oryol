@@ -80,27 +80,28 @@ float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
-@uniform_block fsParams FSParams
-float time Time
-@end
-
 @vs offscreenVS
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
+in vec4 position;
+in vec2 texcoord0;
+out vec2 uv;
+void main() {
     gl_Position = position;
     uv = texcoord0;
+}
 @end
 
 @fs offscreenFS
-@use_uniform_block fsParams
-@highp float
 @use_code_block NoiseUtil
-@in vec2 uv
+uniform fsParams {
+    float time;
+};
+in vec2 uv;
+out vec4 fragColor;
 
-    vec2 dx = vec2(fsParams.time, 0.0);
-    vec2 dy = vec2(0.0, fsParams.time);
-    vec2 dxy = vec2(fsParams.time, fsParams.time);
+void main() {
+    vec2 dx = vec2(time, 0.0);
+    vec2 dy = vec2(0.0, time);
+    vec2 dxy = vec2(time, time);
     
     float red;
     red  = (snoise((uv * 1.5) + dx) * 0.5) + 0.5;
@@ -118,7 +119,8 @@ float time Time
     blue += snoise((uv * 5.0) - dxy) * 0.15;
     
     // scale by 100 to check that the result isn't clamped to 1.0
-    gl_FragColor = vec4(red, green, blue, 0.0) * 100.0;
+    fragColor = vec4(red, green, blue, 0.0) * 100.0;
+}
 @end
 
 @program OffscreenShader offscreenVS offscreenFS
@@ -126,23 +128,24 @@ float time Time
 //------------------------------------------------------------------------------
 //  Copy offscreen render target to back buffer
 //
-@texture_block textures Textures
-sampler2D tex Texture
-@end
-
 @vs copyVS
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
+in vec4 position;
+in vec2 texcoord0;
+out vec2 uv;
+void main() {
     gl_Position = position;
     uv = texcoord0;
+}
 @end
 
 @fs copyFS
-@use_texture_block textures
-@in vec2 uv
+uniform sampler2D tex;
+in vec2 uv;
+out vec4 fragColor;
+void main() {
     // scale back to 0..1
-    gl_FragColor = vec4(texture(tex, uv).xyz*0.01,1.0);
+    fragColor = vec4(texture(tex, uv).xyz*0.01,1.0);
+}
 @end
 
 @program CopyShader copyVS copyFS

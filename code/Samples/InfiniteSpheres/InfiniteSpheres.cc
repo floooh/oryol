@@ -28,7 +28,7 @@ private:
         Id texture;
         Id pass;
     } passInfo[2];
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     PassAction passAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     glm::mat4 view;
     glm::mat4 offscreenProj;
@@ -111,9 +111,9 @@ InfiniteSpheresApp::OnRunning() {
     // render sphere to offscreen render target, using the other render target as
     // source texture
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    this->vsParams.ModelViewProjection = this->computeMVP(this->offscreenProj, model);
+    this->vsParams.mvp = this->computeMVP(this->offscreenProj, model);
     Gfx::BeginPass(this->passInfo[index0].pass);
-    this->offscreenDrawState.FSTexture[Textures::Texture] = this->passInfo[index1].texture;
+    this->offscreenDrawState.FSTexture[Shader::tex] = this->passInfo[index1].texture;
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw();
@@ -121,9 +121,9 @@ InfiniteSpheresApp::OnRunning() {
     
     // ...and again to display
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    this->vsParams.ModelViewProjection = this->computeMVP(this->displayProj, model);
+    this->vsParams.mvp = this->computeMVP(this->displayProj, model);
     Gfx::BeginPass(this->passAction);
-    this->displayDrawState.FSTexture[Textures::Texture] = this->passInfo[index0].texture;
+    this->displayDrawState.FSTexture[Shader::tex] = this->passInfo[index0].texture;
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw();

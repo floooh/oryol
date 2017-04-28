@@ -463,8 +463,8 @@ void TestInputApp::handleGamepadInput(int gamepadIndex) {
 //------------------------------------------------------------------------------
 void
 TestInputApp::drawCube() {
-    Shader::VSParams vsParams;
-    vsParams.ModelViewProjection = this->proj * this->view;
+    Shader::vsParams vsParams;
+    vsParams.mvp = this->proj * this->view;
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw();

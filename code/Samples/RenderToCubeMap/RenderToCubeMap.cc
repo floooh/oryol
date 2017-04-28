@@ -116,7 +116,7 @@ RenderToCubeMapApp::OnInit() {
     pipSetup.DepthStencilState.DepthWriteEnabled = true;
     pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
     this->sphereDrawState.Pipeline = Gfx::CreateResource(pipSetup);
-    this->sphereDrawState.FSTexture[Textures::Texture] = this->cubeMap;
+    this->sphereDrawState.FSTexture[SphereShader::tex] = this->cubeMap;
 
     // setup projection matrix for main view
     float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -178,11 +178,11 @@ RenderToCubeMapApp::OnRunning() {
 
     // draw the sphere with reflection/refraction from cubemap
     Gfx::ApplyDrawState(this->sphereDrawState);
-    SphereShader::VSParams vsParams;
-    vsParams.ModelViewProjection = this->displayProj * view;
-    vsParams.Model = glm::mat4();
-    vsParams.LightDir = LightDir;
-    vsParams.EyePos = eyePos;
+    SphereShader::vsParams vsParams;
+    vsParams.mvp = this->displayProj * view;
+    vsParams.model = glm::mat4();
+    vsParams.lightDir = LightDir;
+    vsParams.eyePos = eyePos;
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw();
 
@@ -234,14 +234,14 @@ RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::vec3& eyePos, const gl
     drawState.Pipeline = pipeline;
     drawState.Mesh[0] = this->shapesMesh;
     Gfx::ApplyDrawState(drawState);
-    ShapeShader::VSParams vsParams;
+    ShapeShader::vsParams vsParams;
     for (int i = 0; i < NumShapes; i++) {
         const auto& shape = this->Shapes[i];
-        vsParams.ModelViewProjection = viewProj * shape.model;
-        vsParams.Model = shape.model;
-        vsParams.Color = shape.color;
-        vsParams.LightDir = LightDir;
-        vsParams.EyePos = eyePos;
+        vsParams.mvp = viewProj * shape.model;
+        vsParams.model = shape.model;
+        vsParams.shapeColor = shape.color;
+        vsParams.lightDir = LightDir;
+        vsParams.eyePos = eyePos;
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(shape.shapeIndex);
     }

@@ -29,7 +29,7 @@ public:
     glm::mat4 computeMVP(const glm::vec3& pos);
     DrawState drawState;
     ResourceLabel texLabel;
-    Shader::Params params;
+    Shader::vsParams params;
     glm::mat4 view;
     glm::mat4 proj;
     float angleX = 0.0f;
@@ -146,7 +146,7 @@ NativeTextureApp::OnRunning() {
 
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-    this->params.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, -3.0f));
+    this->params.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->params);
     Gfx::Draw();
     Gfx::EndPass();

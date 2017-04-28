@@ -80,29 +80,27 @@ float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
-@uniform_block plasmaParams FSParams
-float time Time
-@end
-
 @vs plasmaVS
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
-{
+in vec4 position;
+in vec2 texcoord0;
+out vec2 uv;
+void main() {
     gl_Position = position;
     uv = texcoord0;
 }
 @end
 
 @fs plasmaFS
-@highp float
 @use_code_block NoiseUtil
-@use_uniform_block plasmaParams
-@in vec2 uv
-{
-    vec2 dx = vec2(plasmaParams.time, 0.0);
-    vec2 dy = vec2(0.0, plasmaParams.time);
-    vec2 dxy = vec2(plasmaParams.time, plasmaParams.time);
+uniform fsParams {
+    float time;
+};
+in vec2 uv;
+out vec4 fragColor;
+void main() {
+    vec2 dx = vec2(time, 0.0);
+    vec2 dy = vec2(0.0, time);
+    vec2 dxy = vec2(time, time);
     
     float red;
     red  = (snoise((uv * 1.5) + dx) * 0.5) + 0.5;
@@ -125,39 +123,36 @@ float time Time
     height += snoise(uv * 20.0 - dy) * 0.1;
     
     // scale by 100 to check that the result isn't clamped to 1.0
-    gl_FragColor = vec4(red, green, blue, height * 0.2);
+    fragColor = vec4(red, green, blue, height * 0.2);
 }
 @end
 
 @program PlasmaShader plasmaVS plasmaFS
 
 //------------------------------------------------------------------------------
-@uniform_block planeParams VSParams
-mat4 mvp ModelViewProjection
-@end
-@texture_block planeTextures PlaneTextures
-sampler2D tex Texture
-@end
-
 @vs planeVS
-@use_uniform_block planeParams
-@use_texture_block planeTextures
-@in vec4 position
-@in vec2 texcoord0
-@out vec4 color
-{
+uniform vsParams {
+    mat4 mvp;
+};
+uniform sampler2D tex;
+in vec4 position;
+in vec2 texcoord0;
+out vec4 color;
+
+void main() {
     color = texture(tex, texcoord0);
     vec4 pos = position;
     pos.y = color.w;
     color.w = 1.0;
-    gl_Position = planeParams.mvp * pos;
+    gl_Position = mvp * pos;
 }
 @end
 
 @fs planeFS
-@in vec4 color
-{
-    gl_FragColor = color;
+in vec4 color;
+out vec4 fragColor;
+void main() {
+    fragColor = color;
 }
 @end
 

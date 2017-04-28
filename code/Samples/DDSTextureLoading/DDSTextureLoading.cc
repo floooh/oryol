@@ -27,7 +27,7 @@ private:
     DrawState drawState;
     static const int NumTextures = 16;
     StaticArray<Id, NumTextures> textures;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
 };
@@ -69,8 +69,8 @@ DDSTextureLoadingApp::OnRunning() {
         const auto resState = Gfx::QueryResourceInfo(this->textures[i]).State;
         if (resState == ResourceState::Valid) {
             glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-            this->vsParams.ModelViewProjection = this->computeMVP(p);
-            this->drawState.FSTexture[Textures::Texture] = this->textures[i];
+            this->vsParams.mvp = this->computeMVP(p);
+            this->drawState.FSTexture[Shader::tex] = this->textures[i];
             Gfx::ApplyDrawState(this->drawState);
             Gfx::ApplyUniformBlock(this->vsParams);
             Gfx::Draw();

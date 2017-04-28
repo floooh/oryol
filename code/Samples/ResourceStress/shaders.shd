@@ -1,26 +1,21 @@
-@uniform_block vsParams VSParams
-mat4 mvp ModelViewProjection
-@end
-
-@texture_block textures Textures
-sampler2D tex Texture
-@end
-
 @vs vs
-@use_uniform_block vsParams
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
-{
-    gl_Position = vsParams.mvp * position;
+uniform vsParams {
+    mat4 mvp;
+};
+in vec4 position;
+in vec2 texcoord0;
+out vec2 uv;
+
+void main() {
+    gl_Position = mvp * position;
     uv = texcoord0;
 }
 @end
 
 @fs fs
-@use_texture_block textures
-@in vec2 uv
-{
+uniform sampler2D tex;
+in vec2 uv;
+void main() {
     gl_FragColor = vec4(texture(tex, uv).xyz, 1.0);
 }
 @end

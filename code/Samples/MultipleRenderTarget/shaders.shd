@@ -1,86 +1,96 @@
 
 //------------------------------------------------------------------------------
-@uniform_block offscreenVSParams VSParams
-mat4 mvp ModelViewProjection
-@end
 @vs offscreenVS
-@use_uniform_block offscreenVSParams
-@in vec4 position
-@in vec4 normal
-@out vec4 nrm
-    gl_Position = offscreenVSParams.mvp * position;
+uniform vsParams {
+    mat4 mvp;
+};
+in vec4 position;
+in vec4 normal;
+out vec4 nrm;
+
+void main() {
+    gl_Position = mvp * position;
     nrm = normal;
+}
 @end
 
 @fs offscreenFS
-@in vec4 nrm
+in vec4 nrm;
+layout(location=0) out vec4 fragColor0;
+layout(location=1) out vec4 fragColor1;
+layout(location=2) out vec4 fragColor2;
+void main() {
     vec3 c = abs(nrm.xyz) * vec3(0.5,0.5,0.5) + vec3(0.5,0.5,0.5);
-    gl_FragData[0] = vec4(c.x, 0.0, 0.0, 1.0);
-    gl_FragData[1] = vec4(0.0, c.y, 0.0, 1.0);
-    gl_FragData[2] = vec4(0.0, 0.0, c.z, 1.0);
+    fragColor0 = vec4(c.x, 0.0, 0.0, 1.0);
+    fragColor1 = vec4(0.0, c.y, 0.0, 1.0);
+    fragColor2 = vec4(0.0, 0.0, c.z, 1.0);
+}
 @end
 
 @program OffscreenShader offscreenVS offscreenFS
 
 //------------------------------------------------------------------------------
-@texture_block quadTextures QuadTextures
-sampler2D tex Texture
-@end
-
 @vs quadVS
-@in vec4 position
-@in vec2 texcoord0
-@out vec2 uv
+in vec4 position;
+in vec2 texcoord0;
+out vec2 uv;
+void main() {
     gl_Position = position;
     uv = texcoord0;
+}
 @end
 
 @fs quadFS
-@use_texture_block quadTextures
-@in vec2 uv
-    _color = tex2D(tex, uv);
+uniform sampler2D tex;
+in vec2 uv;
+void main() {
+    _color = texture(tex, uv);
+}
 @end
 
 @program QuadShader quadVS quadFS
 
 //------------------------------------------------------------------------------
-@uniform_block displayVSParams VSParams
-mat4 mvp ModelViewProjection
-vec2 offsets Offsets
-@end
 @vs displayVS
-@use_uniform_block displayVSParams
-@in vec4 position
-@in vec4 normal
-@in vec2 texcoord0
-@out vec4 nrm
-@out vec2 uvRed
-@out vec2 uvGreen
-@out vec2 uvBlue
-    gl_Position = displayVSParams.mvp * position;
-    nrm = normalize(displayVSParams.mvp * normal);
-    uvRed = texcoord0 + vec2(displayVSParams.offsets.x, 0.0);
-    uvGreen = texcoord0 + vec2(0.0, displayVSParams.offsets.y);
-    uvBlue = texcoord0;
-@end
+uniform vsParams {
+    mat4 mvp;
+    vec2 offsets;
+};
 
-@texture_block displayTextures DisplayTextures
-sampler2D redTex Red
-sampler2D greenTex Green
-sampler2D blueTex Blue
+in vec4 position;
+in vec4 normal;
+in vec2 texcoord0;
+out vec4 nrm;
+out vec2 uvRed;
+out vec2 uvGreen;
+out vec2 uvBlue;
+
+void main() {
+    gl_Position = mvp * position;
+    nrm = normalize(mvp * normal);
+    uvRed = texcoord0 + vec2(offsets.x, 0.0);
+    uvGreen = texcoord0 + vec2(0.0, offsets.y);
+    uvBlue = texcoord0;
+}
 @end
 
 @fs displayFS
-@use_texture_block displayTextures
-@in vec4 nrm
-@in vec2 uvRed
-@in vec2 uvGreen
-@in vec2 uvBlue
+uniform sampler2D redTex;
+uniform sampler2D greenTex;
+uniform sampler2D blueTex;
+in vec4 nrm;
+in vec2 uvRed;
+in vec2 uvGreen;
+in vec2 uvBlue;
+out vec4 fragColor;
+
+void main() {
     vec4 red = texture(redTex, uvRed);
     vec4 green = texture(greenTex, uvGreen);
     vec4 blue = texture(blueTex, uvBlue);
     vec4 c = vec4(red.xyz + green.xyz + blue.xyz, 1.0);
-    gl_FragColor = c;
+    fragColor = c;
+}
 @end
 
 @program DisplayShader displayVS displayFS

@@ -133,8 +133,8 @@ float snoise(vec2 v)
 //  A generic fullscreen-quad vertex shader.
 //
 @vs fsqVS
-@in vec4 position
-{
+in vec4 position;
+void main() {
     gl_Position = position;
 }
 @end
@@ -147,28 +147,26 @@ float snoise(vec2 v)
 //
 //  | p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
 //  | p3.pos | p3.vec | ...    | ...
-@uniform_block initParams FSParams
-vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
-@end
-
 @fs initFS
-@highp float
 @use_code_block Noise FSUtil
-@use_uniform_block initParams
-{
+uniform fsParams {
+    vec2 bufDims;
+};
+out vec4 fragColor;
+void main() {
     if (atPosition(gl_FragCoord.xy)) {
         // position starts always at 0
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
     else {
         // select a pseudo random velocity vector, skewed along positive Y
-        float particleId = getParticleId(initParams.bufDims.x, gl_FragCoord.xy);
+        float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
         vec3 rnd = vec3(snoise(vec2(particleId, 0.0)),
                         snoise(vec2(0.0, particleId * 0.1)),
                         snoise(vec2(particleId * 0.1, particleId * 0.01)));
         rnd *= 0.5;
         rnd.y += 2.0; // skew velocity upwards
-        gl_FragColor = vec4(rnd, 0.0);
+        fragColor = vec4(rnd, 0.0);
     }
 }
 @end
@@ -179,26 +177,21 @@ vec2 bufDims BufferDims // BufferDims.x = width, BufferDims.y = height
 //  Fullscreen-quad shader to update particle positions and velocity
 //  via ping-ponging.
 //
-@uniform_block updateParams FSParams
-vec2 bufDims BufferDims
-float numParticles NumParticles
-@end
-
-@texture_block updateTextures UpdateTextures
-sampler2D prevState PrevState
-@end
-
 @fs updateFS
-@highp float
 @use_code_block FSUtil
-@use_uniform_block updateParams
-@use_texture_block updateTextures
-{
+uniform fsParams {
+    vec2 bufDims;
+    float numParticles;
+};
+uniform sampler2D prevState;
+out vec4 fragColor;
+
+void main() {
     const float frameTime = 1.0 / 60.0;
 
     // get particleId and check if this is actually an active particle
-    float particleId = getParticleId(updateParams.bufDims.x, gl_FragCoord.xy);
-    if (particleId >= updateParams.numParticles) {
+    float particleId = getParticleId(bufDims.x, gl_FragCoord.xy);
+    if (particleId >= numParticles) {
         discard;
     }
 
@@ -206,13 +199,13 @@ sampler2D prevState PrevState
     bool atPos = atPosition(gl_FragCoord.xy);
 
     // load previous position and velocity
-    particleStateUvs uvs = getParticleStateUvs(atPos, updateParams.bufDims.xy, gl_FragCoord.xy);
+    particleStateUvs uvs = getParticleStateUvs(atPos, bufDims.xy, gl_FragCoord.xy);
     vec4 pos = texture(prevState, uvs.posUv);
     vec4 vel = texture(prevState, uvs.velUv);
     if (atPos) {
         // update position
         pos += vel * frameTime;
-        gl_FragColor = pos;
+        fragColor = pos;
     }
     else {
         // update velocity
@@ -224,7 +217,7 @@ sampler2D prevState PrevState
             vel.y = -vel.y;
             vel *= 0.8;
         }
-        gl_FragColor = vel;
+        fragColor = vel;
     }
 }
 @end
@@ -239,39 +232,35 @@ sampler2D prevState PrevState
 //  particleID, the particle's position is fetched from the particle state
 //  texture.
 //
-@uniform_block drawParams VSParams
-mat4 mvp ModelViewProjection
-vec2 bufDims BufferDims
-@end
-
-@texture_block drawTextures DrawTextures
-sampler2D particleTex ParticleState
-@end
-
 @vs drawVS
-@highp sampler2D
 @use_code_block VSUtil
-@use_uniform_block drawParams
-@use_texture_block drawTextures
-@in vec4 position
-@in vec4 color0
-@in float instance0
-@out vec4 color
-{
+
+uniform vsParams {
+    mat4 mvp;
+    vec2 bufDims;
+};
+uniform sampler2D particleTex;
+
+in vec4 position;
+in vec4 color0;
+in float instance0;
+out vec4 color;
+void main() {
     float particleId = instance0;
-    vec2 posUv = posUvFromParticleId(particleId, drawParams.bufDims);
+    vec2 posUv = posUvFromParticleId(particleId, bufDims);
     vec4 particlePos = vec4(texture(particleTex, posUv).xyz, 0.0);
 
-    gl_Position = drawParams.mvp * (position + particlePos);
+    gl_Position = mvp * (position + particlePos);
     color = color0;
 }
 @end
 
 
 @fs drawFS
-@in vec4 color
-{
-    gl_FragColor = color;
+in vec4 color;
+out vec4 fragColor;
+void main() {
+    fragColor = color;
 }
 @end
 

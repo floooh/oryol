@@ -30,8 +30,8 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    Shader::PerFrameParams perFrameParams;
-    Shader::PerParticleParams perParticleParams;
+    Shader::perFrameParams perFrameParams;
+    Shader::perParticleParams perParticleParams;
     bool updateEnabled = true;
     int frameCount = 0;
     int curNumParticles = 0;
@@ -69,7 +69,7 @@ DrawCallPerfApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->perFrameParams);
     for (int i = 0; i < this->curNumParticles; i++) {
-        this->perParticleParams.Translate = this->particles[i].pos;
+        this->perParticleParams.translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
         Gfx::Draw();
     }
@@ -105,7 +105,7 @@ DrawCallPerfApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->perFrameParams.ModelViewProjection = this->proj * this->view * this->model;
+    this->perFrameParams.mvp = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------
