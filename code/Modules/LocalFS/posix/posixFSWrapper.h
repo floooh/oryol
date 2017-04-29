@@ -33,8 +33,8 @@ public:
     /// close file
     static void close(handle f);
     
-    /// get path to own executable
-    static String getExecutableDir();
+    /// get path to where application resources are typically stored
+    static String getRootDir();
     /// get current directory
     static String getCwd();
 };
