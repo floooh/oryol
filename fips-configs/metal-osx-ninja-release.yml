@@ -1,0 +1,10 @@
+---
+platform: osx 
+generator: Ninja
+build_tool: ninja
+build_type: Release
+defines:
+    ORYOL_USE_METAL: ON
+    FIPS_OSX_USE_ARC: ON
+
+
