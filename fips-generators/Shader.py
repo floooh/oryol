@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 9
+Version = 10
 
 import os, platform, json
 import genutil as util
@@ -18,7 +18,7 @@ if platform.system() == 'Darwin' :
     from util import metalcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3'] # 'hlsl5', 'metal' ]
+slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3', 'metal'] # 'hlsl5', 'metal' ]
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
@@ -600,9 +600,9 @@ class ShaderLibrary :
 #            if isGLSL[slVersion]:
 #                glslcompiler.validate(slVersion, shd_type, shd_base_path, args)
         self.loadReflection(shd, shd_base_path)
-#        if platform.system() == 'Darwin':
-#            c_name = '{}_{}_metallib'.format(shd.name, shd_type)
-#            metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
+        if platform.system() == 'Darwin':
+            c_name = '{}_{}_metallib'.format(shd.name, shd_type)
+            metalcompiler.compile(shd.generatedSource, shd_base_path, c_name, args)
 #        if platform.system() == 'Windows':
 #            c_name = '{}_{}_hlsl5'.format(shd.name, shd_type)
 #            hlslcompiler.compile(shd.generatedSource, shd_base_path, shd_type, c_name, args)

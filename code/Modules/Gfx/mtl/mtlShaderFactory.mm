@@ -78,6 +78,9 @@ mtlShaderFactory::SetupResource(shader& shd) {
             if (VertexAttr::InvalidVertexAttr != attr) {
                 shd.vsAttrIndices[attr] = int(mtlAttr.attributeIndex);
             }
+            else {
+                o_error("Invalid vertex attribute name '%s'!\n", mtlAttr.name.UTF8String);
+            }
         }
     }
 

@@ -65,16 +65,16 @@ void main() {
 
 @fs shapeFS
 @use_code_block lighting
-in vec3 worldPosition;
 in vec3 worldNormal;
+in vec3 worldPosition;
 in vec3 worldEyePos;
 in vec3 worldLightDir;
 in vec4 color;
 out vec4 fragColor;
 
 void main() {
-    vec3 eyeVec = normalize(worldEyePos - worldPosition);
     vec3 nrm = normalize(worldNormal);
+    vec3 eyeVec = normalize(worldEyePos - worldPosition);
     vec3 lightDir = normalize(worldLightDir);
     fragColor = vec4(light(color.xyz, eyeVec, nrm, lightDir), 1.0);
 }
@@ -83,8 +83,8 @@ void main() {
 @fs shapeFSGamma
 @use_code_block lighting
 
-in vec3 worldPosition;
 in vec3 worldNormal;
+in vec3 worldPosition;
 in vec3 worldEyePos;
 in vec3 worldLightDir;
 in vec4 color;

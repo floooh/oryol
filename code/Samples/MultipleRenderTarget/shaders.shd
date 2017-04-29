@@ -61,14 +61,12 @@ uniform vsParams {
 in vec4 position;
 in vec4 normal;
 in vec2 texcoord0;
-out vec4 nrm;
 out vec2 uvRed;
 out vec2 uvGreen;
 out vec2 uvBlue;
 
 void main() {
     gl_Position = mvp * position;
-    nrm = normalize(mvp * normal);
     uvRed = texcoord0 + vec2(offsets.x, 0.0);
     uvGreen = texcoord0 + vec2(0.0, offsets.y);
     uvBlue = texcoord0;
@@ -79,7 +77,6 @@ void main() {
 uniform sampler2D redTex;
 uniform sampler2D greenTex;
 uniform sampler2D blueTex;
-in vec4 nrm;
 in vec2 uvRed;
 in vec2 uvGreen;
 in vec2 uvBlue;
