@@ -13,7 +13,7 @@ vec3 eyePos(float time, vec3 center) {
 
 // lookat function
 struct lookatResult {
-    vec3 fwdVec;
+    vec3 fwdVec; 
     vec3 rightVec;
     vec3 upVec;
 };
@@ -113,7 +113,7 @@ float dScene(vec4 sinTime, vec3 p) {
 
     // infinite spheres
     float c = 0.25;
-    vec3 q = mod(p, c) - 0.5*c;
+    vec3 q = mod(p, c) - c*0.5;
     return opS(sdSphere(q, abs(sinTime.y) * 0.16), opSU(sdSphere(spherePos0, 1.5), sdBox(boxPos, vec3(1.0,1.0,1.0)), 0.2));
 }
 
