@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 12
+Version = 13
 
 import os, platform, json
 import genutil as util
@@ -662,7 +662,7 @@ def writeProgramHeader(f, shdLib, prog) :
                 if m['num'] == 1:
                     f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
                 else:
-                    f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name']))
+                    f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
                 if m['type'] == 'vec3':
                     f.write('            float _pad_{};\n'.format(m['name']))
             f.write('        };\n')
