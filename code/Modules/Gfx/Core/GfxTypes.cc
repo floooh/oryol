@@ -432,13 +432,27 @@ int UniformType::ByteSize(Code c, int numElements) {
     switch (c) {
         case Float:     return numElements * sizeof(float);
         case Vec2:      return numElements * 2 * sizeof(float);
-        case Vec3:      return numElements * 4 * sizeof(float); // NOT A BUG
+        case Vec3:      return numElements * 3 * sizeof(float);
         case Vec4:      return numElements * 4 * sizeof(float);
         case Mat2:      return numElements * 2 * 2 * sizeof(float);
-        case Mat3:      return numElements * 3 * 3 * sizeof(float); // FIXME!
         case Mat4:      return numElements * 4 * 4 * sizeof(float);
         case Int:       return numElements * sizeof(int);
-        case Bool:      return numElements * sizeof(int);
+        default:
+            o_error("invalid scalar uniform type code!\n");
+            return 0;
+    }
+}
+
+//------------------------------------------------------------------------------
+int UniformType::BaseAlignment(Code c) {
+    switch (c) {
+        case Float:     return 4;
+        case Vec2:      return 2 * 4;
+        case Vec3:      return 4 * 4;
+        case Vec4:      return 4 * 4;
+        case Mat2:      return 4 * 4;
+        case Mat4:      return 4 * 4;
+        case Int:       return 4;
         default:
             o_error("invalid scalar uniform type code!\n");
             return 0;
@@ -729,16 +743,11 @@ bool UniformBlockLayout::Component::IsValid() const {
 }
 
 //------------------------------------------------------------------------------
-int UniformBlockLayout::Component::ByteSize() const {
-    return UniformType::ByteSize(this->Type, this->Num);
-}
-
-//------------------------------------------------------------------------------
 void UniformBlockLayout::Clear() {
     this->comps.Fill(Component());
     this->byteOffsets.Fill(0);
     this->numComps = 0;
-    this->byteSize = 0;
+    this->curOffset = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -749,8 +758,13 @@ bool UniformBlockLayout::Empty() const {
 //------------------------------------------------------------------------------
 UniformBlockLayout& UniformBlockLayout::Add(const Component& comp) {
     this->comps[this->numComps] = comp;
-    this->byteOffsets[this->numComps] = this->byteSize;
-    this->byteSize += comp.ByteSize();
+    const int baseAlign = UniformType::BaseAlignment(comp.Type);
+    if ((this->curOffset & (baseAlign - 1)) != 0) {
+        // pad offset for component type alignment
+        this->curOffset = (this->curOffset + baseAlign) & ~(baseAlign - 1);
+    }
+    this->byteOffsets[this->numComps] = this->curOffset;
+    this->curOffset += UniformType::ByteSize(comp.Type, comp.Num);
     this->numComps++;
     return *this;
 }
@@ -772,7 +786,7 @@ const UniformBlockLayout::Component& UniformBlockLayout::ComponentAt(int compone
 
 //------------------------------------------------------------------------------
 int UniformBlockLayout::ByteSize() const {
-    return this->byteSize;
+    return this->curOffset;
 }
 
 //------------------------------------------------------------------------------

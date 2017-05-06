@@ -584,16 +584,16 @@ public:
         Vec3,
         Vec4,
         Mat2,
-        Mat3,
         Mat4,
         Int,
-        Bool,
 
         NumUniformTypes,
         InvalidUniformType,
     };
-    /// get the byte size of a uniform type, see GL std140 layout spec for details
+    /// get the byte size of a uniform type (without padding)
     static int ByteSize(Code c, int numElements);
+    /// get the base-alignment of the uniform type (see std140 alignment rules)
+    static int BaseAlignment(Code c);
 };
 
 //------------------------------------------------------------------------------
@@ -1002,8 +1002,6 @@ public:
         Component(const StringAtom& name, UniformType::Code type, int num=1);
         /// return true if the component is valid
         bool IsValid() const;
-        /// compute the byte size of the component
-        int ByteSize() const;
 
         StringAtom Name;
         UniformType::Code Type = UniformType::InvalidUniformType;
@@ -1029,7 +1027,7 @@ public:
     int ComponentByteOffset(int componentIndex) const;
 private:
     int numComps = 0;
-    int byteSize = 0;
+    int curOffset = 0;
     StaticArray<Component, GfxConfig::MaxNumUniformBlockLayoutComponents> comps;
     StaticArray<int, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
 };

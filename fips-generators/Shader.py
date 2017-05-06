@@ -69,18 +69,40 @@ validInOutTypes = [
 # NOTE: order is important, always go from greatest to smallest type,
 # and keep texture samplers at start!
 validUniformTypes = [
-    'mat4', 'mat3', 'mat2',
-    'vec4', 'vec3', 'vec2',
-    'float', 'int', 'bool'
-]
-validUniformArrayTypes = [
     'mat4', 'mat2',
-    'vec4', 'vec2',
+    'vec4', 'vec3', 'vec2',
     'float', 'int'
 ]
 
+# size of uniform array types must currently be multiple of 16,
+# because of std140 padding rules
+validUniformArrayTypes = [
+    'mat4', 'mat2', 'vec4'
+]
+
+# note: alignment is in number of floats
+uniformBaseAlignment = {
+    'mat4': 4,
+    'mat2': 4,
+    'vec4': 4,
+    'vec3': 4,
+    'vec2': 2,
+    'float': 1,
+    'int': 1
+}
+
+# these are unpadded sizes in number of floats
+uniformSize = {
+    'mat4': 16,
+    'mat2': 4,
+    'vec4': 4,
+    'vec3': 3,
+    'vec2': 2,
+    'float': 1,
+    'int': 1
+}
+
 uniformCType = {
-    'bool':         'int',
     'int':          'int',
     'float':        'float',
     'vec2':         'glm::vec2',
@@ -92,7 +114,6 @@ uniformCType = {
 }
 
 uniformOryolType = {
-    'bool':         'UniformType::Bool',
     'int':          'UniformType::Int',
     'float':        'UniformType::Float',
     'vec2':         'UniformType::Vec2',
@@ -650,6 +671,16 @@ def getUniformBlockTypeHash(ub_refl):
     return zlib.crc32(hashString) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
+def alignedOffset(type, cur_offset):
+    aligned_offset = cur_offset
+    base_align = uniformBaseAlignment[type]
+    if (aligned_offset & (base_align - 1)) == 0:
+        # already aligned
+        return aligned_offset
+    else:
+        return (aligned_offset + base_align) & ~(base_align - 1)
+
+#-------------------------------------------------------------------------------
 def writeProgramHeader(f, shdLib, prog) :
     f.write('    namespace ' + prog.name + ' {\n')
     
@@ -663,13 +694,18 @@ def writeProgramHeader(f, shdLib, prog) :
             f.write('            static const int _bindSlotIndex = {};\n'.format(ub['slot']))
             f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stage))
             f.write('            static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
+            cur_offset = 0
             for m in ub['members']:
+                # add padding
+                aligned_offset = alignedOffset(m['type'], cur_offset)
+                while cur_offset != aligned_offset:
+                    f.write('            float _pad_{};\n'.format(cur_offset))
+                    cur_offset += 1
                 if m['num'] == 1:
                     f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
                 else:
                     f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
-                if m['type'] == 'vec3':
-                    f.write('            float _pad_{};\n'.format(m['name']))
+                cur_offset += uniformSize[m['type']] * m['num'] 
             f.write('        };\n')
             f.write('        #pragma pack(pop)\n')
         for tex in refl['textures']:

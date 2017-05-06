@@ -1117,26 +1117,10 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
                         }
                         break;
 
-                    case UniformType::Mat3:
-                        {
-                            o_assert_dbg(1 == comp.Num);
-                            const glm::mat3& val = *(const glm::mat3*)valuePtr;
-                            ::glUniformMatrix3fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                        }
-                        break;
-
                     case UniformType::Mat4:
                         {
                             const glm::mat4& val = *(const glm::mat4*)valuePtr;
                             ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
-                        }
-                        break;
-
-                    case UniformType::Bool:
-                        {
-                            // NOTE: bools are actually stored as int32 in the uniform block struct
-                            const int val = *(const int*)valuePtr;
-                            ::glUniform1i(glLoc, val);
                         }
                         break;
 
