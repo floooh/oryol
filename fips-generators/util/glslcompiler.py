@@ -102,7 +102,7 @@ def compile(lines, type, base_path, args) :
 #-------------------------------------------------------------------------------
 def validate(sl_version, type, base_path, args) :
     # run validation over a generated GLSL source
-    src_path = "{}.{}.glsl".format(base_path, sl_version)
+    src_path = "{}.{}".format(base_path, sl_version)
     # since we can't map errors back to the original source file across
     # SPIRV, show errors in the generated source instead
     lines = []

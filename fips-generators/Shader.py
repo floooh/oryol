@@ -9,6 +9,7 @@ Version = 13
 import os, platform, json
 import genutil as util
 from util import glslcompiler, shdc
+from mod import log
 import zlib # only for crc32
 
 if platform.system() == 'Windows' :
@@ -18,14 +19,14 @@ if platform.system() == 'Darwin' :
     from util import metalcompiler
 
 # SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
-slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3', 'metal', 'hlsl5']
+slVersions = [ 'glsl100', 'glsl120', 'glsl330', 'glsles3', 'metal', 'hlsl']
 
 slSlangTypes = {
     'glsl100': 'ShaderLang::GLSL100',
     'glsl120': 'ShaderLang::GLSL120',
     'glsl330': 'ShaderLang::GLSL330',
     'glsles3': 'ShaderLang::GLSLES3',
-    'hlsl5':   'ShaderLang::HLSL5',
+    'hlsl':    'ShaderLang::HLSL5',
     'metal':   'ShaderLang::Metal'
 }
 
@@ -34,7 +35,7 @@ isGLSL = {
     'glsl120': True,
     'glsl330': True,
     'glsles3': True,
-    'hlsl5': False,
+    'hlsl': False,
     'metal': False
 }
 
@@ -43,7 +44,7 @@ isHLSL = {
     'glsl120': False,
     'glsl330': False,
     'glsles3': False,
-    'hlsl5': True,
+    'hlsl': True,
     'metal': False
 }
 
@@ -52,7 +53,7 @@ isMetal = {
     'glsl120': False,
     'glsl330': False,
     'glsles3': False,
-    'hlsl5': False,
+    'hlsl': False,
     'metal': True
 }
 
@@ -192,7 +193,8 @@ class Shader(Snippet) :
         Snippet.__init__(self)
         self.name = name
         self.resolvedDeps = []
-        self.reflection = {}
+        self.reflection = {}    # generic 'main reflection'
+        self.slReflection = {}  # reflection by shader language 
         self.generatedSource = None
 
 #-------------------------------------------------------------------------------
@@ -559,8 +561,6 @@ class ShaderLibrary :
                     validTypes = validUniformTypes if m['num']==1 else validUniformArrayTypes
                     if m['type'] not in validTypes:
                         util.fmtError("invalid uniform block member type '{}', must be ({})".format(m['type'], ','.join(validTypes)))
-        '''
-        FIXME: order is not preserved!
         for prog in self.programs.values():
             vs = self.vertexShaders[prog.vs]
             fs = self.fragmentShaders[prog.fs]
@@ -568,17 +568,19 @@ class ShaderLibrary :
             fs_inputs = fs.reflection['inputs']
             vs_fs_error = False
             if len(vs_outputs) == len(fs_inputs):
-                for i in range(0, len(vs_outputs)):
-                    if vs_outputs[i]['name'] != fs_inputs[i]['name']:
+                for vs_out in vs_outputs:
+                    in_out_match = False
+                    for fs_in in fs_inputs:
+                        if (vs_out['name'] == fs_in['name']) and (vs_out['type'] == fs_in['type']):
+                            in_out_match = True
+                            break
+                    if not in_out_match:
                         vs_fs_error = True
-                    if vs_outputs[i]['type'] != fs_inputs[i]['type']:
-                        vs_fs_error = True
-            else:
-                vs_fs_error = True
             if vs_fs_error:
+                # number of inputs/outputs don't match
+                vs_fs_error = True
                 util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
-                util.fmtError("output of vs '{}' does not match input of fs '{}'".format(vs.name, fs.name))
-        '''
+                util.fmtError("outputs of vs '{}' don't match inputs of fs '{}' (unused items might have been removed)".format(vs.name, fs.name))
 
     def generateShaderSources(self) :
         gen = Generator(self)
@@ -588,9 +590,11 @@ class ShaderLibrary :
             gen.genFragmentShaderSource(fs)
 
     def loadReflection(self, shd, base_path):
-        refl_path = base_path + '.json'
-        with open(refl_path, 'r') as f:
-            shd.reflection = json.load(f)
+        for sl in slVersions:
+            refl_path = '{}.{}.json'.format(base_path, sl)
+            with open(refl_path, 'r') as f:
+                shd.slReflection[sl] = json.load(f)
+        shd.reflection = shd.slReflection['glsl100']
 
     def compileShader(self, input, shd, shd_type, base_path, args):
         shd_base_path = base_path + '_' + shd.name
@@ -608,6 +612,7 @@ class ShaderLibrary :
             hlslcompiler.compile(shd.generatedSource, shd_base_path, shd_type, c_name, args)
 
     def compile(self, input, out_hdr, args) :
+        log.info('## shader code gen: {}'.format(input)) 
         base_path = os.path.splitext(out_hdr)[0]
         for vs in self.vertexShaders.values():
             self.compileShader(input, vs, 'vs', base_path, args)
@@ -710,7 +715,7 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         # GLSL source code is directly inlined for runtime-compilation
         f.write('#if ORYOL_OPENGL\n')
         f.write('static const char* {}_{}_src = \n'.format(shd.name, slVersion))
-        glsl_src_path = '{}.{}.glsl'.format(base_path, slVersion)
+        glsl_src_path = '{}.{}'.format(base_path, slVersion)
         with open(glsl_src_path, 'r') as rf:
             lines = rf.read().splitlines()
             for line in lines:
