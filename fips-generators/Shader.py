@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 19
+Version = 22
 
 import os, platform, json
 import genutil as util
@@ -692,18 +692,28 @@ def writeProgramHeader(f, shdLib, prog) :
             f.write('            static const int _bindSlotIndex = {};\n'.format(ub['slot']))
             f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stage))
             f.write('            static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
-            cur_offset = 0
-            for m in ub['members']:
-                # add padding
-                aligned_offset = alignedOffset(m['type'], cur_offset)
-                while cur_offset != aligned_offset:
-                    f.write('            float _pad_{};\n'.format(cur_offset))
-                    cur_offset += 1
-                if m['num'] == 1:
-                    f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
+            for slang in ['metal', 'other']:
+                cur_offset = 0
+                if slang == 'metal':
+                    f.write('            #if ORYOL_METAL\n')
                 else:
-                    f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
-                cur_offset += uniformSize[m['type']] * m['num'] 
+                    f.write('            #if !ORYOL_METAL\n')
+                for m in ub['members']:
+                    # add padding
+                    aligned_offset = alignedOffset(m['type'], cur_offset)
+                    while cur_offset != aligned_offset:
+                        f.write('                float _pad_{};\n'.format(cur_offset))
+                        cur_offset += 1
+                    if m['num'] == 1:
+                        f.write('                {} {};\n'.format(uniformCType[m['type']], m['name']))
+                        # special case: sizeof(vec3) is 16 bytes on metal
+                        if slang == 'metal' and m['type'] == 'vec3':
+                            f.write('                float _pad_{};\n'.format(cur_offset))
+                            cur_offset += 1
+                    else:
+                        f.write('                {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
+                    cur_offset += uniformSize[m['type']] * m['num'] 
+                f.write('            #endif\n')
             f.write('        };\n')
             f.write('        #pragma pack(pop)\n')
         for tex in refl['textures']:

@@ -432,7 +432,11 @@ int UniformType::ByteSize(Code c, int numElements) {
     switch (c) {
         case Float:     return numElements * sizeof(float);
         case Vec2:      return numElements * 2 * sizeof(float);
-        case Vec3:      return numElements * 3 * sizeof(float);
+        #if ORYOL_METAL
+            case Vec3:      return numElements * 4 * sizeof(float);
+        #else
+            case Vec3:      return numElements * 3 * sizeof(float);
+        #endif
         case Vec4:      return numElements * 4 * sizeof(float);
         case Mat2:      return numElements * 2 * 2 * sizeof(float);
         case Mat4:      return numElements * 4 * 4 * sizeof(float);
