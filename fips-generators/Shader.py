@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 18
+Version = 19
 
 import os, platform, json
 import genutil as util

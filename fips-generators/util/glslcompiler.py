@@ -104,7 +104,7 @@ def compile(lines, type, base_path, args) :
             writeFile(f, tgt_lines)
         cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
         output = call(cmd)
-        parseOutput(output, lines)
+        parseOutput(output, tgt_lines)
 
 #-------------------------------------------------------------------------------
 def validate(sl_version, type, base_path, args) :
