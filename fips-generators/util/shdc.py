@@ -36,7 +36,13 @@ def run(cmd):
 #-------------------------------------------------------------------------------
 def compile(input, base_path, args):
     util.setErrorLocation(input, 0)
-    src_path = base_path + '.spv'
-    tool = getToolPath()
-    cmd = [tool, '-spirv', src_path]
-    run(cmd)
+    for slang in ['glsl100', 'glsles3', 'glsl120', 'glsl330', 'metal', 'hlsl']:
+        if 'glsl' in slang:
+            src_slang = 'glsl'
+        else:
+            src_slang = slang
+        src_path = '{}.{}.spv'.format(base_path, src_slang)
+        dst_path = '{}.{}'.format(base_path, slang)
+        tool = getToolPath()
+        cmd = [tool, '-spirv', src_path, '-o', dst_path, '-lang', slang]
+        run(cmd)

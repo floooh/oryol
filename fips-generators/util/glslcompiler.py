@@ -88,16 +88,23 @@ def parseOutput(output, lines) :
 def compile(lines, type, base_path, args) :
     # compile GLSL source file to SPIR-V
     ext = {
-        'vs': '.vert',
-        'fs': '.frag'
+        'vs': 'vert',
+        'fs': 'frag'
     }
-    src_path = base_path + ext[type]
-    dst_path = base_path + '.spv'
-    with open(src_path, 'w') as f:
-        writeFile(f, lines)
-    cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
-    output = call(cmd)
-    parseOutput(output, lines)
+    for slang in ['glsl', 'metal', 'hlsl']:
+        src_path = '{}.{}.{}'.format(base_path, slang, ext[type])
+        dst_path = '{}.{}.spv'.format(base_path, slang)
+        tgt_lines = []
+        tgt_lines.append(Line('#version 330'))
+        tgt_lines.append(Line('#define ORYOL_GLSL ({})'.format('1' if slang=='glsl' else '0')))
+        tgt_lines.append(Line('#define ORYOL_MSL ({})'.format('1' if slang=='metal' else '0')))
+        tgt_lines.append(Line('#define ORYOL_HLSL ({})'.format('1' if slang=='hlsl' else '0')))
+        tgt_lines.extend(lines)
+        with open(src_path, 'w') as f:
+            writeFile(f, tgt_lines)
+        cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
+        output = call(cmd)
+        parseOutput(output, lines)
 
 #-------------------------------------------------------------------------------
 def validate(sl_version, type, base_path, args) :

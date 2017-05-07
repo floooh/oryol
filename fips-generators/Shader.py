@@ -4,7 +4,7 @@ Code generator for shader libraries.
 FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 13
+Version = 18
 
 import os, platform, json
 import genutil as util
@@ -474,7 +474,6 @@ class Generator :
     #---------------------------------------------------------------------------
     def genVertexShaderSource(self, vs) :
         lines = []
-        lines.append(Line('#version 330'))
         for dep in vs.resolvedDeps :
             lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
         lines.extend(vs.lines)
@@ -483,7 +482,6 @@ class Generator :
     #---------------------------------------------------------------------------
     def genFragmentShaderSource(self, fs) :
         lines = []
-        lines.append(Line('#version 330'))
         for dep in fs.resolvedDeps :
             lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
         lines.extend(fs.lines)
