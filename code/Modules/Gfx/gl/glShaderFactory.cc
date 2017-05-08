@@ -114,8 +114,6 @@ glShaderFactory::SetupResource(shader& shd) {
     }
     #endif
     ORYOL_GL_CHECK_ERROR();
-
-    // if linking failed, stop the app
     if (!linkStatus) {
         o_warn("Failed to link program '%s'\n", setup.Locator.Location().AsCStr());
         return ResourceState::Failed;

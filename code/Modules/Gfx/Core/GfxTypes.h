@@ -572,32 +572,6 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::UniformType
-    @ingroup Gfx
-    @brief shader uniform types
-*/
-class UniformType {
-public:
-    enum Code : uint8_t {
-        Float = 0,
-        Vec2,
-        Vec3,
-        Vec4,
-        Mat2,
-        Mat4,
-        Int,
-
-        NumUniformTypes,
-        InvalidUniformType,
-    };
-    /// get the byte size of a uniform type (without padding)
-    static int ByteSize(Code c, int numElements);
-    /// get the base-alignment of the uniform type (see std140 alignment rules)
-    static int BaseAlignment(Code c);
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::VertexStepFunction
     @ingroup Gfx
     @brief classify vertices in a buffer as per-vertex or per-instance data
@@ -629,9 +603,7 @@ public:
     /// construct for indexed or non-indexed
     PrimitiveGroup(int baseElement, int numElements) :
         BaseElement(baseElement),
-        NumElements(numElements) {
-        // empty
-    }
+        NumElements(numElements) { }
 };
 
 //------------------------------------------------------------------------------
@@ -980,56 +952,6 @@ private:
     StaticArray<int8_t, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
     int8_t numComps = 0;
     uint8_t byteSize = 0;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::UniformBlockLayout
-    @ingroup Gfx
-    @brief describes the layout of an uniform block
-
-    A UniformBlockLayout describes the names and types of a group of
-    related shader uniforms.
-*/
-class UniformBlockLayout {
-public:
-    /// a UniformBlockLayout component describes a single uniform in the uniform block
-    class Component {
-    public:
-        /// default constructor
-        Component() {}
-        /// construct from name, type and number
-        Component(const StringAtom& name, UniformType::Code type, int num=1);
-        /// return true if the component is valid
-        bool IsValid() const;
-
-        StringAtom Name;
-        UniformType::Code Type = UniformType::InvalidUniformType;
-        int Num = 1;
-    };
-    /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
-    uint32_t TypeHash = 0;
-    /// clear the uniform layout
-    void Clear();
-    /// return true if the layout is empty
-    bool Empty() const;
-    /// add a uniform component to the layout
-    UniformBlockLayout& Add(const Component& comp);
-    /// add a scalar uniform component to the layout
-    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int numElements=1);
-    /// get number of components in the layout
-    int NumComponents() const;
-    /// get component at index
-    const Component& ComponentAt(int componentIndex) const;
-    /// get the overall byte size of the uniform layout
-    int ByteSize() const;
-    /// get byte offset of a component
-    int ComponentByteOffset(int componentIndex) const;
-private:
-    int numComps = 0;
-    int curOffset = 0;
-    StaticArray<Component, GfxConfig::MaxNumUniformBlockLayoutComponents> comps;
-    StaticArray<int, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
 };
 
 //------------------------------------------------------------------------------
@@ -1392,7 +1314,7 @@ public:
     /// set vertex shader input layout
     void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
-    void AddUniformBlock(const StringAtom& type, const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
+    void AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture declaration
     void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
     /// get the vertex shader input layout
@@ -1417,8 +1339,10 @@ public:
     const StringAtom& UniformBlockType(int index) const;
     /// get uniform block name at index
     const StringAtom& UniformBlockName(int index) const;
-    /// get uniform block layout at index
-    const class UniformBlockLayout& UniformBlockLayout(int index) const;
+    /// get uniform block type hash
+    uint32_t UniformBlockTypeHash(int index) const;
+    /// get uniform block byte size
+    uint32_t UniformBlockByteSize(int index) const;
     /// get uniform block shader stage at index
     ShaderStage::Code UniformBlockBindStage(int index) const;
     /// get uniform block bind slot at index
@@ -1452,7 +1376,8 @@ private:
     struct uniformBlockEntry {
         StringAtom type;
         StringAtom name;
-        class UniformBlockLayout layout;
+        uint32_t typeHash = 0;
+        uint32_t byteSize = 0;
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
         int bindSlot = InvalidIndex;
     };

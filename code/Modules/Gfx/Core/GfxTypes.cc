@@ -428,42 +428,6 @@ const char* VertexFormat::ToString(Code c) {
 }
 
 //------------------------------------------------------------------------------
-int UniformType::ByteSize(Code c, int numElements) {
-    switch (c) {
-        case Float:     return numElements * sizeof(float);
-        case Vec2:      return numElements * 2 * sizeof(float);
-        #if ORYOL_METAL
-            case Vec3:      return numElements * 4 * sizeof(float);
-        #else
-            case Vec3:      return numElements * 3 * sizeof(float);
-        #endif
-        case Vec4:      return numElements * 4 * sizeof(float);
-        case Mat2:      return numElements * 2 * 2 * sizeof(float);
-        case Mat4:      return numElements * 4 * 4 * sizeof(float);
-        case Int:       return numElements * sizeof(int);
-        default:
-            o_error("invalid scalar uniform type code!\n");
-            return 0;
-    }
-}
-
-//------------------------------------------------------------------------------
-int UniformType::BaseAlignment(Code c) {
-    switch (c) {
-        case Float:     return 4;
-        case Vec2:      return 2 * 4;
-        case Vec3:      return 4 * 4;
-        case Vec4:      return 4 * 4;
-        case Mat2:      return 4 * 4;
-        case Mat4:      return 4 * 4;
-        case Int:       return 4;
-        default:
-            o_error("invalid scalar uniform type code!\n");
-            return 0;
-    }
-}
-
-//------------------------------------------------------------------------------
 BlendState::BlendState() {
     static_assert(sizeof(BlendState) == 8, "sizeof(BlendState) is not 8, bitfield packing problem?");
     this->Hash = 0;
@@ -735,70 +699,6 @@ bool VertexLayout::Contains(VertexAttr::Code attr) const {
 }
 
 //------------------------------------------------------------------------------
-UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type, int num):
-    Name(name), Type(type), Num(num) {
-    o_assert_dbg(this->Name.IsValid());
-    o_assert_dbg(this->Type < UniformType::NumUniformTypes);
-}
-
-//------------------------------------------------------------------------------
-bool UniformBlockLayout::Component::IsValid() const {
-    return this->Name.IsValid();
-}
-
-//------------------------------------------------------------------------------
-void UniformBlockLayout::Clear() {
-    this->comps.Fill(Component());
-    this->byteOffsets.Fill(0);
-    this->numComps = 0;
-    this->curOffset = 0;
-}
-
-//------------------------------------------------------------------------------
-bool UniformBlockLayout::Empty() const {
-    return 0 == this->numComps;
-}
-
-//------------------------------------------------------------------------------
-UniformBlockLayout& UniformBlockLayout::Add(const Component& comp) {
-    this->comps[this->numComps] = comp;
-    const int baseAlign = UniformType::BaseAlignment(comp.Type);
-    if ((this->curOffset & (baseAlign - 1)) != 0) {
-        // pad offset for component type alignment
-        this->curOffset = (this->curOffset + baseAlign) & ~(baseAlign - 1);
-    }
-    this->byteOffsets[this->numComps] = this->curOffset;
-    this->curOffset += UniformType::ByteSize(comp.Type, comp.Num);
-    this->numComps++;
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-UniformBlockLayout& UniformBlockLayout::Add(const StringAtom& name, UniformType::Code type, int numElements) {
-    return this->Add(Component(name, type, numElements));
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::NumComponents() const {
-    return this->numComps;
-}
-
-//------------------------------------------------------------------------------
-const UniformBlockLayout::Component& UniformBlockLayout::ComponentAt(int componentIndex) const {
-    return this->comps[componentIndex];
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::ByteSize() const {
-    return this->curOffset;
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::ComponentByteOffset(int componentIndex) const {
-    return this->byteOffsets[componentIndex];
-}
-
-//------------------------------------------------------------------------------
 DisplayAttrs DisplayAttrs::FromTextureAttrs(const TextureAttrs& texAttrs) {
     DisplayAttrs dispAttrs;
     dispAttrs.WindowWidth = texAttrs.Width;
@@ -1058,15 +958,14 @@ void ShaderSetup::SetInputLayout(const VertexLayout& vsInputLayout) {
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, const class UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot) {
+void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(type.IsValid());
-    o_assert_dbg(!layout.Empty());
-    o_assert_dbg(0 != layout.TypeHash);
     o_assert_dbg(bindSlot >= 0);
     uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
     entry.type = type;
     entry.name = name;
-    entry.layout = layout;
+    entry.typeHash = typeHash;
+    entry.byteSize = byteSize;
     entry.bindStage = bindStage;
     entry.bindSlot = bindSlot;
 }
@@ -1148,8 +1047,13 @@ const StringAtom& ShaderSetup::UniformBlockType(int index) const {
 }
 
 //------------------------------------------------------------------------------
-const class UniformBlockLayout& ShaderSetup::UniformBlockLayout(int index) const {
-    return this->uniformBlocks[index].layout;
+uint32_t ShaderSetup::UniformBlockTypeHash(int index) const {
+    return this->uniformBlocks[index].typeHash;
+}
+
+//------------------------------------------------------------------------------
+uint32_t ShaderSetup::UniformBlockByteSize(int index) const {
+    return this->uniformBlocks[index].byteSize;
 }
 
 //------------------------------------------------------------------------------

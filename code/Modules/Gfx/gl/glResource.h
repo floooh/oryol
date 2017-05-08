@@ -94,12 +94,12 @@ public:
     /// the GL shader program
     GLuint glProgram = 0;
 
-    static const int MaxTexturesPerBlock = GfxConfig::MaxNumTextureBlockLayoutComponents;
+    static const int MaxTextures = GfxConfig::MaxNumVertexTextures+GfxConfig::MaxNumFragmentTextures;
     static const int MaxUBsPerStage = GfxConfig::MaxNumUniformBlocksPerStage;
     static const int MaxStages = ShaderStage::NumShaderStages;
 
     StaticArray<GLint, MaxStages*MaxUBsPerStage> uniformBlockMappings;
-    StaticArray<int, MaxStages*MaxTexturesPerBlock> samplerMappings;
+    StaticArray<int, MaxTextures> samplerMappings;
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     StaticArray<GLint,VertexAttr::NumVertexAttrs> attribMapping;
     #endif
@@ -120,7 +120,7 @@ glShader::getUniformBlockLocation(ShaderStage::Code bindStage, int bindSlot) con
 //------------------------------------------------------------------------------
 inline int
 glShader::samplerArrayIndex(ShaderStage::Code bindStage, int bindSlot) {
-    return bindSlot + bindStage*MaxTexturesPerBlock;
+    return bindSlot + (bindStage==ShaderStage::FS ? GfxConfig::MaxNumVertexTextures:0);
 }
 
 //------------------------------------------------------------------------------

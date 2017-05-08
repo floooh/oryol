@@ -55,7 +55,7 @@ public:
     /// apply draw state
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block (called after applyDrawState)
-    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t typeHash, const uint8_t* ptr, int byteSize);
     /// apply a group of textures
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
 
@@ -144,9 +144,6 @@ private:
     StaticArray<GLuint, MaxTextureSamplers> samplers;
     StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
-    #if !ORYOL_OPENGLES2
-    uint8_t uniformBlockScratch[4096];
-    #endif
 };
 
 //------------------------------------------------------------------------------

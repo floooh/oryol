@@ -1010,9 +1010,10 @@ glRenderer::setupRasterizerState() {
     
 //------------------------------------------------------------------------------
 void
-glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t typeHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
-    o_assert_dbg(0 != layoutHash);
+    // bytesize must be a multiple of sizeof(vec4)
+    o_assert_dbg((byteSize & 15) == 0);
     if (!this->curPipeline) {
         // currently no valid draw state set
         return;
@@ -1021,19 +1022,22 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
     // get the uniform layout object for this uniform block
     const shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
-    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
-    o_assert_dbg(InvalidIndex != ubIndex);
-    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
 
+    #if ORYOL_DEBUG
     // check whether the provided struct is type-compatible with the
     // expected uniform-block-layout, the size-check shouldn't be necessary
     // since the hash should already bail out, but it doesn't hurt either
-    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert_dbg(layout.ByteSize() >= byteSize);
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert(InvalidIndex != ubIndex);
+    const uint32_t ubTypeHash = shd->Setup.UniformBlockTypeHash(ubIndex);
+    const int ubByteSize = shd->Setup.UniformBlockByteSize(ubIndex);
+    o_assert(ubTypeHash == typeHash);
+    o_assert(ubByteSize >= byteSize);
+    #endif
 
     GLint glLoc = shd->getUniformBlockLocation(bindStage, bindSlot);
     if (-1 != glLoc) {
-        int vec4Count = Memory::RoundUp(byteSize, 16) / 16;
+        int vec4Count = byteSize / 16;
         ::glUniform4fv(glLoc, vec4Count, (const GLfloat*)ptr);
     }
 }

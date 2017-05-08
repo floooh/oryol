@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 25
+Version = 28
 
 import os, platform, json
 import genutil as util
@@ -69,7 +69,7 @@ validInOutTypes = [
 validUniformTypes = [
     'mat4', 'mat2',
     'vec4', 'vec3', 'vec2',
-    'float', 'int'
+    'float'
 ]
 
 # size of uniform array types must currently be multiple of 16,
@@ -79,7 +79,6 @@ validUniformArrayTypes = [
 ]
 
 uniformCType = {
-    'int':          'int',
     'float':        'float',
     'vec2':         'glm::vec2',
     'vec3':         'glm::vec3',
@@ -90,7 +89,6 @@ uniformCType = {
 }
 
 uniformCSize = {
-    'int':          4,
     'float':        4,
     'vec2':         8,
     'vec3':         12,
@@ -101,7 +99,6 @@ uniformCSize = {
 }
 
 uniformOryolType = {
-    'int':          'UniformType::Int',
     'float':        'UniformType::Float',
     'vec2':         'UniformType::Vec2',
     'vec3':         'UniformType::Vec3',
@@ -656,6 +653,10 @@ def getUniformBlockTypeHash(ub_refl):
     return zlib.crc32(hashString) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
+def roundup(val, round_to):
+    return (val + (round_to - 1)) & ~(round_to - 1)
+
+#-------------------------------------------------------------------------------
 def writeProgramHeader(f, shdLib, prog) :
     f.write('    namespace ' + prog.name + ' {\n')
     
@@ -689,6 +690,11 @@ def writeProgramHeader(f, shdLib, prog) :
                     else:
                         f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
                     cur_offset += uniformCSize[m['type']] 
+                # on GL, add padding bytes until struct size is multiple of vec4 size
+                if slang == 'glsl':
+                    round16 = roundup(cur_offset, 16)
+                    if cur_offset != round16:
+                        f.write('            uint8_t _pad_{}[{}];\n'.format(cur_offset, round16-cur_offset))
                 f.write('        };\n')
                 f.write('        #pragma pack(pop)\n')
             for tex in refl['textures']:
@@ -828,22 +834,28 @@ def writeProgramSource(f, shdLib, prog) :
     # add uniform layouts to setup object
     for stage in ['VS', 'FS']:
         shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
-        refl = shd.reflection
-        # add uniform block layouts
-        for ub in refl['uniform_blocks']:
-            layoutName = '{}_ublayout'.format(ub['type'])
-            f.write('    UniformBlockLayout {};\n'.format(layoutName))
-            f.write('    {}.TypeHash = {};\n'.format(layoutName, getUniformBlockTypeHash(ub)))
-            for m in ub['members']:
-                if m['num'] == 1:
-                    f.write('    {}.Add("{}", {});\n'.format(layoutName, m['name'], uniformOryolType[m['type']]))
-                else:
-                    f.write('    {}.Add("{}", {}, {});\n'.format(layoutName, m['name'], uniformOryolType[m['type']], m['num']))
-            f.write('    setup.AddUniformBlock("{}", "{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-                ub['type'], ub['name'], layoutName, ub['type'], ub['type']))
-        # add textures layouts to setup objects
-        for tex in refl['textures']:
-            f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
+        for slang in ['glsl', 'metal', 'hlsl']:
+            if slang == 'glsl':
+                plat = 'ORYOL_OPENGL'
+                refl = shd.slReflection['glsl100']
+            elif slang == 'metal':
+                plat = 'ORYOL_METAL'
+                refl = shd.slReflection['metal']
+            elif slang == 'hlsl':
+                plat = 'ORYOL_D3D11'
+                refl = shd.slReflection['hlsl']
+            f.write('    #if {}\n'.format(plat))
+            # add uniform block layouts
+            for ub in refl['uniform_blocks']:
+                ub_size = ub['size']
+                if slang == 'glsl':
+                    ub_size = roundup(ub_size, 16)
+                f.write('    setup.AddUniformBlock("{}", "{}", {}, {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+                    ub['type'], ub['name'], getUniformBlockTypeHash(ub), ub_size, ub['type'], ub['type']))
+            # add textures layouts to setup objects
+            for tex in refl['textures']:
+                f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
+            f.write('    #endif\n')
     f.write('    return setup;\n')
     f.write('}\n')
 
