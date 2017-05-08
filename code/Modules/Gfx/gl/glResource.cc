@@ -53,15 +53,14 @@ glShader::Clear() {
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     this->attribMapping.Fill(-1);
     #endif
-    this->uniformBlockMappings.Fill(ubInfo());
-    this->uniformMappings.Fill(-1);
+    this->uniformBlockMappings.Fill(0);
     shaderBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 void
-glShader::bindUniform(ShaderStage::Code bindStage, int bindSlot, int uniformIndex, GLint glUniformLocation) {
-    this->uniformMappings[uniformArrayIndex(bindStage, bindSlot, uniformIndex)] = glUniformLocation;
+glShader::bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLint glUniformLocation) {
+    this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)] = glUniformLocation;
 }
 
 //------------------------------------------------------------------------------

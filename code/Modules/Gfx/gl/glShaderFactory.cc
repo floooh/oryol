@@ -125,56 +125,19 @@ glShaderFactory::SetupResource(shader& shd) {
     shd.glProgram = glProg;
     this->pointers.renderer->useProgram(glProg);
 
-    // create uniform buffers?
+    // lookup uniform locations (one vec4[] per uniform block)
     const int numUniformBlocks = setup.NumUniformBlocks();
-    #if !ORYOL_OPENGLES2
-    if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
-            ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
-            const StringAtom& ubType = setup.UniformBlockType(ubIndex);
-            int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-            int ubArrayIndex = shd.uniformBlockArrayIndex(ubBindStage, ubBindSlot);
-            shd.uniformBlockMappings[ubArrayIndex].uniformBufferIndex = ubIndex;
-            ::glGenBuffers(1, &shd.uniformBlockMappings[ubArrayIndex].uniformBuffer);
-            ORYOL_GL_CHECK_ERROR();
-            ::glBindBufferBase(GL_UNIFORM_BUFFER, ubIndex, shd.uniformBlockMappings[ubArrayIndex].uniformBuffer);
-            ORYOL_GL_CHECK_ERROR();
-            GLuint blockIndex = ::glGetUniformBlockIndex(glProg, ubType.AsCStr());
-            ORYOL_GL_CHECK_ERROR();
-            if (blockIndex == GL_INVALID_INDEX) {
-                o_warn("Uniform block '%s' not found\n", ubType.AsCStr());
-            }
-            ::glUniformBlockBinding(glProg, blockIndex, ubIndex);
-            ORYOL_GL_CHECK_ERROR();
-
-            // allocate required uniform buffer space
-            ::glGetActiveUniformBlockiv(glProg, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &shd.uniformBlockMappings[ubArrayIndex].dataSize);
-            ORYOL_GL_CHECK_ERROR();
+    for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
+        ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
+        int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
+        const StringAtom& ubName = setup.UniformBlockType(ubIndex);
+        GLint glUniformLocation = ::glGetUniformLocation(glProg, ubName.AsCStr());
+        if (-1 != glUniformLocation) {
+            shd.bindUniformBlock(ubBindStage, ubBindSlot, glUniformLocation);
         }
-    }
-    else
-    #endif
-    {
-        // resolve 'traditional' uniform locations
-        for (int ubIndex = 0; ubIndex < numUniformBlocks; ubIndex++) {
-            const UniformBlockLayout& layout = setup.UniformBlockLayout(ubIndex);
-            ShaderStage::Code ubBindStage = setup.UniformBlockBindStage(ubIndex);
-            const StringAtom& ubName = setup.UniformBlockName(ubIndex);
-            int ubBindSlot = setup.UniformBlockBindSlot(ubIndex);
-            const int numUniforms = layout.NumComponents();
-            for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-                const UniformBlockLayout::Component& comp = layout.ComponentAt(uniformIndex);
-                this->strBuilder.Format(256, "%s.%s", ubName.AsCStr(), comp.Name.AsCStr());
-                const GLint glUniformLocation = ::glGetUniformLocation(glProg, this->strBuilder.AsCStr());
-                if (-1 != glUniformLocation) {
-                    shd.bindUniform(ubBindStage, ubBindSlot, uniformIndex, glUniformLocation);
-                }
-                else {
-                    Log::Warn("Sampler uniform '%s' not found on shader, will be ignored!\n", this->strBuilder.AsCStr());
-                }
-            }
+        else {
+            Log::Warn("Uniform '%s' not found on shader, will be ignored!\n", ubName.AsCStr());
         }
-        ORYOL_GL_CHECK_ERROR();
     }
 
     // resolve texture locations
@@ -218,15 +181,6 @@ glShaderFactory::DestroyResource(shader& shd) {
         ::glDeleteProgram(shd.glProgram);
         ORYOL_GL_CHECK_ERROR();
     }
-    #if !ORYOL_OPENGLES2
-    if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        for (const auto& item : shd.uniformBlockMappings) {
-            if (item.uniformBuffer) {
-                ::glDeleteBuffers(1, &item.uniformBuffer);
-            }
-        }
-    }
-    #endif
     shd.Clear();
 }
 

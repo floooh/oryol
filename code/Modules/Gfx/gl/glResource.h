@@ -70,7 +70,7 @@ public:
     void Clear();
     
     /// bind a uniform location to a slot index
-    void bindUniform(ShaderStage::Code bindStage, int bindSlot, int uniformIndex, GLint glUniformLocation);
+    void bindUniformBlock(ShaderStage::Code bindStage, int bindSlot, GLint glUniformLocation);
     /// bind a sampler uniform location to a slot index
     void bindSampler(ShaderStage::Code bindStage, int textureIndex, int samplerIndex);
     #if ORYOL_GL_USE_GETATTRIBLOCATION
@@ -80,18 +80,12 @@ public:
     GLint getAttribLocation(VertexAttr::Code attrib) const;
     #endif
 
-    /// comput uniform block index
+    /// compute uniform block index
     static int uniformBlockArrayIndex(ShaderStage::Code bindStage, int bindSlot);
-    /// get uniform buffer object for uniform block
-    GLuint getUniformBuffer(ShaderStage::Code bindStage, int bindSlot) const;
-    /// get uniform buffer bind index
-    GLuint getUniformBufferIndex(ShaderStage::Code bindStage, int bindSlot) const;
+    /// get location of GL uniform block vec4 array
+    GLint getUniformBlockLocation(ShaderStage::Code bindStage, int bindSlot) const;
     /// get the data size of an uniform block
     GLint getUniformBlockSize(ShaderStage::Code bindStage, int bindSlot) const;
-    /// compute uniform array index
-    static int uniformArrayIndex(ShaderStage::Code bindStage, int bindSlot, int uniformIndex);
-    /// get uniform location (-1 if not exists)
-    GLint getUniformLocation(ShaderStage::Code bindStage, int bindSlot, int uniformIndex) const;
     /// get sampler index (InvalidIndex if not exists)
     int getSamplerIndex(ShaderStage::Code bindStage, int bindSlot) const;
     /// compute sampler array index
@@ -100,18 +94,11 @@ public:
     /// the GL shader program
     GLuint glProgram = 0;
 
-    static const int MaxUniformsPerBlock = GfxConfig::MaxNumUniformBlockLayoutComponents;
     static const int MaxTexturesPerBlock = GfxConfig::MaxNumTextureBlockLayoutComponents;
     static const int MaxUBsPerStage = GfxConfig::MaxNumUniformBlocksPerStage;
     static const int MaxStages = ShaderStage::NumShaderStages;
 
-    struct ubInfo {
-        GLuint uniformBuffer = 0;
-        GLuint uniformBufferIndex = 0;
-        GLint dataSize = 0;
-    };
-    StaticArray<ubInfo, MaxStages*MaxUBsPerStage> uniformBlockMappings;
-    StaticArray<GLint, MaxStages*MaxUBsPerStage*MaxUniformsPerBlock> uniformMappings;
+    StaticArray<GLint, MaxStages*MaxUBsPerStage> uniformBlockMappings;
     StaticArray<int, MaxStages*MaxTexturesPerBlock> samplerMappings;
     #if ORYOL_GL_USE_GETATTRIBLOCATION
     StaticArray<GLint,VertexAttr::NumVertexAttrs> attribMapping;
@@ -125,33 +112,9 @@ glShader::uniformBlockArrayIndex(ShaderStage::Code bindStage, int bindSlot) {
 }
 
 //------------------------------------------------------------------------------
-inline GLuint
-glShader::getUniformBuffer(ShaderStage::Code bindStage, int bindSlot) const {
-    return this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)].uniformBuffer;
-}
-
-//------------------------------------------------------------------------------
-inline GLuint
-glShader::getUniformBufferIndex(ShaderStage::Code bindStage, int bindSlot) const {
-    return this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)].uniformBufferIndex;
-}
-
-//------------------------------------------------------------------------------
 inline GLint
-glShader::getUniformBlockSize(ShaderStage::Code bindStage, int bindSlot) const {
-    return this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)].dataSize;
-}
-
-//------------------------------------------------------------------------------
-inline int
-glShader::uniformArrayIndex(ShaderStage::Code bindStage, int bindSlot, int uniformIndex) {
-    return uniformIndex + bindSlot*MaxUniformsPerBlock + bindStage*MaxUBsPerStage*MaxUniformsPerBlock;
-}
-
-//------------------------------------------------------------------------------
-inline GLint
-glShader::getUniformLocation(ShaderStage::Code bindStage, int bindSlot, int uniformIndex) const {
-    return this->uniformMappings[uniformArrayIndex(bindStage, bindSlot, uniformIndex)];
+glShader::getUniformBlockLocation(ShaderStage::Code bindStage, int bindSlot) const {
+    return this->uniformBlockMappings[uniformBlockArrayIndex(bindStage, bindSlot)];
 }
 
 //------------------------------------------------------------------------------

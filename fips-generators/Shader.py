@@ -1,10 +1,8 @@
 '''
 Code generator for shader libraries.
-
-FIXME: the generated Metal and HLSL bytecode arrays must be made 'unique' (wrap them in a namespace)
 '''
 
-Version = 22
+Version = 25
 
 import os, platform, json
 import genutil as util
@@ -80,28 +78,6 @@ validUniformArrayTypes = [
     'mat4', 'mat2', 'vec4'
 ]
 
-# note: alignment is in number of floats
-uniformBaseAlignment = {
-    'mat4': 4,
-    'mat2': 4,
-    'vec4': 4,
-    'vec3': 4,
-    'vec2': 2,
-    'float': 1,
-    'int': 1
-}
-
-# these are unpadded sizes in number of floats
-uniformSize = {
-    'mat4': 16,
-    'mat2': 4,
-    'vec4': 4,
-    'vec3': 3,
-    'vec2': 2,
-    'float': 1,
-    'int': 1
-}
-
 uniformCType = {
     'int':          'int',
     'float':        'float',
@@ -111,6 +87,17 @@ uniformCType = {
     'mat2':         'glm::mat2',
     'mat3':         'glm::mat3',
     'mat4':         'glm::mat4',
+}
+
+uniformCSize = {
+    'int':          4,
+    'float':        4,
+    'vec2':         8,
+    'vec3':         12,
+    'vec4':         16,
+    'mat2':         16,
+    'mat3':         36,
+    'mat4':         64,
 }
 
 uniformOryolType = {
@@ -669,55 +656,44 @@ def getUniformBlockTypeHash(ub_refl):
     return zlib.crc32(hashString) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
-def alignedOffset(type, cur_offset):
-    aligned_offset = cur_offset
-    base_align = uniformBaseAlignment[type]
-    if (aligned_offset & (base_align - 1)) == 0:
-        # already aligned
-        return aligned_offset
-    else:
-        return (aligned_offset + base_align) & ~(base_align - 1)
-
-#-------------------------------------------------------------------------------
 def writeProgramHeader(f, shdLib, prog) :
     f.write('    namespace ' + prog.name + ' {\n')
     
     # write uniform block structs
     for stage in ['VS', 'FS']:
         shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
-        refl = shd.reflection
-        for ub in refl['uniform_blocks']:
-            f.write('        #pragma pack(push,1)\n')
-            f.write('        struct {} {{\n'.format(ub['type']))
-            f.write('            static const int _bindSlotIndex = {};\n'.format(ub['slot']))
-            f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stage))
-            f.write('            static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
-            for slang in ['metal', 'other']:
+        for slang in ['glsl', 'metal', 'hlsl']:
+            if slang == 'glsl':
+                plat = 'ORYOL_OPENGL'
+                refl = shd.slReflection['glsl100']
+            elif slang == 'metal':
+                plat = 'ORYOL_METAL'
+                refl = shd.slReflection['metal']
+            elif slang == 'hlsl':
+                plat = 'ORYOL_D3D11'
+                refl = shd.slReflection['hlsl']
+            f.write('        #if {}\n'.format(plat))
+            for ub in refl['uniform_blocks']:
                 cur_offset = 0
-                if slang == 'metal':
-                    f.write('            #if ORYOL_METAL\n')
-                else:
-                    f.write('            #if !ORYOL_METAL\n')
+                f.write('        #pragma pack(push,1)\n')
+                f.write('        struct {} {{\n'.format(ub['type']))
+                f.write('            static const int _bindSlotIndex = {};\n'.format(ub['slot']))
+                f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stage))
+                f.write('            static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
                 for m in ub['members']:
-                    # add padding
-                    aligned_offset = alignedOffset(m['type'], cur_offset)
-                    while cur_offset != aligned_offset:
-                        f.write('                float _pad_{};\n'.format(cur_offset))
-                        cur_offset += 1
+                    next_offset = m['offset']
+                    if next_offset > cur_offset:
+                        f.write('            uint8_t _pad_{}[{}];\n'.format(cur_offset, next_offset-cur_offset))
                     if m['num'] == 1:
-                        f.write('                {} {};\n'.format(uniformCType[m['type']], m['name']))
-                        # special case: sizeof(vec3) is 16 bytes on metal
-                        if slang == 'metal' and m['type'] == 'vec3':
-                            f.write('                float _pad_{};\n'.format(cur_offset))
-                            cur_offset += 1
+                        f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
                     else:
-                        f.write('                {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
-                    cur_offset += uniformSize[m['type']] * m['num'] 
-                f.write('            #endif\n')
-            f.write('        };\n')
-            f.write('        #pragma pack(pop)\n')
-        for tex in refl['textures']:
-            f.write('        static const int {} = {};\n'.format(tex['name'], tex['slot']))
+                        f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
+                    cur_offset += uniformCSize[m['type']] 
+                f.write('        };\n')
+                f.write('        #pragma pack(pop)\n')
+            for tex in refl['textures']:
+                f.write('        static const int {} = {};\n'.format(tex['name'], tex['slot']))
+            f.write('        #endif\n')
     f.write('        extern ShaderSetup Setup();\n')
     f.write('    }\n')
 

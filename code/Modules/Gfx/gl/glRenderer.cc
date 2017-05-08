@@ -583,18 +583,6 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
     // bind program and uniform buffers
     this->useProgram(pip->shd->glProgram);
-    #if !ORYOL_OPENGLES2
-    if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        const int numUniformBlocks = pip->shd->Setup.NumUniformBlocks();
-        for (int i = 0; i < numUniformBlocks; i++) {
-            const ShaderStage::Code ubBindStage = pip->shd->Setup.UniformBlockBindStage(i);
-            const int ubBindSlot = pip->shd->Setup.UniformBlockBindSlot(i);
-            GLuint ub = pip->shd->getUniformBuffer(ubBindStage, ubBindSlot);
-            GLuint ubIndex = pip->shd->getUniformBufferIndex(ubBindStage, ubBindSlot);
-            ::glBindBufferBase(GL_UNIFORM_BUFFER, ubIndex, ub);
-        }
-    }
-    #endif
 
     // need to store primary mesh with primitive group defs for later draw call
     this->curPrimaryMesh = meshes[0];
@@ -1041,95 +1029,12 @@ glRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_
     // expected uniform-block-layout, the size-check shouldn't be necessary
     // since the hash should already bail out, but it doesn't hurt either
     o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
-    o_assert_dbg(layout.ByteSize() == byteSize);
-    #endif
+    o_assert_dbg(layout.ByteSize() >= byteSize);
 
-    #if !ORYOL_OPENGLES2
-    if (!glCaps::IsFlavour(glCaps::GLES2)) {
-        // FIXME FIXME FIXME: this code sucks
-        // use uniform buffers
-        GLuint ub = shd->getUniformBuffer(bindStage, bindSlot);
-        ::glBindBuffer(GL_UNIFORM_BUFFER, ub);
-        GLint ubSize = shd->getUniformBlockSize(bindStage, bindSlot);
-        if (byteSize != ubSize) {
-            o_assert_dbg(int(sizeof(this->uniformBlockScratch)) >= byteSize);
-            // need to go through a temporary copy
-            Memory::Copy(ptr, this->uniformBlockScratch, byteSize);
-            ::glBufferData(GL_UNIFORM_BUFFER, ubSize, this->uniformBlockScratch, GL_DYNAMIC_DRAW);
-        }
-        else {
-            ::glBufferData(GL_UNIFORM_BUFFER, ubSize, ptr, GL_DYNAMIC_DRAW);
-        }
-    }
-    else
-    #endif
-    {
-        // for each uniform in the uniform block:
-        const int numUniforms = layout.NumComponents();
-        for (int uniformIndex = 0; uniformIndex < numUniforms; uniformIndex++) {
-            const auto& comp = layout.ComponentAt(uniformIndex);
-            const uint8_t* valuePtr = ptr + layout.ComponentByteOffset(uniformIndex);
-            GLint glLoc = shd->getUniformLocation(bindStage, bindSlot, uniformIndex);
-            if (-1 != glLoc) {
-                switch (comp.Type) {
-                    case UniformType::Float:
-                        {
-                            o_assert_dbg(1 == comp.Num);
-                            const float val = *(const float*)valuePtr;
-                            ::glUniform1f(glLoc, val);
-                        }
-                        break;
-
-                    case UniformType::Vec2:
-                        {
-                            o_assert_dbg(1 == comp.Num);
-                            const glm::vec2& val = *(const glm::vec2*) valuePtr;
-                            ::glUniform2f(glLoc, val.x, val.y);
-                        }
-                        break;
-
-                    case UniformType::Vec3:
-                        {
-                            o_assert_dbg(1 == comp.Num);
-                            const glm::vec3& val = *(const glm::vec3*)valuePtr;
-                            ::glUniform3f(glLoc, val.x, val.y, val.z);
-                        }
-                        break;
-
-                    case UniformType::Vec4:
-                        {
-                            const glm::vec4& val = *(const glm::vec4*)valuePtr;
-                            if (comp.Num > 1) {
-                                ::glUniform4fv(glLoc, comp.Num, glm::value_ptr(val));
-                            }
-                            else {
-                                ::glUniform4f(glLoc, val.x, val.y, val.z, val.w);
-                            }
-                        }
-                        break;
-
-                    case UniformType::Mat2:
-                        {
-                            o_assert_dbg(1 == comp.Num);
-                            const glm::mat2& val = *(const glm::mat2*)valuePtr;
-                            ::glUniformMatrix2fv(glLoc, 1, GL_FALSE, glm::value_ptr(val));
-                        }
-                        break;
-
-                    case UniformType::Mat4:
-                        {
-                            const glm::mat4& val = *(const glm::mat4*)valuePtr;
-                            ::glUniformMatrix4fv(glLoc, comp.Num, GL_FALSE, glm::value_ptr(val));
-                        }
-                        break;
-
-                    default:
-                        o_error("FIXME: invalid uniform type!\n");
-                        break;
-                }
-            }
-        }
+    GLint glLoc = shd->getUniformBlockLocation(bindStage, bindSlot);
+    if (-1 != glLoc) {
+        int vec4Count = Memory::RoundUp(byteSize, 16) / 16;
+        ::glUniform4fv(glLoc, vec4Count, (const GLfloat*)ptr);
     }
 }
 
