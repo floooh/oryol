@@ -1726,7 +1726,7 @@ class ShaderLibrary :
         must match exactly, even if the fragment shader doesn't use all output
         from the vertex shader
         '''        
-        for vs_name,vs in self.vertexShaders.iteritems() :
+        for vs_name,vs in self.vertexShaders.items() :
             vs_found = False
             for prog in self.programs.values() :
                 if vs_name == prog.vs :
@@ -1736,7 +1736,7 @@ class ShaderLibrary :
                 util.fmtError("vertex shader '{}' is not part of a program".format(vs_name), False)
                 fatalError = True
 
-        for fs_name,fs in self.fragmentShaders.iteritems() :
+        for fs_name,fs in self.fragmentShaders.items() :
             fs_found = False
             for prog in self.programs.values() :
                 if fs_name == prog.fs :
