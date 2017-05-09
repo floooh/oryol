@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 32
+Version = 33
 
 import os, platform, json
 import genutil as util
@@ -690,7 +690,7 @@ def writeProgramHeader(f, shdLib, prog) :
                         f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
                     else:
                         f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
-                    cur_offset += uniformCSize[m['type']]
+                    cur_offset += uniformCSize[m['type']] * m['num']
                 # on GL, add padding bytes until struct size is multiple of vec4 size
                 if slang == 'glsl':
                     round16 = roundup(cur_offset, 16)
