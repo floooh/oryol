@@ -8,6 +8,6 @@ clone_depth: 3
 
 # just perform builds for now, don't run tests
 build_script:
-    - cmd: python3 fips build win64-vstudio-debug
-    - cmd: python3 fips build d3d11-win64-vstudio-debug
+    - cmd: c:/Python36/python.exe fips build win64-vstudio-debug
+    - cmd: c:/Python36/python.exe fips build d3d11-win64-vstudio-debug
 
