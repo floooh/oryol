@@ -8,17 +8,11 @@
 #include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/gfxPointers.h"
 #include "Gfx/gl/gl_decl.h"
-#include "Gfx/gl/glVertexAttr.h"
 #include "glm/vec4.hpp"
+#include "Gfx/Resource/resource.h"
 
 namespace Oryol {
 namespace _priv {
-
-class texture;
-class pipeline;
-class mesh;
-class shader;
-class renderPass;
 
 class glRenderer {
 public:
@@ -142,7 +136,7 @@ private:
     
     static const int MaxTextureSamplers = 16;
     StaticArray<GLuint, MaxTextureSamplers> samplers;
-    StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
+    StaticArray<pipeline::vertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     StaticArray<GLuint, VertexAttr::NumVertexAttrs> glAttrVBs;
 };
 

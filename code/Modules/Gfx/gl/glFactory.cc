@@ -831,11 +831,11 @@ static void
 initVertexAttrs(pipeline& pip) {
     // first disable all vertex attrs
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        pip.glAttrs[attrIndex] = glVertexAttr();
+        pip.glAttrs[attrIndex] = pipeline::vertexAttr();
         pip.glAttrs[attrIndex].index = attrIndex;
     }
 
-    // convert input mesh vertex layout components to glVertexAttrs
+    // convert input mesh vertex layout components to GL vertex attr
     const VertexLayout& vsInputLayout = pip.shd->Setup.InputLayout();
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumInputMeshes; layoutIndex++) {
         const VertexLayout& layout = pip.Setup.Layouts[layoutIndex];
@@ -845,7 +845,7 @@ initVertexAttrs(pipeline& pip) {
                 const VertexLayout::Component& comp = layout.ComponentAt(compIndex);
                 if (vsInputLayout.Contains(comp.Attr)) {
                     o_assert_dbg(comp.Format < VertexFormat::NumVertexFormats);
-                    glVertexAttr& glAttr = pip.glAttrs[comp.Attr];
+                    auto& glAttr = pip.glAttrs[comp.Attr];
                     o_assert_dbg(!glAttr.enabled);
                     glAttr.enabled = GL_TRUE;
                     glAttr.vbIndex = layoutIndex;

@@ -4,7 +4,6 @@
 #include "Core/Containers/StaticArray.h"
 #include "Gfx/Core/GfxTypes.h"
 #include "Gfx/gl/gl_decl.h"
-#include "Gfx/gl/glVertexAttr.h"
 
 namespace Oryol {
 namespace _priv {
@@ -48,8 +47,36 @@ class glPipeline : public pipelineBase {
 public:
     /// clear the object (called from pipelineFactory::DestroyResource()
     void Clear();
-    
-    StaticArray<glVertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
+
+    struct vertexAttr {
+        /// test for equality
+        bool operator==(const vertexAttr& rhs) const {
+            return (this->index == rhs.index) &&
+                   (this->enabled == rhs.enabled) &&
+                   (this->vbIndex == rhs.vbIndex) &&
+                   (this->divisor == rhs.divisor) &&
+                   (this->stride == rhs.stride) &&
+                   (this->size == rhs.size) &&
+                   (this->normalized == rhs.normalized) &&
+                   (this->offset == rhs.offset) &&
+                   (this->type == rhs.type);
+        };
+        /// test for inequality
+        bool operator!=(const vertexAttr& rhs) const {
+            return !operator==(rhs);
+        };
+
+        uint8_t index = 0;
+        uint8_t enabled = 0;
+        uint8_t vbIndex = 0;
+        uint8_t divisor = 0;
+        uint8_t stride = 0;
+        uint8_t size = 0;
+        uint8_t normalized = 0;
+        uint32_t offset = 0;
+        GLenum type = 0;
+    };
+    StaticArray<vertexAttr, VertexAttr::NumVertexAttrs> glAttrs;
     GLenum glPrimType = 0;
 };
 

@@ -593,9 +593,9 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     const auto& ib = this->curPrimaryMesh->buffers[mesh::ib];
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]); // can be 0 if mesh has no index buffer
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        const glVertexAttr& attr = pip->glAttrs[attrIndex];
+        const auto& attr = pip->glAttrs[attrIndex];
         o_assert_dbg(attr.vbIndex < numMeshes);
-        glVertexAttr& curAttr = this->glAttrs[attrIndex];
+        auto& curAttr = this->glAttrs[attrIndex];
         const mesh* msh = meshes[attr.vbIndex];
         o_assert_dbg(msh);
         const auto& vb = msh->buffers[mesh::vb];
@@ -844,7 +844,7 @@ glRenderer::invalidateMeshState() {
     this->vertexBuffer = 0;
     this->indexBuffer = 0;
     for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        this->glAttrs[i] = glVertexAttr();
+        this->glAttrs[i] = pipeline::vertexAttr();
         this->glAttrVBs[i] = 0;
     }
 }

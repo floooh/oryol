@@ -30,7 +30,7 @@ glMesh::Clear() {
 //------------------------------------------------------------------------------
 void
 glPipeline::Clear() {
-    this->glAttrs.Fill(glVertexAttr());
+    this->glAttrs.Fill(glPipeline::vertexAttr());
     this->glPrimType = 0;
     pipelineBase::Clear();
 }

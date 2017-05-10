@@ -52,7 +52,6 @@ fips_begin_module(Gfx)
             glFactory.cc glFactory.h
             glRenderer.cc glRenderer.h
             glTypes.cc glTypes.h
-            glVertexAttr.h
             gl_decl.h
             gl_impl.h
         )
