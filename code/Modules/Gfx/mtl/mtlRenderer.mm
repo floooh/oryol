@@ -423,7 +423,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t typeHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curRenderCmdEncoder) {
         return;
@@ -437,10 +437,12 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32
     shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
-    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
-    o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert_dbg(byteSize == layout.ByteSize());
-    o_assert2_dbg((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+    o_assert(InvalidIndex != ubIndex);
+    const uint32_t ubTypeHash = shd->Setup.UniformBlockTypeHash(ubIndex);
+    const int ubByteSize = shd->Setup.UniformBlockByteSize(ubIndex);
+    o_assert(ubTypeHash == typeHash);
+    o_assert(ubByteSize >= byteSize);
+     o_assert2_dbg((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
     o_assert_dbg((this->curUniformBufferOffset & (MtlUniformAlignment-1)) == 0);
     #endif
 
