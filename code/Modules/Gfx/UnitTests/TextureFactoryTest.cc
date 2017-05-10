@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Resource/factory.h"
+#include "Gfx/Resource/gfxFactory.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Core/renderer.h"
@@ -35,15 +35,15 @@ TEST(RenderTargetCreationTest) {
     
     // setup a meshFactory object
     renderer.setup(gfxSetup, ptrs);
-    textureFactory factory;
-    factory.Setup(ptrs);
+    gfxFactory factory;
+    factory.setup(ptrs);
     
     // create a render target (no depth buffer)
     auto texSetup = TextureSetup::RenderTarget2D(320, 256);
     texSetup.ColorFormat = PixelFormat::RGBA8;
     texture tex0;
     tex0.Setup = texSetup;
-    factory.SetupResource(tex0, nullptr, 0);
+    factory.initTexture(tex0, nullptr, 0);
     CHECK(tex0.glTextures[0] != 0);
     CHECK(tex0.glDepthRenderbuffer == 0);
     const TextureAttrs& attrs0 = tex0.textureAttrs;
@@ -65,7 +65,7 @@ TEST(RenderTargetCreationTest) {
     rtSetup.DepthFormat = PixelFormat::DEPTHSTENCIL;
     texture tex1;
     tex1.Setup = rtSetup;
-    factory.SetupResource(tex1, nullptr, 0);
+    factory.initTexture(tex1, nullptr, 0);
     CHECK(tex1.glTextures[0] != 0);
     CHECK(tex1.glDepthRenderbuffer != 0);
     const TextureAttrs& attrs1 = tex1.textureAttrs;
@@ -82,12 +82,12 @@ TEST(RenderTargetCreationTest) {
     CHECK(attrs1.HasDepthBuffer);
 
     // cleanup
-    factory.DestroyResource(tex1);
+    factory.destroyTexture(tex1);
     CHECK(tex1.glTextures[0] == 0);
     CHECK(tex1.glDepthRenderbuffer == 0);
     
-    factory.DestroyResource(tex0);
-    factory.Discard();
+    factory.destroyTexture(tex0);
+    factory.discard();
     renderer.discard();
     displayManager.DiscardDisplay();
     #endif
