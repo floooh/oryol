@@ -38,9 +38,8 @@ fips_begin_module(Gfx)
         resourcePools.h
         resourceBase.h resourceBase.cc
         resource.h
-        factory.h
-        pipelineFactoryBase.cc pipelineFactoryBase.h
-        renderPassFactoryBase.cc renderPassFactoryBase.h
+        gfxFactory.h
+        gfxFactoryBase.h gfxFactoryBase.cc
         gfxResourceContainer.h gfxResourceContainer.cc 
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
@@ -50,12 +49,8 @@ fips_begin_module(Gfx)
         fips_files(
             glCaps.cc glCaps.h
             glResource.cc glResource.h
-            glPipelineFactory.cc glPipelineFactory.h
-            glMeshFactory.cc glMeshFactory.h
-            glShaderFactory.cc glShaderFactory.h
+            glFactory.cc glFactory.h
             glRenderer.cc glRenderer.h
-            glTextureFactory.cc glTextureFactory.h
-            glRenderPassFactory.cc glRenderPassFactory.h
             glTypes.cc glTypes.h
             glVertexAttr.h
             gl_decl.h

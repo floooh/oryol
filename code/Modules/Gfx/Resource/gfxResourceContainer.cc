@@ -23,13 +23,7 @@ gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->texturePool.Setup(GfxResourceType::Texture, setup.ResourcePoolSize[GfxResourceType::Texture]);
     this->pipelinePool.Setup(GfxResourceType::Pipeline, setup.ResourcePoolSize[GfxResourceType::Pipeline]);
     this->renderPassPool.Setup(GfxResourceType::RenderPass, setup.ResourcePoolSize[GfxResourceType::RenderPass]);
-
-    this->meshFactory.Setup(this->pointers);
-    this->shaderFactory.Setup(this->pointers);
-    this->textureFactory.Setup(this->pointers);
-    this->pipelineFactory.Setup(this->pointers);
-    this->renderPassFactory.Setup(this->pointers);
-
+    this->factory.setup(this->pointers);
     this->runLoopId = Core::PostRunLoop()->Add([this]() {
         this->update();
     });
@@ -51,15 +45,11 @@ gfxResourceContainer::discard() {
     resourceContainerBase::discard();
 
     this->renderPassPool.Discard();
-    this->renderPassFactory.Discard();
     this->pipelinePool.Discard();
-    this->pipelineFactory.Discard();
     this->texturePool.Discard();
-    this->textureFactory.Discard();
     this->shaderPool.Discard();
-    this->shaderFactory.Discard();
     this->meshPool.Discard();
-    this->meshFactory.Discard();
+    this->factory.discard();
     this->pointers = gfxPointers();
 }
 
@@ -77,7 +67,7 @@ gfxResourceContainer::Create(const MeshSetup& setup, const void* data, int size)
         resId = this->meshPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->meshFactory.SetupResource(res, data, size);
+        const ResourceState::Code newState = this->factory.initMesh(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->meshPool.UpdateState(resId, newState);
     }
@@ -98,7 +88,7 @@ gfxResourceContainer::Create(const TextureSetup& setup, const void* data, int si
         resId = this->texturePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         texture& res = this->texturePool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data, size);
+        const ResourceState::Code newState = this->factory.initTexture(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->texturePool.UpdateState(resId, newState);
     }
@@ -124,7 +114,7 @@ gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const v
     // the prepared resource may have been destroyed while it was loading
     if (this->meshPool.Contains(resId)) {
         mesh& res = this->meshPool.Assign(resId, setup, ResourceState::Pending);
-        const ResourceState::Code newState = this->meshFactory.SetupResource(res, data, size);
+        const ResourceState::Code newState = this->factory.initMesh(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->meshPool.UpdateState(resId, newState);
         return newState;
@@ -156,7 +146,7 @@ gfxResourceContainer::initAsync(const Id& resId, const TextureSetup& setup, cons
     // the prepared resource may have been destroyed while it was loading
     if (this->texturePool.Contains(resId)) {
         texture& res = this->texturePool.Assign(resId, setup, ResourceState::Pending);
-        const ResourceState::Code newState = this->textureFactory.SetupResource(res, data, size);
+        const ResourceState::Code newState = this->factory.initTexture(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->texturePool.UpdateState(resId, newState);
         return newState;
@@ -213,7 +203,7 @@ gfxResourceContainer::Create(const ShaderSetup& setup, const void* /*data*/, int
         resId = this->shaderPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         shader& res = this->shaderPool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->shaderFactory.SetupResource(res);
+        const ResourceState::Code newState = this->factory.initShader(res);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->shaderPool.UpdateState(resId, newState);
     }
@@ -233,7 +223,7 @@ gfxResourceContainer::Create(const PipelineSetup& setup, const void* /*data*/, i
         resId = this->pipelinePool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         pipeline& res = this->pipelinePool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->pipelineFactory.SetupResource(res);
+        const ResourceState::Code newState = this->factory.initPipeline(res);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));        
         this->pipelinePool.UpdateState(resId, newState);
     }
@@ -253,7 +243,7 @@ gfxResourceContainer::Create(const PassSetup& setup, const void* /*data*/, int /
         resId = this->renderPassPool.AllocId();
         this->registry.Add(setup.Locator, resId, this->peekLabel());
         renderPass& res = this->renderPassPool.Assign(resId, setup, ResourceState::Setup);
-        const ResourceState::Code newState = this->renderPassFactory.SetupResource(res);
+        const ResourceState::Code newState = this->factory.initRenderPass(res);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->renderPassPool.UpdateState(resId, newState);
     }
@@ -307,7 +297,7 @@ gfxResourceContainer::destroyResource(const Id& id) {
             if (ResourceState::Valid == this->texturePool.QueryState(id)) {
                 texture* tex = this->texturePool.Lookup(id);
                 if (tex) {
-                    this->textureFactory.DestroyResource(*tex);
+                    this->factory.destroyTexture(*tex);
                 }
             }
             this->texturePool.Unassign(id);
@@ -319,7 +309,7 @@ gfxResourceContainer::destroyResource(const Id& id) {
             if (ResourceState::Valid == this->meshPool.QueryState(id)) {
                 mesh* msh = this->meshPool.Lookup(id);
                 if (msh) {
-                    this->meshFactory.DestroyResource(*msh);
+                    this->factory.destroyMesh(*msh);
                 }
             }
             this->meshPool.Unassign(id);
@@ -331,7 +321,7 @@ gfxResourceContainer::destroyResource(const Id& id) {
             if (ResourceState::Valid == this->shaderPool.QueryState(id)) {
                 shader* shd = this->shaderPool.Lookup(id);
                 if (shd) {
-                    this->shaderFactory.DestroyResource(*shd);
+                    this->factory.destroyShader(*shd);
                 }
             }
             this->shaderPool.Unassign(id);
@@ -343,7 +333,7 @@ gfxResourceContainer::destroyResource(const Id& id) {
             if (ResourceState::Valid == this->pipelinePool.QueryState(id)) {
                 pipeline* pip = this->pipelinePool.Lookup(id);
                 if (pip) {
-                    this->pipelineFactory.DestroyResource(*pip);
+                    this->factory.destroyPipeline(*pip);
                 }
             }
             this->pipelinePool.Unassign(id);
@@ -355,7 +345,7 @@ gfxResourceContainer::destroyResource(const Id& id) {
             if (ResourceState::Valid == this->renderPassPool.QueryState(id)) {
                 renderPass* rp = this->renderPassPool.Lookup(id);
                 if (rp) {
-                    this->renderPassFactory.DestroyResource(*rp);
+                    this->factory.destroyRenderPass(*rp);
                 }
             }
             this->renderPassPool.Unassign(id);

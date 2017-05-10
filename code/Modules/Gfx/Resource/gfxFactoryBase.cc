@@ -1,9 +1,8 @@
 //------------------------------------------------------------------------------
-//  renderPassFactoryBase.cc
+//  gfxFactoryBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "renderPassFactoryBase.h"
-#include "Core/Assertion.h"
+#include "gfxFactoryBase.h"
 #include "Gfx/Resource/resource.h"
 #include "Gfx/Resource/resourcePools.h"
 
@@ -11,13 +10,13 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-renderPassFactoryBase::~renderPassFactoryBase() {
+gfxFactoryBase::~gfxFactoryBase() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
 void
-renderPassFactoryBase::Setup(const gfxPointers& ptrs) {
+gfxFactoryBase::setup(const gfxPointers& ptrs) {
     o_assert_dbg(!this->isValid);
     this->pointers = ptrs;
     this->isValid = true;
@@ -25,7 +24,7 @@ renderPassFactoryBase::Setup(const gfxPointers& ptrs) {
 
 //------------------------------------------------------------------------------
 void
-renderPassFactoryBase::Discard() {
+gfxFactoryBase::discard() {
     o_assert_dbg(this->isValid);
     this->pointers = gfxPointers();
     this->isValid = false;
@@ -33,7 +32,23 @@ renderPassFactoryBase::Discard() {
 
 //------------------------------------------------------------------------------
 ResourceState::Code
-renderPassFactoryBase::SetupResource(renderPass& rp) {
+gfxFactoryBase::initPipeline(pipeline& pip) {
+    o_assert_dbg(this->isValid);
+    pip.shd = this->pointers.shaderPool->Lookup(pip.Setup.Shader);
+    o_assert_dbg(pip.shd && (ResourceState::Valid == pip.shd->State));
+    return ResourceState::Valid;
+}
+
+//------------------------------------------------------------------------------
+void
+gfxFactoryBase::destroyPipeline(pipeline& pip) {
+    o_assert_dbg(this->isValid);
+    pip.Clear();
+}
+
+//------------------------------------------------------------------------------
+ResourceState::Code
+gfxFactoryBase::initRenderPass(renderPass& rp) {
     o_assert_dbg(this->isValid);
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
         o_assert_dbg(nullptr == rp.colorTextures[i]);
@@ -54,9 +69,11 @@ renderPassFactoryBase::SetupResource(renderPass& rp) {
 
 //------------------------------------------------------------------------------
 void
-renderPassFactoryBase::DestroyResource(renderPass& rp) {
+gfxFactoryBase::destroyRenderPass(renderPass& rp) {
+    o_assert_dbg(this->isValid);
     rp.Clear();
 }
 
 } // namespace _priv
 } // namespace Oryol
+
