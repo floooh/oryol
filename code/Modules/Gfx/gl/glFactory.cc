@@ -677,7 +677,7 @@ glFactory::initShader(shader& shd) {
     #elif ORYOL_OPENGL_CORE_PROFILE
     const ShaderLang::Code slang = ShaderLang::GLSL330;
     #else
-    const ShaderLang::Code slang = ShaderLang::GLSL120;
+    #error "Unsupported GL profile"
     #endif
     const ShaderSetup& setup = shd.Setup;
 

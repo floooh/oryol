@@ -85,28 +85,32 @@ def parseOutput(output, lines) :
         sys.exit(10) 
 
 #-------------------------------------------------------------------------------
-def compile(lines, type, base_path, args) :
+def compile(lines, type, base_path, slang, args) :
     # compile GLSL source file to SPIR-V
     ext = {
         'vs': 'vert',
         'fs': 'frag'
     }
-    for slang in ['glsl', 'metal', 'hlsl']:
-        src_path = '{}.{}.{}'.format(base_path, slang, ext[type])
-        dst_path = '{}.{}.spv'.format(base_path, slang)
-        tgt_lines = []
-        tgt_lines.append(Line('#version 330'))
-        tgt_lines.append(Line('#define ORYOL_GLSL ({})'.format('1' if slang=='glsl' else '0')))
-        tgt_lines.append(Line('#define ORYOL_MSL ({})'.format('1' if slang=='metal' else '0')))
-        tgt_lines.append(Line('#define ORYOL_HLSL ({})'.format('1' if slang=='hlsl' else '0')))
-        tgt_lines.extend(lines)
-        with open(src_path, 'w') as f:
-            writeFile(f, tgt_lines)
-        cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
-        output = call(cmd)
-        parseOutput(output, tgt_lines)
+    # GLSL can have multiple versions, force to generic 'glsl'
+    if 'glsl' in slang:
+        slang = 'glsl'
+    src_path = '{}.{}.{}'.format(base_path, slang, ext[type])
+    dst_path = '{}.{}.spv'.format(base_path, slang)
+    tgt_lines = []
+    tgt_lines.append(Line('#version 330'))
+    tgt_lines.append(Line('#define ORYOL_GLSL ({})'.format('1' if slang=='glsl' else '0')))
+    tgt_lines.append(Line('#define ORYOL_MSL ({})'.format('1' if slang=='metal' else '0')))
+    tgt_lines.append(Line('#define ORYOL_HLSL ({})'.format('1' if slang=='hlsl' else '0')))
+    tgt_lines.extend(lines)
+    with open(src_path, 'w') as f:
+        writeFile(f, tgt_lines)
+    cmd = [getToolPath(), '-G', '-o', dst_path, src_path]
+    output = call(cmd)
+    parseOutput(output, tgt_lines)
 
 #-------------------------------------------------------------------------------
+'''
+FIXME: this isn't currently called
 def validate(sl_version, type, base_path, args) :
     # run validation over a generated GLSL source
     src_path = "{}.{}".format(base_path, sl_version)
@@ -123,5 +127,6 @@ def validate(sl_version, type, base_path, args) :
     cmd = [getToolPath(), '-S', stage, src_path]
     output = call(cmd)
     parseOutput(output, lines)
+'''
 
 

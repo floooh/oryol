@@ -401,7 +401,6 @@ class ShaderLang {
 public:
     enum Code {
         GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
-        GLSL120,        ///< OpenGL 2.1
         GLSL330,        ///< OpenGL 3.3
         GLSLES3,        ///< OpenGLES3
         HLSL5,          ///< D3D11 HLSL

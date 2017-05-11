@@ -34,9 +34,9 @@ def run(cmd):
         exit(child.returncode)
 
 #-------------------------------------------------------------------------------
-def compile(input, base_path, args):
+def compile(input, base_path, slangs):
     util.setErrorLocation(input, 0)
-    for slang in ['glsl100', 'glsles3', 'glsl120', 'glsl330', 'metal', 'hlsl']:
+    for slang in slangs:
         if 'glsl' in slang:
             src_slang = 'glsl'
         else:
