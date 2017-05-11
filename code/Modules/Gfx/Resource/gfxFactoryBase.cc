@@ -31,6 +31,13 @@ gfxFactoryBase::discard() {
 }
 
 //------------------------------------------------------------------------------
+void
+gfxFactoryBase::garbageCollect() {
+    // this is only implemented in some subclasses, depending on 
+    // rendering backend
+}
+
+//------------------------------------------------------------------------------
 ResourceState::Code
 gfxFactoryBase::initPipeline(pipeline& pip) {
     o_assert_dbg(this->isValid);

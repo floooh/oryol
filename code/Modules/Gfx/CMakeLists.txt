@@ -86,12 +86,8 @@ fips_begin_module(Gfx)
             mtlDisplayMgr.h mtlDisplayMgr.mm
             mtlTypes.h mtlTypes.mm
             mtlResource.h mtlResource.mm
-            mtlMeshFactory.h mtlMeshFactory.mm
-            mtlShaderFactory.h mtlShaderFactory.mm
-            mtlPipelineFactory.h mtlPipelineFactory.mm
-            mtlTextureFactory.h mtlTextureFactory.mm
+            mtlFactory.h mtlFactory.mm
             mtlRenderer.h mtlRenderer.mm
-            mtlReleaseQueue.h mtlReleaseQueue.mm
         )
         fips_frameworks_osx(Metal QuartzCore)
     endif()

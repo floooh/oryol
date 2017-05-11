@@ -286,6 +286,7 @@ gfxResourceContainer::GarbageCollect() {
         this->destroyResource(id);
     }
     this->destroyQueue.Clear();
+    this->factory.garbageCollect();
 }
 
 //------------------------------------------------------------------------------

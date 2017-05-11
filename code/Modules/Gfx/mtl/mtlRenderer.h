@@ -12,7 +12,6 @@
 #include "Gfx/Resource/resource.h"
 #include "glm/vec4.hpp"
 #include "Gfx/Core/GfxConfig.h"
-#include "Gfx/mtl/mtlReleaseQueue.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
@@ -71,8 +70,6 @@ public:
     /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
     void readPixels(void* buf, int bufNumBytes);
 
-    /// defered-release a render resource
-    void releaseDeferred(ORYOL_OBJC_ID obj);
     /// check if command buffer exists, create if not
     void checkCreateCommandBuffer();
 
@@ -106,9 +103,6 @@ public:
     uint8_t* curUniformBufferPtr;
     int curUniformBufferOffset;
     StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MaxInflightFrames> uniformBuffers;
-
-    // deferred-release-queue, release gfx resources when no longer in use by GPU
-    mtlReleaseQueue releaseQueue;
 };
 
 } // namespace _priv

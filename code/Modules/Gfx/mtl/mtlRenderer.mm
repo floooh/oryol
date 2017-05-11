@@ -46,7 +46,6 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
     this->gfxSetup = setup;
-    this->releaseQueue.setup();
 
     // frame-sync semaphore
     mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MaxInflightFrames);
@@ -77,7 +76,6 @@ mtlRenderer::discard() {
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
-    this->releaseQueue.discard();
     this->commandQueue = nil;
     this->mtlDevice = nil;
     this->pointers = gfxPointers();
@@ -223,8 +221,6 @@ mtlRenderer::checkCreateCommandBuffer() {
     if (nil == this->curCommandBuffer) {
         // block until the oldest frame in flight has finished
         dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-        // safely destroy released GPU resources
-        this->releaseQueue.garbageCollect(this->frameIndex);
         // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
@@ -660,13 +656,6 @@ void
 mtlRenderer::readPixels(void* buf, int bufNumBytes) {
     o_assert_dbg(this->valid);
     o_warn("mtlRenderer::readPixels()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::releaseDeferred(ORYOL_OBJC_ID obj) {
-    o_assert_dbg(nil != obj);
-    this->releaseQueue.releaseDeferred(this->frameIndex, obj);
 }
 
 } // namespace _priv
