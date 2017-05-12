@@ -1351,13 +1351,13 @@ public:
     /// find texture index by bind stage and slot (return InvalidIndex if not found)
     int TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
     /// get texture name at index
-    const StringAtom& TextureName(int index) const;
+    const StringAtom& TexName(int index) const;
     /// get texture type at index 
-    TextureType::Code TextureType(int index) const;
+    TextureType::Code TexType(int index) const;
     /// get texture bind stage
-    ShaderStage::Code TextureBindStage(int index) const;
+    ShaderStage::Code TexBindStage(int index) const;
     /// get texture bind slot
-    int TextureBindSlot(int index) const;
+    int TexBindSlot(int index) const;
 private:
     struct programEntry {
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;

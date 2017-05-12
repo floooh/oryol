@@ -764,9 +764,9 @@ glFactory::initShader(shader& shd) {
     int glTextureLocation = 0;
     const int numTextures = setup.NumTextures();
     for (int texIndex = 0; texIndex < numTextures; texIndex++) {
-        ShaderStage::Code bindStage = setup.TextureBindStage(texIndex);
-        int bindSlot = setup.TextureBindSlot(texIndex);
-        const StringAtom& name = setup.TextureName(texIndex);
+        ShaderStage::Code bindStage = setup.TexBindStage(texIndex);
+        int bindSlot = setup.TexBindSlot(texIndex);
+        const StringAtom& name = setup.TexName(texIndex);
         const GLint glUniformLocation = ::glGetUniformLocation(glProg, name.AsCStr()); 
         if (-1 != glUniformLocation) {
             shd.bindSampler(bindStage, bindSlot, glTextureLocation);

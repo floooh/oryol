@@ -469,7 +469,7 @@ Gfx::validateTextures(ShaderStage::Code stage, pipeline* pip, texture** textures
     for (int slot = 0; slot < numTextures; slot++) {
         int index = shd->Setup.TextureIndexByStageAndSlot(stage, slot);
         if ((InvalidIndex != index) && textures[slot]) {
-            if (textures[slot]->textureAttrs.Type != shd->Setup.TextureType(index)) {
+            if (textures[slot]->textureAttrs.Type != shd->Setup.TexType(index)) {
                 o_error("Texture type mismatch at slot '%d'!\n", slot);
             }
         }

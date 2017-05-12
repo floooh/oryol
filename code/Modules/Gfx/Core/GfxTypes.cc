@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "GfxTypes.h"
+#include <cstring>
 
 namespace Oryol {
 
@@ -1083,22 +1084,22 @@ int ShaderSetup::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bin
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::TextureName(int index) const {
+const StringAtom& ShaderSetup::TexName(int index) const {
     return this->textures[index].name;
 }
 
 //------------------------------------------------------------------------------
-TextureType::Code ShaderSetup::TextureType(int index) const {
+TextureType::Code ShaderSetup::TexType(int index) const {
     return this->textures[index].type;
 }
 
 //------------------------------------------------------------------------------
-ShaderStage::Code ShaderSetup::TextureBindStage(int index) const {
+ShaderStage::Code ShaderSetup::TexBindStage(int index) const {
     return this->textures[index].bindStage;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::TextureBindSlot(int index) const {
+int ShaderSetup::TexBindSlot(int index) const {
     return this->textures[index].bindSlot;
 }
 
