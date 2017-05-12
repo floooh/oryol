@@ -71,11 +71,7 @@ fips_begin_module(Gfx)
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
             d3d11Types.cc d3d11Types.h
             d3d11Resource.cc d3d11Resource.h
-            d3d11MeshFactory.cc d3d11MeshFactory.h
-            d3d11ShaderFactory.cc d3d11ShaderFactory.h
-            d3d11TextureFactory.cc d3d11TextureFactory.h
-            d3d11PipelineFactory.h d3d11PipelineFactory.cc
-            d3d11RenderPassFactory.h d3d11RenderPassFactory.cc
+            d3d11Factory.cc d3d11Factory.h
             d3d11Renderer.cc d3d11Renderer.h
         )
     endif()

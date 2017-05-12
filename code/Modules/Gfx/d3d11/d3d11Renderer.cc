@@ -449,9 +449,9 @@ d3d11Renderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int ubBindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+d3d11Renderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t typeHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->d3d11DeviceContext);
-    o_assert_dbg(0 != layoutHash);
+    o_assert_dbg(0 != typeHash);
     if (nullptr == this->curPipeline) {
         // currently no valid draw state set
         return;
@@ -461,18 +461,19 @@ d3d11Renderer::applyUniformBlock(ShaderStage::Code ubBindStage, int ubBindSlot, 
     o_assert_dbg(shd);
     
     #if ORYOL_DEBUG
-    // verify that the provided uniform block struct is type compatible
-    // with the uniform block expected at the binding stage and slot
-    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(ubBindStage, ubBindSlot);
-    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
-    o_assert2(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    #if !ORYOL_WIN32 // NOTE: VS 32-bit sometimes adds useless padding bytes at end of structs
-        o_assert_dbg(layout.ByteSize() == byteSize);
-    #endif
+    // check whether the provided struct is type-compatible with the
+    // expected uniform-block-layout, the size-check shouldn't be necessary
+    // since the hash should already bail out, but it doesn't hurt either
+    int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
+    o_assert(InvalidIndex != ubIndex);
+    const uint32_t ubTypeHash = shd->Setup.UniformBlockTypeHash(ubIndex);
+    const int ubByteSize = shd->Setup.UniformBlockByteSize(ubIndex);
+    o_assert(ubTypeHash == typeHash);
+    o_assert(ubByteSize >= byteSize);
     #endif
 
     // NOTE: UpdateSubresource() and map-discard are equivalent (at least on nvidia)
-    ID3D11Buffer* cb = shd->getConstantBuffer(ubBindStage, ubBindSlot);
+    ID3D11Buffer* cb = shd->getConstantBuffer(bindStage, bindSlot);
     o_assert_dbg(cb);
     this->d3d11DeviceContext->UpdateSubresource(cb, 0, nullptr, ptr, 0, 0);
 }
