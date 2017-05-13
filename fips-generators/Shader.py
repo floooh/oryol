@@ -32,7 +32,7 @@ oryolSlangTypes = {
 }
 
 def isGLSL(sl):
-    return sl in ['glsl100', 'glsl330', 'glsles2']
+    return sl in ['glsl100', 'glsl330', 'glsles3']
 
 def isHLSL(sl):
     return sl == 'hlsl'
