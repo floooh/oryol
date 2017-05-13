@@ -651,12 +651,5 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
     }
 }
 
-//------------------------------------------------------------------------------
-void
-mtlRenderer::readPixels(void* buf, int bufNumBytes) {
-    o_assert_dbg(this->valid);
-    o_warn("mtlRenderer::readPixels()\n");
-}
-
 } // namespace _priv
 } // namespace Oryol

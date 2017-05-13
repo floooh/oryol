@@ -67,8 +67,6 @@ public:
     void updateIndices(mesh* msh, const void* data, int numBytes);
     /// update texture data
     void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(void* buf, int bufNumBytes);
 
     /// check if command buffer exists, create if not
     void checkCreateCommandBuffer();
