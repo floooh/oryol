@@ -1,7 +1,7 @@
 fips_begin_app(DDSTextureLoading windowed)
     fips_vs_warning_level(3)
     fips_files(DDSTextureLoading.cc)
-    oryol_shader(shaders.shd)
+    oryol_shader(shaders.glsl)
     fips_deps(Assets Gfx HTTP)
     oryol_add_web_sample(DDSTextureLoading "Load and render various DDS texture formats" "emscripten" DDSTextureLoading.jpg "DDSTextureLoading/DDSTextureLoading.cc")
 fips_end_app()

@@ -1,7 +1,7 @@
 fips_begin_app(Sensors windowed)
     fips_vs_warning_level(3)
     fips_files(Sensors.cc)
-    oryol_shader(shaders.shd)
+    oryol_shader(shaders.glsl)
     fips_deps(Gfx Assets Dbg Input)
     oryol_add_web_sample(Sensors "Device sensors sample" "emscripten" none "Sensors/Sensors.cc")
 fips_end_app()

@@ -1,9 +1,4 @@
 //------------------------------------------------------------------------------
-//  shaders.shd
-//  Annotated GLSL shaders for SimpleRenderTarget sample
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
 //  Vertex and fragment shaders for rendering into the offscreen render target
 //
 @vs offscreenVS

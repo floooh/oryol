@@ -140,7 +140,7 @@ fips_begin_unittest(Gfx)
         VertexLayoutTest.cc
         glTypesTest.cc
     )
-    oryol_shader(TestShaderLibrary.shd)
+    oryol_shader(TestShaderLibrary.glsl)
     fips_deps(HTTP Gfx Assets)
 fips_end_unittest()
 

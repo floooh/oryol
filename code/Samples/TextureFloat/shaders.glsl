@@ -1,9 +1,4 @@
 //------------------------------------------------------------------------------
-//  shaders.shd
-//  Annotated GLSL shaders for TextureFloat sample
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
 //  see https://github.com/ashima/webgl-noise
 //
 @code_block NoiseUtil
@@ -44,6 +39,7 @@ float snoise(vec2 v)
     //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0
     //i1.y = 1.0 - i1.x;
     i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    
     // x0 = x0 - 0.0 + 0.0 * C.xx ;
     // x1 = x0 - i1 + 1.0 * C.xx ;
     // x2 = x0 - 1.0 + 2.0 * C.xx ;
@@ -80,7 +76,7 @@ float snoise(vec2 v)
 @end
 
 //------------------------------------------------------------------------------
-@vs plasmaVS
+@vs offscreenVS
 in vec4 position;
 in vec2 texcoord0;
 out vec2 uv;
@@ -90,13 +86,14 @@ void main() {
 }
 @end
 
-@fs plasmaFS
+@fs offscreenFS
 @use_code_block NoiseUtil
 uniform fsParams {
     float time;
 };
 in vec2 uv;
 out vec4 fragColor;
+
 void main() {
     vec2 dx = vec2(time, 0.0);
     vec2 dy = vec2(0.0, time);
@@ -117,44 +114,35 @@ void main() {
     blue += snoise((uv * 5.0) + dxy) * 0.15;
     blue += snoise((uv * 5.0) - dxy) * 0.15;
     
-    float height = 0.0;
-    height = (snoise((uv * 3.0) + dxy) * 0.5) + 0.5;
-    height += snoise(uv * 20.0 + dy) * 0.1;
-    height += snoise(uv * 20.0 - dy) * 0.1;
-    
     // scale by 100 to check that the result isn't clamped to 1.0
-    fragColor = vec4(red, green, blue, height * 0.2);
+    fragColor = vec4(red, green, blue, 0.0) * 100.0;
 }
 @end
 
-@program PlasmaShader plasmaVS plasmaFS
+@program OffscreenShader offscreenVS offscreenFS
 
 //------------------------------------------------------------------------------
-@vs planeVS
-uniform vsParams {
-    mat4 mvp;
-};
-uniform sampler2D tex;
+//  Copy offscreen render target to back buffer
+//
+@vs copyVS
 in vec4 position;
 in vec2 texcoord0;
-out vec4 color;
-
+out vec2 uv;
 void main() {
-    color = texture(tex, texcoord0);
-    vec4 pos = position;
-    pos.y = color.w;
-    color.w = 1.0;
-    gl_Position = mvp * pos;
+    gl_Position = position;
+    uv = texcoord0;
 }
 @end
 
-@fs planeFS
-in vec4 color;
+@fs copyFS
+uniform sampler2D tex;
+in vec2 uv;
 out vec4 fragColor;
 void main() {
-    fragColor = color;
+    // scale back to 0..1
+    fragColor = vec4(texture(tex, uv).xyz*0.01,1.0);
 }
 @end
 
-@program PlaneShader planeVS planeFS
+@program CopyShader copyVS copyFS
 

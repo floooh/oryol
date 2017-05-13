@@ -1,5 +1,4 @@
 //------------------------------------------------------------------------------
-//  shaders.shd
 //  Annotated GLSL shaders for Fullscreen sample.
 //  This implements distance-field ray-marching, see here for details:
 //  http://www.iquilezles.org/default.html
