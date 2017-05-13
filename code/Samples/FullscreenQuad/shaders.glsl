@@ -4,7 +4,7 @@
 //  http://www.iquilezles.org/default.html
 //------------------------------------------------------------------------------
 
-@code_block VSFuncs
+@block VSFuncs
 // compute eye position
 vec3 eyePos(float time, vec3 center) {
     return center + vec3(sin(time * 0.1) * 5.0, 2.0, cos(time * 0.1) * 5.0);
@@ -26,7 +26,7 @@ lookatResult lookat(vec3 eye, vec3 center,vec3 up) {
 @end
 
 @vs vs
-@use_code_block VSFuncs
+@include VSFuncs
 uniform params {
     float time;
 };
@@ -56,7 +56,7 @@ void main() {
 }
 @end
 
-@code_block FSFuncs
+@block FSFuncs
 // smooth-minimum, see here: http://iquilezles.org/www/articles/smin/smin.htm
 float smin(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a)/k, 0.0, 1.0);
@@ -132,7 +132,7 @@ vec3 normal(vec4 sinTime, vec3 p) {
 //  The fragment shader where the magic happens.
 //
 @fs fs
-@use_code_block FSFuncs
+@include FSFuncs
 
 in vec2 uv;
 in vec3 eye;

@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //  Lighting helper functions.
 //
-@code_block lighting
+@block lighting
 
 vec3 light(vec3 baseColor, vec3 eyeVec, vec3 normal, vec3 lightVec) {
 
@@ -59,7 +59,7 @@ void main() {
 @end
 
 @fs shapeFS
-@use_code_block lighting
+@include lighting
 in vec3 worldNormal;
 in vec3 worldPosition;
 in vec3 worldEyePos;
@@ -76,7 +76,7 @@ void main() {
 @end
 
 @fs shapeFSGamma
-@use_code_block lighting
+@include lighting
 
 in vec3 worldNormal;
 in vec3 worldPosition;
@@ -122,7 +122,7 @@ void main() {
 @end
 
 @fs sphereFS
-@use_code_block lighting
+@include lighting
 
 // Adapted from http://developer.download.nvidia.com/SDK/9.5/Samples/DEMOS/Direct3D9/src/HLSL_FresnelReflection/docs/FresnelReflection.pdf
 float fresnel(vec3 V, vec3 N, float R0)

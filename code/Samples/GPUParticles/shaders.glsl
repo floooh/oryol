@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //  Fragment shader util functions
 //
-@code_block FSUtil
+@block FSUtil
 // get particleId from current fragment coord
 float getParticleId(float bufferWidth, vec2 fragCoord) {
     vec2 xy = floor(fragCoord);
@@ -36,7 +36,7 @@ particleStateUvs getParticleStateUvs(bool atPos, vec2 bufDims, vec2 fragCoord) {
 //------------------------------------------------------------------------------
 //  Vertex shader util functions
 //
-@code_block VSUtil
+@block VSUtil
 // compute particle position uv coord from particleId
 vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
     float numParticlesAlongX = bufferDims.x * 0.5;
@@ -61,7 +61,7 @@ vec2 posUvFromParticleId(float particleId, vec2 bufferDims) {
 //               Distributed under the MIT License. See LICENSE file.
 //               https://github.com/ashima/webgl-noise
 //
-@code_block Noise
+@block Noise
 vec3 mod289(vec3 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
@@ -143,7 +143,8 @@ void main() {
 //  | p0.pos | p0.vec | p1.pos | p1.vec | p2.pos | p2.vec |
 //  | p3.pos | p3.vec | ...    | ...
 @fs initFS
-@use_code_block Noise FSUtil
+@include Noise
+@include FSUtil
 uniform fsParams {
     vec2 bufDims;
 };
@@ -173,7 +174,7 @@ void main() {
 //  via ping-ponging.
 //
 @fs updateFS
-@use_code_block FSUtil
+@include FSUtil
 uniform fsParams {
     vec2 bufDims;
     float numParticles;
@@ -228,7 +229,7 @@ void main() {
 //  texture.
 //
 @vs drawVS
-@use_code_block VSUtil
+@include VSUtil
 
 uniform vsParams {
     mat4 mvp;

@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 //  see https://github.com/ashima/webgl-noise
 //
-@code_block NoiseUtil
+@block NoiseUtil
 //
 // Description : Array and textureless GLSL 2D simplex noise function.
 //      Author : Ian McEwan, Ashima Arts.
@@ -87,7 +87,7 @@ void main() {
 @end
 
 @fs offscreenFS
-@use_code_block NoiseUtil
+@include NoiseUtil
 uniform fsParams {
     float time;
 };

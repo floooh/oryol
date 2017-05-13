@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 38
+Version = 40
 
 import os, platform, json
 import genutil as util
@@ -16,7 +16,6 @@ if platform.system() == 'Windows' :
 if platform.system() == 'Darwin' :
     from util import metalcompiler
 
-# SL versions for OpenGLES2.0, OpenGL2.1, OpenGL3.0, D3D11
 slVersions = {
     'GLSL': ['glsl330'],
     'GLES': ['glsl100', 'glsles3'],
@@ -32,107 +31,81 @@ oryolSlangTypes = {
     'metal':   'ShaderLang::Metal'
 }
 
-isGLSL = {
-    'glsl100': True,
-    'glsl330': True,
-    'glsles3': True,
-    'hlsl': False,
-    'metal': False
-}
+def isGLSL(sl):
+    return sl in ['glsl100', 'glsl330', 'glsles2']
 
-isHLSL = {
-    'glsl100': False,
-    'glsl330': False,
-    'glsles3': False,
-    'hlsl': True,
-    'metal': False
-}
+def isHLSL(sl):
+    return sl == 'hlsl'
 
-isMetal = {
-    'glsl100': False,
-    'glsl330': False,
-    'glsles3': False,
-    'hlsl': False,
-    'metal': True
-}
+def isMetal(sl):
+    return sl == 'metal'
 
 validVsInNames = [
     'position', 'normal', 'texcoord0', 'texcoord1', 'texcoord2', 'texcoord3',
     'tangent', 'binormal', 'weights', 'indices', 'color0', 'color1',
     'instance0', 'instance1', 'instance2', 'instance3'
 ]
-validInOutTypes = [
-    'float', 'vec2', 'vec3', 'vec4'
-]
-
-# NOTE: order is important, always go from greatest to smallest type,
-# and keep texture samplers at start!
-validUniformTypes = [
-    'mat4', 'mat2',
-    'vec4', 'vec3', 'vec2',
-    'float'
-]
+validInOutTypes = [ 'float', 'vec2', 'vec3', 'vec4' ]
+validUniformTypes = [ 'mat4', 'mat2', 'vec4', 'vec3', 'vec2', 'float' ]
 
 # size of uniform array types must currently be multiple of 16,
 # because of std140 padding rules
-validUniformArrayTypes = [
-    'mat4', 'mat2', 'vec4'
-]
+validUniformArrayTypes = [ 'mat4', 'mat2', 'vec4' ]
 
 uniformCType = {
-    'float':        'float',
-    'vec2':         'glm::vec2',
-    'vec3':         'glm::vec3',
-    'vec4':         'glm::vec4',
-    'mat2':         'glm::mat2',
-    'mat3':         'glm::mat3',
-    'mat4':         'glm::mat4',
+    'float': 'float',
+    'vec2':  'glm::vec2',
+    'vec3':  'glm::vec3',
+    'vec4':  'glm::vec4',
+    'mat2':  'glm::mat2',
+    'mat3':  'glm::mat3',
+    'mat4':  'glm::mat4',
 }
 
 uniformCSize = {
-    'float':        4,
-    'vec2':         8,
-    'vec3':         12,
-    'vec4':         16,
-    'mat2':         16,
-    'mat3':         36,
-    'mat4':         64,
+    'float': 4,
+    'vec2':  8,
+    'vec3':  12,
+    'vec4':  16,
+    'mat2':  16,
+    'mat3':  36,
+    'mat4':  64,
 }
 
 uniformOryolType = {
-    'float':        'UniformType::Float',
-    'vec2':         'UniformType::Vec2',
-    'vec3':         'UniformType::Vec3',
-    'vec4':         'UniformType::Vec4',
-    'mat2':         'UniformType::Mat2',
-    'mat3':         'UniformType::Mat3',
-    'mat4':         'UniformType::Mat4',
+    'float': 'UniformType::Float',
+    'vec2':  'UniformType::Vec2',
+    'vec3':  'UniformType::Vec3',
+    'vec4':  'UniformType::Vec4',
+    'mat2':  'UniformType::Mat2',
+    'mat3':  'UniformType::Mat3',
+    'mat4':  'UniformType::Mat4',
 }
 
 attrOryolType = {
-    'float':    'VertexFormat::Float',
-    'vec2':     'VertexFormat::Float2',
-    'vec3':     'VertexFormat::Float3',
-    'vec4':     'VertexFormat::Float4'
+    'float': 'VertexFormat::Float',
+    'vec2':  'VertexFormat::Float2',
+    'vec3':  'VertexFormat::Float3',
+    'vec4':  'VertexFormat::Float4'
 }
 
 attrOryolName = {
-    'position':     'VertexAttr::Position',
-    'normal':       'VertexAttr::Normal',
-    'texcoord0':    'VertexAttr::TexCoord0',
-    'texcoord1':    'VertexAttr::TexCoord1',
-    'texcoord2':    'VertexAttr::TexCoord2',
-    'texcoord3':    'VertexAttr::TexCoord3',
-    'tangent':      'VertexAttr::Tangent',
-    'binormal':     'VertexAttr::Binormal',
-    'weights':      'VertexAttr::Weights',
-    'indices':      'VertexAttr::Indices',
-    'color0':       'VertexAttr::Color0',
-    'color1':       'VertexAttr::Color1',
-    'instance0':    'VertexAttr::Instance0',
-    'instance1':    'VertexAttr::Instance1',
-    'instance2':    'VertexAttr::Instance2',
-    'instance3':    'VertexAttr::Instance3'
+    'position':  'VertexAttr::Position',
+    'normal':    'VertexAttr::Normal',
+    'texcoord0': 'VertexAttr::TexCoord0',
+    'texcoord1': 'VertexAttr::TexCoord1',
+    'texcoord2': 'VertexAttr::TexCoord2',
+    'texcoord3': 'VertexAttr::TexCoord3',
+    'tangent':   'VertexAttr::Tangent',
+    'binormal':  'VertexAttr::Binormal',
+    'weights':   'VertexAttr::Weights',
+    'indices':   'VertexAttr::Indices',
+    'color0':    'VertexAttr::Color0',
+    'color1':    'VertexAttr::Color1',
+    'instance0': 'VertexAttr::Instance0',
+    'instance1': 'VertexAttr::Instance1',
+    'instance2': 'VertexAttr::Instance2',
+    'instance3': 'VertexAttr::Instance3'
 }
 
 validTextureTypes = [
@@ -140,10 +113,10 @@ validTextureTypes = [
 ]
 
 texOryolType = {
-    'sampler2D':        'TextureType::Texture2D',
-    'samplerCube':      'TextureType::TextureCube',
-    'sampler3D':        'TextureType::Texture3D',
-    'sampler2DArray':   'TextureType::TextureArray',
+    'sampler2D':      'TextureType::Texture2D',
+    'samplerCube':    'TextureType::TextureCube',
+    'sampler3D':      'TextureType::Texture3D',
+    'sampler2DArray': 'TextureType::TextureArray',
 }
 
 #-------------------------------------------------------------------------------
@@ -165,10 +138,9 @@ class Snippet :
     def __init__(self) :
         self.name = None
         self.lines = []
-        self.dependencies = []
 
 #-------------------------------------------------------------------------------
-class Reference :
+class Include :
     '''
     A reference to another named object, with information where the 
     ref is located (source, linenumber)
@@ -179,7 +151,7 @@ class Reference :
         self.lineNumber = lineNumber
         
 #-------------------------------------------------------------------------------
-class CodeBlock(Snippet) :
+class Block(Snippet) :
     '''
     A code block snippet.
     '''
@@ -188,7 +160,7 @@ class CodeBlock(Snippet) :
         self.name = name
 
     def getTag(self) :
-        return 'code_block'
+        return 'block'
 
 #-------------------------------------------------------------------------------
 class Shader(Snippet) :
@@ -198,7 +170,7 @@ class Shader(Snippet) :
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.resolvedDeps = []
+        self.includes = []
         self.slReflection = {}  # reflection by shader language 
         self.generatedSource = None
 
@@ -311,17 +283,17 @@ class Parser :
         self.current = self.stack.pop();
 
     #---------------------------------------------------------------------------
-    def onCodeBlock(self, args) :
+    def onBlock(self, args) :
         if len(args) != 1 :
-            util.fmtError("@code_block must have 1 arg (name)")
+            util.fmtError("@block must have 1 arg (name)")
         if self.current is not None :
-            util.fmtError("@code_block must be at top level (missing @end in '{}'?)".format(self.current.name))
+            util.fmtError("@block must be at top level (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
-        if name in self.shaderLib.codeBlocks :
-            util.fmtError("@code_block '{}' already defined".format(name))
-        codeBlock = CodeBlock(name)
-        self.shaderLib.codeBlocks[name] = codeBlock
-        self.push(codeBlock)
+        if name in self.shaderLib.blocks :
+            util.fmtError("@block '{}' already defined".format(name))
+        block = Block(name)
+        self.shaderLib.blocks[name] = block
+        self.push(block)
 
     #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
@@ -331,8 +303,9 @@ class Parser :
             util.fmtError("cannot nest @vs (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
         if name in self.shaderLib.vertexShaders :
-            util.fmtError("@vs '{}' already defined".format(name))
+            util.fmtError("@vs {} already defined".format(name))
         vs = VertexShader(name)
+        self.shaderLib.shaders.append(vs)
         self.shaderLib.vertexShaders[name] = vs
         self.push(vs)        
 
@@ -344,8 +317,9 @@ class Parser :
             util.fmtError("cannot nest @fs (missing @end in '{}'?)".format(self.current.name))
         name = args[0]
         if name in self.shaderLib.fragmentShaders :
-            util.fmtError("@fs '{}' already defined!".format(name))
+            util.fmtError("@fs {} already defined!".format(name))
         fs = FragmentShader(name)
+        self.shaderLib.shaders.append(fs)
         self.shaderLib.fragmentShaders[name] = fs
         self.push(fs)
 
@@ -362,22 +336,22 @@ class Parser :
         self.shaderLib.programs[name] = prog
 
     #---------------------------------------------------------------------------
-    def onUseCodeBlock(self, args) :
-        if not self.current or not self.current.getTag() in ['code_block', 'vs', 'fs'] :
-            util.fmtError("@use_code_block must come after @code_block, @vs or @fs!")
-        if len(args) < 1:
-            util.fmtError("@use_code_block must have at least one arg!")
-        for arg in args :
-            self.current.dependencies.append(Reference(arg, self.fileName, self.lineNumber))
+    def onInclude(self, args) :
+        if len(args) != 1:
+            util.fmtError("@include must have 1 arg (name of included block)")
+        if not self.current or not self.current.getTag() in ['vs', 'fs'] :
+            util.fmtError("@include must come after @vs or @fs!")
+        incl = args[0]
+        self.current.includes.append(Include(args[0], self.fileName, self.lineNumber))
 
     #---------------------------------------------------------------------------
     def onEnd(self, args) :
-        if not self.current or not self.current.getTag() in ['uniform_block', 'texture_block', 'code_block', 'vs', 'fs', 'program'] :
-            util.fmtError("@end must come after @uniform_block, @texture_block, @code_block, @vs, @fs or @program!")
+        if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
+            util.fmtError("@end must come after @block, @vs or @fs!")
         if len(args) != 0:
             util.fmtError("@end must not have arguments")
-        if self.current.getTag() in ['code_block', 'vs', 'fs'] and len(self.current.lines) == 0 :
-            util.fmtError("no source code lines in @code_block, @vs or @fs section")
+        if self.current.getTag() in ['block', 'vs', 'fs'] and len(self.current.lines) == 0 :
+            util.fmtError("no source code lines in @block, @vs or @fs section")
         self.pop()
 
     #---------------------------------------------------------------------------
@@ -393,14 +367,14 @@ class Parser :
             tagAndArgs = line[tagStartIndex+1 :].split()
             tag = tagAndArgs[0]
             args = tagAndArgs[1:]
-            if tag == 'code_block':
-                self.onCodeBlock(args)
+            if tag == 'block':
+                self.onBlock(args)
             elif tag == 'vs':
                 self.onVertexShader(args)
             elif tag == 'fs':
                 self.onFragmentShader(args)
-            elif tag == 'use_code_block':
-                self.onUseCodeBlock(args)
+            elif tag == 'include':
+                self.onInclude(args)
             elif tag == 'program':
                 self.onProgram(args)
             elif tag == 'end':
@@ -413,9 +387,6 @@ class Parser :
 
     #---------------------------------------------------------------------------
     def parseLine(self, line) :
-        '''
-        Parse a single line.
-        '''
         line = self.stripComments(line)
         if line != '':
             line = self.parseTags(line)
@@ -425,9 +396,6 @@ class Parser :
 
     #---------------------------------------------------------------------------
     def parseSource(self, fileName) :
-        '''
-        Parse a single file and populate shader lib
-        '''
         f = open(fileName, 'r')
         self.fileName = fileName
         self.lineNumber = 0
@@ -436,40 +404,8 @@ class Parser :
             self.parseLine(line)
             self.lineNumber += 1
         f.close()
-
-        # all blocks must be closed
         if self.current is not None :
             util.fmtError('missing @end at end of file')
-
-#-------------------------------------------------------------------------------
-class Generator :
-    '''
-    Generate vertex and fragment shader source code for generic GLSL
-    as input to glslangValidator for SPIR-V generation.
-    '''
-    def __init__(self, shaderLib) :
-        self.shaderLib = shaderLib
-
-    #---------------------------------------------------------------------------
-    def genLines(self, dstLines, srcLines) :
-        for srcLine in srcLines :
-            dstLines.append(srcLine)
-        return dstLines
-    #---------------------------------------------------------------------------
-    def genVertexShaderSource(self, vs) :
-        lines = []
-        for dep in vs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-        lines.extend(vs.lines)
-        vs.generatedSource = lines
-
-    #---------------------------------------------------------------------------
-    def genFragmentShaderSource(self, fs) :
-        lines = []
-        for dep in fs.resolvedDeps :
-            lines = self.genLines(lines, self.shaderLib.codeBlocks[dep].lines)
-        lines.extend(fs.lines)
-        fs.generatedSource = lines
 
 #-------------------------------------------------------------------------------
 class ShaderLibrary :
@@ -478,7 +414,8 @@ class ShaderLibrary :
     '''
     def __init__(self, inputs) :
         self.sources = inputs
-        self.codeBlocks = {}
+        self.blocks = {}
+        self.shaders = []
         self.vertexShaders = {}
         self.fragmentShaders = {}
         self.programs = {}
@@ -489,34 +426,6 @@ class ShaderLibrary :
         for source in self.sources :            
             parser.parseSource(source)
 
-    def resolveDeps(self, shd, dep) :
-        # just add new dependencies at the end of resolvedDeps,
-        # and remove dups in a second pass after recursion
-        if not dep.name in self.codeBlocks :
-            util.setErrorLocation(dep.path, dep.lineNumber)
-            util.fmtError("unknown code_block dependency '{}'".format(dep.name))
-        shd.resolvedDeps.append(dep.name)
-        for depdep in self.codeBlocks[dep.name].dependencies :
-            self.resolveDeps(shd, depdep)
-
-    def removeDuplicateDeps(self, shd) :
-        deps = []
-        for dep in shd.resolvedDeps :
-            if not dep in deps :
-                deps.append(dep)
-        deps.reverse()
-        shd.resolvedDeps = deps
-
-    def resolveAllDependencies(self) :
-        for vs in self.vertexShaders.values() :
-            for dep in vs.dependencies :
-                self.resolveDeps(vs, dep)
-            self.removeDuplicateDeps(vs)
-        for fs in self.fragmentShaders.values() :
-            for dep in fs.dependencies :
-                self.resolveDeps(fs, dep)
-            self.removeDuplicateDeps(fs)
-
     def validate(self, slangs) :
         '''
         Runs additional validation check after programs are resolved and before
@@ -525,7 +434,7 @@ class ShaderLibrary :
         - check whether each vs and fs is part of a program
         - check vertex shader inputs for valid types and names
         - check whether vertex shader output matches fragment shader input
-        '''        
+        '''
         for vs_name,vs in self.vertexShaders.items() :
             vs_found = False
             for prog in self.programs.values() :
@@ -588,12 +497,17 @@ class ShaderLibrary :
                     util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
                     util.fmtError("outputs of vs '{}' don't match inputs of fs '{}' (unused items might have been removed)".format(vs.name, fs.name))
 
-    def generateShaderSources(self) :
-        gen = Generator(self)
-        for vs in self.vertexShaders.values() :
-            gen.genVertexShaderSource(vs)
-        for fs in self.fragmentShaders.values() :
-            gen.genFragmentShaderSource(fs)
+    def generateShaderSources(self):
+        for shd in self.shaders:
+            lines = []
+            for incl in shd.includes:
+                if incl.name not in self.blocks:
+                    util.setErrorLocation(incl.path, incl.lineNumber)
+                    util.fmtError("included block '{}' doesn't exist".format(incl.name))
+                for l in self.blocks[incl.name].lines:
+                    lines.append(l)
+            lines.extend(shd.lines)
+            shd.generatedSource = lines
 
     def loadReflection(self, shd, base_path, slangs):
         for sl in slangs:
@@ -658,8 +572,6 @@ def roundup(val, round_to):
 #-------------------------------------------------------------------------------
 def writeProgramHeader(f, shdLib, prog, slang) :
     f.write('    namespace ' + prog.name + ' {\n')
-    
-    # write uniform block structs
     for stage in ['VS', 'FS']:
         shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
         refl = shd.slReflection[slang]
@@ -705,7 +617,6 @@ def generateHeader(absHeaderPath, shdLib, slangs) :
 def writeSourceTop(f, absSourcePath, shdLib, slang) :
     path, hdrFileAndExt = os.path.split(absSourcePath)
     hdrFile, ext = os.path.splitext(hdrFileAndExt)
-
     f.write('//-----------------------------------------------------------------------------\n')
     f.write('// #version:{}# machine generated, do not edit!\n'.format(Version))
     f.write('//-----------------------------------------------------------------------------\n')
@@ -723,9 +634,8 @@ def writeSourceBottom(f, shdLib) :
 
 #-------------------------------------------------------------------------------
 def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
-    # note: shd is either a VertexShader or FragmentShader object
     base_path = os.path.splitext(absPath)[0] + '_' + shd.name
-    if isGLSL[slVersion] :
+    if isGLSL(slVersion):
         # GLSL source code is directly inlined for runtime-compilation
         f.write('static const char* {}_{}_src = \n'.format(shd.name, slVersion))
         glsl_src_path = '{}.{}'.format(base_path, slVersion)
@@ -734,7 +644,7 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
             for line in lines:
                 f.write('"{}\\n"\n'.format(line))
         f.write(';\n')
-    elif isHLSL[slVersion] :
+    elif isHLSL(slVersion):
         # for HLSL, the actual shader code has been compiled into a header by FXC
         # also write the generated shader source into a C comment as
         # human-readable version
@@ -748,7 +658,7 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
                 f.write('"{}\\n"\n'.format(line))
         f.write('*/\n')
         f.write('#include "{}"\n'.format(hlsl_bin_path))
-    elif isMetal[slVersion] :
+    elif isMetal(slVersion):
         # for Metal, the shader has been compiled into a binary shader
         # library file, which needs to be embedded into the C header
         f.write('/*\n')
@@ -778,7 +688,6 @@ def writeInputVertexLayout(f, vs, slang) :
 
 #-------------------------------------------------------------------------------
 def writeProgramSource(f, shdLib, prog, slangs) :
-
     # write the Setup() function
     f.write('ShaderSetup ' + prog.name + '::Setup() {\n')
     f.write('    ShaderSetup setup("' + prog.name + '");\n')
@@ -792,15 +701,15 @@ def writeProgramSource(f, shdLib, prog, slangs) :
         slangType = oryolSlangTypes[slang]
         vsSource = '{}_{}_src'.format(vsName, slang)
         fsSource = '{}_{}_src'.format(fsName, slang)
-        if isGLSL[slang] :
+        if isGLSL(slang):
             f.write('    setup.SetProgramFromSources({}, {}, {});\n'.format(
                 slangType, vsSource, fsSource));
-        elif isHLSL[slang] :
+        elif isHLSL(slang):
             vs_c_name = '{}_vs_hlsl5'.format(vs.name)
             fs_c_name = '{}_fs_hlsl5'.format(fs.name)
             f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                 slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
-        elif isMetal[slang] :
+        elif isMetal(slang):
             vs_c_name = '{}_vs_metallib'.format(vs.name)
             fs_c_name = '{}_fs_metallib'.format(fs.name)
             f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}), "main0", "main0");\n'.format(
@@ -843,10 +752,8 @@ def generate(input, out_src, out_hdr, args) :
         slangs = slVersions[args['slang']]
         shaderLibrary = ShaderLibrary([input])
         shaderLibrary.parseSources()
-        shaderLibrary.resolveAllDependencies()
         shaderLibrary.generateShaderSources()
         shaderLibrary.compile(input, out_hdr, slangs, args)
         shaderLibrary.validate(slangs)
         generateSource(out_src, shaderLibrary, slangs)
         generateHeader(out_hdr, shaderLibrary, slangs)
-
