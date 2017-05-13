@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 40
+Version = 41
 
 import os, platform, json
 import genutil as util
@@ -121,40 +121,20 @@ texOryolType = {
 
 #-------------------------------------------------------------------------------
 class Line :
-    '''
-    A line object with mapping to a source file and line number.
-    '''
     def __init__(self, content, path='', lineNumber=0) :
         self.content = content
+        self.include = None         # name of an included block
         self.path = path
         self.lineNumber = lineNumber
 
 #-------------------------------------------------------------------------------
 class Snippet :
-    '''
-    A snippet from a shader file, can be a code block, vertex/fragment shader,
-    etc...
-    '''
     def __init__(self) :
         self.name = None
         self.lines = []
 
 #-------------------------------------------------------------------------------
-class Include :
-    '''
-    A reference to another named object, with information where the 
-    ref is located (source, linenumber)
-    '''
-    def __init__(self, name, path, lineNumber) :
-        self.name = name
-        self.path = path
-        self.lineNumber = lineNumber
-        
-#-------------------------------------------------------------------------------
 class Block(Snippet) :
-    '''
-    A code block snippet.
-    '''
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
@@ -164,21 +144,14 @@ class Block(Snippet) :
 
 #-------------------------------------------------------------------------------
 class Shader(Snippet) :
-    '''
-    Generic shader base class.
-    '''
     def __init__(self, name) :
         Snippet.__init__(self)
         self.name = name
-        self.includes = []
         self.slReflection = {}  # reflection by shader language 
         self.generatedSource = None
 
 #-------------------------------------------------------------------------------
 class VertexShader(Shader) :
-    '''
-    A vertex shader function.
-    '''
     def __init__(self, name) :
         Shader.__init__(self, name)
 
@@ -187,9 +160,6 @@ class VertexShader(Shader) :
 
 #-------------------------------------------------------------------------------
 class FragmentShader(Shader) :
-    '''
-    A fragment shader function.
-    '''
     def __init__(self, name) :
         Shader.__init__(self, name)
 
@@ -198,9 +168,6 @@ class FragmentShader(Shader) :
 
 #-------------------------------------------------------------------------------
 class Program() :
-    '''
-    A shader program, made of vertex/fragment shaders
-    '''
     def __init__(self, name, vs, fs, filePath, lineNumber) :
         self.name = name
         self.vs = vs
@@ -213,10 +180,6 @@ class Program() :
 
 #-------------------------------------------------------------------------------
 class Parser :
-    '''
-    Populate a shader library from annotated shader source files.
-    '''
-    #---------------------------------------------------------------------------
     def __init__(self, shaderLib) :
         self.shaderLib = shaderLib
         self.fileName = None
@@ -225,7 +188,6 @@ class Parser :
         self.stack = []
         self.inComment = False
 
-    #---------------------------------------------------------------------------
     def stripComments(self, line) :
         '''
         Remove comments from a single line, can carry
@@ -273,16 +235,13 @@ class Parser :
         line = line.strip(' \t\n\r')
         return line
 
-    #---------------------------------------------------------------------------
     def push(self, obj) :
         self.stack.append(self.current)
         self.current = obj
 
-    #---------------------------------------------------------------------------
     def pop(self) :
         self.current = self.stack.pop();
 
-    #---------------------------------------------------------------------------
     def onBlock(self, args) :
         if len(args) != 1 :
             util.fmtError("@block must have 1 arg (name)")
@@ -295,7 +254,6 @@ class Parser :
         self.shaderLib.blocks[name] = block
         self.push(block)
 
-    #---------------------------------------------------------------------------
     def onVertexShader(self, args) :
         if len(args) != 1:
             util.fmtError("@vs must have 1 arg (name)")
@@ -309,7 +267,6 @@ class Parser :
         self.shaderLib.vertexShaders[name] = vs
         self.push(vs)        
 
-    #---------------------------------------------------------------------------
     def onFragmentShader(self, args) :
         if len(args) != 1:
             util.fmtError("@fs must have 1 arg (name)")
@@ -323,7 +280,6 @@ class Parser :
         self.shaderLib.fragmentShaders[name] = fs
         self.push(fs)
 
-    #---------------------------------------------------------------------------
     def onProgram(self, args) :        
         if len(args) != 3:
             util.fmtError("@program must have 3 args (name vs fs)")
@@ -335,16 +291,16 @@ class Parser :
         prog = Program(name, vs, fs, self.fileName, self.lineNumber)
         self.shaderLib.programs[name] = prog
 
-    #---------------------------------------------------------------------------
     def onInclude(self, args) :
         if len(args) != 1:
             util.fmtError("@include must have 1 arg (name of included block)")
         if not self.current or not self.current.getTag() in ['vs', 'fs'] :
             util.fmtError("@include must come after @vs or @fs!")
-        incl = args[0]
-        self.current.includes.append(Include(args[0], self.fileName, self.lineNumber))
+        if self.current:
+            l = Line(None, self.fileName, self.lineNumber)
+            l.include = args[0]
+            self.current.lines.append(l)
 
-    #---------------------------------------------------------------------------
     def onEnd(self, args) :
         if not self.current or not self.current.getTag() in ['block', 'vs', 'fs'] :
             util.fmtError("@end must come after @block, @vs or @fs!")
@@ -354,47 +310,35 @@ class Parser :
             util.fmtError("no source code lines in @block, @vs or @fs section")
         self.pop()
 
-    #---------------------------------------------------------------------------
-    def parseTags(self, line) :
-        # first check if the line contains a tag, the tag must be
-        # alone on the line
-        tagStartIndex = line.find('@')
-        if tagStartIndex != -1 :
-            if tagStartIndex > 0 :
-                util.fmtError("only whitespace allowed in front of tag")
-            if line.find(';') != -1 :
-                util.fmtError("no semicolons allowed in tag lines")
-            tagAndArgs = line[tagStartIndex+1 :].split()
-            tag = tagAndArgs[0]
-            args = tagAndArgs[1:]
-            if tag == 'block':
-                self.onBlock(args)
-            elif tag == 'vs':
-                self.onVertexShader(args)
-            elif tag == 'fs':
-                self.onFragmentShader(args)
-            elif tag == 'include':
-                self.onInclude(args)
-            elif tag == 'program':
-                self.onProgram(args)
-            elif tag == 'end':
-                self.onEnd(args)
-            else :
-                util.fmtError("unrecognized @ tag '{}'".format(tag))
-            return ''
-
-        return line
-
-    #---------------------------------------------------------------------------
     def parseLine(self, line) :
         line = self.stripComments(line)
         if line != '':
-            line = self.parseTags(line)
-            if line != '':
-                if self.current is not None:
-                    self.current.lines.append(Line(line, self.fileName, self.lineNumber))
+            tagStartIndex = line.find('@')
+            if tagStartIndex != -1 :
+                if tagStartIndex > 0 :
+                    util.fmtError("only whitespace allowed in front of tag")
+                if line.find(';') != -1 :
+                    util.fmtError("no semicolons allowed in tag lines")
+                tagAndArgs = line[tagStartIndex+1 :].split()
+                tag = tagAndArgs[0]
+                args = tagAndArgs[1:]
+                if tag == 'block':
+                    self.onBlock(args)
+                elif tag == 'vs':
+                    self.onVertexShader(args)
+                elif tag == 'fs':
+                    self.onFragmentShader(args)
+                elif tag == 'include':
+                    self.onInclude(args)
+                elif tag == 'program':
+                    self.onProgram(args)
+                elif tag == 'end':
+                    self.onEnd(args)
+                else :
+                    util.fmtError("unrecognized @ tag '{}'".format(tag))
+            elif self.current is not None:
+                self.current.lines.append(Line(line, self.fileName, self.lineNumber))
 
-    #---------------------------------------------------------------------------
     def parseSource(self, fileName) :
         f = open(fileName, 'r')
         self.fileName = fileName
@@ -500,13 +444,16 @@ class ShaderLibrary :
     def generateShaderSources(self):
         for shd in self.shaders:
             lines = []
-            for incl in shd.includes:
-                if incl.name not in self.blocks:
-                    util.setErrorLocation(incl.path, incl.lineNumber)
-                    util.fmtError("included block '{}' doesn't exist".format(incl.name))
-                for l in self.blocks[incl.name].lines:
+            for l in shd.lines:
+                # @include statement?
+                if l.include:
+                    if l.include not in self.blocks:
+                        util.setErrorLocation(incl.path, incl.lineNumber)
+                        util.fmtError("included block '{}' doesn't exist".format(incl.name))
+                    for lb in self.blocks[l.include].lines:
+                        lines.append(lb)
+                else:
                     lines.append(l)
-            lines.extend(shd.lines)
             shd.generatedSource = lines
 
     def loadReflection(self, shd, base_path, slangs):
