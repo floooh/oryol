@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 41
+Version = 42
 
 import os, platform, json
 import genutil as util
@@ -379,23 +379,14 @@ class ShaderLibrary :
         - check vertex shader inputs for valid types and names
         - check whether vertex shader output matches fragment shader input
         '''
-        for vs_name,vs in self.vertexShaders.items() :
-            vs_found = False
-            for prog in self.programs.values() :
-                if vs_name == prog.vs :
-                    vs_found = True
-            if not vs_found :
-                util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
-                util.fmtError("vertex shader '{}' is not part of a program".format(vs_name), False)
-                fatalError = True
-        for fs_name,fs in self.fragmentShaders.items() :
-            fs_found = False
-            for prog in self.programs.values() :
-                if fs_name == prog.fs :
-                    fs_found = True
-            if not fs_found :
-                util.setErrorLocation(fs.lines[0].path, fs.lines[0].lineNumber)
-                util.fmtError("fragment shader '{}' is not part of a program".format(fs_name), False)
+        for shd in self.shaders:
+            for prog in self.programs.values():
+                prog_shd = prog.vs if shd.getTag()=='vs' else prog.fs
+                if shd.name == prog_shd:
+                    break
+            else:
+                util.setErrorLocation(shd.lines[0].path, shd.lines[0].lineNumber)
+                util.fmtError("vertex shader '{}' is not part of a program".format(shd.name), False)
                 fatalError = True
         for slang in slangs:
             for vs in self.vertexShaders.values():
@@ -462,7 +453,8 @@ class ShaderLibrary :
             with open(refl_path, 'r') as f:
                 shd.slReflection[sl] = json.load(f)
 
-    def compileShader(self, input, shd, shd_type, base_path, slangs, args):
+    def compileShader(self, input, shd, base_path, slangs, args):
+        shd_type = shd.getTag()
         shd_base_path = base_path + '_' + shd.name
         glslcompiler.compile(shd.generatedSource, shd_type, shd_base_path, slangs[0], args)
         shdc.compile(input, shd_base_path, slangs)
@@ -477,10 +469,8 @@ class ShaderLibrary :
     def compile(self, input, out_hdr, slangs, args) :
         log.info('## shader code gen: {}'.format(input)) 
         base_path = os.path.splitext(out_hdr)[0]
-        for vs in self.vertexShaders.values():
-            self.compileShader(input, vs, 'vs', base_path, slangs, args)
-        for fs in self.fragmentShaders.values():
-            self.compileShader(input, fs, 'fs', base_path, slangs, args)
+        for shd in self.shaders:
+            self.compileShader(input, shd, base_path, slangs, args)
 
 #-------------------------------------------------------------------------------
 def writeHeaderTop(f, shdLib) :
