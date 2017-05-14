@@ -635,7 +635,7 @@ glRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
     this->bindIndexBuffer(ib.glBuffers[ib.activeSlot]);    // can be 0
     int maxUsedAttrib = 0;
     for (int attrIndex = 0; attrIndex < VertexAttr::NumVertexAttrs; attrIndex++) {
-        const glVertexAttr& attr = pip->glAttrs[attrIndex];
+        const auto& attr = pip->glAttrs[attrIndex];
         const GLint glAttribIndex = pip->shd->getAttribLocation((VertexAttr::Code)attrIndex);
         if (glAttribIndex >= 0) {
             o_assert_dbg(attr.enabled);
