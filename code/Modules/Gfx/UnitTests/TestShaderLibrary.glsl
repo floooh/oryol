@@ -6,14 +6,14 @@
 Bla Bla Bla
 */
 
-@code_block TransformUtil
+@block TransformUtil
 vec4 myTransform(mat4 mvp, vec4 pos)
 {
     return mvp * pos;
 }
 @end
 
-@code_block FSUtil
+@block FSUtil
 vec4 myColor(vec4 nrm, vec4 texColor)
 {
     return ((nrm * 0.5) + 0.5) * 0.75 + texColor * texColor * texColor;
@@ -21,7 +21,7 @@ vec4 myColor(vec4 nrm, vec4 texColor)
 @end
 
 @vs MyVertexShader
-@use_code_block TransformUtil
+@include TransformUtil
 uniform vsParams {
     mat4 mvp;
 };
@@ -38,7 +38,7 @@ void main() {
 @end
 
 @fs MyFragmentShader
-@use_code_block FSUtil
+@include FSUtil
 uniform sampler2D tex;
 in vec4 nrm;
 in vec2 uv;
