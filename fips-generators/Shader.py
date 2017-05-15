@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 42
+Version = 47
 
 import os, platform, json
 import genutil as util
@@ -24,11 +24,11 @@ slVersions = {
 }
 
 oryolSlangTypes = {
-    'glsl100': 'ShaderLang::GLSL100',
-    'glsl330': 'ShaderLang::GLSL330',
-    'glsles3': 'ShaderLang::GLSLES3',
-    'hlsl':    'ShaderLang::HLSL5',
-    'metal':   'ShaderLang::Metal'
+    'glsl100': 'Oryol::ShaderLang::GLSL100',
+    'glsl330': 'Oryol::ShaderLang::GLSL330',
+    'glsles3': 'Oryol::ShaderLang::GLSLES3',
+    'hlsl':    'Oryol::ShaderLang::HLSL5',
+    'metal':   'Oryol::ShaderLang::Metal'
 }
 
 def isGLSL(sl):
@@ -72,40 +72,30 @@ uniformCSize = {
     'mat4':  64,
 }
 
-uniformOryolType = {
-    'float': 'UniformType::Float',
-    'vec2':  'UniformType::Vec2',
-    'vec3':  'UniformType::Vec3',
-    'vec4':  'UniformType::Vec4',
-    'mat2':  'UniformType::Mat2',
-    'mat3':  'UniformType::Mat3',
-    'mat4':  'UniformType::Mat4',
-}
-
 attrOryolType = {
-    'float': 'VertexFormat::Float',
-    'vec2':  'VertexFormat::Float2',
-    'vec3':  'VertexFormat::Float3',
-    'vec4':  'VertexFormat::Float4'
+    'float': 'Oryol::VertexFormat::Float',
+    'vec2':  'Oryol::VertexFormat::Float2',
+    'vec3':  'Oryol::VertexFormat::Float3',
+    'vec4':  'Oryol::VertexFormat::Float4'
 }
 
 attrOryolName = {
-    'position':  'VertexAttr::Position',
-    'normal':    'VertexAttr::Normal',
-    'texcoord0': 'VertexAttr::TexCoord0',
-    'texcoord1': 'VertexAttr::TexCoord1',
-    'texcoord2': 'VertexAttr::TexCoord2',
-    'texcoord3': 'VertexAttr::TexCoord3',
-    'tangent':   'VertexAttr::Tangent',
-    'binormal':  'VertexAttr::Binormal',
-    'weights':   'VertexAttr::Weights',
-    'indices':   'VertexAttr::Indices',
-    'color0':    'VertexAttr::Color0',
-    'color1':    'VertexAttr::Color1',
-    'instance0': 'VertexAttr::Instance0',
-    'instance1': 'VertexAttr::Instance1',
-    'instance2': 'VertexAttr::Instance2',
-    'instance3': 'VertexAttr::Instance3'
+    'position':  'Oryol::VertexAttr::Position',
+    'normal':    'Oryol::VertexAttr::Normal',
+    'texcoord0': 'Oryol::VertexAttr::TexCoord0',
+    'texcoord1': 'Oryol::VertexAttr::TexCoord1',
+    'texcoord2': 'Oryol::VertexAttr::TexCoord2',
+    'texcoord3': 'Oryol::VertexAttr::TexCoord3',
+    'tangent':   'Oryol::VertexAttr::Tangent',
+    'binormal':  'Oryol::VertexAttr::Binormal',
+    'weights':   'Oryol::VertexAttr::Weights',
+    'indices':   'Oryol::VertexAttr::Indices',
+    'color0':    'Oryol::VertexAttr::Color0',
+    'color1':    'Oryol::VertexAttr::Color1',
+    'instance0': 'Oryol::VertexAttr::Instance0',
+    'instance1': 'Oryol::VertexAttr::Instance1',
+    'instance2': 'Oryol::VertexAttr::Instance2',
+    'instance3': 'Oryol::VertexAttr::Instance3'
 }
 
 validTextureTypes = [
@@ -113,10 +103,10 @@ validTextureTypes = [
 ]
 
 texOryolType = {
-    'sampler2D':      'TextureType::Texture2D',
-    'samplerCube':    'TextureType::TextureCube',
-    'sampler3D':      'TextureType::Texture3D',
-    'sampler2DArray': 'TextureType::TextureArray',
+    'sampler2D':      'Oryol::TextureType::Texture2D',
+    'samplerCube':    'Oryol::TextureType::TextureCube',
+    'sampler3D':      'Oryol::TextureType::Texture3D',
+    'sampler2DArray': 'Oryol::TextureType::TextureArray',
 }
 
 #-------------------------------------------------------------------------------
@@ -487,11 +477,9 @@ def writeHeaderTop(f, shdLib) :
     f.write('#include "glm/mat3x3.hpp"\n')
     f.write('#include "glm/mat4x4.hpp"\n')
     f.write('#include "Resource/Id.h"\n')
-    f.write('namespace Oryol {\n')
 
 #-------------------------------------------------------------------------------
 def writeHeaderBottom(f, shdLib) :
-    f.write('}\n')
     f.write('\n')
 
 #-------------------------------------------------------------------------------
@@ -508,38 +496,38 @@ def roundup(val, round_to):
 
 #-------------------------------------------------------------------------------
 def writeProgramHeader(f, shdLib, prog, slang) :
-    f.write('    namespace ' + prog.name + ' {\n')
+    f.write('namespace ' + prog.name + ' {\n')
     for stage in ['VS', 'FS']:
         shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
         refl = shd.slReflection[slang]
         for ub in refl['uniform_blocks']:
             cur_offset = 0
-            f.write('        #pragma pack(push,1)\n')
-            f.write('        struct {} {{\n'.format(ub['type']))
-            f.write('            static const int _bindSlotIndex = {};\n'.format(ub['slot']))
-            f.write('            static const ShaderStage::Code _bindShaderStage = ShaderStage::{};\n'.format(stage))
-            f.write('            static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
+            f.write('    #pragma pack(push,1)\n')
+            f.write('    struct {} {{\n'.format(ub['type']))
+            f.write('        static const int _bindSlotIndex = {};\n'.format(ub['slot']))
+            f.write('        static const Oryol::ShaderStage::Code _bindShaderStage = Oryol::ShaderStage::{};\n'.format(stage))
+            f.write('        static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
             for m in ub['members']:
                 next_offset = m['offset']
                 if next_offset > cur_offset:
-                    f.write('            uint8_t _pad_{}[{}];\n'.format(cur_offset, next_offset-cur_offset))
+                    f.write('        uint8_t _pad_{}[{}];\n'.format(cur_offset, next_offset-cur_offset))
                     cur_offset = next_offset
                 if m['num'] == 1:
-                    f.write('            {} {};\n'.format(uniformCType[m['type']], m['name']))
+                    f.write('        {} {};\n'.format(uniformCType[m['type']], m['name']))
                 else:
-                    f.write('            {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
+                    f.write('        {} {}[{}];\n'.format(uniformCType[m['type']], m['name'], m['num']))
                 cur_offset += uniformCSize[m['type']] * m['num']
             # on GL, add padding bytes until struct size is multiple of vec4 size
             if 'glsl' in slang:
                 round16 = roundup(cur_offset, 16)
                 if cur_offset != round16:
-                    f.write('            uint8_t _pad_{}[{}];\n'.format(cur_offset, round16-cur_offset))
-            f.write('        };\n')
-            f.write('        #pragma pack(pop)\n')
+                    f.write('        uint8_t _pad_{}[{}];\n'.format(cur_offset, round16-cur_offset))
+            f.write('    };\n')
+            f.write('    #pragma pack(pop)\n')
         for tex in refl['textures']:
-            f.write('        static const int {} = {};\n'.format(tex['name'], tex['slot']))
-    f.write('        extern ShaderSetup Setup();\n')
-    f.write('    }\n')
+            f.write('    static const int {} = {};\n'.format(tex['name'], tex['slot']))
+    f.write('    extern Oryol::ShaderSetup Setup();\n')
+    f.write('}\n')
 
 #-------------------------------------------------------------------------------
 def generateHeader(absHeaderPath, shdLib, slangs) :
@@ -560,13 +548,11 @@ def writeSourceTop(f, absSourcePath, shdLib, slang) :
     f.write('#include "Pre.h"\n')
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
-    f.write('namespace Oryol {\n')
     if slang == 'hlsl':
         f.write('typedef unsigned char BYTE;\n')
 
 #-------------------------------------------------------------------------------
 def writeSourceBottom(f, shdLib) :
-    f.write('}\n')
     f.write('\n')
 
 #-------------------------------------------------------------------------------
@@ -618,7 +604,7 @@ def writeInputVertexLayout(f, vs, slang) :
     # vertex shader input signatures (e.g. required in D3D11),
     # return the C++ name of the vertex layout
     layoutName = '{}_input'.format(vs.name)
-    f.write('    VertexLayout {};\n'.format(layoutName))
+    f.write('    Oryol::VertexLayout {};\n'.format(layoutName))
     for inp in vs.slReflection[slang]['inputs'] :
         f.write('    {}.Add({}, {});\n'.format(layoutName, attrOryolName[inp['name']], attrOryolType[inp['type']]))
     return layoutName
@@ -626,8 +612,8 @@ def writeInputVertexLayout(f, vs, slang) :
 #-------------------------------------------------------------------------------
 def writeProgramSource(f, shdLib, prog, slangs) :
     # write the Setup() function
-    f.write('ShaderSetup ' + prog.name + '::Setup() {\n')
-    f.write('    ShaderSetup setup("' + prog.name + '");\n')
+    f.write('Oryol::ShaderSetup ' + prog.name + '::Setup() {\n')
+    f.write('    Oryol::ShaderSetup setup("' + prog.name + '");\n')
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
     vsInputLayout = writeInputVertexLayout(f, vs, slangs[0])
@@ -665,7 +651,7 @@ def writeProgramSource(f, shdLib, prog, slangs) :
                 ub['type'], ub['name'], getUniformBlockTypeHash(ub), ub_size, ub['type'], ub['type']))
         # add textures layouts to setup objects
         for tex in refl['textures']:
-            f.write('    setup.AddTexture("{}", {}, ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
+            f.write('    setup.AddTexture("{}", {}, Oryol::ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
     f.write('    return setup;\n')
     f.write('}\n')
 
