@@ -11,6 +11,9 @@
 #else
 #include <unistd.h>
 #endif
+#if ORYOL_MACOS || ORYOL_IOS
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 namespace Oryol {
 namespace _priv {
@@ -75,7 +78,27 @@ posixFSWrapper::close(handle h) {
 
 //------------------------------------------------------------------------------
 String
-posixFSWrapper::getExecutableDir() {
+posixFSWrapper::getRootDir() {
+#if ORYOL_MACOS || ORYOL_IOS
+    // Get the main bundle for the app
+    char bundlePath[4096];
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    CFURLRef mainBundleURL = CFBundleCopyBundleURL( mainBundle);
+    CFStringRef cfStringRef = CFURLCopyFileSystemPath( mainBundleURL, kCFURLPOSIXPathStyle);
+    CFStringGetCString( cfStringRef, bundlePath, 4096, kCFStringEncodingASCII);
+
+    // Append the resources directory
+    StringBuilder strBuilder(bundlePath, 0, (int)CFStringGetLength(cfStringRef));
+#if ORYOL_MACOS
+    // On iOS, bundled files live at the toplevel app bundle. On MacOS, they live
+    // in the resources directory beneath that.
+    strBuilder.Append( "/Contents/Resources");
+#endif
+    strBuilder.Append( "/");
+    return strBuilder.GetString();
+    
+#else
+    // Anything else (such as windows) use the executable path
     char buf[4096];
     int length = wai_getExecutablePath(buf, sizeof(buf), nullptr);
     if (length > 0) {
@@ -89,6 +112,7 @@ posixFSWrapper::getExecutableDir() {
     else {
         return String();
     }
+    #endif
 }
 
 //------------------------------------------------------------------------------

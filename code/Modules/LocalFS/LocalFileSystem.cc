@@ -18,7 +18,7 @@ LocalFileSystem::init(const StringAtom& scheme_) {
     StringBuilder strBuilder;
 
     // setup the root assign
-    strBuilder.Format(4096, "%s:///%s", this->scheme.AsCStr(), fsWrapper::getExecutableDir().AsCStr());
+    strBuilder.Format(4096, "%s:///%s", this->scheme.AsCStr(), fsWrapper::getRootDir().AsCStr());
     IO::SetAssign("root:", strBuilder.GetString());
 
     // setup the cwd assign
