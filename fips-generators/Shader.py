@@ -1908,16 +1908,19 @@ def writeProgramHeader(f, shdLib, program) :
         f.write('        };\n')
         f.write('        #pragma pack(pop)\n')
     f.write('        static ShaderSetup Setup();\n')
+
+    writeTextureBlocksHeader(f, shdLib)
+
     f.write('    };\n')
 
 #-------------------------------------------------------------------------------
 def writeTextureBlocksHeader(f, shdLib) :
     # write texture bind slot constants
     for tb in shdLib.textureBlocks.values() :
-        f.write('    struct {} {{\n'.format(tb.bindName))
+        f.write('        struct {} {{\n'.format(tb.bindName))
         for tex in tb.textures :
-            f.write('        static const int {} = {};\n'.format(tex.bindName, tex.bindSlot))
-        f.write('    };\n')
+            f.write('            static const int {} = {};\n'.format(tex.bindName, tex.bindSlot))
+        f.write('       };\n')
 
 #-------------------------------------------------------------------------------
 def generateHeader(absHeaderPath, shdLib) :
@@ -1925,7 +1928,7 @@ def generateHeader(absHeaderPath, shdLib) :
     writeHeaderTop(f, shdLib)
     for prog in shdLib.programs.values() :
         writeProgramHeader(f, shdLib, prog)
-    writeTextureBlocksHeader(f, shdLib)
+    #writeTextureBlocksHeader(f, shdLib)
     writeHeaderBottom(f, shdLib)
     f.close()
 
