@@ -45,7 +45,7 @@ a new element like std::map).
 Check out the [Map Header File](Map.h) and [Unit Test](../UnitTests/MapTest.cc)
 for more information and code samples.
 
-### ArrayMap&ltTYPE&gt;
+### ArrayMap&lt;TYPE&gt;
 
 The **ArrayMap** class combines features of the Array and Map class.
 It keeps value-items in a separate Array in the order they were added,
