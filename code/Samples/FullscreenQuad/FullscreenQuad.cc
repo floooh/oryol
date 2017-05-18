@@ -22,6 +22,19 @@ OryolMain(FullscreenQuadApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+FullscreenQuadApp::OnInit() {
+    Gfx::Setup(GfxSetup::Window(600, 600, "Oryol Fullscreen Quad Sample"));
+    auto quadSetup = MeshSetup::FullScreenQuad();
+    this->drawState.Mesh[0] = Gfx::CreateResource(quadSetup);
+    Id shd = Gfx::CreateResource(Shader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->params.time = 0.0f;
+    return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 FullscreenQuadApp::OnRunning() {
     // render one frame
     this->params.time += 1.0f / 60.0f;
@@ -34,19 +47,6 @@ FullscreenQuadApp::OnRunning() {
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-FullscreenQuadApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(600, 600, "Oryol Fullscreen Quad Sample"));
-    auto quadSetup = MeshSetup::FullScreenQuad();
-    this->drawState.Mesh[0] = Gfx::CreateResource(quadSetup);
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
-    this->params.time = 0.0f;
-    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------

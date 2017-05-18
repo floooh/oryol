@@ -24,36 +24,6 @@ OryolMain(BlendTestApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-BlendTestApp::OnRunning() {
-    
-    // draw checkboard background
-    Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->bgDrawState);
-    Gfx::Draw();
-
-    // draw blended triangles
-    DrawState triDrawState;
-    triDrawState.Mesh[0] = this->triMesh;
-    float d = 1.0f / BlendFactor::NumBlendFactors;
-    for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
-            this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-            triDrawState.Pipeline = this->pipelines[y][x];
-            Gfx::ApplyDrawState(triDrawState);
-            Gfx::ApplyUniformBlock(this->params);
-            Gfx::Draw();
-        }
-    }
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
     auto gfxSetup = GfxSetup::Window(1024, 768, "Oryol Blend Sample");
@@ -100,6 +70,36 @@ BlendTestApp::OnInit() {
     }
 
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+BlendTestApp::OnRunning() {
+    
+    // draw checkboard background
+    Gfx::BeginPass();
+    Gfx::ApplyDrawState(this->bgDrawState);
+    Gfx::Draw();
+
+    // draw blended triangles
+    DrawState triDrawState;
+    triDrawState.Mesh[0] = this->triMesh;
+    float d = 1.0f / BlendFactor::NumBlendFactors;
+    for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
+        for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
+            this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
+            this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
+            triDrawState.Pipeline = this->pipelines[y][x];
+            Gfx::ApplyDrawState(triDrawState);
+            Gfx::ApplyUniformBlock(this->params);
+            Gfx::Draw();
+        }
+    }
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

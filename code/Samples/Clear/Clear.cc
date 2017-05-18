@@ -22,6 +22,13 @@ OryolMain(ClearApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+ClearApp::OnInit() {
+    Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
+    return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 ClearApp::OnRunning() {
 
     // render one frame
@@ -36,13 +43,6 @@ ClearApp::OnRunning() {
 
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-ClearApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
-    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------

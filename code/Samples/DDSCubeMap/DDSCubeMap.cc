@@ -34,29 +34,6 @@ OryolMain(DDSCubeMapApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-DDSCubeMapApp::OnRunning() {
-    
-    // update rotation angles
-    this->angleY += 0.02f;
-    this->angleX += 0.01f;
-    
-    Gfx::BeginPass();
-    const Id& tex = this->drawState.FSTexture[Shader::tex];
-    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
-        this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::Draw();
-    }
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 DDSCubeMapApp::OnInit() {
 
     // setup IO system
@@ -108,6 +85,29 @@ DDSCubeMapApp::OnInit() {
     this->view = glm::mat4();
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+DDSCubeMapApp::OnRunning() {
+    
+    // update rotation angles
+    this->angleY += 0.02f;
+    this->angleX += 0.01f;
+    
+    Gfx::BeginPass();
+    const Id& tex = this->drawState.FSTexture[Shader::tex];
+    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
+        this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
+        Gfx::ApplyDrawState(this->drawState);
+        Gfx::ApplyUniformBlock(this->vsParams);
+        Gfx::Draw();
+    }
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

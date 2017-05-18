@@ -29,34 +29,6 @@ OryolMain(ShapeApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-ShapeApp::OnRunning() {
-    
-    this->angleY += 0.01f;
-    this->angleX += 0.02f;
-    
-    Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
-    static const glm::vec3 positions[] = {
-        glm::vec3(-1.0, 1.0f, -6.0f),
-        glm::vec3(1.0f, 1.0f, -6.0f),
-        glm::vec3(-2.0f, -1.0f, -6.0f),
-        glm::vec3(+2.0f, -1.0f, -6.0f),
-        glm::vec3(0.0f, -1.0f, -6.0f)
-    };
-    int primGroupIndex = 0;
-    for (const auto& pos : positions) {
-        this->params.mvp = this->computeMVP(pos);
-        Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw(primGroupIndex++);
-    }
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 ShapeApp::OnInit() {
 
     auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
@@ -88,6 +60,34 @@ ShapeApp::OnInit() {
     this->view = glm::mat4();
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+ShapeApp::OnRunning() {
+    
+    this->angleY += 0.01f;
+    this->angleX += 0.02f;
+    
+    Gfx::BeginPass();
+    Gfx::ApplyDrawState(this->drawState);
+    static const glm::vec3 positions[] = {
+        glm::vec3(-1.0, 1.0f, -6.0f),
+        glm::vec3(1.0f, 1.0f, -6.0f),
+        glm::vec3(-2.0f, -1.0f, -6.0f),
+        glm::vec3(+2.0f, -1.0f, -6.0f),
+        glm::vec3(0.0f, -1.0f, -6.0f)
+    };
+    int primGroupIndex = 0;
+    for (const auto& pos : positions) {
+        this->params.mvp = this->computeMVP(pos);
+        Gfx::ApplyUniformBlock(this->params);
+        Gfx::Draw(primGroupIndex++);
+    }
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

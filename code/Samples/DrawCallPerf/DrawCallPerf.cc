@@ -47,6 +47,43 @@ OryolMain(DrawCallPerfApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
+DrawCallPerfApp::OnInit() {
+    // setup rendering system
+    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
+    gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
+    Gfx::Setup(gfxSetup);
+    Dbg::Setup();
+    Input::Setup();
+
+    // create resources
+    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.RandomColors = true;
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    Id shd = Gfx::CreateResource(Shader::Setup());
+    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    ps.RasterizerState.CullFaceEnabled = true;
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    
+    // setup projection and view matrices
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->model = glm::mat4();
+    
+    return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
 DrawCallPerfApp::OnRunning() {
     
     Duration updTime, drawTime, applyRtTime;
@@ -136,43 +173,6 @@ DrawCallPerfApp::updateParticles() {
             curParticle.vec *= 0.8f;
         }
     }
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-DrawCallPerfApp::OnInit() {
-    // setup rendering system
-    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
-    gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
-    Gfx::Setup(gfxSetup);
-    Dbg::Setup();
-    Input::Setup();
-
-    // create resources
-    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
-    
-    // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->model = glm::mat4();
-    
-    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
