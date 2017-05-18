@@ -1,0 +1,7 @@
+fips_begin_app(SeparateBuffers windowed)
+    fips_vs_warning_level(3)
+    fips_files(SeparateBuffers.cc)
+    oryol_shader(shaders.glsl)
+    fips_deps(Gfx Assets)
+    oryol_add_web_sample(SeparateBuffers "Test rendering from separate vertex buffers" "emscripten" SeparateBuffers.jpg "SeparateBuffers/SeparateBuffers.cc")
+fips_end_app()
