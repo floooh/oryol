@@ -10,7 +10,6 @@
 */
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
-#include "Core/Threading/RWLock.h"
 
 namespace Oryol {
 namespace _priv {
@@ -30,7 +29,6 @@ private:
     /// setup the standard assigns
     void setStandardAssigns();
     
-    mutable RWLock rwLock;
     Map<String, String> assigns;
 };
     

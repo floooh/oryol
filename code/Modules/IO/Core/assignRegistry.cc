@@ -5,57 +5,59 @@
 #include "assignRegistry.h"
 #include "Core/String/StringBuilder.h"
 
+#if ORYOL_HAS_THREADS
+#include <mutex>
+static std::mutex lockMutex;
+#define SCOPED_LOCK std::lock_guard<std::mutex> lock(lockMutex)
+#else
+#define SCOPED_LOCK
+#endif
+
 namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
 void
 assignRegistry::SetAssign(const String& assign, const String& path) {
-    o_assert(assign.Back() == ':'); // "assign must end with a ':'\n"
-    o_assert(assign.Length() > 1);  // assigns must be at least 2 chars to not be confused with DOS drive letters
-    o_assert(!path.Empty());
-    o_assert((path.Back() == '/') || (path.Back() == ':')); // path must end in a '/' (dir) or ':' (other assign)
-    
-    this->rwLock.LockWrite();
+    SCOPED_LOCK;
+    o_assert_dbg(assign.Back() == ':'); // "assign must end with a ':'\n"
+    o_assert_dbg(assign.Length() > 1);  // assigns must be at least 2 chars to not be confused with DOS drive letters
+    o_assert_dbg(!path.Empty());
+    o_assert_dbg((path.Back() == '/') || (path.Back() == ':')); // path must end in a '/' (dir) or ':' (other assign)
     if (this->assigns.Contains(assign)) {
         this->assigns[assign] = path;
     }
     else {
         this->assigns.Add(assign, path);
     }
-    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 bool
 assignRegistry::HasAssign(const String& assign) const {
-    o_assert(!assign.Empty());
-    this->rwLock.LockRead();
+    SCOPED_LOCK;
+    o_assert_dbg(!assign.Empty());
     bool result = this->assigns.Contains(assign);
-    this->rwLock.UnlockRead();
     return result;
 }
 
 //------------------------------------------------------------------------------
 String
 assignRegistry::LookupAssign(const String& assign) const {
-    o_assert(!assign.Empty());
-    o_assert(assign.Back() == ':');
+    SCOPED_LOCK;
+    o_assert_dbg(!assign.Empty());
+    o_assert_dbg(assign.Back() == ':');
     String result;
-    this->rwLock.LockRead();
     if (this->assigns.Contains(assign)) {
         result = this->assigns[assign];
     }
-    this->rwLock.UnlockRead();
     return result;
 }
 
 //------------------------------------------------------------------------------
 String
 assignRegistry::ResolveAssigns(const String& str) const {
-
-    this->rwLock.LockRead();
-    
+    SCOPED_LOCK;
     StringBuilder builder;
     builder.Set(str);
     
@@ -77,7 +79,6 @@ assignRegistry::ResolveAssigns(const String& str) const {
         else break;
     }
     String result = builder.GetString();
-    this->rwLock.UnlockRead();
     return result;
 }
 

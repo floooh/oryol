@@ -5,7 +5,6 @@
     @ingroup _priv
     @brief: associates URL schemes with FileSystem implementation
 */
-#include "Core/Threading/RWLock.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Map.h"
 #include "Core/Creator.h"
@@ -18,11 +17,6 @@ namespace _priv {
 
 class schemeRegistry {
 public:
-    /// constructor
-    schemeRegistry();
-    /// destructor
-    ~schemeRegistry();
-    
     /// associate URL scheme with filesystem
     void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator);
     /// unregister a filesystem
@@ -33,7 +27,6 @@ public:
     Ptr<FileSystem> CreateFileSystem(const StringAtom& scheme) const;
     
 private:
-    mutable RWLock rwLock;
     Map<StringAtom, std::function<Ptr<FileSystem>()>> registry;
 };
 

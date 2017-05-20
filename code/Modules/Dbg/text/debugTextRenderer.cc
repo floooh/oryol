@@ -6,6 +6,14 @@
 #include "Gfx/Gfx.h"
 #include "DebugShaders.h"
 
+#if ORYOL_HAS_THREADS
+#include <mutex>
+static std::mutex lockMutex;
+#define SCOPED_LOCK std::lock_guard<std::mutex> lock(lockMutex)
+#else
+#define SCOPED_LOCK
+#endif
+
 namespace Oryol {
 namespace _priv {
 
@@ -68,41 +76,37 @@ debugTextRenderer::isValid() const {
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::print(const char* txt) {
-    this->rwLock.LockWrite();
+    SCOPED_LOCK;
     this->stringBuilder.Append(txt);
-    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::printf(const char* text, std::va_list args) {
-    this->rwLock.LockWrite();
+    SCOPED_LOCK;
     this->stringBuilder.AppendFormatVAList(1024, text, args);
-    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::cursorPos(uint8_t x, uint8_t y) {
-    this->rwLock.LockWrite();
+    SCOPED_LOCK;
     this->stringBuilder.Append((char) 0x1B);   // start ESC control sequence
     this->stringBuilder.Append((char) 0x01);   // set cursor
     this->stringBuilder.Append((char)x);
     this->stringBuilder.Append((char)y);
-    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::textColor(const glm::vec4& color) {
-    this->rwLock.LockWrite();
+    SCOPED_LOCK;
     this->stringBuilder.Append(0x1B);   // start ESC control sequence
     this->stringBuilder.Append(0x02);   // set color
     this->stringBuilder.Append((char) (color.x * 255.0f));
     this->stringBuilder.Append((char) (color.y * 255.0f));
     this->stringBuilder.Append((char) (color.z * 255.0f));
     this->stringBuilder.Append((char) (color.w * 255.0f));
-    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
@@ -115,10 +119,12 @@ debugTextRenderer::drawTextBuffer() {
     }
     
     // get the currently accumulated string
-    this->rwLock.LockWrite();
-    String str = this->stringBuilder.GetString();
-    this->stringBuilder.Clear();
-    this->rwLock.UnlockWrite();
+    String str;
+    {
+        SCOPED_LOCK;
+        str = this->stringBuilder.GetString();
+        this->stringBuilder.Clear();
+    }
     
     // convert string into vertices
     int numVertices = this->convertStringToVertices(str);

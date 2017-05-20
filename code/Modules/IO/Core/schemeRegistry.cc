@@ -9,23 +9,21 @@
 namespace Oryol {
 namespace _priv {
 
-//------------------------------------------------------------------------------
-schemeRegistry::schemeRegistry() {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-schemeRegistry::~schemeRegistry() {
-    // empty
-}
+#if ORYOL_HAS_THREADS
+static std::mutex lockMutex;
+#define SCOPED_LOCK std::lock_guard<std::mutex> lock(lockMutex)
+#else
+#define SCOPED_LOCK
+#endif
 
 //------------------------------------------------------------------------------
 void
 schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator) {
-    this->rwLock.LockWrite();
-    o_assert(!this->registry.Contains(scheme));
-    this->registry.Add(scheme, fsCreator);
-    this->rwLock.UnlockWrite();
+    o_assert_dbg(!this->registry.Contains(scheme));
+    {
+        SCOPED_LOCK;
+        this->registry.Add(scheme, fsCreator);
+    }
     // create temp FileSystem object on main-thread to call the Init method
     Ptr<FileSystem> fs = this->CreateFileSystem(scheme);
     fs->init(scheme);
@@ -34,29 +32,26 @@ schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<F
 //------------------------------------------------------------------------------
 void
 schemeRegistry::UnregisterFileSystem(const StringAtom& scheme) {
-    this->rwLock.LockWrite();
-    o_assert(this->registry.Contains(scheme));
+    SCOPED_LOCK;
+    o_assert_dbg(this->registry.Contains(scheme));
     this->registry.Erase(scheme);
-    this->rwLock.UnlockWrite();
 }
 
 //------------------------------------------------------------------------------
 bool
 schemeRegistry::IsFileSystemRegistered(const StringAtom& scheme) const {
-    this->rwLock.LockRead();
+    SCOPED_LOCK;
     bool result = this->registry.Contains(scheme);
-    this->rwLock.UnlockRead();
     return result;
 }
 
 //------------------------------------------------------------------------------
 Ptr<FileSystem>
 schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
-    this->rwLock.LockRead();
-    o_assert(this->registry.Contains(scheme));
+    SCOPED_LOCK;
+    o_assert_dbg(this->registry.Contains(scheme));
     Ptr<FileSystem> fileSystem(this->registry[scheme]());
     fileSystem->initLane();
-    this->rwLock.UnlockRead();
     return fileSystem;
 }
 

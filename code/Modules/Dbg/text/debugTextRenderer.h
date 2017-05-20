@@ -9,7 +9,6 @@
 #include "Resource/Id.h"
 #include "Resource/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
-#include "Core/Threading/RWLock.h"
 #include "Gfx/Gfx.h"
 #include "glm/vec2.hpp"
 #include "glm/vec4.hpp"
@@ -69,7 +68,6 @@ private:
     
     glm::vec2 textScale;
     VertexLayout vertexLayout;
-    RWLock rwLock;
     DrawState drawState;
     StringBuilder stringBuilder;
     bool valid;

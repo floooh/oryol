@@ -6,6 +6,7 @@
 #include "Core/String/StringConverter.h"
 #include "Core/Containers/Buffer.h"
 #include "curl/curl.h"
+#include <mutex>
 
 #if LIBCURL_VERSION_NUM != 0x072400
 #error "Not using the right curl version, header search path fuckup?"
@@ -14,8 +15,8 @@
 namespace Oryol {
 namespace _priv {
 
-bool curlURLLoader::curlInitCalled = false;
-std::mutex curlURLLoader::curlInitMutex;
+static bool curlInitCalled = false;
+static std::mutex curlInitMutex;
 
 //------------------------------------------------------------------------------
 curlURLLoader::curlURLLoader() :

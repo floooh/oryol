@@ -7,7 +7,6 @@
 #include "Core/Assertion.h"
 #include "Core/Logger.h"
 #include "Core/StackTrace.h"
-#include "Core/Threading/RWLock.h"
 #include "Core/Containers/Array.h"
 #if ORYOL_WINDOWS
 #include <Windows.h>
@@ -16,8 +15,16 @@
 #include <android/log.h>
 #endif
 
+#if ORYOL_HAS_THREADS
+#include <mutex>
+static std::mutex lockMutex;
+#define SCOPED_LOCK std::lock_guard<std::mutex> lock(lockMutex)
+#else
+#define SCOPED_LOCK
+#endif
+
 #if ORYOL_WINDOWS
-const int LogBufSize = 4 * 1024;
+static const int LogBufSize = 4 * 1024;
 #endif
 
 namespace Oryol {
@@ -25,17 +32,15 @@ namespace Oryol {
 using namespace _priv;
 using namespace std;
 
-Log::Level curLogLevel = Log::Level::Dbg;
-RWLock lock;
-Array<Ptr<Logger>> loggers;
+static Log::Level curLogLevel = Log::Level::Dbg;
+static Array<Ptr<Logger>> loggers;
 
 //------------------------------------------------------------------------------
 void
 Log::AddLogger(const Ptr<Logger>& l) {
     if (l) {
-        lock.LockWrite();
+        SCOPED_LOCK;
         loggers.Add(l);
-        lock.UnlockWrite();
     }
 }
 
@@ -142,7 +147,7 @@ Log::VError(const char* msg, va_list args) {
 //------------------------------------------------------------------------------
 void
 Log::vprint(Level lvl, const char* msg, va_list args) {
-    lock.LockRead();
+    SCOPED_LOCK;
     if (loggers.Empty()) {
         #if ORYOL_ANDROID
             android_LogPriority pri = ANDROID_LOG_DEFAULT;
@@ -179,13 +184,12 @@ Log::vprint(Level lvl, const char* msg, va_list args) {
             l->VPrint(lvl, msg, args);
         }
     }
-    lock.UnlockRead();
 }
 
 //------------------------------------------------------------------------------
 void
 Log::AssertMsg(const char* cond, const char* msg, const char* file, int line, const char* func) {
-    lock.LockRead();
+    SCOPED_LOCK;
     if (loggers.Empty()) {
         char callstack[4096];
         StackTrace::Dump(callstack, sizeof(callstack));
@@ -210,7 +214,6 @@ Log::AssertMsg(const char* cond, const char* msg, const char* file, int line, co
             l->AssertMsg(cond, msg, file, line, func);
         }
     }
-    lock.UnlockRead();
 } 
 
 } // namespace Oryol

@@ -7,7 +7,6 @@
     @see urlLoader
 */
 #include "HTTP/base/baseURLLoader.h"
-#include <mutex>
 
 namespace Oryol {
 namespace _priv {
@@ -33,8 +32,6 @@ private:
     /// curl header-data callback
     static size_t curlHeaderCallback(char* ptr, size_t size, size_t nmenb, void* userData);
 
-    static bool curlInitCalled;
-    static std::mutex curlInitMutex;
     void* curlSession;
     char* curlError;
 };

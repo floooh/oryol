@@ -54,7 +54,6 @@ fips_begin_module(Core)
     )
     fips_dir(Threading)
     fips_files(
-        RWLock.h
         ThreadLocalData.cc ThreadLocalData.h
         ThreadLocalPtr.h
     )
