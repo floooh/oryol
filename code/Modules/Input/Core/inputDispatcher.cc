@@ -8,16 +8,16 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-inputDispatcher::callbackId
-inputDispatcher::subscribeEvents(inputEventCallback handler) {
-    callbackId id = ++this->uniqueIdCounter;
+inputDefs::callbackId
+inputDispatcher::subscribeEvents(inputDefs::inputEventCallback handler) {
+    inputDefs::callbackId id = ++this->uniqueIdCounter;
     this->inputEventHandlers.Add(id, handler);
     return id;
 }
 
 //------------------------------------------------------------------------------
 void
-inputDispatcher::unsubscribeEvents(callbackId id) {
+inputDispatcher::unsubscribeEvents(inputDefs::callbackId id) {
     if (this->inputEventHandlers.Contains(id)) {
         this->inputEventHandlers.Erase(id);
     }

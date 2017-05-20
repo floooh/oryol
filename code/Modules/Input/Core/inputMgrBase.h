@@ -30,8 +30,7 @@ public:
     class mouseDevice mouse;
     class touchpadDevice touchpad;
     class sensorDevice sensors;
-    static const int MaxNumGamepads = 4;
-    StaticArray<class gamepadDevice, MaxNumGamepads> gamepad;
+    StaticArray<class gamepadDevice, inputDefs::maxNumGamepads> gamepad;
 
 
     bool valid = false;

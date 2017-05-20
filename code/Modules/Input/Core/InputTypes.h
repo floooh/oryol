@@ -4,6 +4,7 @@
 #include "Core/Containers/Map.h"
 #include "Core/String/StringAtom.h"
 #include "glm/vec2.hpp"
+#include <functional>
 
 namespace Oryol {
 
@@ -338,5 +339,21 @@ public:
     explicit InputEvent(enum Type t, MouseButton::Code b) : Type(t), Button(b) { };
     explicit InputEvent(enum Type t, const glm::vec2& scroll) : Type(t), Scrolling(scroll) { };
 };
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::_priv::inputConfig
+    @brief various input system constants
+*/
+namespace _priv {
+struct inputDefs {
+    static const int maxNumGamepads = 4;
+    static const int maxNumRawButtons = 32;
+    static const int maxNumRawAxes = 16;
+    typedef std::function<void(const InputEvent&)> inputEventCallback;
+    typedef std::function<PointerLockMode::Code(const InputEvent&)> pointerLockCallback;
+    typedef int callbackId;
+};
+} // namespace _priv
 
 } // namespace Oryol

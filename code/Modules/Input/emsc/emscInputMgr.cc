@@ -191,7 +191,7 @@ emscInputMgr::setupGamepadMappings() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepads() {
-    for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
+    for (int padIndex = 0; padIndex < inputDefs::maxNumGamepads; padIndex++) {
         EmscriptenGamepadEvent state = { };
         EMSCRIPTEN_RESULT result = emscripten_get_gamepad_status(padIndex, &state);
         // TODO: check gamepadState validity
@@ -213,8 +213,8 @@ emscInputMgr::updateGamepads() {
         }
         pad.attached = state.connected;
         if (pad.attached) {
-            static_assert(gamepadDevice::MaxNumRawButtons < 64, "gamepadDevice::MaxNumRawButtons");
-            for (int rawBtnIndex = 0; rawBtnIndex < gamepadDevice::MaxNumRawButtons; rawBtnIndex++) {
+            static_assert(inputDefs::maxNumRawButtons < 64, "gamepadDevice::MaxNumRawButtons");
+            for (int rawBtnIndex = 0; rawBtnIndex < inputDefs::maxNumRawButtons; rawBtnIndex++) {
                 uint32_t mask = (1<<rawBtnIndex);
                 if (state.digitalButton[rawBtnIndex]) {
                     if ((pad.pressed & mask) == 0) {
@@ -229,8 +229,8 @@ emscInputMgr::updateGamepads() {
                     pad.pressed &= ~mask;
                 }
             }
-            static_assert(gamepadDevice::MaxNumRawAxes < 64, "gamepadDevice::MaxNumRawAxes");
-            for (int rawAxisIndex = 0; rawAxisIndex < gamepadDevice::MaxNumRawAxes; rawAxisIndex++) {
+            static_assert(inputDefs::maxNumRawAxes < 64, "gamepadDevice::MaxNumRawAxes");
+            for (int rawAxisIndex = 0; rawAxisIndex < inputDefs::maxNumRawAxes; rawAxisIndex++) {
                 pad.axes[rawAxisIndex] = state.axis[rawAxisIndex];
             }
         }

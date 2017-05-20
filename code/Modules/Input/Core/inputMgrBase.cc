@@ -57,7 +57,7 @@ inputMgrBase::reset() {
     if (this->touchpad.attached) {
         this->touchpad.reset();
     }
-    for (int i = 0; i < MaxNumGamepads; i++) {
+    for (int i = 0; i < inputDefs::maxNumGamepads; i++) {
         if (this->gamepad[i].attached) {
             this->gamepad[i].reset();
         }

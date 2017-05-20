@@ -12,7 +12,7 @@
     like keyboard, mouse and game pads. On mobile platforms it also allows
     to query touch gestures.
 */
-#include "Input/Core/inputMgr.h"
+#include "Input/Core/InputTypes.h"
 
 namespace Oryol {
     
@@ -25,11 +25,11 @@ public:
     /// check if Input module is valid
     static bool IsValid();
     /// input event callback function
-    typedef _priv::inputDispatcher::inputEventCallback InputEventCallback;
+    typedef _priv::inputDefs::inputEventCallback InputEventCallback;
     /// mouse pointer lock handler type
-    typedef _priv::inputDispatcher::pointerLockCallback PointerLockCallback;;
+    typedef _priv::inputDefs::pointerLockCallback PointerLockCallback;;
     /// typedef for input event callback id
-    typedef _priv::inputDispatcher::callbackId CallbackId;
+    typedef _priv::inputDefs::callbackId CallbackId;
     /// subscribe to input events
     static CallbackId SubscribeEvents(InputEventCallback cb);
     /// unsubscribe from input events
@@ -76,11 +76,11 @@ public:
     static const glm::vec2& MouseScroll();
 
     /// max number of attached gamepads (4)
-    static const int MaxNumGamepads = _priv::inputMgrBase::MaxNumGamepads;
+    static const int MaxNumGamepads = _priv::inputDefs::maxNumGamepads;
     /// max number of buttons for raw button input
-    static const int MaxNumRawButtons = _priv::gamepadDevice::MaxNumRawButtons;
+    static const int MaxNumRawButtons = _priv::inputDefs::maxNumRawButtons;
     /// max number of axes for raw axis input
-    static const int MaxNumRawAxes = _priv::gamepadDevice::MaxNumRawAxes;
+    static const int MaxNumRawAxes = _priv::inputDefs::maxNumRawAxes;
     /// add or replace a gamepad mapping
     static void AddGamepadMapping(const StringAtom& gamepadTypeId, const GamepadMapping& mapping);
     /// return true if a gamepad is attached
@@ -137,12 +137,6 @@ public:
     static const glm::vec3& SensorAcceleration();
     /// get device orientation as yaw=x, pitch=y, roll=z angles
     static const glm::vec3& SensorYawPitchRoll();
-
-private:
-    struct _state {
-        _priv::inputMgr inputManager;
-    };
-    static _state* state;
 };
 
 } // namespace Oryol

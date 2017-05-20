@@ -246,7 +246,7 @@ glfwInputMgr::setupGamepadMappings() {
 //------------------------------------------------------------------------------
 void
 glfwInputMgr::updateGamepads() {
-    for (int padIndex = 0; padIndex < MaxNumGamepads; padIndex++) {
+    for (int padIndex = 0; padIndex < inputDefs::maxNumGamepads; padIndex++) {
         auto& pad = this->gamepad[padIndex];
         bool present = 0 != glfwJoystickPresent(padIndex);
         if (present && !pad.attached) {
@@ -266,8 +266,8 @@ glfwInputMgr::updateGamepads() {
         if (pad.attached) {
             int numRawBtns = 0;
             const unsigned char* rawBtns = glfwGetJoystickButtons(padIndex, &numRawBtns);
-            if (numRawBtns > gamepadDevice::MaxNumRawButtons) {
-                numRawBtns = gamepadDevice::MaxNumRawButtons;
+            if (numRawBtns > inputDefs::maxNumRawButtons) {
+                numRawBtns = inputDefs::maxNumRawButtons;
             }
             for (int rawBtnIndex = 0; rawBtnIndex < numRawBtns; rawBtnIndex++) {
                 uint32_t mask = (1<<rawBtnIndex);
@@ -286,8 +286,8 @@ glfwInputMgr::updateGamepads() {
             }
             int numRawAxes = 0;
             const float* rawAxes = glfwGetJoystickAxes(padIndex, &numRawAxes);
-            if (numRawAxes > gamepadDevice::MaxNumRawAxes) {
-                numRawAxes = gamepadDevice::MaxNumRawAxes;
+            if (numRawAxes > inputDefs::maxNumRawAxes) {
+                numRawAxes = inputDefs::maxNumRawAxes;
             }
             for (int rawAxisIndex = 0; rawAxisIndex < numRawAxes; rawAxisIndex++) {
                 pad.axes[rawAxisIndex] = rawAxes[rawAxisIndex];

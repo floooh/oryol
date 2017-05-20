@@ -6,25 +6,20 @@
 */
 #include "Input/Core/InputTypes.h"
 #include "Core/Containers/Map.h"
-#include <functional>
 
 namespace Oryol {
 namespace _priv {
 
 class inputDispatcher {
 public:
-    typedef std::function<void(const InputEvent&)> inputEventCallback;
-    typedef std::function<PointerLockMode::Code(const InputEvent&)> pointerLockCallback;
-    typedef int callbackId;
-
-    callbackId subscribeEvents(inputEventCallback handler);
-    void unsubscribeEvents(callbackId id);
+    inputDefs::callbackId subscribeEvents(inputDefs::inputEventCallback handler);
+    void unsubscribeEvents(inputDefs::callbackId id);
     void notifyEvent(const InputEvent& event);
     PointerLockMode::Code notifyPointerLock(const InputEvent& event);
 
-    callbackId uniqueIdCounter = 0;
-    Map<callbackId, inputEventCallback> inputEventHandlers;
-    pointerLockCallback pointerLockHandler;
+    inputDefs::callbackId uniqueIdCounter = 0;
+    Map<inputDefs::callbackId, inputDefs::inputEventCallback> inputEventHandlers;
+    inputDefs::pointerLockCallback pointerLockHandler;
 };
 
 } // namespace _priv

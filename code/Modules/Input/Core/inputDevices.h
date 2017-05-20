@@ -135,13 +135,11 @@ public:
     void reset();
 
     bool attached = false;
-    static const int MaxNumRawButtons = 32;
-    static const int MaxNumRawAxes = 16;
     StringAtom id;
     uint32_t down = 0;
     uint32_t up = 0;
     uint32_t pressed = 0;
-    StaticArray<float, MaxNumRawAxes> axes;
+    StaticArray<float, inputDefs::maxNumRawAxes> axes;
     GamepadMapping mapping;
 };
 
