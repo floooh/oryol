@@ -89,10 +89,10 @@ debugTextRenderer::textColor(float r, float g, float b, float a) {
     SCOPED_LOCK;
     this->stringBuilder.Append(0x1B);   // start ESC control sequence
     this->stringBuilder.Append(0x02);   // set color
-    this->stringBuilder.Append((char) (r * 255.0f));
-    this->stringBuilder.Append((char) (g * 255.0f));
-    this->stringBuilder.Append((char) (b * 255.0f));
-    this->stringBuilder.Append((char) (a * 255.0f));
+    this->stringBuilder.Append(uint8_t(r * 255.0f));
+    this->stringBuilder.Append(uint8_t(g * 255.0f));
+    this->stringBuilder.Append(uint8_t(b * 255.0f));
+    this->stringBuilder.Append(uint8_t(a * 255.0f));
 }
 
 //------------------------------------------------------------------------------
