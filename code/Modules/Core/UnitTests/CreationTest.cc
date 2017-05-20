@@ -21,7 +21,7 @@ using namespace Oryol;
 
 // define a custom class
 class TestClass : public RefCounted {
-    OryolClassPoolAllocDecl(TestClass);
+    OryolClassDecl(TestClass);
 public:
     TestClass() : val(0) {
 //        Log::Info("constructor called!\n");
@@ -37,7 +37,6 @@ public:
 private:
     int val;
 };
-OryolClassPoolAllocImpl(TestClass);
 
 TEST(CreateShared) {
 

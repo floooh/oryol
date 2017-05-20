@@ -40,7 +40,7 @@ fips_begin_module(Core)
         InlineArray.h
     )
     fips_dir(Memory)
-    fips_files(Memory.cc Memory.h poolAllocator.h)
+    fips_files(Memory.cc Memory.h)
     fips_dir(String)
     fips_files(
         String.cc String.h
@@ -124,7 +124,6 @@ fips_begin_unittest(Core)
         HashSetTest.cc
         MapTest.cc
         MemoryTest.cc
-        PoolAllocatorTest.cc
         QueueTest.cc
         RttiTest.cc
         RunLoopTest.cc
