@@ -1,5 +1,17 @@
 # What's New
 
+- **20-May-2017**: the spirv-tooling branch has been merged into master,
+shader code is now generated from a SPIRV intermediate byte code format,
+see this blog post for details and required source code changes: http://floooh.github.io/2017/05/15/oryol-spirv.html,
+and also check out [the new shader code documentation](../code/Modules/Gfx/doc/Shaders.md).
+The change also affects dependencies which include shader code:
+  
+  - https://github.com/floooh/oryol-imgui
+  - https://github.com/floooh/oryol-nuklear
+  - https://github.com/floooh/oryol-tbui
+  - https://github.com/floooh/oryol-samples
+  - https://github.com/floooh/yakc
+
 - **09-Apr-2017**: the big WebGL2/RenderPasses branch has finally been merged,
 see this blog post for details:https://floooh.github.io/2017/04/04/oryol-webgl2-merge.html
 This change also affects the following git repos:
