@@ -10,7 +10,6 @@
     
     @see Log
 */
-#include "Core/Types.h"
 #include "Core/Log.h"
 #include "Core/RefCounted.h"
 

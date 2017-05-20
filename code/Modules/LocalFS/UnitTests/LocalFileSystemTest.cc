@@ -8,6 +8,7 @@
 #include "IO/IO.h"
 #include "LocalFS/LocalFileSystem.h"
 #include "LocalFS/Core/fsWrapper.h"
+#include <thread>
 
 using namespace Oryol;
 

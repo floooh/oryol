@@ -6,6 +6,7 @@
 #include "IO/IO.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
+#include "Core/Creator.h"
 
 using namespace Oryol;
 

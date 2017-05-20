@@ -11,11 +11,7 @@
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "IO/Core/IOSetup.h"
-#include "IO/FS/ioRouter.h"
-#include "IO/Core/assignRegistry.h"
-#include "IO/Core/schemeRegistry.h"
 #include "IO/Core/loadQueue.h"
-#include "Core/RunLoop.h"
 
 namespace Oryol {
 
@@ -70,15 +66,6 @@ public:
 private:
     /// pump the ioRequestRouter
     static void doWork();
-
-    struct _state {
-        _priv::assignRegistry assignReg;
-        _priv::schemeRegistry schemeReg;
-        _priv::ioRouter router;
-        RunLoop::Id runLoopId = RunLoop::InvalidId;
-        class loadQueue loadQueue;
-    };
-    static _state* state;
 };
 
 } // namespace Oryol

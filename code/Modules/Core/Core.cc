@@ -13,13 +13,13 @@ namespace Oryol {
     
 static ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop = nullptr;
 static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop = nullptr;
-struct _state {
+struct _core_state {
     std::thread::id mainThreadId;
     #if ORYOL_PROFILING
     Trace trace;
     #endif
 };
-static _state* state = nullptr;
+_core_state* coreState = nullptr;
 
 //------------------------------------------------------------------------------
 void
@@ -27,8 +27,8 @@ Core::Setup() {
     o_assert_dbg(!IsValid());
     o_assert_dbg(nullptr == threadPreRunLoop);
     o_assert_dbg(nullptr == threadPostRunLoop);
-    state = Memory::New<_state>();
-    state->mainThreadId = std::this_thread::get_id();
+    coreState = Memory::New<_core_state>();
+    coreState->mainThreadId = std::this_thread::get_id();
     threadPreRunLoop = Memory::New<RunLoop>();
     threadPostRunLoop = Memory::New<RunLoop>();
 }
@@ -41,10 +41,10 @@ Core::Discard() {
     o_assert(threadPostRunLoop);
     Memory::Delete<RunLoop>(threadPreRunLoop);
     Memory::Delete<RunLoop>(threadPostRunLoop);
-    Memory::Delete(state);
+    Memory::Delete(coreState);
     threadPreRunLoop = nullptr;
     threadPostRunLoop = nullptr;
-    state = nullptr;
+    coreState = nullptr;
 
     // do NOT destroy the thread-local string atom table to
     // ensure that string atom data pointers still point to valid data!!!    
@@ -53,7 +53,7 @@ Core::Discard() {
 //------------------------------------------------------------------------------
 bool
 Core::IsValid() {
-    return nullptr != state;
+    return nullptr != coreState;
 }
 
 //------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ bool
 Core::IsMainThread() {
     #if ORYOL_HAS_THREADS
     o_assert_dbg(IsValid());
-    return state->mainThreadId == std::this_thread::get_id();
+    return coreState->mainThreadId == std::this_thread::get_id();
     #else
     return true;
     #endif

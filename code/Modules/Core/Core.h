@@ -9,10 +9,9 @@
     @brief Core module facade
 */
 #include "Core/Types.h"
+#include "Core/RunLoop.h"
 
 namespace Oryol {
-
-class RunLoop;
 
 class Core {
 public:

@@ -5,6 +5,8 @@
 #include "Core/Main.h"
 #include "IO/IO.h"
 #include "HTTP/HTTPFileSystem.h"
+#include <thread>
+#include <chrono>
 
 using namespace Oryol;
 

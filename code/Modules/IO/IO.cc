@@ -6,23 +6,35 @@
 #include "IO/Core/assignRegistry.h"
 #include "IO/Core/ioPointers.h"
 #include "Core/Core.h"
+#include "IO/FS/ioRouter.h"
+#include "IO/Core/assignRegistry.h"
+#include "IO/Core/schemeRegistry.h"
+#include "IO/Core/loadQueue.h"
+#include "Core/RunLoop.h"
 
 namespace Oryol {
 
 using namespace _priv;
 
-IO::_state* IO::state = nullptr;
+struct io_state {
+    _priv::assignRegistry assignReg;
+    _priv::schemeRegistry schemeReg;
+    _priv::ioRouter router;
+    RunLoop::Id runLoopId = RunLoop::InvalidId;
+    class loadQueue loadQueue;
+};
+io_state* ioState = nullptr;
 
 //------------------------------------------------------------------------------
 void
 IO::Setup(const IOSetup& setup) {
     o_assert(!IsValid());
 
-    state = Memory::New<_state>();
+    ioState = Memory::New<io_state>();
     ioPointers ptrs;
-    ptrs.schemeRegistry = &state->schemeReg;
-    ptrs.assignRegistry = &state->assignReg;
-    state->router.setup(ptrs);
+    ptrs.schemeRegistry = &ioState->schemeReg;
+    ptrs.assignRegistry = &ioState->assignReg;
+    ioState->router.setup(ptrs);
 
     // setup initial assigns
     for (const auto& assign : setup.Assigns) {
@@ -34,17 +46,17 @@ IO::Setup(const IOSetup& setup) {
         RegisterFileSystem(fs.Key(), fs.Value());
     }
 
-    state->runLoopId = Core::PreRunLoop()->Add([] { doWork(); });
+    ioState->runLoopId = Core::PreRunLoop()->Add([] { doWork(); });
 }
 
 //------------------------------------------------------------------------------
 void
 IO::Discard() {
     o_assert(IsValid());
-    Core::PreRunLoop()->Remove(state->runLoopId);
-    state->router.discard();
-    Memory::Delete(state);
-    state = nullptr;
+    Core::PreRunLoop()->Remove(ioState->runLoopId);
+    ioState->router.discard();
+    Memory::Delete(ioState);
+    ioState = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -52,41 +64,41 @@ void
 IO::doWork() {
     o_assert_dbg(IsValid());
     o_assert_dbg(Core::IsMainThread());
-    state->router.doWork();
-    state->loadQueue.update();
+    ioState->router.doWork();
+    ioState->loadQueue.update();
 }
 
 //------------------------------------------------------------------------------
 bool
 IO::IsValid() {
-    return nullptr != state;
+    return nullptr != ioState;
 }
 
 //------------------------------------------------------------------------------
 void
 IO::SetAssign(const String& assign, const String& path) {
     o_assert_dbg(IsValid());
-    state->assignReg.SetAssign(assign, path);
+    ioState->assignReg.SetAssign(assign, path);
 }
 
 //------------------------------------------------------------------------------
 bool
 IO::HasAssign(const String& assign) {
     o_assert_dbg(IsValid());
-    return state->assignReg.HasAssign(assign);
+    return ioState->assignReg.HasAssign(assign);
 }
 
 //------------------------------------------------------------------------------
 String
 IO::LookupAssign(const String& assign) {
     o_assert_dbg(IsValid());
-    return state->assignReg.LookupAssign(assign);
+    return ioState->assignReg.LookupAssign(assign);
 }
 
 //------------------------------------------------------------------------------
 String
 IO::ResolveAssigns(const String& str) {
-    return state->assignReg.ResolveAssigns(str);
+    return ioState->assignReg.ResolveAssigns(str);
 }
 
 //------------------------------------------------------------------------------
@@ -94,19 +106,19 @@ void
 IO::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator) {
     o_assert_dbg(IsValid());
 
-    bool newFileSystem = !state->schemeReg.IsFileSystemRegistered(scheme);
-    state->schemeReg.RegisterFileSystem(scheme, fsCreator);
+    bool newFileSystem = !ioState->schemeReg.IsFileSystemRegistered(scheme);
+    ioState->schemeReg.RegisterFileSystem(scheme, fsCreator);
     if (newFileSystem) {
         // notify IO threads that a filesystem was added
         Ptr<notifyFileSystemAdded> msg = notifyFileSystemAdded::Create();
         msg->Scheme = scheme;
-        state->router.put(msg);
+        ioState->router.put(msg);
     }
     else {
         // notify IO threads that a filesystem was replaced
         Ptr<notifyFileSystemReplaced> msg = notifyFileSystemReplaced::Create();
         msg->Scheme = scheme;
-        state->router.put(msg);
+        ioState->router.put(msg);
     }
 }
     
@@ -114,35 +126,35 @@ IO::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()
 void
 IO::UnregisterFileSystem(const StringAtom& scheme) {
     o_assert_dbg(IsValid());
-    state->schemeReg.UnregisterFileSystem(scheme);
+    ioState->schemeReg.UnregisterFileSystem(scheme);
 }
 
 //------------------------------------------------------------------------------
 bool
 IO::IsFileSystemRegistered(const StringAtom& scheme) {
     o_assert_dbg(IsValid());
-    return state->schemeReg.IsFileSystemRegistered(scheme);
+    return ioState->schemeReg.IsFileSystemRegistered(scheme);
 }
 
 //------------------------------------------------------------------------------
 void
 IO::Load(const URL& url, LoadSuccessFunc onSuccess, LoadFailedFunc onFailed) {
     o_assert_dbg(IsValid());
-    state->loadQueue.add(url, onSuccess, onFailed);
+    ioState->loadQueue.add(url, onSuccess, onFailed);
 }
 
 //------------------------------------------------------------------------------
 void
 IO::LoadGroup(const Array<URL>& urls, LoadGroupSuccessFunc onSuccess, LoadFailedFunc onFailed) {
     o_assert_dbg(IsValid());
-    state->loadQueue.addGroup(urls, onSuccess, onFailed);
+    ioState->loadQueue.addGroup(urls, onSuccess, onFailed);
 }
 
 //------------------------------------------------------------------------------
 int
 IO::NumPendingLoads() {
     o_assert_dbg(IsValid());
-    return state->loadQueue.numPending();
+    return ioState->loadQueue.numPending();
 }
 
 //------------------------------------------------------------------------------
@@ -151,7 +163,7 @@ IO::LoadFile(const URL& url) {
     o_assert_dbg(IsValid());
     Ptr<IORead> ioReq = IORead::Create();
     ioReq->Url = url;
-    state->router.put(ioReq);
+    ioState->router.put(ioReq);
     return ioReq;
 }
 
@@ -162,7 +174,7 @@ IO::WriteFile(const URL& url, const Buffer& data) {
     Ptr<IOWrite> ioReq = IOWrite::Create();
     ioReq->Url = url;
     ioReq->Data.Add(data.Data(), data.Size());
-    state->router.put(ioReq);
+    ioState->router.put(ioReq);
     return ioReq;
 }
 
@@ -170,7 +182,7 @@ IO::WriteFile(const URL& url, const Buffer& data) {
 void
 IO::Put(const Ptr<IORequest>& ioReq) {
     o_assert_dbg(IsValid());
-    state->router.put(ioReq);
+    ioState->router.put(ioReq);
 }
 
 } // namespace Oryol
