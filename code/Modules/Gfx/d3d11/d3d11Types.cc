@@ -87,55 +87,15 @@ d3d11Types::asResourceCPUAccessFlag(Usage::Code usage) {
 //------------------------------------------------------------------------------
 const char*
 d3d11Types::asSemanticName(VertexAttr::Code attr) {
-    switch (attr) {
-        case VertexAttr::Position:  
-            return "POSITION";
-        case VertexAttr::Normal:   
-            return "NORMAL";
-        case VertexAttr::TexCoord0:
-        case VertexAttr::TexCoord1:
-        case VertexAttr::TexCoord2:
-        case VertexAttr::TexCoord3:
-            return "TEXCOORD";
-        case VertexAttr::Tangent:
-            return "TANGENT";
-        case VertexAttr::Binormal:
-            return "BINORMAL";
-        case VertexAttr::Weights:
-            return "WEIGHTS";
-        case VertexAttr::Indices:
-            return "INDICES";
-        case VertexAttr::Color0:
-        case VertexAttr::Color1:
-            return "COLOR";
-        case VertexAttr::Instance0:
-        case VertexAttr::Instance1:
-        case VertexAttr::Instance2:
-        case VertexAttr::Instance3:
-            return "INSTANCE";
-        default:
-            o_error("d3d11Types::asSemanticName: invalid vertex attr!\n");
-            return nullptr;
-    }
+    // not a bug, SPIRV-Cross uses TEXCOORD as universal semantic name
+    return "TEXCOORD";
 }
 
 //------------------------------------------------------------------------------
 uint32_t
 d3d11Types::asSemanticIndex(VertexAttr::Code attr) {
-    switch (attr) {
-    case VertexAttr::TexCoord1:
-    case VertexAttr::Color1:
-    case VertexAttr::Instance1:
-        return 1;
-    case VertexAttr::TexCoord2:
-    case VertexAttr::Instance2:
-        return 2;
-    case VertexAttr::TexCoord3:
-    case VertexAttr::Instance3:
-        return 3;
-    default:
-        return 0;
-    }
+    // not a bug, see oryol-shdc tool
+    return (uint32_t) attr;
 }
 
 //------------------------------------------------------------------------------

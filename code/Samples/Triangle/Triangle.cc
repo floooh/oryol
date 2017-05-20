@@ -20,20 +20,6 @@ OryolMain(TriangleApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-TriangleApp::OnRunning() {
-    
-    Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::Draw();
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxSetup::Window(400, 400, "Oryol Triangle Sample"));
@@ -60,6 +46,20 @@ TriangleApp::OnInit() {
     this->drawState.Pipeline = Gfx::CreateResource(ps);
 
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+TriangleApp::OnRunning() {
+    
+    Gfx::BeginPass();
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::Draw();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

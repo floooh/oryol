@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/factory.h"
+#include "Gfx/Resource/gfxFactory.h"
 #include "Gfx/Resource/resourcePools.h"
 #include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Core/displayMgr.h"
@@ -39,8 +39,8 @@ TEST(MeshFactoryTest) {
     
     // setup a meshFactory object
     renderer.setup(gfxSetup, ptrs);
-    meshFactory factory;
-    factory.Setup(ptrs);
+    gfxFactory factory;
+    factory.setup(ptrs);
     
     // setup a MeshBuilder and create mesh geometry
     MeshBuilder mb;
@@ -69,7 +69,7 @@ TEST(MeshFactoryTest) {
     const void* data = buildResult.Data.Data();
     const int size = buildResult.Data.Size();
 
-    factory.SetupResource(mesh, data, size);
+    factory.initMesh(mesh, data, size);
     CHECK(!mesh.Id.IsValid());
     CHECK(mesh.Setup.Locator == Locator::NonShared());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 4);
@@ -98,7 +98,7 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.buffers[mesh::ib].glBuffers[0] != 0);
     #endif
 
-    factory.DestroyResource(mesh);
+    factory.destroyMesh(mesh);
     CHECK(!mesh.Id.IsValid());
     CHECK(mesh.vertexBufferAttrs.NumVertices == 0);
     CHECK(mesh.vertexBufferAttrs.BufferUsage == Usage::InvalidUsage);
@@ -108,7 +108,7 @@ TEST(MeshFactoryTest) {
     CHECK(mesh.indexBufferAttrs.Type == IndexType::InvalidIndexType);
     CHECK(mesh.indexBufferAttrs.BufferUsage == Usage::InvalidUsage);
     CHECK(mesh.numPrimGroups == 0);
-    factory.Discard();
+    factory.discard();
     renderer.discard();
     displayManager.DiscardDisplay();
 

@@ -38,9 +38,8 @@ fips_begin_module(Gfx)
         resourcePools.h
         resourceBase.h resourceBase.cc
         resource.h
-        factory.h
-        pipelineFactoryBase.cc pipelineFactoryBase.h
-        renderPassFactoryBase.cc renderPassFactoryBase.h
+        gfxFactory.h
+        gfxFactoryBase.h gfxFactoryBase.cc
         gfxResourceContainer.h gfxResourceContainer.cc 
         MeshLoaderBase.cc MeshLoaderBase.h
         TextureLoaderBase.cc TextureLoaderBase.h
@@ -50,14 +49,9 @@ fips_begin_module(Gfx)
         fips_files(
             glCaps.cc glCaps.h
             glResource.cc glResource.h
-            glPipelineFactory.cc glPipelineFactory.h
-            glMeshFactory.cc glMeshFactory.h
-            glShaderFactory.cc glShaderFactory.h
+            glFactory.cc glFactory.h
             glRenderer.cc glRenderer.h
-            glTextureFactory.cc glTextureFactory.h
-            glRenderPassFactory.cc glRenderPassFactory.h
             glTypes.cc glTypes.h
-            glVertexAttr.h
             gl_decl.h
             gl_impl.h
         )
@@ -77,11 +71,7 @@ fips_begin_module(Gfx)
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
             d3d11Types.cc d3d11Types.h
             d3d11Resource.cc d3d11Resource.h
-            d3d11MeshFactory.cc d3d11MeshFactory.h
-            d3d11ShaderFactory.cc d3d11ShaderFactory.h
-            d3d11TextureFactory.cc d3d11TextureFactory.h
-            d3d11PipelineFactory.h d3d11PipelineFactory.cc
-            d3d11RenderPassFactory.h d3d11RenderPassFactory.cc
+            d3d11Factory.cc d3d11Factory.h
             d3d11Renderer.cc d3d11Renderer.h
         )
     endif()
@@ -92,12 +82,8 @@ fips_begin_module(Gfx)
             mtlDisplayMgr.h mtlDisplayMgr.mm
             mtlTypes.h mtlTypes.mm
             mtlResource.h mtlResource.mm
-            mtlMeshFactory.h mtlMeshFactory.mm
-            mtlShaderFactory.h mtlShaderFactory.mm
-            mtlPipelineFactory.h mtlPipelineFactory.mm
-            mtlTextureFactory.h mtlTextureFactory.mm
+            mtlFactory.h mtlFactory.mm
             mtlRenderer.h mtlRenderer.mm
-            mtlReleaseQueue.h mtlReleaseQueue.mm
         )
         fips_frameworks_osx(Metal QuartzCore)
     endif()
@@ -154,7 +140,7 @@ fips_begin_unittest(Gfx)
         VertexLayoutTest.cc
         glTypesTest.cc
     )
-    oryol_shader(TestShaderLibrary.shd)
+    oryol_shader(TestShaderLibrary.glsl)
     fips_deps(HTTP Gfx Assets)
 fips_end_unittest()
 

@@ -1,7 +1,7 @@
 fips_begin_app(PrimitiveTypes windowed)
     fips_vs_warning_level(3)
     fips_files(PrimitiveTypes.cc)
-    oryol_shader(shaders.shd)
+    oryol_shader(shaders.glsl)
     fips_deps(Gfx Assets Dbg Input)
     oryol_add_web_sample(PrimitiveTypes "Test Gfx primitive types" "emscripten" "PrimitiveTypes.jpg" "PrimitiveTypes/PrimitiveTypes.cc")
 fips_end_app()

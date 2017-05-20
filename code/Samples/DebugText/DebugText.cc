@@ -29,23 +29,6 @@ OryolMain(DebugTextApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
-DebugTextApp::OnRunning() {
-
-    this->dropChar();
-    this->moveChars();
-    this->drawText();
-    
-    Gfx::BeginPass();
-    Dbg::DrawTextBuffer();
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
 DebugTextApp::OnInit() {
     auto gfxSetup = GfxSetup::Window(800, 600, "Oryol DebugText Sample");
     gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
@@ -61,6 +44,23 @@ DebugTextApp::OnInit() {
     this->strBuilder.Reserve(this->width * 2);
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+DebugTextApp::OnRunning() {
+
+    this->dropChar();
+    this->moveChars();
+    this->drawText();
+    
+    Gfx::BeginPass();
+    Dbg::DrawTextBuffer();
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

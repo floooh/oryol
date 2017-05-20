@@ -24,36 +24,13 @@ private:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     DrawState drawState;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
 OryolMain(DDSCubeMapApp);
-
-//------------------------------------------------------------------------------
-AppState::Code
-DDSCubeMapApp::OnRunning() {
-    
-    // update rotation angles
-    this->angleY += 0.02f;
-    this->angleX += 0.01f;
-    
-    Gfx::BeginPass();
-    const Id& tex = this->drawState.FSTexture[Textures::Texture];
-    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
-        this->vsParams.ModelViewProjection = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::Draw();
-    }
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -85,7 +62,7 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->drawState.FSTexture[Textures::Texture] = Gfx::LoadResource(
+    this->drawState.FSTexture[Shader::tex] = Gfx::LoadResource(
         TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint))
     );
     glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -108,6 +85,29 @@ DDSCubeMapApp::OnInit() {
     this->view = glm::mat4();
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+DDSCubeMapApp::OnRunning() {
+    
+    // update rotation angles
+    this->angleY += 0.02f;
+    this->angleX += 0.01f;
+    
+    Gfx::BeginPass();
+    const Id& tex = this->drawState.FSTexture[Shader::tex];
+    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
+        this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
+        Gfx::ApplyDrawState(this->drawState);
+        Gfx::ApplyUniformBlock(this->vsParams);
+        Gfx::Draw();
+    }
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

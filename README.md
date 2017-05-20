@@ -40,7 +40,7 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 
 ### Getting Started:
 
-* [What's New](doc/NEWS.md) (updated: 09-Apr-2017)
+* [What's New](doc/NEWS.md) (updated: 20-May-2017)
 * [How to Build](doc/BUILD.md)
 * [Design Manifesto](doc/DESIGN-MANIFESTO.md)
 * [10,000ft View](doc/OVERVIEW.md)

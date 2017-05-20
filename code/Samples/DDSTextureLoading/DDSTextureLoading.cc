@@ -27,61 +27,11 @@ private:
     DrawState drawState;
     static const int NumTextures = 16;
     StaticArray<Id, NumTextures> textures;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     glm::mat4 view;
     glm::mat4 proj;
 };
 OryolMain(DDSTextureLoadingApp);
-
-//------------------------------------------------------------------------------
-AppState::Code
-DDSTextureLoadingApp::OnRunning() {
-    
-    this->distVal += 0.01f;
-    
-    Gfx::BeginPass();
-
-    // only render when texture is loaded (until texture placeholder are implemented)
-    static const glm::vec3 pos[NumTextures] = {
-        // dxt1, dxt3, dxt5, pvr2, pvr4, etc2
-        glm::vec3(-2.75f, +1.1f, 0.0f),
-        glm::vec3(-1.65f, +1.1f, 0.0f),
-        glm::vec3(-0.55f, +1.1f, 0.0f),
-        glm::vec3(+0.55f, +1.1f, 0.0f),
-        glm::vec3(+1.65f, +1.1f, 0.0f),
-        glm::vec3(+2.75f, +1.1f, 0.0f),
-        
-        // rgba8, bgra8, rgb8, bgr8
-        glm::vec3(-1.65f, 0.0f, 0.0f),
-        glm::vec3(-0.55f, 0.0f, 0.0f),
-        glm::vec3(+0.55f, 0.0f, 0.0f),
-        glm::vec3(+1.65f, 0.0f, 0.0f),
-        
-        // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
-        glm::vec3(-2.75f, -1.1f, 0.0f),
-        glm::vec3(-1.65f, -1.1f, 0.0f),
-        glm::vec3(-0.55f, -1.1f, 0.0f),
-        glm::vec3(+0.55f, -1.1f, 0.0f),
-        glm::vec3(+1.65f, -1.1f, 0.0f),
-        glm::vec3(+2.75f, -1.1f, 0.0f)
-    };
-    for (int i = 0; i < NumTextures; i++) {
-        const auto resState = Gfx::QueryResourceInfo(this->textures[i]).State;
-        if (resState == ResourceState::Valid) {
-            glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-            this->vsParams.ModelViewProjection = this->computeMVP(p);
-            this->drawState.FSTexture[Textures::Texture] = this->textures[i];
-            Gfx::ApplyDrawState(this->drawState);
-            Gfx::ApplyUniformBlock(this->vsParams);
-            Gfx::Draw();
-        }
-    }
-    Gfx::EndPass();
-    Gfx::CommitFrame();
-    
-    // continue running or quit?
-    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
-}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -147,6 +97,56 @@ DDSTextureLoadingApp::OnInit() {
     this->view = glm::mat4();
     
     return App::OnInit();
+}
+
+//------------------------------------------------------------------------------
+AppState::Code
+DDSTextureLoadingApp::OnRunning() {
+    
+    this->distVal += 0.01f;
+    
+    Gfx::BeginPass();
+
+    // only render when texture is loaded (until texture placeholder are implemented)
+    static const glm::vec3 pos[NumTextures] = {
+        // dxt1, dxt3, dxt5, pvr2, pvr4, etc2
+        glm::vec3(-2.75f, +1.1f, 0.0f),
+        glm::vec3(-1.65f, +1.1f, 0.0f),
+        glm::vec3(-0.55f, +1.1f, 0.0f),
+        glm::vec3(+0.55f, +1.1f, 0.0f),
+        glm::vec3(+1.65f, +1.1f, 0.0f),
+        glm::vec3(+2.75f, +1.1f, 0.0f),
+        
+        // rgba8, bgra8, rgb8, bgr8
+        glm::vec3(-1.65f, 0.0f, 0.0f),
+        glm::vec3(-0.55f, 0.0f, 0.0f),
+        glm::vec3(+0.55f, 0.0f, 0.0f),
+        glm::vec3(+1.65f, 0.0f, 0.0f),
+        
+        // rgba4444, bgra4444, rgba5551, bgra5551, rgb565, bgr565
+        glm::vec3(-2.75f, -1.1f, 0.0f),
+        glm::vec3(-1.65f, -1.1f, 0.0f),
+        glm::vec3(-0.55f, -1.1f, 0.0f),
+        glm::vec3(+0.55f, -1.1f, 0.0f),
+        glm::vec3(+1.65f, -1.1f, 0.0f),
+        glm::vec3(+2.75f, -1.1f, 0.0f)
+    };
+    for (int i = 0; i < NumTextures; i++) {
+        const auto resState = Gfx::QueryResourceInfo(this->textures[i]).State;
+        if (resState == ResourceState::Valid) {
+            glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
+            this->vsParams.mvp = this->computeMVP(p);
+            this->drawState.FSTexture[Shader::tex] = this->textures[i];
+            Gfx::ApplyDrawState(this->drawState);
+            Gfx::ApplyUniformBlock(this->vsParams);
+            Gfx::Draw();
+        }
+    }
+    Gfx::EndPass();
+    Gfx::CommitFrame();
+    
+    // continue running or quit?
+    return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
 
 //------------------------------------------------------------------------------

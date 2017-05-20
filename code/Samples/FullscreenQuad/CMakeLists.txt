@@ -1,7 +1,7 @@
 fips_begin_app(FullscreenQuad windowed)
     fips_vs_warning_level(3)
     fips_files(FullscreenQuad.cc)
-    oryol_shader(shaders.shd)
+    oryol_shader(shaders.glsl)
     fips_deps(Gfx)
     oryol_add_web_sample(FullscreenQuad "Fullscreen quad with some distance field ray-marching" "emscripten" FullscreenQuad.jpg "FullscreenQuad/FullscreenQuad.cc")
 fips_end_app()

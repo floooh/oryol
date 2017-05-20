@@ -25,7 +25,7 @@ private:
     glm::mat4 computeMVP();
 
     DrawState drawState;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     glm::mat4 proj;
     TimePoint lastFrameTimePoint;
 };
@@ -78,7 +78,7 @@ SensorsApp::OnRunning() {
     
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-    this->vsParams.ModelViewProjection = this->computeMVP();
+    this->vsParams.mvp = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw();
     if (!Input::SensorsAttached()) {

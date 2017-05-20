@@ -36,10 +36,6 @@ public:
     static const int MaxNumTextureArraySlices = 128;
     /// max number of texture mipmaps
     static const int MaxNumTextureMipMaps = 12;
-    /// maximum number of components in uniform block layout
-    static const int MaxNumUniformBlockLayoutComponents = 16;
-    /// maximum number of components in texture block layout
-    static const int MaxNumTextureBlockLayoutComponents = 16;
     /// maximum number of components in vertex layout
     static const int MaxNumVertexLayoutComponents = 16;
     /// maximum number of in-flight frames (not used by all platforms)

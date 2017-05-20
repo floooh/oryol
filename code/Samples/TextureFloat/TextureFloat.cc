@@ -24,7 +24,7 @@ private:
     DrawState copyDrawState;
     glm::mat4 view;
     glm::mat4 proj;
-    OffscreenShader::FSParams offscreenFSParams;
+    OffscreenShader::fsParams offscreenFSParams;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(TextureFloatApp);
@@ -64,13 +64,13 @@ TextureFloatApp::OnInit() {
     ps.BlendState.ColorFormat = rtSetup.ColorFormat;
     ps.BlendState.DepthFormat = rtSetup.DepthFormat;
     this->offscreenDrawState.Pipeline = Gfx::CreateResource(ps);
-    this->offscreenFSParams.Time = 0.0f;
+    this->offscreenFSParams.time = 0.0f;
 
     // fullscreen-copy resources
     Id copyShader = Gfx::CreateResource(CopyShader::Setup());
     ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, copyShader);
     this->copyDrawState.Pipeline = Gfx::CreateResource(ps);
-    this->copyDrawState.FSTexture[Textures::Texture] = rt;
+    this->copyDrawState.FSTexture[CopyShader::tex] = rt;
 
     // setup static transform matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -85,7 +85,7 @@ TextureFloatApp::OnInit() {
 AppState::Code
 TextureFloatApp::OnRunning() {
 
-    this->offscreenFSParams.Time += 1.0f / 60.0f;
+    this->offscreenFSParams.time += 1.0f / 60.0f;
     
     // render plasma to offscreen render target, do not clear
     Gfx::BeginPass(this->renderPass);

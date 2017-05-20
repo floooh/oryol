@@ -1,12 +1,7 @@
 '''
 Python wrapper for metal shader compiler.
 '''
-import subprocess
-import tempfile
-import platform
-import os
-import sys
-import binascii
+import subprocess, os, sys, binascii
 import genutil as util
 
 platform_roots = {
@@ -157,8 +152,9 @@ def writeBinHeader(in_bin, out_hdr, c_name) :
         out_file.write('\n};\n')
 
 #-------------------------------------------------------------------------------
-def validate(platform, lines, outPath, c_name) :
+def compile(lines, base_path, c_name, args) :
    
+    platform = util.getEnv('target_platform')
     if platform != 'ios' and platform != 'osx' :
         return
 
@@ -174,17 +170,12 @@ def validate(platform, lines, outPath, c_name) :
         return
 
     # filenames
-    rootPath = os.path.splitext(outPath)[0]
-    metal_src_path = rootPath + '.metal'
-    metal_dia_path = rootPath + '.dia'
-    metal_air_path = rootPath + '.air'
-    metal_lib_path = rootPath + '.metal-ar'
-    metal_bin_path = rootPath + '.metallib'
-    c_header_path  = rootPath + '.metallib.h'
-
-    # write metal source file
-    with open(metal_src_path, 'w') as f :
-        writeFile(f, lines)
+    metal_src_path = base_path + '.metal'
+    metal_dia_path = base_path + '.dia'
+    metal_air_path = base_path + '.air'
+    metal_lib_path = base_path + '.metal-ar'
+    metal_bin_path = base_path + '.metallib'
+    c_header_path  = base_path + '.metallib.h'
 
     # compile .metal source file
     output = cc(platform, metal_src_path, metal_dia_path, metal_air_path)

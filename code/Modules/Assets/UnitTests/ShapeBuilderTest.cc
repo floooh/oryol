@@ -8,7 +8,7 @@
 #include "Gfx/Core/displayMgr.h"
 #include "Gfx/Core/renderer.h"
 #include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Resource/factory.h"
+#include "Gfx/Resource/gfxFactory.h"
 #include <cstring>
 
 #if ORYOL_OPENGL
@@ -39,8 +39,8 @@ TEST(ShapeBuilderTest) {
     
     // setup a meshFactory object
     renderer.setup(gfxSetup, ptrs);
-    meshFactory factory;
-    factory.Setup(ptrs);
+    gfxFactory factory;
+    factory.setup(ptrs);
     
     // the state builder
     ShapeBuilder shapeBuilder;
@@ -56,7 +56,7 @@ TEST(ShapeBuilderTest) {
     // ...create a mesh from it and verify the mesh
     mesh simpleCube;
     simpleCube.Setup = buildResult.Setup;
-    factory.SetupResource(simpleCube, data, size);
+    factory.initMesh(simpleCube, data, size);
     CHECK(simpleCube.vertexBufferAttrs.NumVertices == 24);
     CHECK(simpleCube.vertexBufferAttrs.Layout.NumComponents() == 1);
     CHECK(simpleCube.vertexBufferAttrs.Layout.ByteSize() == 12);
@@ -75,8 +75,8 @@ TEST(ShapeBuilderTest) {
     CHECK(simpleCube.buffers[mesh::ib].glBuffers[0] != 0);
     #endif
 
-    factory.DestroyResource(simpleCube);
-    factory.Discard();
+    factory.destroyMesh(simpleCube);
+    factory.discard();
     renderer.discard();
     displayManager.DiscardDisplay();
     

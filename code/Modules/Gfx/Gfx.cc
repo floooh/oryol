@@ -466,15 +466,18 @@ Gfx::validateTextures(ShaderStage::Code stage, pipeline* pip, texture** textures
     // check if provided texture types are compatible with the expections shader
     const shader* shd = pip->shd;
     o_assert_dbg(shd);
-    int texBlockIndex = shd->Setup.TextureBlockIndexByStage(stage);
-    o_assert_dbg(InvalidIndex != texBlockIndex);
-    const TextureBlockLayout& layout = shd->Setup.TextureBlockLayout(texBlockIndex);
-    for (int i = 0; i < numTextures; i++) {
-        if (textures[i]) {
-            const auto& texBlockComp = layout.ComponentAt(layout.ComponentIndexForBindSlot(i));
-            if (texBlockComp.Type != textures[i]->textureAttrs.Type) {
-                o_error("Texture type mismatch at slot '%s'\n", texBlockComp.Name.AsCStr());
+    for (int slot = 0; slot < numTextures; slot++) {
+        int index = shd->Setup.TextureIndexByStageAndSlot(stage, slot);
+        if ((InvalidIndex != index) && textures[slot]) {
+            if (textures[slot]->textureAttrs.Type != shd->Setup.TexType(index)) {
+                o_error("Texture type mismatch at slot '%d'!\n", slot);
             }
+        }
+        else if ((InvalidIndex == index) && textures[slot]) {
+            o_warn("Texture applied at slot '%d' which isn't expected by shader.\n", slot);
+        }
+        else if ((InvalidIndex != index) && !textures[slot]) {
+            o_error("No texture applied at slot '%d', but shader expects one!\n", slot);
         }
     }
 }

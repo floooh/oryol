@@ -13,7 +13,7 @@
 #include "Resource/ResourceInfo.h"
 #include "Gfx/Core/GfxTypes.h"
 #include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Resource/factory.h"
+#include "Gfx/Resource/gfxFactory.h"
 #include "Gfx/Core/gfxPointers.h"
 
 namespace Oryol {
@@ -70,11 +70,7 @@ public:
     void destroyResource(const Id& id);
 
     gfxPointers pointers;
-    class meshFactory meshFactory;
-    class shaderFactory shaderFactory;
-    class textureFactory textureFactory;
-    class pipelineFactory pipelineFactory;
-    class renderPassFactory renderPassFactory;
+    gfxFactory factory;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class texturePool texturePool;

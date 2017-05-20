@@ -126,29 +126,34 @@ endif()
 if (ORYOL_OPENGL)
     add_definitions(-DORYOL_OPENGL=1)
     if (ORYOL_OPENGLES2)
+        set(ORYOL_SLANG GLES)
         add_definitions(-DORYOL_OPENGLES2=1)
     endif()
     if (ORYOL_OPENGLES3)
+        set(ORYOL_SLANG GLES)
         add_definitions(-DORYOL_OPENGLES3=1)
     endif()
     if (ORYOL_OPENGL_CORE_PROFILE)
+        set(ORYOL_SLANG GLSL)
         add_definitions(-DORYOL_OPENGL_CORE_PROFILE=1)
     endif()
 endif()
 
 # D3D11 defines
 if (ORYOL_D3D11)
+    set(ORYOL_SLANG HLSL)
     add_definitions(-DORYOL_D3D11=1)
+endif()
+
+# Metal defines
+if (ORYOL_METAL)
+    set(ORYOL_SLANG MSL)
+    add_definitions(-DORYOL_METAL=1)
 endif()
 
 # OpenAL defines
 if (ORYOL_OPENAL)
     add_definitions(-DORYOL_OPENAL=1)
-endif()
-
-# Metal defines
-if (ORYOL_METAL)
-    add_definitions(-DORYOL_METAL=1)
 endif()
 
 # RaspberryPi defines
@@ -189,9 +194,9 @@ endif()
 #
 macro(oryol_shader shd)
     if (ORYOL_DEBUG_SHADERS)
-        set(args "{debug: 'true'}")
+        set(args "{debug: 'true', slang: '${ORYOL_SLANG}'}")
     else()
-        set(args "{debug: 'false'}")
+        set(args "{debug: 'false', slang: '${ORYOL_SLANG}'}")
     endif()
     fips_generate(TYPE Shader FROM ${shd} OUT_OF_SOURCE ARGS ${args})
 endmacro()

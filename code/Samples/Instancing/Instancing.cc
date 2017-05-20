@@ -34,7 +34,7 @@ private:
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 model;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     bool updateEnabled = true;
     int frameCount = 0;
     int curNumParticles = 0;
@@ -45,6 +45,56 @@ private:
     glm::vec4 vectors[MaxNumParticles];
 };
 OryolMain(InstancingApp);
+
+//------------------------------------------------------------------------------
+AppState::Code
+InstancingApp::OnInit() {
+    // setup rendering system
+    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol Instancing Sample"));
+    Dbg::Setup();
+    Input::Setup();
+    
+    // check instancing extension
+    if (!Gfx::QueryFeature(GfxFeature::Instancing)) {
+        o_error("ERROR: instanced_arrays extension required!\n");
+    }
+
+    // create static mesh at mesh slot 0
+    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    ShapeBuilder shapeBuilder;
+    shapeBuilder.RandomColors = true;
+    shapeBuilder.Layout = {
+        { VertexAttr::Position, VertexFormat::Float3 },
+        { VertexAttr::Color0, VertexFormat::Float4 }
+    };
+    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
+    auto shapeBuilderResult = shapeBuilder.Build();
+    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilderResult);
+
+    // create dynamic instance data mesh at mesh slot 1
+    auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
+    instMeshSetup.Layout
+        .EnableInstancing()
+        .Add(VertexAttr::Instance0, VertexFormat::Float4);
+    this->drawState.Mesh[1] = Gfx::CreateResource(instMeshSetup);
+
+    // setup draw state for instanced rendering
+    Id shd = Gfx::CreateResource(Shader::Setup());
+    auto ps = PipelineSetup::FromShader(shd);
+    ps.Layouts[0] = shapeBuilder.Layout;
+    ps.Layouts[1] = instMeshSetup.Layout;
+    ps.RasterizerState.CullFaceEnabled = true;
+    ps.DepthStencilState.DepthWriteEnabled = true;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    
+    // setup projection and view matrices
+    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    
+    return App::OnInit();
+}
 
 //------------------------------------------------------------------------------
 AppState::Code
@@ -102,7 +152,7 @@ InstancingApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
     this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->vsParams.ModelViewProjection = this->proj * this->view * this->model;
+    this->vsParams.mvp = this->proj * this->view * this->model;
 }
 
 //------------------------------------------------------------------------------
@@ -134,56 +184,6 @@ InstancingApp::updateParticles() {
             vec *= 0.8f;
         }
     }
-}
-
-//------------------------------------------------------------------------------
-AppState::Code
-InstancingApp::OnInit() {
-    // setup rendering system
-    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol Instancing Sample"));
-    Dbg::Setup();
-    Input::Setup();
-    
-    // check instancing extension
-    if (!Gfx::QueryFeature(GfxFeature::Instancing)) {
-        o_error("ERROR: instanced_arrays extension required!\n");
-    }
-
-    // create static mesh at mesh slot 0
-    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    auto shapeBuilderResult = shapeBuilder.Build();
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilderResult);
-
-    // create dynamic instance data mesh at mesh slot 1
-    auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
-    instMeshSetup.Layout
-        .EnableInstancing()
-        .Add(VertexAttr::Instance0, VertexFormat::Float4);
-    this->drawState.Mesh[1] = Gfx::CreateResource(instMeshSetup);
-
-    // setup draw state for instanced rendering
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromShader(shd);
-    ps.Layouts[0] = shapeBuilder.Layout;
-    ps.Layouts[1] = instMeshSetup.Layout;
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
-    
-    // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    
-    return App::OnInit();
 }
 
 //------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 fips_begin_app(InfiniteSpheres windowed)
     fips_vs_warning_level(3)
     fips_files(InfiniteSpheres.cc)
-    oryol_shader(shaders.shd)
+    oryol_shader(shaders.glsl)
     fips_deps(Gfx Assets)
     oryol_add_web_sample(InfiniteSpheres "Infinite recursive spheres" "emscripten" InfiniteSpheres.jpg "InfiniteSpheres/InfiniteSpheres.cc")
 fips_end_app()

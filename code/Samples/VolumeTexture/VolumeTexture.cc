@@ -23,7 +23,7 @@ public:
     void computeShaderParams();
 
     DrawState drawState;
-    Shader::VSParams vsParams;
+    Shader::vsParams vsParams;
     int frameIndex = 0;
     glm::mat4 proj;
 };
@@ -65,7 +65,7 @@ VolumeTextureApp::OnInit() {
     texSetup.Sampler.MinFilter = TextureFilterMode::Linear;
     texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
     texSetup.ImageData.Sizes[0][0] = sizeof(data);
-    this->drawState.FSTexture[Textures::Texture] = Gfx::CreateResource(texSetup, data, sizeof(data));
+    this->drawState.FSTexture[Shader::tex] = Gfx::CreateResource(texSetup, data, sizeof(data));
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
     ShapeBuilder shapeBuilder;
@@ -131,8 +131,8 @@ VolumeTextureApp::computeShaderParams() {
     model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 invModel = glm::inverse(model);
-    this->vsParams.ModelViewProj = this->proj * model;
-    this->vsParams.ModelEyePos = invModel * eyePos;
+    this->vsParams.mvp = this->proj * model;
+    this->vsParams.modelEyePos = invModel * eyePos;
 }
 
 //------------------------------------------------------------------------------

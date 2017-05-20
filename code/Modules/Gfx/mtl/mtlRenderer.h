@@ -12,7 +12,6 @@
 #include "Gfx/Resource/resource.h"
 #include "glm/vec4.hpp"
 #include "Gfx/Core/GfxConfig.h"
-#include "Gfx/mtl/mtlReleaseQueue.h"
 #include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
@@ -53,7 +52,7 @@ public:
     /// apply draw state
     void applyDrawState(pipeline* pip, mesh** meshes, int numMeshes);
     /// apply a shader uniform block
-    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
+    void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t typeHash, const uint8_t* ptr, int byteSize);
     /// apply a texture block
     void applyTextures(ShaderStage::Code bindStage, texture** textures, int numTextures);
 
@@ -68,11 +67,7 @@ public:
     void updateIndices(mesh* msh, const void* data, int numBytes);
     /// update texture data
     void updateTexture(texture* tex, const void* data, const ImageDataAttrs& offsetsAndSizes);
-    /// read pixels back from framebuffer, causes a PIPELINE STALL!!!
-    void readPixels(void* buf, int bufNumBytes);
 
-    /// defered-release a render resource
-    void releaseDeferred(ORYOL_OBJC_ID obj);
     /// check if command buffer exists, create if not
     void checkCreateCommandBuffer();
 
@@ -106,9 +101,6 @@ public:
     uint8_t* curUniformBufferPtr;
     int curUniformBufferOffset;
     StaticArray<ORYOL_OBJC_TYPED_ID(MTLBuffer), GfxConfig::MaxInflightFrames> uniformBuffers;
-
-    // deferred-release-queue, release gfx resources when no longer in use by GPU
-    mtlReleaseQueue releaseQueue;
 };
 
 } // namespace _priv

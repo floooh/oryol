@@ -28,8 +28,8 @@ private:
     
     glm::mat4 view;
     glm::mat4 proj;
-    PlaneShader::VSParams planeVSParams;
-    PlasmaShader::FSParams plasmaFSParams;
+    PlaneShader::vsParams planeVSParams;
+    PlasmaShader::fsParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(VertexTextureApp);
@@ -75,13 +75,13 @@ VertexTextureApp::OnInit() {
     psPlane.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     psPlane.RasterizerState.SampleCount = 4;
     this->planeDrawState.Pipeline = Gfx::CreateResource(psPlane);
-    this->planeDrawState.VSTexture[PlaneTextures::Texture] = plasmaTex;
+    this->planeDrawState.VSTexture[PlaneShader::tex] = plasmaTex;
     
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->plasmaFSParams.Time = 0.0f;
+    this->plasmaFSParams.time = 0.0f;
 
     return App::OnInit();
 }
@@ -90,8 +90,8 @@ VertexTextureApp::OnInit() {
 AppState::Code
 VertexTextureApp::OnRunning() {
     
-    this->plasmaFSParams.Time += 1.0f / 60.0f;
-    this->planeVSParams.ModelViewProjection = this->computeMVP(glm::vec2(0.0f, 0.0f));
+    this->plasmaFSParams.time += 1.0f / 60.0f;
+    this->planeVSParams.mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
 
     // render plasma to offscreen render target
     Gfx::BeginPass(this->plasmaRenderPass);

@@ -183,5 +183,22 @@ TEST(VertexAttrTest) {
     CHECK(String(VertexAttr::ToString(VertexAttr::Instance1)) == "instance1");
     CHECK(String(VertexAttr::ToString(VertexAttr::Instance2)) == "instance2");
     CHECK(String(VertexAttr::ToString(VertexAttr::Instance3)) == "instance3");
+
+    CHECK(VertexAttr::FromString("position") == VertexAttr::Position);
+    CHECK(VertexAttr::FromString("normal") == VertexAttr::Normal);
+    CHECK(VertexAttr::FromString("texcoord0") == VertexAttr::TexCoord0);
+    CHECK(VertexAttr::FromString("texcoord1") == VertexAttr::TexCoord1);
+    CHECK(VertexAttr::FromString("texcoord2") == VertexAttr::TexCoord2);
+    CHECK(VertexAttr::FromString("texcoord3") == VertexAttr::TexCoord3);
+    CHECK(VertexAttr::FromString("tangent") == VertexAttr::Tangent);
+    CHECK(VertexAttr::FromString("binormal") == VertexAttr::Binormal);
+    CHECK(VertexAttr::FromString("weights") == VertexAttr::Weights);
+    CHECK(VertexAttr::FromString("indices") == VertexAttr::Indices);
+    CHECK(VertexAttr::FromString("color0") == VertexAttr::Color0);
+    CHECK(VertexAttr::FromString("color1") == VertexAttr::Color1);
+    CHECK(VertexAttr::FromString("instance0") == VertexAttr::Instance0);
+    CHECK(VertexAttr::FromString("instance1") == VertexAttr::Instance1);
+    CHECK(VertexAttr::FromString("instance2") == VertexAttr::Instance2);
+    CHECK(VertexAttr::FromString("instance3") == VertexAttr::Instance3);    
 }
 

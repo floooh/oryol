@@ -348,6 +348,8 @@ public:
 
     /// convert to string
     static const char* ToString(Code c);
+    /// convert from string
+    static Code FromString(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -399,7 +401,6 @@ class ShaderLang {
 public:
     enum Code {
         GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
-        GLSL120,        ///< OpenGL 2.1
         GLSL330,        ///< OpenGL 3.3
         GLSLES3,        ///< OpenGLES3
         HLSL5,          ///< D3D11 HLSL
@@ -570,32 +571,6 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::UniformType
-    @ingroup Gfx
-    @brief shader uniform types
-*/
-class UniformType {
-public:
-    enum Code : uint8_t {
-        Float = 0,
-        Vec2,
-        Vec3,
-        Vec4,
-        Mat2,
-        Mat3,
-        Mat4,
-        Int,
-        Bool,
-
-        NumUniformTypes,
-        InvalidUniformType,
-    };
-    /// get the byte size of a uniform type, see GL std140 layout spec for details
-    static int ByteSize(Code c, int numElements);
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::VertexStepFunction
     @ingroup Gfx
     @brief classify vertices in a buffer as per-vertex or per-instance data
@@ -627,9 +602,7 @@ public:
     /// construct for indexed or non-indexed
     PrimitiveGroup(int baseElement, int numElements) :
         BaseElement(baseElement),
-        NumElements(numElements) {
-        // empty
-    }
+        NumElements(numElements) { }
 };
 
 //------------------------------------------------------------------------------
@@ -978,99 +951,6 @@ private:
     StaticArray<int8_t, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
     int8_t numComps = 0;
     uint8_t byteSize = 0;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::TextureBlockLayout
-    @ingroup Gfx
-    @brief describes the name, type and bindSlot of a group of related textures
-*/
-class TextureBlockLayout {
-public:
-    /// a TextureBlockLayout component describes a single texture entry
-    class Component {
-    public:
-        /// default constructor
-        Component() {};
-        /// construct from name, type and bindSlot
-        Component(const StringAtom& name, TextureType::Code type, int bindSlot);
-        /// return true if the component is valid
-        bool IsValid() const;
-
-        StringAtom Name; 
-        TextureType::Code Type = TextureType::InvalidTextureType;
-        int BindSlot = InvalidIndex;
-    };
-    /// clear the texture layout
-    void Clear();
-    /// return true if the layout is empty
-    bool Empty() const;
-    /// add a component to the layout
-    TextureBlockLayout& Add(const Component& comp);
-    /// add a component to the layout
-    TextureBlockLayout& Add(const StringAtom& name, TextureType::Code type, int bindSlot);
-    /// get number of components in the layout
-    int NumComponents() const;
-    /// find component index with matching bind slot, InvalidIndex if not match
-    int ComponentIndexForBindSlot(int bindSlot) const;
-    /// get component at index
-    const Component& ComponentAt(int index) const;
-private:
-    int numComps = 0;
-    StaticArray<Component, GfxConfig::MaxNumTextureBlockLayoutComponents> comps;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::UniformBlockLayout
-    @ingroup Gfx
-    @brief describes the layout of an uniform block
-
-    A UniformBlockLayout describes the names and types of a group of
-    related shader uniforms.
-*/
-class UniformBlockLayout {
-public:
-    /// a UniformBlockLayout component describes a single uniform in the uniform block
-    class Component {
-    public:
-        /// default constructor
-        Component() {}
-        /// construct from name, type and number
-        Component(const StringAtom& name, UniformType::Code type, int num=1);
-        /// return true if the component is valid
-        bool IsValid() const;
-        /// compute the byte size of the component
-        int ByteSize() const;
-
-        StringAtom Name; 
-        UniformType::Code Type = UniformType::InvalidUniformType;
-        int Num = 1;
-    };
-    /// a layout type hash, this is used for runtime type checking in Gfx::ApplyUniformBlock
-    uint32_t TypeHash = 0;
-    /// clear the uniform layout
-    void Clear();
-    /// return true if the layout is empty
-    bool Empty() const;
-    /// add a uniform component to the layout
-    UniformBlockLayout& Add(const Component& comp);
-    /// add a scalar uniform component to the layout
-    UniformBlockLayout& Add(const StringAtom& name, UniformType::Code type, int numElements=1);
-    /// get number of components in the layout
-    int NumComponents() const;
-    /// get component at index
-    const Component& ComponentAt(int componentIndex) const;
-    /// get the overall byte size of the uniform layout
-    int ByteSize() const;
-    /// get byte offset of a component
-    int ComponentByteOffset(int componentIndex) const;
-private:
-    int numComps = 0;
-    int byteSize = 0;
-    StaticArray<Component, GfxConfig::MaxNumUniformBlockLayoutComponents> comps;
-    StaticArray<int, GfxConfig::MaxNumUniformBlockLayoutComponents> byteOffsets;
 };
 
 //------------------------------------------------------------------------------
@@ -1429,19 +1309,13 @@ public:
     /// set shader program from vertex- and fragment-shader sources
     void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// set shader program from precompiled shader byte code
-    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes);
-    /// set shader program from a metal-style shader library
-    void SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc);
+    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc=nullptr, const char* fsFunc=nullptr);
     /// set vertex shader input layout
     void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
-    void AddUniformBlock(const StringAtom& name, const UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot);
-    /// add a texture block
-    void AddTextureBlock(const StringAtom& name, const TextureBlockLayout& layout, ShaderStage::Code bindStage);
-    /// set metal-style library byte code
-    void SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes);
-    /// get metal-style library byte code
-    void LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
+    void AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot);
+    /// add a texture declaration
+    void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
     /// get the vertex shader input layout
     const VertexLayout& InputLayout() const;
     /// get program vertex shader source (only valid if setup from sources)
@@ -1453,37 +1327,43 @@ public:
     /// get program fragment shader byte code, returns nullptr if no byte code exists
     void FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
     /// get vertex shader name (if using metal-style shader library
-    const String& VertexShaderFunc(ShaderLang::Code slang) const;
+    const StringAtom& VertexShaderFunc(ShaderLang::Code slang) const;
     /// get fragment shader name (if using metal-style shader library
-    const String& FragmentShaderFunc(ShaderLang::Code slang) const;
+    const StringAtom& FragmentShaderFunc(ShaderLang::Code slang) const;
     /// get number of uniform blocks
     int NumUniformBlocks() const;
     /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
     int UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
+    /// get uniform block type at index
+    const StringAtom& UniformBlockType(int index) const;
     /// get uniform block name at index
     const StringAtom& UniformBlockName(int index) const;
-    /// get uniform block layout at index
-    const class UniformBlockLayout& UniformBlockLayout(int index) const;
+    /// get uniform block type hash
+    uint32_t UniformBlockTypeHash(int index) const;
+    /// get uniform block byte size
+    uint32_t UniformBlockByteSize(int index) const;
     /// get uniform block shader stage at index
     ShaderStage::Code UniformBlockBindStage(int index) const;
     /// get uniform block bind slot at index
     int UniformBlockBindSlot(int index) const;
-    /// get number of texture blocks
-    int NumTextureBlocks() const;
-    /// find texture block index by bind stage (return InvalidIndex if not found)
-    int TextureBlockIndexByStage(ShaderStage::Code bindStage) const;
-    /// get texture block name at index
-    const StringAtom& TextureBlockName(int index) const;
-    /// get texture block layout at index
-    const class TextureBlockLayout& TextureBlockLayout(int index) const;
-    /// get texture block shader stage at index
-    ShaderStage::Code TextureBlockBindStage(int index) const;
+    /// get number of textures
+    int NumTextures() const;
+    /// find texture index by bind stage and slot (return InvalidIndex if not found)
+    int TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
+    /// get texture name at index
+    const StringAtom& TexName(int index) const;
+    /// get texture type at index 
+    TextureType::Code TexType(int index) const;
+    /// get texture bind stage
+    ShaderStage::Code TexBindStage(int index) const;
+    /// get texture bind slot
+    int TexBindSlot(int index) const;
 private:
     struct programEntry {
         StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
         StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
-        StaticArray<String, ShaderLang::NumShaderLangs> vsFuncs;
-        StaticArray<String, ShaderLang::NumShaderLangs> fsFuncs;
+        StaticArray<StringAtom, ShaderLang::NumShaderLangs> vsFuncs;
+        StaticArray<StringAtom, ShaderLang::NumShaderLangs> fsFuncs;
         struct byteCodeEntry {
             const void* ptr = nullptr;
             uint32_t size = 0;
@@ -1493,24 +1373,26 @@ private:
         VertexLayout vsInputLayout;
     };
     struct uniformBlockEntry {
+        StringAtom type;
         StringAtom name;
-        class UniformBlockLayout layout;
+        uint32_t typeHash = 0;
+        uint32_t byteSize = 0;
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
         int bindSlot = InvalidIndex;
     };
-    struct textureBlockEntry {
+    struct textureEntry {
         StringAtom name;
-        class TextureBlockLayout layout;
+        TextureType::Code type = TextureType::InvalidTextureType;
         ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+        int bindSlot = InvalidIndex;
     };
     static const int MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
-    int libraryByteCodeSize = 0;
-    const void* libraryByteCode = nullptr;
+    static const int MaxNumTextures = GfxConfig::MaxNumVertexTextures + GfxConfig::MaxNumFragmentTextures;
     programEntry program;
     int numUniformBlocks = 0;
     StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;
-    int numTextureBlocks = 0;
-    StaticArray<textureBlockEntry, ShaderStage::NumShaderStages> textureBlocks;
+    int numTextures = 0;
+    StaticArray<textureEntry, MaxNumTextures> textures;
 };
 
 //------------------------------------------------------------------------------

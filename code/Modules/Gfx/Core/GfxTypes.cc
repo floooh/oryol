@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "GfxTypes.h"
+#include <cstring>
 
 namespace Oryol {
 
@@ -355,6 +356,29 @@ const char* VertexAttr::ToString(Code c) {
 }
 
 //------------------------------------------------------------------------------
+VertexAttr::Code VertexAttr::FromString(const char* str) {
+    if (str) {
+        if (0 == std::strcmp("position", str)) return Position;
+        else if (0 == std::strcmp("normal", str)) return Normal;
+        else if (0 == std::strcmp("texcoord0", str)) return TexCoord0;
+        else if (0 == std::strcmp("texcoord1", str)) return TexCoord1;
+        else if (0 == std::strcmp("texcoord2", str)) return TexCoord2;
+        else if (0 == std::strcmp("texcoord3", str)) return TexCoord3;
+        else if (0 == std::strcmp("tangent", str)) return Tangent;
+        else if (0 == std::strcmp("binormal", str)) return Binormal;
+        else if (0 == std::strcmp("weights", str)) return Weights;
+        else if (0 == std::strcmp("indices", str)) return Indices;
+        else if (0 == std::strcmp("color0", str)) return Color0;
+        else if (0 == std::strcmp("color1", str)) return Color1;
+        else if (0 == std::strcmp("instance0", str)) return Instance0;
+        else if (0 == std::strcmp("instance1", str)) return Instance1;
+        else if (0 == std::strcmp("instance2", str)) return Instance2;
+        else if (0 == std::strcmp("instance3", str)) return Instance3;
+    }
+    return InvalidVertexAttr;
+}
+
+//------------------------------------------------------------------------------
 int VertexFormat::ByteSize(Code c) {
     switch (c) {
         case Float:
@@ -401,24 +425,6 @@ const char* VertexFormat::ToString(Code c) {
         default:
             o_error("VertexFormat::ToString(): invalid value!\n");
             return nullptr;
-    }
-}
-
-//------------------------------------------------------------------------------
-int UniformType::ByteSize(Code c, int numElements) {
-    switch (c) {
-        case Float:     return numElements * sizeof(float);
-        case Vec2:      return numElements * 2 * sizeof(float);
-        case Vec3:      return numElements * 4 * sizeof(float); // NOT A BUG
-        case Vec4:      return numElements * 4 * sizeof(float);
-        case Mat2:      return numElements * 2 * 2 * sizeof(float);
-        case Mat3:      return numElements * 3 * 3 * sizeof(float); // FIXME!
-        case Mat4:      return numElements * 4 * 4 * sizeof(float);
-        case Int:       return numElements * sizeof(int);
-        case Bool:      return numElements * sizeof(int);
-        default:
-            o_error("invalid scalar uniform type code!\n");
-            return 0;
     }
 }
 
@@ -694,123 +700,6 @@ bool VertexLayout::Contains(VertexAttr::Code attr) const {
 }
 
 //------------------------------------------------------------------------------
-TextureBlockLayout::Component::Component(const StringAtom& name, TextureType::Code type, int bindSlot) :
-    Name(name), Type(type), BindSlot(bindSlot) 
-{ }
-
-//------------------------------------------------------------------------------
-bool TextureBlockLayout::Component::IsValid() const {
-    return this->Name.IsValid();
-}
-
-//------------------------------------------------------------------------------
-void TextureBlockLayout::Clear() {
-    this->comps.Fill(Component());
-    this->numComps = 0;
-}
-    
-//------------------------------------------------------------------------------
-bool TextureBlockLayout::Empty() const {
-    return 0 == this->numComps;
-}
-
-//------------------------------------------------------------------------------
-TextureBlockLayout& TextureBlockLayout::Add(const Component& comp) {
-    this->comps[this->numComps++] = comp;
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-TextureBlockLayout& TextureBlockLayout::Add(const StringAtom& name, TextureType::Code type, int bindSlot) {
-    this->comps[this->numComps++] = Component(name, type, bindSlot);
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-int TextureBlockLayout::NumComponents() const {
-    return this->numComps;
-}
-
-//------------------------------------------------------------------------------
-int TextureBlockLayout::ComponentIndexForBindSlot(int bindSlot) const {
-    for (int i = 0; i < this->numComps; i++) {
-        if (this->comps[i].BindSlot == bindSlot) {
-            return i;
-        }
-    }
-    return InvalidIndex;
-}
-
-//------------------------------------------------------------------------------
-const TextureBlockLayout::Component& TextureBlockLayout::ComponentAt(int index) const {
-    return this->comps[index];
-}
-
-//------------------------------------------------------------------------------
-UniformBlockLayout::Component::Component(const StringAtom& name, UniformType::Code type, int num):
-    Name(name), Type(type), Num(num) {
-    o_assert_dbg(this->Name.IsValid());
-    o_assert_dbg(this->Type < UniformType::NumUniformTypes);
-}
-
-//------------------------------------------------------------------------------
-bool UniformBlockLayout::Component::IsValid() const {
-    return this->Name.IsValid();
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::Component::ByteSize() const {
-    return UniformType::ByteSize(this->Type, this->Num);
-}
-
-//------------------------------------------------------------------------------
-void UniformBlockLayout::Clear() {
-    this->comps.Fill(Component());
-    this->byteOffsets.Fill(0);
-    this->numComps = 0;
-    this->byteSize = 0;
-}
-
-//------------------------------------------------------------------------------
-bool UniformBlockLayout::Empty() const {
-    return 0 == this->numComps;
-}
-
-//------------------------------------------------------------------------------
-UniformBlockLayout& UniformBlockLayout::Add(const Component& comp) {
-    this->comps[this->numComps] = comp;
-    this->byteOffsets[this->numComps] = this->byteSize;
-    this->byteSize += comp.ByteSize();
-    this->numComps++;
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-UniformBlockLayout& UniformBlockLayout::Add(const StringAtom& name, UniformType::Code type, int numElements) {
-    return this->Add(Component(name, type, numElements));
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::NumComponents() const {
-    return this->numComps;
-}
-
-//------------------------------------------------------------------------------
-const UniformBlockLayout::Component& UniformBlockLayout::ComponentAt(int componentIndex) const {
-    return this->comps[componentIndex];
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::ByteSize() const {
-    return this->byteSize;
-}
-
-//------------------------------------------------------------------------------
-int UniformBlockLayout::ComponentByteOffset(int componentIndex) const {
-    return this->byteOffsets[componentIndex];
-}
-
-//------------------------------------------------------------------------------
 DisplayAttrs DisplayAttrs::FromTextureAttrs(const TextureAttrs& texAttrs) {
     DisplayAttrs dispAttrs;
     dispAttrs.WindowWidth = texAttrs.Width;
@@ -1043,21 +932,25 @@ void ShaderSetup::SetProgramFromSources(ShaderLang::Code slang, const String& vs
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes) {
+void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc, const char* fsFunc) {
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
     this->program.vsByteCode[slang].ptr = vsByteCode;
     this->program.vsByteCode[slang].size = vsNumBytes;
     this->program.fsByteCode[slang].ptr = fsByteCode;
     this->program.fsByteCode[slang].size = fsNumBytes;
-}
-
-//------------------------------------------------------------------------------
-void ShaderSetup::SetProgramFromLibrary(ShaderLang::Code slang, const char* vsFunc, const char* fsFunc) {
-    o_assert_dbg(ShaderLang::Metal == slang);
-    o_assert_dbg(vsFunc && fsFunc);
-    this->program.vsFuncs[slang] = vsFunc;
-    this->program.fsFuncs[slang] = fsFunc;
+    if (vsFunc) {
+        this->program.vsFuncs[slang] = vsFunc;
+    }
+    else {
+        this->program.vsFuncs[slang].Clear();
+    }
+    if (fsFunc) {
+        this->program.fsFuncs[slang] = fsFunc;
+    }
+    else {
+        this->program.fsFuncs[slang].Clear();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1066,41 +959,27 @@ void ShaderSetup::SetInputLayout(const VertexLayout& vsInputLayout) {
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddUniformBlock(const StringAtom& name, const class UniformBlockLayout& layout, ShaderStage::Code bindStage, int32_t bindSlot) {
-    o_assert_dbg(name.IsValid());
-    o_assert_dbg(!layout.Empty());
-    o_assert_dbg(0 != layout.TypeHash);
+void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
+    o_assert_dbg(type.IsValid());
     o_assert_dbg(bindSlot >= 0);
     uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
+    entry.type = type;
     entry.name = name;
-    entry.layout = layout;
+    entry.typeHash = typeHash;
+    entry.byteSize = byteSize;
     entry.bindStage = bindStage;
     entry.bindSlot = bindSlot;
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddTextureBlock(const StringAtom& name, const class TextureBlockLayout& layout, ShaderStage::Code bindStage) {
+void ShaderSetup::AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(name.IsValid());
-    textureBlockEntry& entry = this->textureBlocks[this->numTextureBlocks++];
+    o_assert_dbg(bindSlot >= 0);
+    textureEntry& entry = this->textures[this->numTextures++];
     entry.name = name;
-    entry.layout = layout;
+    entry.type = type;
     entry.bindStage = bindStage;
-}
-
-//------------------------------------------------------------------------------
-void ShaderSetup::SetLibraryByteCode(ShaderLang::Code slang, const uint8_t* byteCode, uint32_t numBytes) {
-    o_assert_dbg(ShaderLang::Metal == slang);
-    o_assert_dbg(nullptr != byteCode);
-    o_assert_dbg(numBytes > 0);
-    this->libraryByteCode = byteCode;
-    this->libraryByteCodeSize = numBytes;
-}
-
-//------------------------------------------------------------------------------
-void ShaderSetup::LibraryByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-    o_assert_dbg(ShaderLang::Metal == slang);
-    outPtr = this->libraryByteCode;
-    outSize = this->libraryByteCodeSize;
+    entry.bindSlot = bindSlot;
 }
 
 //------------------------------------------------------------------------------
@@ -1131,13 +1010,13 @@ void ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& ou
 }
 
 //------------------------------------------------------------------------------
-const String& ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
+const StringAtom& ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
     o_assert_dbg(ShaderLang::Metal == slang);
     return this->program.vsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------
-const String& ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
+const StringAtom& ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
     o_assert_dbg(ShaderLang::Metal == slang);
     return this->program.fsFuncs[slang];
 }
@@ -1164,8 +1043,18 @@ const StringAtom& ShaderSetup::UniformBlockName(int index) const {
 }
 
 //------------------------------------------------------------------------------
-const class UniformBlockLayout& ShaderSetup::UniformBlockLayout(int index) const {
-    return this->uniformBlocks[index].layout;
+const StringAtom& ShaderSetup::UniformBlockType(int index) const {
+    return this->uniformBlocks[index].type;
+}
+
+//------------------------------------------------------------------------------
+uint32_t ShaderSetup::UniformBlockTypeHash(int index) const {
+    return this->uniformBlocks[index].typeHash;
+}
+
+//------------------------------------------------------------------------------
+uint32_t ShaderSetup::UniformBlockByteSize(int index) const {
+    return this->uniformBlocks[index].byteSize;
 }
 
 //------------------------------------------------------------------------------
@@ -1179,15 +1068,15 @@ int ShaderSetup::UniformBlockBindSlot(int index) const {
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::NumTextureBlocks() const {
-    return this->numTextureBlocks;
+int ShaderSetup::NumTextures() const {
+    return this->numTextures;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
-    for (int i = 0; i < this->numTextureBlocks; i++) {
-        const auto& entry = this->textureBlocks[i];
-        if (entry.bindStage == bindStage) {
+int ShaderSetup::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
+    for (int i = 0; i < this->numTextures; i++) {
+        const auto& entry = this->textures[i];
+        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
             return i;
         }
     }
@@ -1195,18 +1084,23 @@ int ShaderSetup::TextureBlockIndexByStage(ShaderStage::Code bindStage) const {
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::TextureBlockName(int index) const {
-    return this->textureBlocks[index].name;
+const StringAtom& ShaderSetup::TexName(int index) const {
+    return this->textures[index].name;
 }
 
 //------------------------------------------------------------------------------
-const class TextureBlockLayout& ShaderSetup::TextureBlockLayout(int index) const {
-    return this->textureBlocks[index].layout;
+TextureType::Code ShaderSetup::TexType(int index) const {
+    return this->textures[index].type;
 }
 
 //------------------------------------------------------------------------------
-ShaderStage::Code ShaderSetup::TextureBlockBindStage(int index) const {
-    return this->textureBlocks[index].bindStage;
+ShaderStage::Code ShaderSetup::TexBindStage(int index) const {
+    return this->textures[index].bindStage;
+}
+
+//------------------------------------------------------------------------------
+int ShaderSetup::TexBindSlot(int index) const {
+    return this->textures[index].bindSlot;
 }
 
 //------------------------------------------------------------------------------

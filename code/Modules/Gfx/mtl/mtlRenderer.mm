@@ -46,7 +46,6 @@ mtlRenderer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     this->valid = true;
     this->pointers = ptrs;
     this->gfxSetup = setup;
-    this->releaseQueue.setup();
 
     // frame-sync semaphore
     mtlInflightSemaphore = dispatch_semaphore_create(GfxConfig::MaxInflightFrames);
@@ -77,7 +76,6 @@ mtlRenderer::discard() {
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
         this->uniformBuffers[i] = nil;
     }
-    this->releaseQueue.discard();
     this->commandQueue = nil;
     this->mtlDevice = nil;
     this->pointers = gfxPointers();
@@ -223,8 +221,6 @@ mtlRenderer::checkCreateCommandBuffer() {
     if (nil == this->curCommandBuffer) {
         // block until the oldest frame in flight has finished
         dispatch_semaphore_wait(mtlInflightSemaphore, DISPATCH_TIME_FOREVER);
-        // safely destroy released GPU resources
-        this->releaseQueue.garbageCollect(this->frameIndex);
         // get a new command buffer
         this->curCommandBuffer = [this->commandQueue commandBufferWithUnretainedReferences];
     }
@@ -423,7 +419,7 @@ mtlRenderer::applyDrawState(pipeline* pip, mesh** meshes, int numMeshes) {
 
 //------------------------------------------------------------------------------
 void
-mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t typeHash, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(this->valid);
     if (nil == this->curRenderCmdEncoder) {
         return;
@@ -437,10 +433,12 @@ mtlRenderer::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32
     shader* shd = this->curPipeline->shd;
     o_assert_dbg(shd);
     int ubIndex = shd->Setup.UniformBlockIndexByStageAndSlot(bindStage, bindSlot);
-    const UniformBlockLayout& layout = shd->Setup.UniformBlockLayout(ubIndex);
-    o_assert2_dbg(layout.TypeHash == layoutHash, "incompatible uniform block!\n");
-    o_assert_dbg(byteSize == layout.ByteSize());
-    o_assert2_dbg((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
+    o_assert(InvalidIndex != ubIndex);
+    const uint32_t ubTypeHash = shd->Setup.UniformBlockTypeHash(ubIndex);
+    const int ubByteSize = shd->Setup.UniformBlockByteSize(ubIndex);
+    o_assert(ubTypeHash == typeHash);
+    o_assert(ubByteSize >= byteSize);
+     o_assert2_dbg((this->curUniformBufferOffset + byteSize) <= this->gfxSetup.GlobalUniformBufferSize, "Global uniform buffer exhausted!\n");
     o_assert_dbg((this->curUniformBufferOffset & (MtlUniformAlignment-1)) == 0);
     #endif
 
@@ -651,20 +649,6 @@ mtlRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs&
             bytesPerRow:bytesPerRow
             bytesPerImage:0];
     }
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::readPixels(void* buf, int bufNumBytes) {
-    o_assert_dbg(this->valid);
-    o_warn("mtlRenderer::readPixels()\n");
-}
-
-//------------------------------------------------------------------------------
-void
-mtlRenderer::releaseDeferred(ORYOL_OBJC_ID obj) {
-    o_assert_dbg(nil != obj);
-    this->releaseQueue.releaseDeferred(this->frameIndex, obj);
 }
 
 } // namespace _priv
