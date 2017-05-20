@@ -166,7 +166,12 @@ TestInputApp::printMouseState() {
         this->testMouseButton(MouseButton::Left, "LMB");
         this->testMouseButton(MouseButton::Middle, "MMB");
         this->testMouseButton(MouseButton::Right, "RMB");
-        Dbg::TextColor(this->pointerLock ? this->pressedColor : this->defaultColor);
+        if (this->pointerLock) {
+            Dbg::TextColor(this->pressedColor);
+        }
+        else {
+            Dbg::TextColor(this->defaultColor);
+        }
         Dbg::PrintF(" POINTERLOCK");
 
         Dbg::TextColor(1.0f, 1.0f, 1.0f, 1.0f);
