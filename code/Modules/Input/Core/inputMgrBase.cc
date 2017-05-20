@@ -8,8 +8,7 @@ namespace Oryol {
 namespace _priv {
     
 //------------------------------------------------------------------------------
-inputMgrBase::inputMgrBase() :
-valid(false) {
+inputMgrBase::inputMgrBase() {
     this->keyboard.dispatcher = &this->dispatcher;
     this->mouse.dispatcher = &this->dispatcher;
     this->touchpad.dispatcher = &this->dispatcher;
@@ -63,12 +62,6 @@ inputMgrBase::reset() {
             this->gamepad[i].reset();
         }
     }    
-}
-
-//------------------------------------------------------------------------------
-const InputSetup&
-inputMgrBase::getInputSetup() const {
-    return this->inputSetup;
 }
 
 //------------------------------------------------------------------------------

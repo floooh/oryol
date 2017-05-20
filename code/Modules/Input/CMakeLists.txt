@@ -6,26 +6,12 @@ fips_begin_module(Input)
     fips_files(Input.cc Input.h)
     fips_dir(Core)
     fips_files(
-        InputSetup.h 
-        InputEnums.h InputEvent.h
-        GamepadMapping.h
-        Key.cc Key.h
+        InputTypes.h InputTypes.cc
+        gestureDetectors.h gestureDetectors.cc
         inputDispatcher.cc inputDispatcher.h
-        gamepadDevice.h
-        keyboardDevice.cc keyboardDevice.h
-        mouseDevice.cc mouseDevice.h
-        sensorDevice.h
-        touchpadDevice.cc touchpadDevice.h
+        inputDevices.h inputDevices.cc
         inputMgrBase.h inputMgrBase.cc
         inputMgr.h
-    )
-    fips_dir(touch)
-    fips_files(
-        gestureState.h
-        panDetector.cc panDetector.h
-        pinchDetector.cc pinchDetector.h
-        tapDetector.cc tapDetector.h
-        touchEvent.cc touchEvent.h
     )
     if (FIPS_ANDROID)
         fips_dir(android)
