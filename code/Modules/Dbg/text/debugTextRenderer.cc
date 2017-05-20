@@ -20,9 +20,7 @@ namespace _priv {
 extern const char *kc85_4_Font;
 
 //------------------------------------------------------------------------------
-debugTextRenderer::debugTextRenderer() :
-textScale(1.0f, 1.0f),
-valid(false) {
+debugTextRenderer::debugTextRenderer() {
     // NOTE: text rendering will be setup lazily when the text rendering
     // method is called first
     this->stringBuilder.Reserve(MaxNumChars * 2);
@@ -33,18 +31,6 @@ debugTextRenderer::~debugTextRenderer() {
     if (this->valid) {
         this->discard();
     }
-}
-
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setTextScale(const glm::vec2& s) {
-    this->textScale = s;
-}
-
-//------------------------------------------------------------------------------
-const glm::vec2&
-debugTextRenderer::getTextScale() const {
-    return this->textScale;
 }
 
 //------------------------------------------------------------------------------
@@ -99,14 +85,14 @@ debugTextRenderer::cursorPos(uint8_t x, uint8_t y) {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::textColor(const glm::vec4& color) {
+debugTextRenderer::textColor(float r, float g, float b, float a) {
     SCOPED_LOCK;
     this->stringBuilder.Append(0x1B);   // start ESC control sequence
     this->stringBuilder.Append(0x02);   // set color
-    this->stringBuilder.Append((char) (color.x * 255.0f));
-    this->stringBuilder.Append((char) (color.y * 255.0f));
-    this->stringBuilder.Append((char) (color.z * 255.0f));
-    this->stringBuilder.Append((char) (color.w * 255.0f));
+    this->stringBuilder.Append((char) (r * 255.0f));
+    this->stringBuilder.Append((char) (g * 255.0f));
+    this->stringBuilder.Append((char) (b * 255.0f));
+    this->stringBuilder.Append((char) (a * 255.0f));
 }
 
 //------------------------------------------------------------------------------
@@ -138,7 +124,7 @@ debugTextRenderer::drawTextBuffer() {
         DbgTextShader::vsParams vsParams;
         const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
-        vsParams.glyphSize = glm::vec2(w * 2.0f, h * 2.0f) * this->textScale;
+        vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
 
         Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);

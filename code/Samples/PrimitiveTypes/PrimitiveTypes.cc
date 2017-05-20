@@ -270,15 +270,15 @@ PrimitiveTypesApp::OnRunning() {
     }
 
     // print help- and status-text
-    Dbg::TextColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    Dbg::TextColor(0.0f, 1.0f, 0.0f, 1.0f);
     Dbg::PrintF("\n Point Size (left/right key to change): %d\n\r", int(this->params.psize));
     Dbg::Print(" Keys 1..5, left mouse button, or touch-tap to change primitive type\n\n\r");
     for (int i = 0; i < int(PrimitiveType::NumPrimitiveTypes); i++) {
         if (i == this->curPrimType) {
-            Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+            Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         }
         else {
-            Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+            Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
         }
         Dbg::PrintF("\n\r %d: %s", i+1, PrimitiveType::ToString(PrimitiveType::Code(i)));
     }

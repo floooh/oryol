@@ -4,11 +4,15 @@
 #include "Pre.h"
 #include "Dbg.h"
 #include "Core/Trace.h"
+#include "Dbg/text/debugTextRenderer.h"
 #include <cstdarg>
 
 namespace Oryol {
 
-struct Dbg::_state* Dbg::state = nullptr;
+struct _state {
+    class _priv::debugTextRenderer debugTextRenderer;
+};
+static _state* state = nullptr;
 
 //------------------------------------------------------------------------------
 void
@@ -36,16 +40,10 @@ Dbg::IsValid() {
 
 //------------------------------------------------------------------------------
 void
-Dbg::SetTextScale(const glm::vec2& s) {
+Dbg::TextScale(float x, float y) {
     o_assert_dbg(IsValid());
-    state->debugTextRenderer.setTextScale(s);
-}
-
-//------------------------------------------------------------------------------
-const glm::vec2&
-Dbg::GetTextScale() {
-    o_assert_dbg(IsValid());
-    return state->debugTextRenderer.getTextScale();
+    state->debugTextRenderer.textScaleX = x;
+    state->debugTextRenderer.textScaleY = y;
 }
 
 //------------------------------------------------------------------------------
@@ -74,11 +72,17 @@ Dbg::CursorPos(uint8_t x, uint8_t y) {
 
 //------------------------------------------------------------------------------
 void
-Dbg::TextColor(const glm::vec4& c) {
+Dbg::TextColor(float r, float g, float b, float a) {
     o_assert_dbg(IsValid());
-    state->debugTextRenderer.textColor(c);
+    state->debugTextRenderer.textColor(r, g, b, a);
 }
 
+//------------------------------------------------------------------------------
+void
+Dbg::TextColor(const float (&c)[4]) {
+    o_assert_dbg(IsValid());
+    state->debugTextRenderer.textColor(c[0], c[1], c[2], c[3]);
+}
 //------------------------------------------------------------------------------
 void
 Dbg::DrawTextBuffer() {

@@ -39,10 +39,10 @@ private:
     void handleTouchInput();
     void handleGamepadInput(int gamepadIndex);
     
-    const glm::vec4 downColor{1.0f, 0.0f, 0.0f, 1.0f};
-    const glm::vec4 upColor{0.0f, 0.0f, 1.0f, 1.0f};
-    const glm::vec4 pressedColor{0.0f, 1.0f, 0.0f, 1.0f};
-    const glm::vec4 defaultColor{1.0f, 1.0f, 1.0f, 0.5f};
+    const float downColor[4]{1.0f, 0.0f, 0.0f, 1.0f};
+    const float upColor[4]{0.0f, 0.0f, 1.0f, 1.0f};
+    const float pressedColor[4]{0.0f, 1.0f, 0.0f, 1.0f};
+    const float defaultColor[4]{1.0f, 1.0f, 1.0f, 0.5f};
     float minLatitude;
     float maxLatitude;
     float minDist;
@@ -72,7 +72,7 @@ TestInputApp::OnInit() {
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
     if (Gfx::DisplayAttrs().WindowWidth > 800) {
-        Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+        Dbg::TextScale(2.0f, 2.0f);
     }
 
     Input::Setup();
@@ -131,11 +131,10 @@ TestInputApp::updateView() {
 void
 TestInputApp::testMouseButton(MouseButton::Code btn, const char* name) {
     glm::vec4 color;
-    if (Input::MouseButtonDown(btn)) color = this->downColor;
-    else if (Input::MouseButtonUp(btn)) color = this->upColor;
-    else if (Input::MouseButtonPressed(btn)) color = this->pressedColor;
-    else color = this->defaultColor;
-    Dbg::TextColor(color);
+    if (Input::MouseButtonDown(btn)) Dbg::TextColor(this->downColor);
+    else if (Input::MouseButtonUp(btn)) Dbg::TextColor(this->upColor);
+    else if (Input::MouseButtonPressed(btn)) Dbg::TextColor(this->pressedColor);
+    else Dbg::TextColor(this->defaultColor);
     Dbg::PrintF(" %s", name);
 }
 
@@ -161,7 +160,7 @@ TestInputApp::testKey(Key::Code key, const char* name) {
 void
 TestInputApp::printMouseState() {
     if (Input::MouseAttached()) {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n MOUSE STATUS (LMB for pointerlock):\n\n\r");
         
         this->testMouseButton(MouseButton::Left, "LMB");
@@ -170,14 +169,14 @@ TestInputApp::printMouseState() {
         Dbg::TextColor(this->pointerLock ? this->pressedColor : this->defaultColor);
         Dbg::PrintF(" POINTERLOCK");
 
-        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::TextColor(1.0f, 1.0f, 1.0f, 1.0f);
         Dbg::PrintF("\n\r pos: %.3f %.3f\n\r mov: %.3f %.3f\n\r scroll: %.3f %.3f",
                     Input::MousePosition().x, Input::MousePosition().y,
                     Input::MouseMovement().x, Input::MouseMovement().y,
                     Input::MouseScroll().x, Input::MouseScroll().y);
     }
     else {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n MOUSE NOT ATTACHED");
     }
 }
@@ -186,7 +185,7 @@ TestInputApp::printMouseState() {
 void
 TestInputApp::printKeyboardState() {
     if (Input::KeyboardAttached()) {
-        Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
         Dbg::Print("\n\n\r KEYBOARD STATUS:\n\n\r");
         Dbg::Print(" keys: ");
         for (int key = 0; key < Key::NumKeys; key++) {
@@ -198,7 +197,7 @@ TestInputApp::printKeyboardState() {
         Dbg::PrintF("\n\n\r last char: %s\n\r", this->lastCaptured.AsCStr());
     }
     else {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n\n\r KEYBOARD NOT ATTACHED");
     };
 }
@@ -207,7 +206,7 @@ TestInputApp::printKeyboardState() {
 void
 TestInputApp::printTouchpadState() {
     if (Input::TouchpadAttached()) {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n\n\r TOUCHPAD STATUS:\n\n\r");
         if (Input::TouchTapped()) {
             Dbg::TextColor(this->pressedColor);
@@ -238,7 +237,7 @@ TestInputApp::printTouchpadState() {
         }
         Dbg::Print("PINCHING");
         Dbg::Print("\n\n\r");
-        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::TextColor(1.0f, 1.0f, 1.0f, 1.0f);
         Dbg::PrintF(" touch position0: %.3f %.3f\n\r"
                     " touch movement0: %.3f %.3f\n\r"
                     " touch startPos0: %.3f %.3f\n\r"
@@ -253,7 +252,7 @@ TestInputApp::printTouchpadState() {
                     Input::TouchStartPosition(1).x, Input::TouchStartPosition(1).y);
     }
     else {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n\n\r TOUCHPAD NOT ATTACHED");
     }
 }
@@ -262,9 +261,9 @@ TestInputApp::printTouchpadState() {
 void
 TestInputApp::printSensorState() {
     if (Input::SensorsAttached()) {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n\n\r SENSOR STATUS:\n\n\r");
-        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::TextColor(1.0f, 1.0f, 1.0f, 1.0f);
         const glm::vec3& acc = Input::SensorAcceleration();
         const glm::vec3& ypr = Input::SensorYawPitchRoll();
         Dbg::PrintF(" acceleration: %.3f %.3f %.3f\n\r", acc.x, acc.y, acc.z);
@@ -272,7 +271,7 @@ TestInputApp::printSensorState() {
                     glm::degrees(ypr.x), glm::degrees(ypr.y), glm::degrees(ypr.z));
     }
     else {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::Print("\n\n\r SENSORS NOT ATTACHED");
     }
 }
@@ -284,9 +283,9 @@ TestInputApp::printGamepadState(int gamepadIndex) {
     //assert(gamepadIndex >= 0 && gamepadIndex < GamePad::NUM)
 
     if (Input::GamepadAttached(gamepadIndex)) {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::PrintF("\n\n\r GAMEPAD %d STATUS:\n\n\r", gamepadIndex);
-        Dbg::TextColor(glm::vec4(1.0f));
+        Dbg::TextColor(1.0f, 1.0f, 1.0f, 1.0f);
         Dbg::PrintF(" Id: %s\n\r", Input::GamepadTypeId(gamepadIndex).AsCStr());
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::A) ? " A" : "  ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::B) ? " B" : "  ");
@@ -312,7 +311,7 @@ TestInputApp::printGamepadState(int gamepadIndex) {
         Dbg::PrintF(" RightTrigger %4.4f\n\r", Input::GamepadAxisValue(gamepadIndex, GamepadAxis::RightTrigger));
     }
     else {
-        Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
         Dbg::PrintF("\n\n\r GAMEPAD %d NOT ATTACHED", gamepadIndex);
     }
 }
@@ -322,12 +321,14 @@ glm::vec4
 TestInputApp::getClearColor() {
     glm::vec4 clearColor(0.25f, 0.25f, 0.25f, 1.0f);
     if (Input::TouchTapped()) {
-        clearColor = this->downColor;
+        return glm::vec4(this->downColor[0], this->downColor[1], this->downColor[2], this->downColor[3]);
     }
-    if (Input::TouchDoubleTapped()) {
-        clearColor = this->upColor;
+    else if (Input::TouchDoubleTapped()) {
+        return glm::vec4(this->upColor[0], this->upColor[1], this->upColor[2], this->upColor[3]);
     }
-    return clearColor;
+    else {
+        return glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
+    }
 }
 
 //------------------------------------------------------------------------------

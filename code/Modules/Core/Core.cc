@@ -5,12 +5,21 @@
 #include "Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Ptr.h"
+#include "Core/Threading/ThreadLocalPtr.h"
+#include "Core/Trace.h"
+#include <thread>
 
 namespace Oryol {
     
-Core::_state* Core::state = nullptr;
-ORYOL_THREADLOCAL_PTR(RunLoop) Core::threadPreRunLoop = nullptr;
-ORYOL_THREADLOCAL_PTR(RunLoop) Core::threadPostRunLoop = nullptr;
+static ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop = nullptr;
+static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop = nullptr;
+struct _state {
+    std::thread::id mainThreadId;
+    #if ORYOL_PROFILING
+    Trace trace;
+    #endif
+};
+static _state* state = nullptr;
 
 //------------------------------------------------------------------------------
 void

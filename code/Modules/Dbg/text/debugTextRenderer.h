@@ -10,8 +10,6 @@
 #include "Resource/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
 #include "Gfx/Gfx.h"
-#include "glm/vec2.hpp"
-#include "glm/vec4.hpp"
 #include <cstdarg>
 
 namespace Oryol {
@@ -19,21 +17,14 @@ namespace _priv {
 
 class debugTextRenderer {
 public:
-    /// constructor
     debugTextRenderer();
-    /// destructor
     ~debugTextRenderer();
 
-    /// discard the text renderer
     void discard();
-    /// return true if the object has been setup
     bool isValid() const;
-    
-    /// set global text scale
-    void setTextScale(const glm::vec2& s);
-    /// get global text scale
-    const glm::vec2& getTextScale() const;
-    
+
+    float textScaleX = 1.0f, textScaleY = 1.0f;
+
     /// draw text (only adds to internal buffer)
     void print(const char* text);
     /// draw text (only adds to internal buffer)
@@ -41,7 +32,7 @@ public:
     /// reposition the cursor
     void cursorPos(uint8_t x, uint8_t y);
     /// change text color
-    void textColor(const glm::vec4& color);
+    void textColor(float r, float g, float b, float a);
     /// draw the accumulated text
     void drawTextBuffer();
     
@@ -66,11 +57,10 @@ private:
     static const int MaxNumVertices = MaxNumChars * 6;
     static const int TabWidth = 8; // must be 2^n
     
-    glm::vec2 textScale;
     VertexLayout vertexLayout;
     DrawState drawState;
     StringBuilder stringBuilder;
-    bool valid;
+    bool valid = false;
     ResourceLabel resourceLabel;
     
     struct Vertex {

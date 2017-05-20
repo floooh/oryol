@@ -122,7 +122,7 @@ DrawCallPerfApp::OnRunning() {
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
     Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r applyRt=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
                 " LMB/tap: toggle particle update",
                 this->curNumParticles,
@@ -130,7 +130,7 @@ DrawCallPerfApp::OnRunning() {
                 applyRtTime.AsMilliSeconds(),
                 drawTime.AsMilliSeconds(),
                 frameTime.AsMilliSeconds());
-    Dbg::TextColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    Dbg::TextColor(1.0f, 0.0f, 0.0f, 1.0f);
     Dbg::PrintF("\n\n\r NOTE: this demo will bring down GL fairly quickly!\n");
     
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

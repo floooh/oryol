@@ -185,7 +185,7 @@ NativeTextureApp::notSupported() {
     int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(std::strlen(msg)))/2;
     int y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
     Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
-    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(uint8_t(x), uint8_t(y));
     Dbg::Print(msg);
     Dbg::DrawTextBuffer();

@@ -217,7 +217,7 @@ MultipleRenderTargetApp::notSupported() {
     uint8_t x = uint8_t((Gfx::DisplayAttrs().FramebufferWidth/16 - std::strlen(msg))/2);
     uint8_t y = uint8_t(Gfx::DisplayAttrs().FramebufferHeight/16/2);
     Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
-    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(x, y);
     Dbg::Print(msg);
     Dbg::DrawTextBuffer();

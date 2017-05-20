@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Main.h"
+#include "Core/String/StringBuilder.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
 #include "glm/gtc/random.hpp"
@@ -34,7 +35,7 @@ DebugTextApp::OnInit() {
     gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
     Dbg::Setup();
-    Dbg::SetTextScale(glm::vec2(2.0f, 2.0f));
+    Dbg::TextScale(2.0f, 2.0f);
     
     this->width = Gfx::DisplayAttrs().FramebufferWidth / 16;
     this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
@@ -115,10 +116,10 @@ DebugTextApp::moveChars() {
 void
 DebugTextApp::drawText() {
     
-    glm::vec4 color[3] = {
-        glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-        glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
-        glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)
+    float color[3][4] = {
+        { 1.0f, 0.0f, 0.0f, 1.0f },
+        { 0.0f, 1.0f, 0.0f, 1.0f },
+        { 0.0f, 0.0f, 1.0f, 1.0 }
     };
     
     for (int y = 0; y < this->height; y++) {
@@ -134,7 +135,7 @@ DebugTextApp::drawText() {
             }
         }
         strBuilder.Append("\r\n");
-        Dbg::TextColor(color[y % 3]);
+        Dbg::TextColor(color[y%3][0], color[y%3][1], color[y%3][2], color[y%3][3]);
         Dbg::Print(strBuilder.AsCStr());
     }
 }

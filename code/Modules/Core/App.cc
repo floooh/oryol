@@ -16,6 +16,8 @@
 #elif ORYOL_ANDROID
 #include "Core/android/androidBridge.h"
 #endif
+#include <chrono>
+#include <thread>
 
 namespace Oryol {
 

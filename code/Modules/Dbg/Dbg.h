@@ -8,9 +8,7 @@
     @ingroup Dbg
     @brief Dbg module facade
 */
-#include "Core/Config.h"
-#include "Dbg/text/debugTextRenderer.h"
-#include "glm/fwd.hpp"
+#include "Core/Types.h"
 
 namespace Oryol {
     
@@ -23,11 +21,8 @@ public:
     /// return true if Debug module is valid
     static bool IsValid();
     
-    /// set global text scale factor (default is 1.0f, 1.0f)
-    static void SetTextScale(const glm::vec2& scale);
-    /// get global text scale
-    static const glm::vec2& GetTextScale();
-    
+    /// set global text scale
+    static void TextScale(float x, float y);
     /// add debug text (7-bit ASCII)
     static void Print(const char* text);
     /// add debug text (7-bit ASCII only)
@@ -35,15 +30,11 @@ public:
     /// add cursor positioning tag
     static void CursorPos(uint8_t x, uint8_t y);
     /// add color tag
-    static void TextColor(const glm::vec4& color);
+    static void TextColor(float r, float g, float b, float a);
+    /// add a color tag as float[4] array
+    static void TextColor(const float (&c)[4]);
     /// draw the debug text buffer (call one per frame)
     static void DrawTextBuffer();
-    
-private:
-    struct _state {
-        class _priv::debugTextRenderer debugTextRenderer;
-    };
-    static _state* state;
 };
     
 } // namespace Oryol

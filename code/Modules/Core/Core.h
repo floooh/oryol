@@ -8,10 +8,7 @@
     @ingroup Core
     @brief Core module facade
 */
-#include "Core/RefCounted.h"
-#include "Core/Threading/ThreadLocalPtr.h"
-#include <thread>
-#include "Core/Trace.h"
+#include "Core/Types.h"
 
 namespace Oryol {
 
@@ -37,17 +34,6 @@ public:
     static void LeaveThread();
     /// test if we are on the main thread
     static bool IsMainThread();
-
-private:
-    static ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop;
-    static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop;
-    struct _state {
-        std::thread::id mainThreadId;
-        #if ORYOL_PROFILING
-        Trace trace;
-        #endif
-    };
-    static _state* state;
 };
 
 } // namespace Oryol

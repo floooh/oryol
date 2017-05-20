@@ -64,17 +64,17 @@ GamepadExplorerApp::OnRunning() {
     Dbg::Print("\n\t\t");
     for (int i = 0; i < Input::MaxNumGamepads; i++) {
         if (Input::GamepadAttached(i)) {
-            Dbg::TextColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+            Dbg::TextColor(0.0f, 1.0f, 0.0f, 1.0f);
         }
         else {
-            Dbg::TextColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+            Dbg::TextColor(0.5f, 0.5f, 0.5f, 1.0f);
         }
         Dbg::PrintF("Gamepad%d\t", i);
     }
     Dbg::Print("\n\n\r");
 
     // button status
-    Dbg::TextColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
     Dbg::Print("Buttons:\t");
     for (int padIndex = 0; padIndex < Input::MaxNumGamepads; padIndex++) {
         for (int btnIndex = 0; btnIndex < Input::MaxNumRawButtons; btnIndex++) {
