@@ -179,8 +179,8 @@ iosBridge::discard() {
     ORYOL_OBJC_RELEASE(this->mtkView); this->mtkView = nil;
     ORYOL_OBJC_RELEASE(this->mtkViewDelegate); this->mtkViewDelegate = nil;
     #else
-    [this->eaglContext invalidate]; this->eaglContext = nil;
-    [this->glkView invalidate]; this->glkView = nil;
+    ORYOL_OBJC_RELEASE(this->eaglContext); this->eaglContext = nil;
+    ORYOL_OBJC_RELEASE(this->glkView); this->glkView = nil;
     #endif
     this->app = nullptr;
 }
