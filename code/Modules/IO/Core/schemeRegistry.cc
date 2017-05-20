@@ -6,15 +6,16 @@
 #include "IO/FS/FileSystem.h"
 #include "Core/Core.h"
 
-namespace Oryol {
-namespace _priv {
-
 #if ORYOL_HAS_THREADS
+#include <mutex>
 static std::mutex lockMutex;
 #define SCOPED_LOCK std::lock_guard<std::mutex> lock(lockMutex)
 #else
 #define SCOPED_LOCK
 #endif
+
+namespace Oryol {
+namespace _priv {
 
 //------------------------------------------------------------------------------
 void
