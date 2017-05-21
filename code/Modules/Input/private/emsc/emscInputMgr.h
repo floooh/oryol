@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief provide input on emscripten platform
 */
-#include "Input/Core/inputMgrBase.h"
+#include "Input/private/inputMgrBase.h"
 #include "Core/RunLoop.h"
 #include <emscripten/html5.h>
 

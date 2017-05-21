@@ -6,7 +6,7 @@
     @brief private: emscripten implementation of URL loader
     @see urlLoader
 */
-#include "HTTP/base/baseURLLoader.h"
+#include "HttpFS/private/baseURLLoader.h"
 
 namespace Oryol {
 namespace _priv {

@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief display manager class for emscripten platform
 */
-#include "Gfx/Core/displayMgrBase.h"
+#include "Gfx/private/displayMgrBase.h"
 #include <emscripten/html5.h>
 
 namespace Oryol {
