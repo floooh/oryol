@@ -6,7 +6,7 @@
     @brief urlLoader implementation on top of curl
     @see urlLoader
 */
-#include "HTTP/base/baseURLLoader.h"
+#include "HttpFS/private/baseURLLoader.h"
 
 namespace Oryol {
 namespace _priv {

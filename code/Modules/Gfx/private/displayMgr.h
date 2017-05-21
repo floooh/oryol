@@ -16,13 +16,13 @@ namespace _priv {
 class displayMgr : public d3d11DisplayMgr { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/mtl/mtlDisplayMgr.h"
+#include "Gfx/private/mtl/mtlDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public mtlDisplayMgr { };
 } }
 #elif (ORYOL_ANDROID || ORYOL_RASPBERRYPI)
-#include "Gfx/egl/eglDisplayMgr.h"
+#include "Gfx/private/egl/eglDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public eglDisplayMgr { };
@@ -34,19 +34,19 @@ namespace _priv {
 class displayMgr : public glfwDisplayMgr { };
 } }
 #elif ORYOL_EMSCRIPTEN
-#include "Gfx/emsc/emscDisplayMgr.h"
+#include "Gfx/private/emsc/emscDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public emscDisplayMgr { };
 } }
 #elif ORYOL_IOS
-#include "Gfx/ios/iosDisplayMgr.h"
+#include "Gfx/private/ios/iosDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public iosDisplayMgr { };
 } }
 #else
-#include "Gfx/Core/displayMgrBase.h"
+#include "Gfx/private/displayMgrBase.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public displayMgrBase { };

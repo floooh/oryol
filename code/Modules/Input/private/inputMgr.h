@@ -12,13 +12,13 @@ namespace _priv {
 class inputMgr : public winInputMgr { };
 } }
 #elif ORYOL_MACOS && ORYOL_METAL
-#include "Input/osx/osxInputMgr.h"
+#include "Input/private/osx/osxInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public osxInputMgr { };
 } }
 #elif ORYOL_RASPBERRYPI
-#include "Input/raspi/raspiInputMgr.h"
+#include "Input/private/raspi/raspiInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public raspiInputMgr { };
@@ -30,25 +30,25 @@ namespace _priv {
 class inputMgr : public glfwInputMgr { };
 } }
 #elif ORYOL_EMSCRIPTEN
-#include "Input/emsc/emscInputMgr.h"
+#include "Input/private/emsc/emscInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public emscInputMgr { };
 } }
 #elif ORYOL_ANDROID
-#include "Input/android/androidInputMgr.h"
+#include "Input/private/android/androidInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public androidInputMgr { };
 } }
 #elif ORYOL_IOS
-#include "Input/ios/iosInputMgr.h"
+#include "Input/private/ios/iosInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public iosInputMgr { };
 } }
 #else
-#include "Input/base/inputMgrBase.h"
+#include "Input/private/inputMgrBase.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public inputMgrBase { };
