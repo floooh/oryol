@@ -5,7 +5,7 @@
     @ingroup Gfx
     @brief base class for Gfx texture loaders
 */
-#include "Resource/Core/ResourceLoader.h"
+#include "Resource/ResourceLoader.h"
 #include "Gfx/Public/GfxTypes.h"
 #include <functional>
 

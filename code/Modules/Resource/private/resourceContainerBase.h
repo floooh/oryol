@@ -11,7 +11,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
-#include "Resource/Core/resourceRegistry.h"
+#include "Resource/private/resourceRegistry.h"
 #include "Resource/ResourceLabel.h"
 
 namespace Oryol {

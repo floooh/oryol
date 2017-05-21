@@ -39,7 +39,7 @@
 #include "Core/Types.h"
 #include "Gfx/Public/GfxTypes.h"
 #include "Assets/Gfx/VertexWriter.h"
-#include "Resource/Core/SetupAndData.h"
+#include "Resource/SetupAndData.h"
 
 namespace Oryol {
 

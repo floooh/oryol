@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Resource/Core/ResourcePool.h"
-#include "Resource/Core/resourceBase.h"
+#include "Resource/ResourcePool.h"
+#include "Resource/private/resourceBase.h"
 
 using namespace Oryol;
 

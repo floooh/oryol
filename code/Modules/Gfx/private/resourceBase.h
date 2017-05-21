@@ -4,7 +4,7 @@
     @file Gfx/Resource/resourceBase.h
     @brief Gfx module resource classes
 */
-#include "Resource/Core/resourceBase.h"
+#include "Resource/private/resourceBase.h"
 #include "Gfx/Public/GfxTypes.h"
 
 namespace Oryol {

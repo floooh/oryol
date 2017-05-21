@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Resource/Core/resourceRegistry.h"
+#include "Resource/private/resourceRegistry.h"
 
 using namespace Oryol;
 using namespace Oryol::_priv;

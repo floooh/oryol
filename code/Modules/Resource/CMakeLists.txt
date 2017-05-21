@@ -8,12 +8,12 @@ fips_begin_module(Resource)
         Locator.cc Locator.h
         ResourceLabel.h
         ResourceState.h
-    )
-    fips_dir(Core)
-    fips_files(
         ResourceLoader.cc ResourceLoader.h
         ResourcePool.h
         SetupAndData.h
+    )
+    fips_dir(private)
+    fips_files(
         resourceContainerBase.cc resourceContainerBase.h
         resourceRegistry.cc resourceRegistry.h
         resourceBase.h

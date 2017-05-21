@@ -11,8 +11,8 @@
 #include "Core/RunLoop.h"
 #include "Gfx/Public/GfxTypes.h"
 #include "Resource/ResourceLabel.h"
-#include "Resource/Core/ResourceLoader.h"
-#include "Resource/Core/SetupAndData.h"
+#include "Resource/ResourceLoader.h"
+#include "Resource/SetupAndData.h"
 #include "Resource/ResourceInfo.h"
 #include "Resource/ResourcePoolInfo.h"
 
