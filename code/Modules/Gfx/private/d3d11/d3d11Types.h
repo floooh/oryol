@@ -6,7 +6,7 @@
     @brief D3D11 enum conversion helpers
 */
 #include "Core/Types.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/d3d11/d3d11_decl.h"
 
 namespace Oryol {

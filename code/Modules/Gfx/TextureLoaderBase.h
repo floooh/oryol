@@ -6,7 +6,7 @@
     @brief base class for Gfx texture loaders
 */
 #include "Resource/ResourceLoader.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include <functional>
 
 namespace Oryol {

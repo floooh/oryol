@@ -17,7 +17,7 @@
 #include "Core/String/StringAtom.h"
 #include "IO/private/ioPointers.h"
 #include "IO/private/ioRequests.h"
-#include "IO/Public/FileSystem.h"
+#include "IO/FileSystem.h"
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #include <thread>

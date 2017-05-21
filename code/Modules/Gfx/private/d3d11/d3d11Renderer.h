@@ -7,7 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include <glm/vec4.hpp>
 #include "Gfx/private/d3d11/d3d11_decl.h"
 #include "Gfx/private/gfxPointers.h"

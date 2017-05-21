@@ -8,7 +8,7 @@
     @ingroup LocalFS
     @brief FileSystem subclass to access the local host file system
 */
-#include "IO/Public/FileSystem.h"
+#include "IO/FileSystem.h"
 #include "Core/Creator.h"
 
 namespace Oryol {

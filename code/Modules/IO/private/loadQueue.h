@@ -11,8 +11,8 @@
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Buffer.h"
-#include "IO/Public/URL.h"
-#include "IO/Public/IOStatus.h"
+#include "IO/URL.h"
+#include "IO/IOStatus.h"
 #include "IO/private/ioRequests.h"
 #include <functional>
 

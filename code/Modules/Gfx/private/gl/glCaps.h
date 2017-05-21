@@ -6,7 +6,7 @@
     @brief GL capabilities and extension wrapper
 */
 #include "Core/Types.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/gl/gl_decl.h"
 
 namespace Oryol {

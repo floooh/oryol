@@ -6,7 +6,7 @@
 #include "Gfx/private/renderer.h"
 #include "Gfx/private/gfxFactory.h"
 #include "Gfx/private/resourcePools.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/displayMgr.h"
 #include "Assets/Gfx/MeshBuilder.h"
 

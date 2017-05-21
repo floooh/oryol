@@ -5,7 +5,7 @@
     @ingroup Assets
     @brief standard texture loader for most block-compressed texture file formats
 */
-#include "Gfx/Public/TextureLoaderBase.h"
+#include "Gfx/TextureLoaderBase.h"
 #include "IO/private/ioRequests.h"
 
 namespace gliml {

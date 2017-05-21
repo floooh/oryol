@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "schemeRegistry.h"
-#include "IO/Public/FileSystem.h"
+#include "IO/FileSystem.h"
 #include "Core/Core.h"
 
 #if ORYOL_HAS_THREADS

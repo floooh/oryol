@@ -5,7 +5,7 @@
 #include "d3d11Renderer.h"
 #include "Gfx/private/displayMgr.h"
 #include "Gfx/private/resourcePools.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "d3d11_impl.h"

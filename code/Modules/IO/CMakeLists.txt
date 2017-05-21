@@ -5,9 +5,6 @@ fips_begin_module(IO)
     fips_vs_warning_level(3)
     fips_files(
         IO.cc IO.h
-    )
-    fips_dir(Public)
-    fips_files(
         IOConfig.h
         IOSetup.h
         IOStatus.cc IOStatus.h

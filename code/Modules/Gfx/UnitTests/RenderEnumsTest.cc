@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/String.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/gl/gl_impl.h"
 #include <array>
 

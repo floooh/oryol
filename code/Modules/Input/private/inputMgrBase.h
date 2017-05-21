@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief base class for platform-specific input managers
 */
-#include "Input/Public/InputTypes.h"
+#include "Input/InputTypes.h"
 #include "Input/private/inputDevices.h"
 #include "Input/private/gestureDetectors.h"
 #include "Input/private/inputDispatcher.h"

@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 #include "Gfx/private/resourceBase.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/gl/gl_decl.h"
 
 namespace Oryol {

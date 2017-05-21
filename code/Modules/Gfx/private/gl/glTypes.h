@@ -6,7 +6,7 @@
     @brief OpenGL type conversion helpers
 */
 #include "Core/Types.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/gl/gl_decl.h"
 
 namespace Oryol {

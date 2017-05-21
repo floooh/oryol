@@ -23,9 +23,8 @@ endif() # ORYOL_OPENGL
 
 fips_begin_module(Gfx)
     fips_vs_warning_level(3)
-    fips_files(Gfx.cc Gfx.h)
-    fips_dir(Public)
     fips_files(
+        Gfx.cc Gfx.h
         GfxTypes.cc GfxTypes.h
         GfxConfig.h
         MeshLoaderBase.cc MeshLoaderBase.h

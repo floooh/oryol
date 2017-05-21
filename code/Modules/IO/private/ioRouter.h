@@ -6,7 +6,7 @@
     @brief route IO requests to ioWorkers
 */
 #include "Core/Containers/StaticArray.h"
-#include "IO/Public/IOConfig.h"
+#include "IO/IOConfig.h"
 #include "IO/private/ioPointers.h"
 #include "IO/private/ioWorker.h"
 

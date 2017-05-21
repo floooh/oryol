@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Core.h"
-#include "IO/Public/FileSystem.h"
+#include "IO/FileSystem.h"
 #include "IO/private/schemeRegistry.h"
 
 using namespace Oryol;

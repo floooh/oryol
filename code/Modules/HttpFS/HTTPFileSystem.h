@@ -11,7 +11,7 @@
     
     @todo: HTTPFileSystem description
 */
-#include "IO/Public/FileSystem.h"
+#include "IO/FileSystem.h"
 #include "Core/Creator.h"
 #include "HttpFS/private/urlLoader.h"
 

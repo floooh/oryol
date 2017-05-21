@@ -10,8 +10,8 @@
 */
 #include "Core/RefCounted.h"
 #include "Core/Containers/Buffer.h"
-#include "IO/Public/URL.h"
-#include "IO/Public/IOStatus.h"
+#include "IO/URL.h"
+#include "IO/IOStatus.h"
 
 namespace Oryol {
 namespace _priv {

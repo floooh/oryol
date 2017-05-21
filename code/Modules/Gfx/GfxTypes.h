@@ -11,7 +11,7 @@
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Public/GfxConfig.h"
+#include "Gfx/GfxConfig.h"
 #include "glm/vec4.hpp"
 #include <initializer_list>
 

@@ -3,9 +3,8 @@
 #-------------------------------------------------------------------------------
 fips_begin_module(Input)
     fips_vs_warning_level(3)
-    fips_files(Input.cc Input.h)
-    fips_dir(Public)
     fips_files(
+        Input.cc Input.h
         InputTypes.h InputTypes.cc
     )
     fips_dir(private)

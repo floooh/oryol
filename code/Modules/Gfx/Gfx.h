@@ -9,7 +9,7 @@
     @brief Gfx module facade
 */
 #include "Core/RunLoop.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Resource/ResourceLabel.h"
 #include "Resource/ResourceLoader.h"
 #include "Resource/SetupAndData.h"

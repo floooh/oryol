@@ -11,7 +11,7 @@
 #include "Resource/ResourceLoader.h"
 #include "Resource/private/resourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/resourcePools.h"
 #include "Gfx/private/gfxFactory.h"
 #include "Gfx/private/gfxPointers.h"

@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/String.h"
-#include "IO/Public/IOStatus.h"
+#include "IO/IOStatus.h"
 
 using namespace Oryol;
 

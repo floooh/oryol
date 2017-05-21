@@ -15,7 +15,7 @@
  
     @see URL
 */
-#include "IO/Public/URL.h"
+#include "IO/URL.h"
 #include "Core/String/StringBuilder.h"
 
 namespace Oryol {

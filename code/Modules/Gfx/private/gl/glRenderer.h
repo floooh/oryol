@@ -5,7 +5,7 @@
     @brief OpenGL wrapper and state cache
 */
 #include "Core/Types.h"
-#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Gfx/private/gfxPointers.h"
 #include "Gfx/private/gl/gl_decl.h"
 #include "glm/vec4.hpp"
