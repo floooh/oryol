@@ -11,9 +11,9 @@
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Array.h"
 #include "Core/Containers/Buffer.h"
-#include "IO/Core/URL.h"
-#include "IO/Core/IOStatus.h"
-#include "IO/FS/ioRequests.h"
+#include "IO/Public/URL.h"
+#include "IO/Public/IOStatus.h"
+#include "IO/private/ioRequests.h"
 #include <functional>
 
 namespace Oryol {

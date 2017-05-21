@@ -8,7 +8,7 @@
 #include "Core/String/String.h"
 #include "Core/Containers/Map.h"
 #include "Core/Containers/KeyValuePair.h"
-#include "IO/FS/FileSystem.h"
+#include "IO/Public/FileSystem.h"
 #include <functional>
 
 namespace Oryol {

@@ -15,9 +15,9 @@
 #include "Core/Containers/Queue.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/StringAtom.h"
-#include "IO/Core/ioPointers.h"
-#include "IO/FS/ioRequests.h"
-#include "IO/FS/FileSystem.h"
+#include "IO/private/ioPointers.h"
+#include "IO/private/ioRequests.h"
+#include "IO/Public/FileSystem.h"
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #include <thread>

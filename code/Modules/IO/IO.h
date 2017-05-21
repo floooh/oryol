@@ -10,8 +10,8 @@
 */
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
-#include "IO/Core/IOSetup.h"
-#include "IO/Core/loadQueue.h"
+#include "IO/Public/IOSetup.h"
+#include "IO/private/loadQueue.h"
 
 namespace Oryol {
 

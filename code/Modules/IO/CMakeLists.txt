@@ -6,21 +6,21 @@ fips_begin_module(IO)
     fips_files(
         IO.cc IO.h
     )
-    fips_dir(Core)
+    fips_dir(Public)
     fips_files(
         IOConfig.h
         IOSetup.h
         IOStatus.cc IOStatus.h
         URL.cc URL.h
         URLBuilder.cc URLBuilder.h
+        FileSystem.cc FileSystem.h
+    )
+    fips_dir(private)
+    fips_files(
         assignRegistry.cc assignRegistry.h
         schemeRegistry.cc schemeRegistry.h
         loadQueue.cc loadQueue.h
         ioPointers.h
-    )
-    fips_dir(FS)
-    fips_files(
-        FileSystem.cc FileSystem.h
         ioRequests.h
         ioWorker.cc ioWorker.h
         ioRouter.cc ioRouter.h

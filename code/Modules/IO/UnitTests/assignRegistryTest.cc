@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/Core/assignRegistry.h"
+#include "IO/private/assignRegistry.h"
 #include "Core/Ptr.h"
 
 using namespace Oryol;

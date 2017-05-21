@@ -8,7 +8,7 @@
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Map.h"
 #include "Core/Creator.h"
-#include "IO/FS/FileSystem.h"
+#include "IO/Public/FileSystem.h"
 #include <functional>
 #include <thread>
 

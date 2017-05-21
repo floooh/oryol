@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "ioWorker.h"
-#include "IO/Core/schemeRegistry.h"
+#include "IO/private/schemeRegistry.h"
 
 namespace Oryol {
 namespace _priv {

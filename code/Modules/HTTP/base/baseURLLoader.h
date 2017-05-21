@@ -6,7 +6,7 @@
     @brief private: base class for platform specific URL loaders
     @see urlLoader, HTTPClient
 */
-#include "IO/FS/ioRequests.h"
+#include "IO/private/ioRequests.h"
 
 namespace Oryol {
 namespace _priv {

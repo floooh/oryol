@@ -6,9 +6,9 @@
     @brief route IO requests to ioWorkers
 */
 #include "Core/Containers/StaticArray.h"
-#include "IO/Core/IOConfig.h"
-#include "IO/Core/ioPointers.h"
-#include "IO/FS/ioWorker.h"
+#include "IO/Public/IOConfig.h"
+#include "IO/private/ioPointers.h"
+#include "IO/private/ioWorker.h"
 
 namespace Oryol {
 namespace _priv {

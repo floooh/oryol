@@ -9,7 +9,7 @@
     in the project https://github.com/floooh/oryol-tools
 */
 #include "Gfx/Public/MeshLoaderBase.h"
-#include "IO/FS/ioRequests.h"
+#include "IO/private/ioRequests.h"
 
 namespace Oryol {
 

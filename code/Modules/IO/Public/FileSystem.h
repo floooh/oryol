@@ -10,7 +10,7 @@
 */
 #include "Core/String/StringAtom.h"
 #include "Core/RefCounted.h"
-#include "IO/FS/ioRequests.h"
+#include "IO/private/ioRequests.h"
 
 namespace Oryol {
     

@@ -6,7 +6,7 @@
     @brief standard texture loader for most block-compressed texture file formats
 */
 #include "Gfx/Public/TextureLoaderBase.h"
-#include "IO/FS/ioRequests.h"
+#include "IO/private/ioRequests.h"
 
 namespace gliml {
 class context;
