@@ -7,13 +7,13 @@
 */
 
 #if ORYOL_EMSCRIPTEN
-#include "LocalFS/dummy/dummyFSWrapper.h"
+#include "LocalFS/private/dummy/dummyFSWrapper.h"
 namespace Oryol {
 namespace _priv {
 class fsWrapper : public dummyFSWrapper { };
 } }
 #else
-#include "LocalFS/posix/posixFSWrapper.h"
+#include "LocalFS/private/posix/posixFSWrapper.h"
 namespace Oryol {
 namespace _priv {
 class fsWrapper : public posixFSWrapper { };

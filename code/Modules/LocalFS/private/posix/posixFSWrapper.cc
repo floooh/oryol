@@ -5,7 +5,7 @@
 #include "posixFSWrapper.h"
 #include "Core/String/StringBuilder.h"
 #include <stdio.h>
-#include "LocalFS/whereami/whereami.h"
+#include "LocalFS/private/whereami/whereami.h"
 #if ORYOL_WINDOWS
 #include <direct.h>
 #else
