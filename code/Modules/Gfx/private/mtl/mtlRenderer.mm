@@ -4,10 +4,10 @@
 #include "Pre.h"
 #include "mtlRenderer.h"
 #include "mtlTypes.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Core/GfxTypes.h"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/private/displayMgr.h"
+#include "Gfx/private/resourcePools.h"
+#include "Gfx/private/resource.h"
+#include "Gfx/GfxTypes.h"
 
 namespace Oryol {
 namespace _priv {

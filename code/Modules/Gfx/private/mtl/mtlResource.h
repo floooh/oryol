@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
-#include "Gfx/Resource/resourceBase.h"
+#include "Gfx/private/resourceBase.h"
+#include "Gfx/private/mtl/mtl_decl.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/mtl/mtl_decl.h"
-#include "Gfx/Core/GfxConfig.h"
+#include "Gfx/GfxConfig.h"
 
 namespace Oryol {
 namespace _priv {

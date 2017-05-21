@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief Metal implementation of displayMgr
 */
-#include "Gfx/Core/displayMgrBase.h"
+#include "Gfx/private/displayMgrBase.h"
 
 namespace Oryol {
 namespace _priv {

@@ -7,4 +7,4 @@
 #if !defined(__OBJC__)
 #error "Must be included from Objective-C++"
 #endif
-#include "Gfx/mtl/mtl_decl.h"
+#include "Gfx/private/mtl/mtl_decl.h"

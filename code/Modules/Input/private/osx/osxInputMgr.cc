@@ -6,7 +6,7 @@
 #include "osxInputMgr.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "Core/osx/osxBridge.h"
+#include "Core/private/osx/osxBridge.h"
 
 namespace Oryol {
 namespace _priv {

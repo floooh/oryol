@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief Metal implementation of gfxFactory
 */
-#include "Gfx/Resource/gfxFactoryBase.h"
-#include "Gfx/mtl/mtl_decl.h"
+#include "Gfx/private/gfxFactoryBase.h"
+#include "Gfx/private/mtl/mtl_decl.h"
 #include "Core/Containers/Queue.h"
 #include "Core/Containers/Map.h"
 

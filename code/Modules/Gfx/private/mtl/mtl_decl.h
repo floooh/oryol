@@ -5,13 +5,13 @@
     @brief Metal Objective-C++ declarations
 */
 #if ORYOL_IOS
-#include "Core/ios/iosBridge.h"
+#include "Core/private/ios/iosBridge.h"
 namespace Oryol {
 namespace _priv {
 typedef iosBridge osBridge;
 } }
 #else
-#include "Core/osx/osxBridge.h"
+#include "Core/private/osx/osxBridge.h"
 namespace Oryol {
 namespace _priv {
 typedef osxBridge osBridge;

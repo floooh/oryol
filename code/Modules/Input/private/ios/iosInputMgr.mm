@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/Core.h"
 #include "iosInputMgr.h"
-#include "Core/ios/iosBridge.h"
+#include "Core/private/ios/iosBridge.h"
 #include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
 #import <UIKit/UIKit.h>

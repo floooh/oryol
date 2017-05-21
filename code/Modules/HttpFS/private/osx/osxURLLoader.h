@@ -6,7 +6,7 @@
     @brief private: OSX implementation of URLLoader
     @see urlLoader, HTTPClient
 */
-#include "HTTP/base/baseURLLoader.h"
+#include "HttpFS/private/baseURLLoader.h"
 
 namespace Oryol {
 namespace _priv {

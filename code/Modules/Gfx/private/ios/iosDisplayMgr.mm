@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "iosDisplayMgr.h"
-#include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glCaps.h"
+#include "Gfx/private/gl/gl_impl.h"
+#include "Gfx/private/gl/glCaps.h"
 #include <GLKit/GLKit.h>
 
 namespace Oryol {

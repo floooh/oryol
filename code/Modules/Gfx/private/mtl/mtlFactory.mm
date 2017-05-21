@@ -5,8 +5,8 @@
 #include "mtl_impl.h"
 #include "mtlFactory.h"
 #include "mtlTypes.h"
-#include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/private/renderer.h"
+#include "Gfx/private/resource.h"
 
 namespace Oryol {
 namespace _priv {

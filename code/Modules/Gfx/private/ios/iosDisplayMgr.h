@@ -5,9 +5,9 @@
     @ingroup _priv
     @brief display manager for IOS
 */
-#include "Gfx/Core/displayMgrBase.h"
-#include "Gfx/gl/gl_decl.h"
-#include "Core/ios/iosBridge.h"
+#include "Gfx/private/displayMgrBase.h"
+#include "Gfx/private/gl/gl_decl.h"
+#include "Core/private/ios/iosBridge.h"
 
 namespace Oryol {
 namespace _priv {

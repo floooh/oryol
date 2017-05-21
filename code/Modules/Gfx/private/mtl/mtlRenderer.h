@@ -7,12 +7,12 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/Core/GfxTypes.h"
-#include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/GfxTypes.h"
+#include "Gfx/GfxConfig.h"
+#include "Gfx/private/gfxPointers.h"
+#include "Gfx/private/resource.h"
+#include "Gfx/private/mtl/mtl_decl.h"
 #include "glm/vec4.hpp"
-#include "Gfx/Core/GfxConfig.h"
-#include "Gfx/mtl/mtl_decl.h"
 
 namespace Oryol {
 namespace _priv {

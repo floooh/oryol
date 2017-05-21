@@ -5,7 +5,7 @@
 #elif ORYOL_D3D11
 #include "Gfx/private/d3d11/d3d11Factory.h"
 #elif ORYOL_METAL
-#include "Gfx/mtl/mtlFactory.h"
+#include "Gfx/private/mtl/mtlFactory.h"
 #else
 #error "Platform not yet supported!"
 #endif

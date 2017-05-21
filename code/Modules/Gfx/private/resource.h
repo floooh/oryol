@@ -5,7 +5,7 @@
 #elif ORYOL_D3D11
 #include "Gfx/private/d3d11/d3d11Resource.h"
 #elif ORYOL_METAL
-#include "Gfx/mtl/mtlResource.h"
+#include "Gfx/private/mtl/mtlResource.h"
 #else
 #error "Target platform not yet supported!"
 #endif
