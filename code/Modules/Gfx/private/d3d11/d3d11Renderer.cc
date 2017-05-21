@@ -3,9 +3,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d11Renderer.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Core/GfxTypes.h"
+#include "Gfx/private/displayMgr.h"
+#include "Gfx/private/resourcePools.h"
+#include "Gfx/Public/GfxTypes.h"
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "d3d11_impl.h"

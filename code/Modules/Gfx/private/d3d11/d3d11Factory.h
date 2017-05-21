@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief D3D11 implementation of gfxFactory
 */
-#include "Gfx/Resource/gfxFactoryBase.h"
-#include "Gfx/d3d11/d3d11_decl.h"
+#include "Gfx/private/gfxFactoryBase.h"
+#include "Gfx/private/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {

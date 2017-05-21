@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "d3d11DisplayMgr.h"
 #include "d3d11Types.h"
-#include "Gfx/Core/renderer.h"
+#include "Gfx/private/renderer.h"
 
 #ifndef UNICODE
 #define UNICODE

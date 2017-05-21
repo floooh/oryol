@@ -5,7 +5,7 @@
 #include "winInputMgr.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "Gfx/win/winDisplayMgr.h"
+#include "Gfx/private/win/winDisplayMgr.h"
 
 namespace Oryol {
 namespace _priv {

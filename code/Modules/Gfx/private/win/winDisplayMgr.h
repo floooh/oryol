@@ -7,9 +7,9 @@
 
     NOTE: most of the window and messaging code is taken from GLFW3!
 */
-#include "Gfx/Core/displayMgrBase.h"
-#include "Gfx/win/win_decl.h"
-#include "Gfx/win/winInputDefs.h"
+#include "Gfx/private/displayMgrBase.h"
+#include "Gfx/private/win/win_decl.h"
+#include "Gfx/private/win/winInputDefs.h"
 
 namespace Oryol {
 namespace _priv {

@@ -7,7 +7,7 @@
     Try to use this as much as possible in headers instead of including
     the full d3d11 headers.
 */
-#include "Gfx/win/win_decl.h"
+#include "Gfx/private/win/win_decl.h"
 
 struct IDXGISwapChain;
 struct IDXGISwapChain1;

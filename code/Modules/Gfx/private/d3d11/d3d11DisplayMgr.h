@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief display manager implementation for D3D11
 */
-#include "Gfx/win/winDisplayMgr.h"
-#include "Gfx/d3d11/d3d11_decl.h"
+#include "Gfx/private/win/winDisplayMgr.h"
+#include "Gfx/private/d3d11/d3d11_decl.h"
 
 namespace Oryol {
 namespace _priv {

@@ -5,8 +5,8 @@
 #include "d3d11Factory.h"
 #include "d3d11Types.h"
 #include "d3d11_impl.h"
-#include "Gfx/Resource/resource.h"
-#include "Gfx/Core/renderer.h"
+#include "Gfx/private/resource.h"
+#include "Gfx/private/renderer.h"
 
 namespace Oryol {
 namespace _priv {

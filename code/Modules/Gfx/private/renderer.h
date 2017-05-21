@@ -12,7 +12,7 @@ namespace _priv {
 class renderer : public glRenderer { };
 } }
 #elif ORYOL_D3D11
-#include "Gfx/d3d11/d3d11Renderer.h"
+#include "Gfx/private/d3d11/d3d11Renderer.h"
 namespace Oryol {
 namespace _priv {
 class renderer : public d3d11Renderer { };

@@ -3,7 +3,7 @@
 #if ORYOL_OPENGL
 #include "Gfx/private/gl/glResource.h"
 #elif ORYOL_D3D11
-#include "Gfx/d3d11/d3d11Resource.h"
+#include "Gfx/private/d3d11/d3d11Resource.h"
 #elif ORYOL_METAL
 #include "Gfx/mtl/mtlResource.h"
 #else

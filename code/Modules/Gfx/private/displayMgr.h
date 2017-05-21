@@ -10,7 +10,7 @@
     events (such as input events) and forwards them to Oryol.
 */
 #if ORYOL_D3D11
-#include "Gfx/d3d11/d3d11DisplayMgr.h"
+#include "Gfx/private/d3d11/d3d11DisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public d3d11DisplayMgr { };
