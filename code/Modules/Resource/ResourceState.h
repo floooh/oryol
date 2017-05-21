@@ -16,8 +16,6 @@
     Resources can be unloaded, which changes the state from Valid back
     to Setup, and then be loaded again.
 */
-#include "Core/Types.h"
-
 namespace Oryol {
     
 class ResourceState {

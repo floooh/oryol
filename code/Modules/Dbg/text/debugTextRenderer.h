@@ -6,7 +6,6 @@
     @brief minimalistic 7-bit-ASCII text renderer
 */
 #include "Core/Types.h"
-#include "Resource/Id.h"
 #include "Resource/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
 #include "Gfx/Gfx.h"
