@@ -5,7 +5,7 @@
 #include "MeshLoader.h"
 #include "Assets/Gfx/OmshParser.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Resource/gfxResourceContainer.h"
+#include "Gfx/private/gfxResourceContainer.h"
 #include "IO/IO.h"
 
 namespace Oryol {

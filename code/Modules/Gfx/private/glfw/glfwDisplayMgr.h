@@ -9,8 +9,8 @@
     Linux). It uses GLFW ( https://github.com/glfw/glfw ) for window and
     GL context management, and consuming window input events.
 */
-#include "Gfx/Core/displayMgrBase.h"
-#include "Gfx/gl/gl_decl.h"
+#include "Gfx/private/displayMgrBase.h"
+#include "Gfx/private/gl/gl_decl.h"
 
 struct GLFWwindow;
 

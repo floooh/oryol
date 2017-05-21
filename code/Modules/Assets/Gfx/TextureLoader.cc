@@ -5,7 +5,7 @@
 #include "TextureLoader.h"
 #include "IO/IO.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Resource/gfxResourceContainer.h"
+#include "Gfx/private/gfxResourceContainer.h"
 #define GLIML_ASSERT(x) o_assert(x)
 #include "gliml.h"
 

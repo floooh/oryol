@@ -24,28 +24,28 @@ endif() # ORYOL_OPENGL
 fips_begin_module(Gfx)
     fips_vs_warning_level(3)
     fips_files(Gfx.cc Gfx.h)
-    fips_dir(Core)
+    fips_dir(Public)
+    fips_files(
+        GfxTypes.cc GfxTypes.h
+        GfxConfig.h
+        MeshLoaderBase.cc MeshLoaderBase.h
+        TextureLoaderBase.cc TextureLoaderBase.h
+    )
+    fips_dir(private)
     fips_files(
         displayMgrBase.cc displayMgrBase.h
-        GfxTypes.cc GfxTypes.h
         displayMgr.h
         renderer.h
         gfxPointers.h
-        GfxConfig.h
-    )
-    fips_dir(Resource)
-    fips_files(
         resourcePools.h
         resourceBase.h resourceBase.cc
         resource.h
         gfxFactory.h
         gfxFactoryBase.h gfxFactoryBase.cc
         gfxResourceContainer.h gfxResourceContainer.cc 
-        MeshLoaderBase.cc MeshLoaderBase.h
-        TextureLoaderBase.cc TextureLoaderBase.h
     )
     if (ORYOL_OPENGL)
-        fips_dir(gl)
+        fips_dir(private/gl)
         fips_files(
             glCaps.cc glCaps.h
             glResource.cc glResource.h
@@ -57,7 +57,7 @@ fips_begin_module(Gfx)
         )
     endif()
     if (ORYOL_D3D11)
-        fips_dir(win)
+        fips_dir(private/win)
         fips_files(
             win_decl.h
             winDisplayMgr.cc winDisplayMgr.h
@@ -65,7 +65,7 @@ fips_begin_module(Gfx)
         )
     endif()
     if (ORYOL_D3D11)
-        fips_dir(d3d11)
+        fips_dir(private/d3d11)
         fips_files(
             d3d11_impl.h d3d11_decl.h
             d3d11DisplayMgr.cc d3d11DisplayMgr.h
@@ -76,7 +76,7 @@ fips_begin_module(Gfx)
         )
     endif()
     if (ORYOL_METAL)
-        fips_dir(mtl)
+        fips_dir(private/mtl)
         fips_files(
             mtl_decl.h mtl_impl.h
             mtlDisplayMgr.h mtlDisplayMgr.mm
@@ -88,27 +88,27 @@ fips_begin_module(Gfx)
         fips_frameworks_osx(Metal QuartzCore)
     endif()
     if (FIPS_ANDROID)
-        fips_dir(egl)
+        fips_dir(private/egl)
         fips_files(eglDisplayMgr.cc eglDisplayMgr.h)
         fips_libs(GLESv3 EGL)
     endif()
     if (FIPS_EMSCRIPTEN)
-        fips_dir(emsc)
+        fips_dir(private/emsc)
         fips_files(emscDisplayMgr.cc emscDisplayMgr.h)
     endif()
     if (FIPS_IOS AND NOT ORYOL_METAL)
-        fips_dir(ios)
+        fips_dir(private/ios)
         fips_files(iosDisplayMgr.mm iosDisplayMgr.h)
     endif()
     if (ORYOL_OPENGL)
         if (FIPS_RASPBERRYPI)
-            fips_dir(egl)
+            fips_dir(private/egl)
             fips_files(eglDisplayMgr.cc eglDisplayMgr.h)
             fips_libs(GLESv2 EGL bcm_host)
         elseif (FIPS_MACOS OR FIPS_WINDOWS OR FIPS_LINUX)
-            fips_dir(glfw)
+            fips_dir(private/glfw)
             fips_files(glfwDisplayMgr.cc glfwDisplayMgr.h)
-            fips_dir(flextgl)
+            fips_dir(private/flextgl)
             fips_files(flextGL.c flextGL.h)
             fips_deps(glfw3)
         endif()

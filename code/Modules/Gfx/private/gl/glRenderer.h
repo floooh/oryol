@@ -5,11 +5,11 @@
     @brief OpenGL wrapper and state cache
 */
 #include "Core/Types.h"
-#include "Gfx/Core/GfxTypes.h"
-#include "Gfx/Core/gfxPointers.h"
-#include "Gfx/gl/gl_decl.h"
+#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/private/gfxPointers.h"
+#include "Gfx/private/gl/gl_decl.h"
 #include "glm/vec4.hpp"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/private/resource.h"
 
 namespace Oryol {
 namespace _priv {

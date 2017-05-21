@@ -28,7 +28,7 @@ namespace _priv {
 class displayMgr : public eglDisplayMgr { };
 } }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
-#include "Gfx/glfw/glfwDisplayMgr.h"
+#include "Gfx/private/glfw/glfwDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public glfwDisplayMgr { };

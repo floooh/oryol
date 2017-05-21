@@ -2,7 +2,7 @@
 //  glTypes.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "Gfx/gl/gl_impl.h"
+#include "gl_impl.h"
 #include "Core/Assertion.h"
 #include "glTypes.h"
 #include "glCaps.h"

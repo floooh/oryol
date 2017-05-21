@@ -43,7 +43,7 @@
         TriangleFan = 6,
     }
 */
-#include "Gfx/Core/GfxTypes.h"
+#include "Gfx/Public/GfxTypes.h"
 
 namespace Oryol {
 

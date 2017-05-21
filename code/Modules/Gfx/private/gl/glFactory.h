@@ -5,8 +5,8 @@
     @ingroup _priv
     @brief GL implementation of gfxFactory
 */
-#include "Gfx/Resource/gfxFactoryBase.h"
-#include "Gfx/gl/gl_decl.h"
+#include "Gfx/private/gfxFactoryBase.h"
+#include "Gfx/private/gl/gl_decl.h"
 
 namespace Oryol {
 namespace _priv {

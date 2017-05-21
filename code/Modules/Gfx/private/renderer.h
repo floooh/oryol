@@ -6,7 +6,7 @@
     @brief main rendering API wrapper
  */
 #if ORYOL_OPENGL
-#include "Gfx/gl/glRenderer.h"
+#include "Gfx/private/gl/glRenderer.h"
 namespace Oryol {
 namespace _priv {
 class renderer : public glRenderer { };

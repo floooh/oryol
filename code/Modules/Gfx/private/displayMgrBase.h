@@ -7,9 +7,9 @@
     
     @see displayMgr
 */
-#include "Gfx/Core/GfxTypes.h"
+#include "Gfx/Public/GfxTypes.h"
 #include "Core/Containers/Map.h"
-#include "Gfx/Core/gfxPointers.h"
+#include "Gfx/private/gfxPointers.h"
 #include <functional>
 
 namespace Oryol {

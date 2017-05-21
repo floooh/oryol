@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "gfxFactoryBase.h"
-#include "Gfx/Resource/resource.h"
-#include "Gfx/Resource/resourcePools.h"
+#include "Gfx/private/resource.h"
+#include "Gfx/private/resourcePools.h"
 
 namespace Oryol {
 namespace _priv {

@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glTypes.h"
+#include "Gfx/private/gl/gl_impl.h"
+#include "Gfx/private/gl/glTypes.h"
 
 using namespace Oryol;
 using namespace _priv;

@@ -6,8 +6,8 @@
     @brief base class for Gfx resource factories
 */
 #include "Resource/ResourceState.h"
-#include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/GfxTypes.h"
+#include "Gfx/private/gfxPointers.h"
+#include "Gfx/Public/GfxTypes.h"
 
 namespace Oryol {
 namespace _priv {

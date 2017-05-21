@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 #if ORYOL_OPENGL
-#include "Gfx/gl/glResource.h"
+#include "Gfx/private/gl/glResource.h"
 #elif ORYOL_D3D11
 #include "Gfx/d3d11/d3d11Resource.h"
 #elif ORYOL_METAL

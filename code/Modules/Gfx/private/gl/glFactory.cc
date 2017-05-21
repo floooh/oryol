@@ -6,8 +6,8 @@
 #include "gl_impl.h"
 #include "glTypes.h"
 #include "glCaps.h"
-#include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/private/renderer.h"
+#include "Gfx/private/resource.h"
 
 namespace Oryol {
 namespace _priv {

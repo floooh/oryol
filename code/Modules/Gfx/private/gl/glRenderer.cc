@@ -3,9 +3,9 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/private/displayMgr.h"
+#include "Gfx/private/resourcePools.h"
+#include "Gfx/private/resource.h"
 #include "gl_impl.h"
 #include "glRenderer.h"
 #include "glTypes.h"

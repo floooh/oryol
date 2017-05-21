@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glCaps.h"
+#include "Gfx/private/gl/gl_impl.h"
+#include "Gfx/private/gl/glCaps.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"

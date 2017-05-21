@@ -6,7 +6,7 @@
     @brief Gfx module resource pool classes
 */
 #include "Resource/Core/ResourcePool.h"
-#include "Gfx/Resource/resource.h"
+#include "Gfx/private/resource.h"
 
 namespace Oryol {
 namespace _priv {

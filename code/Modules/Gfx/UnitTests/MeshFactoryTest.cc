@@ -3,15 +3,15 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/gfxFactory.h"
-#include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Core/GfxTypes.h"
-#include "Gfx/Core/displayMgr.h"
+#include "Gfx/private/renderer.h"
+#include "Gfx/private/gfxFactory.h"
+#include "Gfx/private/resourcePools.h"
+#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/private/displayMgr.h"
 #include "Assets/Gfx/MeshBuilder.h"
 
 #if ORYOL_OPENGL
-#include "Gfx/gl/gl_impl.h"
+#include "Gfx/private/gl/gl_impl.h"
 #endif
 
 using namespace Oryol;

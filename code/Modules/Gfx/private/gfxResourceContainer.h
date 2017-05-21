@@ -11,10 +11,10 @@
 #include "Resource/Core/ResourceLoader.h"
 #include "Resource/Core/resourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
-#include "Gfx/Core/GfxTypes.h"
-#include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Resource/gfxFactory.h"
-#include "Gfx/Core/gfxPointers.h"
+#include "Gfx/Public/GfxTypes.h"
+#include "Gfx/private/resourcePools.h"
+#include "Gfx/private/gfxFactory.h"
+#include "Gfx/private/gfxPointers.h"
 
 namespace Oryol {
 namespace _priv {

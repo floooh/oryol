@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/Core.h"
 #include "gfxResourceContainer.h"
-#include "Gfx/Core/displayMgr.h"
+#include "displayMgr.h"
 
 namespace Oryol {
 namespace _priv {

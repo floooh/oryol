@@ -5,10 +5,10 @@
 #include "Gfx.h"
 #include "Core/Core.h"
 #include "Core/Trace.h"
-#include "Gfx/Core/gfxPointers.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Resource/gfxResourceContainer.h"
-#include "Gfx/Core/renderer.h"
+#include "Gfx/private/gfxPointers.h"
+#include "Gfx/private/displayMgr.h"
+#include "Gfx/private/gfxResourceContainer.h"
+#include "Gfx/private/renderer.h"
 
 namespace Oryol {
 

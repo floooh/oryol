@@ -5,7 +5,7 @@
     @brief Gfx module resource classes
 */
 #include "Resource/Core/resourceBase.h"
-#include "Gfx/Core/GfxTypes.h"
+#include "Gfx/Public/GfxTypes.h"
 
 namespace Oryol {
 namespace _priv {
