@@ -17,7 +17,7 @@
 #define NOMINMAX
 #include <Windows.h>
 #elif ORYOL_ANDROID
-#include "Core/android/android_native_app_glue.h"
+#include "Core/private/android/android_native_app_glue.h"
 #endif
 #include "Core/App.h"
 #include "Core/String/WideString.h"

@@ -5,13 +5,13 @@
 #include "eglDisplayMgr.h"
 #if ORYOL_ANDROID
 #include "android/native_window.h"
-#include "Core/android/android_native_app_glue.h"
+#include "Core/private/android/android_native_app_glue.h"
 #endif
 #if ORYOL_RASPBERRYPI
 #include "bcm_host.h"
 #endif
-#include "Gfx/gl/gl_impl.h"
-#include "Gfx/gl/glCaps.h"
+#include "Gfx/private/gl/gl_impl.h"
+#include "Gfx/private/gl/glCaps.h"
 
 #if ORYOL_ANDROID
 // this is in the app's main file (see App.h -> OryolApp)

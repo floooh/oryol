@@ -4,8 +4,8 @@
     @class Oryol::androidInputMgr
     @brief input manager for Android
 */
-#include "Input/Core/inputMgrBase.h"
-#include "Core/android/androidBridge.h"
+#include "Input/private/inputMgrBase.h"
+#include "Core/private/android/androidBridge.h"
 #include "Core/RunLoop.h"
 
 class android_app;

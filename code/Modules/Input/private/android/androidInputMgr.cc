@@ -6,7 +6,7 @@
 #include "Core/Core.h"
 #include "Core/Time/Clock.h"
 #include "Gfx/Gfx.h"
-#include "Core/android/android_native_app_glue.h"
+#include "Core/private/android/android_native_app_glue.h"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/trigonometric.hpp"
 
