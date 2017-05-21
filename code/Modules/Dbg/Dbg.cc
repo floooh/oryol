@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Dbg.h"
 #include "Core/Trace.h"
-#include "Dbg/text/debugTextRenderer.h"
+#include "Dbg/private/debugTextRenderer.h"
 #include <cstdarg>
 
 namespace Oryol {
