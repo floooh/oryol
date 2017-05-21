@@ -10,7 +10,7 @@
 */
 #include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
-#include "IO/IOSetup.h"
+#include "IO/IOTypes.h"
 #include "IO/private/loadQueue.h"
 
 namespace Oryol {
@@ -34,7 +34,7 @@ public:
     static String ResolveAssigns(const String& str);
     
     /// associate URL scheme with filesystem
-    static void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator);
+    static void RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystemBase>()> fsCreator);
     /// unregister a filesystem
     static void UnregisterFileSystem(const StringAtom& scheme);
     /// test if a filesystem has been registered

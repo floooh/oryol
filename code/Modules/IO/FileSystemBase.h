@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::FileSystem
+    @class Oryol::FileSystemBase
     @ingroup IO
     @brief base-class for FileSystem handlers
 
@@ -14,13 +14,11 @@
 
 namespace Oryol {
     
-class FileSystem : public RefCounted {
-    OryolClassDecl(FileSystem);
+class FileSystemBase : public RefCounted {
+    OryolClassDecl(FileSystemBase);
 public:
-    /// default constructor
-    FileSystem();
     /// destructor
-    virtual ~FileSystem();
+    virtual ~FileSystemBase();
 
     /// called once on main-thread
     virtual void init(const StringAtom& scheme);

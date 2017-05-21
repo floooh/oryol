@@ -11,13 +11,13 @@
     
     @todo: HTTPFileSystem description
 */
-#include "IO/FileSystem.h"
+#include "IO/FileSystemBase.h"
 #include "Core/Creator.h"
 #include "HttpFS/private/urlLoader.h"
 
 namespace Oryol {
     
-class HTTPFileSystem : public FileSystem {
+class HTTPFileSystem : public FileSystemBase {
     OryolClassDecl(HTTPFileSystem);
     OryolClassCreator(HTTPFileSystem);
 public:

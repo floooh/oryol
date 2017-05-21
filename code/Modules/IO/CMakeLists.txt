@@ -5,12 +5,8 @@ fips_begin_module(IO)
     fips_vs_warning_level(3)
     fips_files(
         IO.cc IO.h
-        IOConfig.h
-        IOSetup.h
-        IOStatus.cc IOStatus.h
-        URL.cc URL.h
-        URLBuilder.cc URLBuilder.h
-        FileSystem.cc FileSystem.h
+        IOTypes.cc IOTypes.h
+        FileSystemBase.cc FileSystemBase.h
     )
     fips_dir(private)
     fips_files(

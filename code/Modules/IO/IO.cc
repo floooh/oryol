@@ -103,7 +103,7 @@ IO::ResolveAssigns(const String& str) {
 
 //------------------------------------------------------------------------------
 void
-IO::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator) {
+IO::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystemBase>()> fsCreator) {
     o_assert_dbg(IsValid());
 
     bool newFileSystem = !ioState->schemeReg.IsFileSystemRegistered(scheme);

@@ -6,7 +6,6 @@
     @brief route IO requests to ioWorkers
 */
 #include "Core/Containers/StaticArray.h"
-#include "IO/IOConfig.h"
 #include "IO/private/ioPointers.h"
 #include "IO/private/ioWorker.h"
 
@@ -25,8 +24,9 @@ public:
     void doWork();
 
 private:
+    static const int NumWorkers = 4;
     int curWorker = 0;
-    StaticArray<ioWorker, IOConfig::NumWorkers> workers;
+    StaticArray<ioWorker, NumWorkers> workers;
 };
 
 } // namespace _priv

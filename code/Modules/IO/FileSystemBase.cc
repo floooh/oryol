@@ -1,37 +1,32 @@
 //------------------------------------------------------------------------------
-//  FileSystem.cc
+//  FileSystemBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "FileSystem.h"
+#include "FileSystemBase.h"
 #include "Core/Log.h"
 
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-FileSystem::FileSystem() {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-FileSystem::~FileSystem() {
+FileSystemBase::~FileSystemBase() {
     // empty
 }
 
 //------------------------------------------------------------------------------
 void
-FileSystem::init(const StringAtom& scheme_) {
+FileSystemBase::init(const StringAtom& scheme_) {
     this->scheme = scheme_;
 }
 
 //------------------------------------------------------------------------------
 void
-FileSystem::initLane() {
+FileSystemBase::initLane() {
     // this is called per IO lane
 }
 
 //------------------------------------------------------------------------------
 void
-FileSystem::onMsg(const Ptr<IORequest>& ioReq) {
+FileSystemBase::onMsg(const Ptr<IORequest>& ioReq) {
     o_warn("FileSystem::onMsg(): message not handled by FileSystem!\n");
 }
 

@@ -17,7 +17,7 @@
 #include "Core/String/StringAtom.h"
 #include "IO/private/ioPointers.h"
 #include "IO/private/ioRequests.h"
-#include "IO/FileSystem.h"
+#include "IO/FileSystemBase.h"
 #if ORYOL_HAS_THREADS
 #include <atomic>
 #include <thread>
@@ -43,7 +43,7 @@ public:
 
 private:
     /// lookup filesystem for URL
-    Ptr<FileSystem> fileSystemForURL(const URL& url);
+    Ptr<FileSystemBase> fileSystemForURL(const URL& url);
     /// check for and handle cancelled message
     bool checkCancelled(const Ptr<IORequest>& msg);
     /// called from thread to handle a generic message
@@ -62,7 +62,7 @@ private:
     void moveTransferToReadQueue();
 
     ioPointers pointers;
-    Map<StringAtom, Ptr<FileSystem>> fileSystems;
+    Map<StringAtom, Ptr<FileSystemBase>> fileSystems;
 
     Queue<Ptr<ioMsg>> writeQueue;     // written by sender thread
     Queue<Ptr<ioMsg>> transferQueue;  // written by sender, read by worker thread (locked)

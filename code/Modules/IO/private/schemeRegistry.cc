@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "schemeRegistry.h"
-#include "IO/FileSystem.h"
+#include "IO/FileSystemBase.h"
 #include "Core/Core.h"
 
 #if ORYOL_HAS_THREADS
@@ -19,14 +19,14 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 void
-schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystem>()> fsCreator) {
+schemeRegistry::RegisterFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystemBase>()> fsCreator) {
     o_assert_dbg(!this->registry.Contains(scheme));
     {
         SCOPED_LOCK;
         this->registry.Add(scheme, fsCreator);
     }
     // create temp FileSystem object on main-thread to call the Init method
-    Ptr<FileSystem> fs = this->CreateFileSystem(scheme);
+    auto fs = this->CreateFileSystem(scheme);
     fs->init(scheme);
 }
 
@@ -47,11 +47,11 @@ schemeRegistry::IsFileSystemRegistered(const StringAtom& scheme) const {
 }
 
 //------------------------------------------------------------------------------
-Ptr<FileSystem>
+Ptr<FileSystemBase>
 schemeRegistry::CreateFileSystem(const StringAtom& scheme) const {
     SCOPED_LOCK;
     o_assert_dbg(this->registry.Contains(scheme));
-    Ptr<FileSystem> fileSystem(this->registry[scheme]());
+    Ptr<FileSystemBase> fileSystem(this->registry[scheme]());
     fileSystem->initLane();
     return fileSystem;
 }

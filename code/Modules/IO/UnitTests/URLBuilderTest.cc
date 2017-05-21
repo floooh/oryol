@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/URLBuilder.h"
+#include "IO/IOTypes.h"
 
 using namespace Oryol;
 

@@ -14,7 +14,7 @@ using namespace _priv;
 //------------------------------------------------------------------------------
 void
 LocalFileSystem::init(const StringAtom& scheme_) {
-    FileSystem::init(scheme_);
+    FileSystemBase::init(scheme_);
     StringBuilder strBuilder;
 
     // setup the root assign

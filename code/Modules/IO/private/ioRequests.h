@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @file IO/FS/IORequests.h
+    @file ioRequests.h
     @brief IO request classes header
     
     These are all the core IO requests classes. If you want to 
@@ -10,8 +10,7 @@
 */
 #include "Core/RefCounted.h"
 #include "Core/Containers/Buffer.h"
-#include "IO/URL.h"
-#include "IO/IOStatus.h"
+#include "IO/IOTypes.h"
 
 namespace Oryol {
 namespace _priv {

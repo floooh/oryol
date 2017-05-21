@@ -154,7 +154,7 @@ ioWorker::moveTransferToReadQueue() {
 }
 
 //------------------------------------------------------------------------------
-Ptr<FileSystem>
+Ptr<FileSystemBase>
 ioWorker::fileSystemForURL(const URL& url) {
     StringAtom scheme = url.Scheme();
     if (this->fileSystems.Contains(scheme)) {
@@ -162,7 +162,7 @@ ioWorker::fileSystemForURL(const URL& url) {
     }
     else {
         o_warn("ioLane::fileSystemForURL: no filesystem registered for URL scheme '%s'!\n", scheme.AsCStr());
-        return Ptr<FileSystem>();
+        return Ptr<FileSystemBase>();
     }
 }
 
@@ -188,7 +188,7 @@ ioWorker::onMsg(const Ptr<ioMsg>& msg) {
         // request to 'handled'!
         Ptr<IORequest> ioReq = msg->DynamicCast<IORequest>();
         if (!this->checkCancelled(ioReq)) {
-            Ptr<FileSystem> fs = this->fileSystemForURL(ioReq->Url);
+            auto fs = this->fileSystemForURL(ioReq->Url);
             if (fs) {
                 fs->onMsg(ioReq);
             }
@@ -199,7 +199,7 @@ ioWorker::onMsg(const Ptr<ioMsg>& msg) {
         const StringAtom& urlScheme = msg->DynamicCast<notifyWorkers>()->Scheme;
         if (msg->IsA<notifyFileSystemAdded>()) {
             o_assert(!this->fileSystems.Contains(urlScheme));
-            Ptr<FileSystem> newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
+            auto newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
             this->fileSystems.Add(urlScheme, newFileSystem);
         }
         else if (msg->IsA<notifyFileSystemRemoved>()) {
@@ -208,7 +208,7 @@ ioWorker::onMsg(const Ptr<ioMsg>& msg) {
         }
         else if (msg->IsA<notifyFileSystemReplaced>()) {
             o_assert(this->fileSystems.Contains(urlScheme));
-            Ptr<FileSystem> newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
+            auto newFileSystem = this->pointers.schemeRegistry->CreateFileSystem(urlScheme);
             this->fileSystems[urlScheme] = newFileSystem;
         }
         msg->Handled = true;

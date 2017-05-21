@@ -42,7 +42,7 @@ ioRouter::put(const Ptr<ioMsg>& msg) {
     }
     else {
         // for all other messages, use a round-robin dispatch
-        this->curWorker = (this->curWorker + 1) % IOConfig::NumWorkers;
+        this->curWorker = (this->curWorker + 1) % NumWorkers;
         this->workers[this->curWorker].put(msg);
     }
 }

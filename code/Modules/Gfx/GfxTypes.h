@@ -1,9 +1,5 @@
 #pragma once
 //------------------------------------------------------------------------------
-/**
-    @file Gfx/Core/GfxTypes.h
-    @brief public Gfx types 
-*/
 #include "Core/Types.h"
 #include "Core/Assertion.h"
 #include "Core/String/String.h"
