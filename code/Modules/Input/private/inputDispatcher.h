@@ -4,7 +4,7 @@
     @class Oryol::_priv::inputDispatcher
     @brief dispatch input module events
 */
-#include "Input/Core/InputTypes.h"
+#include "Input/Public/InputTypes.h"
 #include "Core/Containers/Map.h"
 
 namespace Oryol {

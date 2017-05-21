@@ -12,7 +12,7 @@
     like keyboard, mouse and game pads. On mobile platforms it also allows
     to query touch gestures.
 */
-#include "Input/Core/InputTypes.h"
+#include "Input/Public/InputTypes.h"
 
 namespace Oryol {
     

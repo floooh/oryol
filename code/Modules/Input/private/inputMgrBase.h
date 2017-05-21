@@ -5,10 +5,10 @@
     @ingroup _priv
     @brief base class for platform-specific input managers
 */
-#include "Input/Core/InputTypes.h"
-#include "Input/Core/inputDevices.h"
-#include "Input/Core/gestureDetectors.h"
-#include "Input/Core/inputDispatcher.h"
+#include "Input/Public/InputTypes.h"
+#include "Input/private/inputDevices.h"
+#include "Input/private/gestureDetectors.h"
+#include "Input/private/inputDispatcher.h"
 
 namespace Oryol {
 namespace _priv {

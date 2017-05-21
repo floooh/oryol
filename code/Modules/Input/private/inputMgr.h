@@ -6,7 +6,7 @@
     @brief frontend inputMgr class
 */
 #if ORYOL_D3D11
-#include "Input/win/winInputMgr.h"
+#include "Input/private/win/winInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public winInputMgr { };
@@ -24,7 +24,7 @@ namespace _priv {
 class inputMgr : public raspiInputMgr { };
 } }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
-#include "Input/glfw/glfwInputMgr.h"
+#include "Input/private/glfw/glfwInputMgr.h"
 namespace Oryol {
 namespace _priv {
 class inputMgr : public glfwInputMgr { };

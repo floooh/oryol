@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 #include "Core/Containers/StaticArray.h"
 #include "Core/Assertion.h"
-#include "Input/Core/InputTypes.h"
+#include "Input/Public/InputTypes.h"
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
 #include <bitset>

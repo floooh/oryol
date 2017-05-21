@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief provide input on platforms using GLFW
 */
-#include "Input/Core/inputMgrBase.h"
+#include "Input/private/inputMgrBase.h"
 #include "Core/Containers/Map.h"
 
 struct GLFWwindow;
