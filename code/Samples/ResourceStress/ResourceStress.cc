@@ -6,7 +6,7 @@
 #include "IO/IO.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/Dbg.h"
-#include "HTTP/HTTPFileSystem.h"
+#include "HttpFS/HTTPFileSystem.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Assets/Gfx/TextureLoader.h"
 #include "glm/mat4x4.hpp"

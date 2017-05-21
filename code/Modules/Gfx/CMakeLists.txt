@@ -141,6 +141,6 @@ fips_begin_unittest(Gfx)
         glTypesTest.cc
     )
     oryol_shader(TestShaderLibrary.glsl)
-    fips_deps(HTTP Gfx Assets)
+    fips_deps(HttpFS Gfx Assets)
 fips_end_unittest()
 

@@ -1,25 +1,27 @@
 #-------------------------------------------------------------------------------
-#   oryol HTTP module
+#   oryol HttpFS module
 #-------------------------------------------------------------------------------
-fips_begin_module(HTTP)
+fips_begin_module(HttpFS)
     fips_vs_warning_level(3)
     fips_files(
         HTTPFileSystem.cc HTTPFileSystem.h
-        urlLoader.h
     )
-    fips_dir(base)
-    fips_files(baseURLLoader.cc baseURLLoader.h)
+    fips_dir(private)
+    fips_files(
+        urlLoader.h
+        baseURLLoader.cc baseURLLoader.h
+    )
     if (ORYOL_USE_LIBCURL)
-        fips_dir(curl)
+        fips_dir(private/curl)
         fips_files(curlURLLoader.cc curlURLLoader.h)
     elseif (FIPS_OSX)
-        fips_dir(osx)
+        fips_dir(private/osx)
         fips_files(osxURLLoader.mm osxURLLoader.h)
     elseif (FIPS_WINDOWS)
-        fips_dir(windows)
+        fips_dir(private/win)
         fips_files(winURLLoader.cc winURLLoader.h)
     elseif (FIPS_EMSCRIPTEN)
-        fips_dir(emsc)
+        fips_dir(private/emsc)
         fips_files(emscURLLoader.cc emscURLLoader.h)
     endif()
 
@@ -39,6 +41,6 @@ fips_begin_unittest(HTTP)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(HTTPFileSystemTest.cc)
-    fips_deps(IO HTTP Core)
+    fips_deps(IO HttpFS Core)
     fips_frameworks_osx(Foundation)
 fips_end_unittest()

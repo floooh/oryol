@@ -6,7 +6,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "HTTP/HTTPFileSystem.h"
+#include "HttpFS/HTTPFileSystem.h"
 #include "IO/IO.h"
 
 using namespace Oryol;

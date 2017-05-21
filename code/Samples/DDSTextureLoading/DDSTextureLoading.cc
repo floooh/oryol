@@ -5,7 +5,7 @@
 #include "Core/Main.h"
 #include "Core/Containers/StaticArray.h"
 #include "IO/IO.h"
-#include "HTTP/HTTPFileSystem.h"
+#include "HttpFS/HTTPFileSystem.h"
 #include "Gfx/Gfx.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Assets/Gfx/TextureLoader.h"

@@ -13,7 +13,7 @@
 */
 #include "IO/Public/FileSystem.h"
 #include "Core/Creator.h"
-#include "HTTP/urlLoader.h"
+#include "HttpFS/private/urlLoader.h"
 
 namespace Oryol {
     

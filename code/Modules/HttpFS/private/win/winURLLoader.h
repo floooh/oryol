@@ -9,7 +9,7 @@
     The winURLLoader will keep an internal pool of open HTTP connections
     which will expire after a couple of seconds.
  */
-#include "HTTP/base/baseURLLoader.h"
+#include "HttpFS/private/baseURLLoader.h"
 #include "Core/String/StringBuilder.h"
 #include <chrono>
 
