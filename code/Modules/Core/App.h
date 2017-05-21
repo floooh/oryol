@@ -32,7 +32,6 @@
     OryolMain(MyAppClass);    
     ```
 */
-#include "Core/Types.h"
 #include "Core/Args.h"
 #include "Core/AppState.h"
 #include "Core/Containers/Set.h"

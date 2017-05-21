@@ -13,7 +13,6 @@
     
     @see Duration
 */
-#include "Core/Types.h"
 #include "Core/Time/Duration.h"
 
 namespace Oryol {

@@ -25,7 +25,6 @@
     args.HasArg("-female") => false
     ```
 */
-#include "Core/Types.h"
 #include "Core/String/String.h"
 #include "Core/String/WideString.h"
 #include "Core/Containers/Array.h"

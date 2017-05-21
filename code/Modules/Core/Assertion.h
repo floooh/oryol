@@ -4,7 +4,6 @@
     @file Core/Assertion.h
     @brief Oryol's assert macros
 */
-#include "Core/Types.h"
 #include "Core/Log.h"
 #include <stdlib.h> // for abort()
 

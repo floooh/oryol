@@ -10,7 +10,6 @@
     no relation to the "wall-clock-time".
 */
 #include "Core/Time/TimePoint.h"
-#include "Core/Time/Duration.h"
 
 namespace Oryol {
     

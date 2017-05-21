@@ -225,7 +225,7 @@ InlineArray<TYPE, CAPACITY>::Add(TYPE&& item) {
 //------------------------------------------------------------------------------
 template<class TYPE, int CAPACITY> void
 InlineArray<TYPE, CAPACITY>::Add(std::initializer_list<TYPE> l) {
-    this->checkRoom(l.size());
+    this->checkRoom(int(l.size()));
     for (const auto& item : l) {
         this->items[this->size++] = item;
     }

@@ -4,7 +4,6 @@
     @file Core/Class.h
     @brief Oryol class annotation macros
 */
-#include "Core/Types.h"
 #include "Core/Memory/Memory.h"
 
 /// declare an Oryol class without pool allocator (located inside class declaration)

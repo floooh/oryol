@@ -5,8 +5,6 @@
     @ingroup Core
     @brief application states
 */
-#include "Core/Types.h"
-
 namespace Oryol {
     
 class AppState {

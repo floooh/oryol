@@ -6,7 +6,6 @@
     @brief generic resource pool
     @todo ResourcePool description
 */
-#include "Core/Ptr.h"
 #include "Core/Containers/Queue.h"
 #include "Core/Containers/Array.h"
 #include "Resource/Id.h"

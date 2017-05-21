@@ -7,7 +7,6 @@
 */
 #include "Core/Types.h"
 #include "Core/Assertion.h"
-#include <utility>
 
 namespace Oryol {
 

@@ -241,7 +241,7 @@ debugTextRenderer::convertStringToVertices(const String& str) {
     const int numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
     const char* ptr = str.AsCStr();
     for (int charIndex = 0; charIndex < numChars; charIndex++) {
-        unsigned char c = (uchar) ptr[charIndex];
+        unsigned char c = (unsigned char) ptr[charIndex];
         
         // control character?
         if (c < 0x20) {

@@ -3,7 +3,6 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Logger.h"
-#include "Core/Log.h"
 
 namespace Oryol {
 

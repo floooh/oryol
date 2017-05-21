@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "Core.h"
 #include "Core/RunLoop.h"
-#include "Core/Ptr.h"
 #include "Core/Threading/ThreadLocalPtr.h"
 #include "Core/Trace.h"
 #include <thread>

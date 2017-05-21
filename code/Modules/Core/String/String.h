@@ -24,7 +24,9 @@
     
     @see StringBuilder, StringAtom
 */
+#if ORYOL_HAS_ATOMIC
 #include <atomic>
+#endif
 #include "Core/Types.h"
 #include "Core/Assertion.h"
 
