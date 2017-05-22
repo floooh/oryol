@@ -28,7 +28,7 @@ gfxResourceContainer::setup(const GfxSetup& setup, const gfxPointers& ptrs) {
         this->update();
     });
     
-    resourceContainerBase::setup(setup.ResourceLabelStackCapacity, setup.ResourceRegistryCapacity);
+    ResourceContainerBase::setup(setup.ResourceLabelStackCapacity, setup.ResourceRegistryCapacity);
 }
 
 //------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ gfxResourceContainer::discard() {
     }
     this->pendingLoaders.Clear();
     
-    resourceContainerBase::discard();
+    ResourceContainerBase::discard();
 
     this->renderPassPool.Discard();
     this->pipelinePool.Discard();

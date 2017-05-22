@@ -2,26 +2,19 @@
 //  resourceRegistry.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
-#include "resourceRegistry.h"
+#include "ResourceRegistry.h"
 
 namespace Oryol {
-namespace _priv {
 
 //------------------------------------------------------------------------------
-resourceRegistry::resourceRegistry() :
-isValid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-resourceRegistry::~resourceRegistry() {
+ResourceRegistry::~ResourceRegistry() {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(this->entries.Empty());
 }
 
 //------------------------------------------------------------------------------
 void
-resourceRegistry::Setup(int reserveSize) {
+ResourceRegistry::Setup(int reserveSize) {
     o_assert_dbg(!this->isValid);
     
     this->isValid = true;
@@ -32,7 +25,7 @@ resourceRegistry::Setup(int reserveSize) {
 
 //------------------------------------------------------------------------------
 void
-resourceRegistry::Discard() {
+ResourceRegistry::Discard() {
     o_assert_dbg(this->isValid);
     
     this->entries.Clear();
@@ -43,13 +36,13 @@ resourceRegistry::Discard() {
 
 //------------------------------------------------------------------------------
 bool
-resourceRegistry::IsValid() const {
+ResourceRegistry::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
 void
-resourceRegistry::Add(const Locator& loc, Id id, ResourceLabel label) {
+ResourceRegistry::Add(const Locator& loc, Id id, ResourceLabel label) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.IsValid());
     o_assert(!this->idIndexMap.Contains(id));
@@ -63,8 +56,8 @@ resourceRegistry::Add(const Locator& loc, Id id, ResourceLabel label) {
 }
 
 //------------------------------------------------------------------------------
-const resourceRegistry::Entry*
-resourceRegistry::findEntryByLocator(const Locator& loc) const {
+const ResourceRegistry::Entry*
+ResourceRegistry::findEntryByLocator(const Locator& loc) const {
     if (loc.IsShared()) {
         const int mapIndex = this->locatorIndexMap.FindIndex(loc);
         if (InvalidIndex != mapIndex) {
@@ -76,8 +69,8 @@ resourceRegistry::findEntryByLocator(const Locator& loc) const {
 }
 
 //------------------------------------------------------------------------------
-const resourceRegistry::Entry*
-resourceRegistry::findEntryById(Id id) const {
+const ResourceRegistry::Entry*
+ResourceRegistry::findEntryById(Id id) const {
     const int mapIndex = this->idIndexMap.FindIndex(id);
     if (InvalidIndex != mapIndex) {
         const int entryIndex = this->idIndexMap.ValueAtIndex(mapIndex);
@@ -88,7 +81,7 @@ resourceRegistry::findEntryById(Id id) const {
 
 //------------------------------------------------------------------------------
 bool
-resourceRegistry::Contains(Id id) const {
+ResourceRegistry::Contains(Id id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.IsValid());
     return this->idIndexMap.Contains(id);
@@ -96,7 +89,7 @@ resourceRegistry::Contains(Id id) const {
 
 //------------------------------------------------------------------------------
 Id
-resourceRegistry::Lookup(const Locator& loc) const {
+ResourceRegistry::Lookup(const Locator& loc) const {
     o_assert_dbg(this->isValid);
     if (loc.IsShared()) {
         const Entry* entry = this->findEntryByLocator(loc);
@@ -109,7 +102,7 @@ resourceRegistry::Lookup(const Locator& loc) const {
 
 //------------------------------------------------------------------------------
 Array<Id>
-resourceRegistry::Remove(ResourceLabel label) {
+ResourceRegistry::Remove(ResourceLabel label) {
     o_assert_dbg(this->isValid);
     Array<Id> removed;
     removed.Reserve(this->entries.Size() < 256 ? this->entries.Size() : 256);
@@ -159,7 +152,7 @@ resourceRegistry::Remove(ResourceLabel label) {
 
 //------------------------------------------------------------------------------
 const Locator&
-resourceRegistry::GetLocator(Id id) const {
+ResourceRegistry::GetLocator(Id id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.IsValid());
     
@@ -170,7 +163,7 @@ resourceRegistry::GetLocator(Id id) const {
 
 //------------------------------------------------------------------------------
 ResourceLabel
-resourceRegistry::GetLabel(Id id) const {
+ResourceRegistry::GetLabel(Id id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.IsValid());
     
@@ -181,14 +174,14 @@ resourceRegistry::GetLabel(Id id) const {
 
 //------------------------------------------------------------------------------
 int
-resourceRegistry::GetNumResources() const {
+ResourceRegistry::GetNumResources() const {
     o_assert_dbg(this->isValid);
     return this->entries.Size();
 }
 
 //------------------------------------------------------------------------------
 Id
-resourceRegistry::GetIdByIndex(int index) const {
+ResourceRegistry::GetIdByIndex(int index) const {
     o_assert_dbg(this->isValid);
     return this->entries[index].id;
 }
@@ -196,7 +189,7 @@ resourceRegistry::GetIdByIndex(int index) const {
 //------------------------------------------------------------------------------
 #if ORYOL_DEBUG
 bool
-resourceRegistry::checkIntegrity() const {
+ResourceRegistry::checkIntegrity() const {
     for (const auto& kvp : this->locatorIndexMap) {
         const Locator& loc = kvp.key;
         const int entryIndex = kvp.value;
@@ -222,5 +215,4 @@ resourceRegistry::checkIntegrity() const {
 }
 #endif
 
-} // namespace _priv
 } // namespace Oryol

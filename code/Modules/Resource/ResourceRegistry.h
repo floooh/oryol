@@ -1,8 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::resourceRegistry
-    @ingroup _priv
+    @class Oryol::ResourceRegistry
+    @ingroup Resource
     @brief map resource locators to resource ids for resource sharing
 */
 #include "Resource/Id.h"
@@ -12,14 +12,11 @@
 #include "Core/Containers/Map.h"
 
 namespace Oryol {
-namespace _priv {
     
-class resourceRegistry {
+class ResourceRegistry {
 public:
-    /// constructor
-    resourceRegistry();
     /// destructor
-    ~resourceRegistry();
+    ~ResourceRegistry();
     
     /// setup the registry with an estimated number of entries
     void Setup(int reserveSize);
@@ -69,10 +66,9 @@ private:
     /// find an entry by id
     const Entry* findEntryById(Id id) const;
     
-    bool isValid;
+    bool isValid = false;
     Array<Entry> entries;
     Map<Locator, int> locatorIndexMap;
     Map<Id, int> idIndexMap;
 };
-} // namespace _priv
 } // namespace Oryol

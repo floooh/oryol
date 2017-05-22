@@ -8,6 +8,7 @@
     add custom requests to your own filesystem implementations, please
     add those custom requests in your own module, not here.
 */
+#include "Core/Config.h"
 #include "Core/RefCounted.h"
 #include "Core/Containers/Buffer.h"
 #include "IO/IOTypes.h"

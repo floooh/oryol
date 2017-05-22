@@ -9,7 +9,7 @@
 #include "Core/RunLoop.h"
 #include "Core/Containers/Array.h"
 #include "Resource/ResourceLoader.h"
-#include "Resource/private/resourceContainerBase.h"
+#include "Resource/ResourceContainerBase.h"
 #include "Resource/ResourceInfo.h"
 #include "Gfx/GfxTypes.h"
 #include "Gfx/private/resourcePools.h"
@@ -22,7 +22,7 @@ namespace _priv {
 class renderer;
 class displayMgr;
 
-class gfxResourceContainer : public resourceContainerBase {
+class gfxResourceContainer : public ResourceContainerBase {
 public:
     /// setup the resource container
     void setup(const GfxSetup& setup, const gfxPointers& ptrs);

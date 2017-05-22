@@ -11,7 +11,7 @@ namespace _priv {
 void
 textureBase::Clear() {
     this->textureAttrs = TextureAttrs();
-    resourceBase::Clear();
+    ResourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -21,14 +21,14 @@ meshBase::Clear() {
     this->indexBufferAttrs = IndexBufferAttrs();
     this->primGroups.Fill(PrimitiveGroup());
     this->numPrimGroups = 0;
-    resourceBase::Clear();
+    ResourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 void
 pipelineBase::Clear() {
     this->shd = nullptr;
-    resourceBase::Clear();
+    ResourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ void
 renderPassBase::Clear() {
     this->colorTextures.Fill(nullptr);
     this->depthStencilTexture = nullptr;
-    resourceBase::Clear();
+    ResourceBase::Clear();
 }
 
 } // namespace _priv

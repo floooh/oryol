@@ -1,28 +1,21 @@
 //------------------------------------------------------------------------------
-//  resourceContainerBase.cc
+//  ResourceContainerBase.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
 #include "Core/Assertion.h"
-#include "resourceContainerBase.h"
+#include "ResourceContainerBase.h"
 
 namespace Oryol {
     
 //------------------------------------------------------------------------------
-resourceContainerBase::resourceContainerBase() :
-curLabelCount(0),
-valid(false) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-resourceContainerBase::~resourceContainerBase() {
+ResourceContainerBase::~ResourceContainerBase() {
     o_assert_dbg(!this->valid);
 }
 
 //------------------------------------------------------------------------------
 void
-resourceContainerBase::setup(int labelStackCapacity, int registryCapacity) {
+ResourceContainerBase::setup(int labelStackCapacity, int registryCapacity) {
     o_assert_dbg(!this->valid);
     this->labelStack.Reserve(labelStackCapacity);
     this->registry.Setup(registryCapacity);
@@ -32,7 +25,7 @@ resourceContainerBase::setup(int labelStackCapacity, int registryCapacity) {
 
 //------------------------------------------------------------------------------
 void
-resourceContainerBase::discard() {
+ResourceContainerBase::discard() {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->labelStack.Size() == 1);
     this->PopLabel();
@@ -42,13 +35,13 @@ resourceContainerBase::discard() {
 
 //------------------------------------------------------------------------------
 bool
-resourceContainerBase::isValid() const {
+ResourceContainerBase::isValid() const {
     return this->valid;
 }
 
 //------------------------------------------------------------------------------
 ResourceLabel
-resourceContainerBase::PushLabel() {
+ResourceContainerBase::PushLabel() {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->curLabelCount < ResourceLabel::Default);
     this->labelStack.Add(this->curLabelCount++);
@@ -57,14 +50,14 @@ resourceContainerBase::PushLabel() {
 
 //------------------------------------------------------------------------------
 void
-resourceContainerBase::PushLabel(ResourceLabel label) {
+ResourceContainerBase::PushLabel(ResourceLabel label) {
     o_assert_dbg(this->valid);
     this->labelStack.Add(label);
 }
 
 //------------------------------------------------------------------------------
 ResourceLabel
-resourceContainerBase::PopLabel() {
+ResourceContainerBase::PopLabel() {
     o_assert_dbg(this->valid);
     ResourceLabel label = this->labelStack.Back();
     this->labelStack.Erase(this->labelStack.Size() - 1);
@@ -73,14 +66,14 @@ resourceContainerBase::PopLabel() {
 
 //------------------------------------------------------------------------------
 ResourceLabel
-resourceContainerBase::peekLabel() const {
+ResourceContainerBase::peekLabel() const {
     o_assert_dbg(this->valid);
     return this->labelStack.Back();
 }
 
 //------------------------------------------------------------------------------
 Id
-resourceContainerBase::Lookup(const Locator& loc) const {
+ResourceContainerBase::Lookup(const Locator& loc) const {
     o_assert_dbg(this->valid);
     return this->registry.Lookup(loc);
 }

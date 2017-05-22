@@ -11,12 +11,9 @@ fips_begin_module(Resource)
         ResourceLoader.cc ResourceLoader.h
         ResourcePool.h
         SetupAndData.h
-    )
-    fips_dir(private)
-    fips_files(
-        resourceContainerBase.cc resourceContainerBase.h
-        resourceRegistry.cc resourceRegistry.h
-        resourceBase.h
+        ResourceContainerBase.cc ResourceContainerBase.h
+        ResourceRegistry.cc ResourceRegistry.h
+        ResourceBase.h
     )
     fips_deps(Core)
 fips_end_module()

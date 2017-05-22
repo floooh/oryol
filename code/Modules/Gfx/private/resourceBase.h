@@ -4,7 +4,7 @@
     @file Gfx/Resource/resourceBase.h
     @brief Gfx module resource classes
 */
-#include "Resource/private/resourceBase.h"
+#include "Resource/ResourceBase.h"
 #include "Gfx/GfxTypes.h"
 
 namespace Oryol {
@@ -16,7 +16,7 @@ namespace _priv {
     @ingroup _priv
     @brief shader resource base class
 */
-class shaderBase : public resourceBase<ShaderSetup> { };
+class shaderBase : public ResourceBase<ShaderSetup> { };
 
 //------------------------------------------------------------------------------
 /**
@@ -24,7 +24,7 @@ class shaderBase : public resourceBase<ShaderSetup> { };
     @ingroup _priv
     @brief private: base class for platform-specific texture implementation
 */
-class textureBase : public resourceBase<TextureSetup> {
+class textureBase : public ResourceBase<TextureSetup> {
 public:
     /// texture attributes
     TextureAttrs textureAttrs;
@@ -41,7 +41,7 @@ public:
     @ingroup _priv
     @brief private: base class for platform-specific mesh implementations
 */
-class meshBase : public resourceBase<MeshSetup> {
+class meshBase : public ResourceBase<MeshSetup> {
 public:
     /// vertex buffer attributes
     VertexBufferAttrs vertexBufferAttrs;
@@ -63,7 +63,7 @@ public:
     @brief base class for pipeline implementations
 */
 class shader;
-class pipelineBase : public resourceBase<PipelineSetup> {
+class pipelineBase : public ResourceBase<PipelineSetup> {
 public:
     /// clear the object
     void Clear();    
@@ -78,7 +78,7 @@ public:
     @brief base class for render-pass implementations
 */
 class texture;
-class renderPassBase : public resourceBase<PassSetup> {
+class renderPassBase : public ResourceBase<PassSetup> {
 public:
     /// constructor
     renderPassBase() { 

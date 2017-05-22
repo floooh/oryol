@@ -1,7 +1,8 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::resourceContainerBase
+    @class Oryol::ResourceContainerBase
+    @ingroup Resource
     @brief base class for resource containers
     
     A resource container manages creation, pooling, querying and
@@ -11,17 +12,15 @@
 */
 #include "Core/Types.h"
 #include "Core/Containers/Array.h"
-#include "Resource/private/resourceRegistry.h"
+#include "Resource/ResourceRegistry.h"
 #include "Resource/ResourceLabel.h"
 
 namespace Oryol {
 
-class resourceContainerBase {
+class ResourceContainerBase {
 public:
-    /// default constructor
-    resourceContainerBase();
     /// destructor
-    ~resourceContainerBase();
+    ~ResourceContainerBase();
     
     /// generate new resource label and push on label stack
     ResourceLabel PushLabel();
@@ -43,9 +42,9 @@ protected:
     ResourceLabel peekLabel() const;
     
     Array<ResourceLabel> labelStack;
-    _priv::resourceRegistry registry;
-    uint32_t curLabelCount;
-    bool valid;
+    ResourceRegistry registry;
+    uint32_t curLabelCount = 0;
+    bool valid = false;
 };
 
 } // namespace Oryol

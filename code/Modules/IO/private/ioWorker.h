@@ -12,6 +12,7 @@
     worker thread wakes up, moves the messages from the transfer queue
     to a read-queue, processes them and goes back to sleep.
 */
+#include "Core/Config.h"
 #include "Core/Containers/Queue.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/StringAtom.h"

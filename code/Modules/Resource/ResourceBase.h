@@ -1,9 +1,9 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::resourceBase
+    @class Oryol::ResourceBase
     @ingroup Resource
-    @brief private: resource base class
+    @brief resource base class
     
     This is the generic Oryol resource base class. Resources usually manage
     some external data object (like textures, vertices, animations, ...)
@@ -21,7 +21,7 @@
 
 namespace Oryol {
     
-template<class SETUP> class resourceBase {
+template<class SETUP> class ResourceBase {
 public:
     /// the resource id
     class Id Id;
@@ -38,7 +38,7 @@ public:
 
 //------------------------------------------------------------------------------
 template<class SETUP> void
-resourceBase<SETUP>::Clear() {
+ResourceBase<SETUP>::Clear() {
     this->Setup = SETUP();
 }
 
