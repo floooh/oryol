@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "LocalFS/Core/fsWrapper.h"
+#include "LocalFS/private/fsWrapper.h"
 #include "Core/String/StringBuilder.h"
 #include <string.h>
 

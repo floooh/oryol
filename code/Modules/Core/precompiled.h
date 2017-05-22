@@ -7,9 +7,9 @@
 */
 #include "Core/Config.h"
 #if ORYOL_POSIX
-#include "Core/posix/precompiled.h"
+#include "Core/private/posix/precompiled.h"
 #elif ORYOL_WINDOWS
-#include "Core/windows/precompiled.h"
+#include "Core/private/windows/precompiled.h"
 #else
 #error "Invalid platform!"
 #endif

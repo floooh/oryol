@@ -8,8 +8,8 @@
     NOTE: .omsh files are created by the oryol-exporter tool
     in the project https://github.com/floooh/oryol-tools
 */
-#include "Gfx/Resource/MeshLoaderBase.h"
-#include "IO/FS/ioRequests.h"
+#include "Gfx/MeshLoaderBase.h"
+#include "IO/private/ioRequests.h"
 
 namespace Oryol {
 

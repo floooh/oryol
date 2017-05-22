@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "IO/IO.h"
+#include "IO/FileSystemBase.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Creator.h"
@@ -12,7 +13,7 @@ using namespace Oryol;
 
 std::atomic<int> numRequestsHandled{0};
 
-class TestFileSystem : public FileSystem {
+class TestFileSystem : public FileSystemBase {
     OryolClassDecl(TestFileSystem);
     OryolClassCreator(TestFileSystem);
 public:

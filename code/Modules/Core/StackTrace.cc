@@ -17,7 +17,7 @@
 #include <execinfo.h>
 #endif
 #if HAVE_STACKWALKER
-#include "Core/windows/StackWalker.h"
+#include "Core/private/windows/StackWalker.h"
 #endif
 #include <cstdlib>
 #include <cstring>

@@ -10,11 +10,11 @@
 #if ORYOL_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #elif ORYOL_IOS
-#include "Core/ios/iosBridge.h"
+#include "Core/private/ios/iosBridge.h"
 #elif ORYOL_MACOS && ORYOL_METAL
-#include "Core/osx/osxBridge.h"
+#include "Core/private/osx/osxBridge.h"
 #elif ORYOL_ANDROID
-#include "Core/android/androidBridge.h"
+#include "Core/private/android/androidBridge.h"
 #endif
 #include <chrono>
 #include <thread>

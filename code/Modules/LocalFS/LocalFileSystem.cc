@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "LocalFileSystem.h"
 #include "Core/String/StringBuilder.h"
-#include "LocalFS/Core/fsWrapper.h"
+#include "LocalFS/private/fsWrapper.h"
 #include "IO/IO.h"
 
 namespace Oryol {
@@ -14,7 +14,7 @@ using namespace _priv;
 //------------------------------------------------------------------------------
 void
 LocalFileSystem::init(const StringAtom& scheme_) {
-    FileSystem::init(scheme_);
+    FileSystemBase::init(scheme_);
     StringBuilder strBuilder;
 
     // setup the root assign

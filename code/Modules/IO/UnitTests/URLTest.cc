@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "IO/Core/URL.h"
+#include "IO/IOTypes.h"
 #include <cstring>
 
 using namespace Oryol;

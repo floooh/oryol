@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "Core/Memory/Memory.h"
 #include "Input.h"
-#include "Input/Core/inputMgr.h"
+#include "Input/private/inputMgr.h"
 
 namespace Oryol {
 

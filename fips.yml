@@ -29,7 +29,7 @@ exports:
         Core :          code/Modules/Core
         IO :            code/Modules/IO
         LocalFS :       code/Modules/LocalFS
-        HTTP :          code/Modules/HTTP
+        HttpFS :        code/Modules/HttpFS
         Gfx :           code/Modules/Gfx
         Resource :      code/Modules/Resource
         Assets :        code/Modules/Assets

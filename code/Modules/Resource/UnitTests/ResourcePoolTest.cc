@@ -3,8 +3,8 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
-#include "Resource/Core/ResourcePool.h"
-#include "Resource/Core/resourceBase.h"
+#include "Resource/ResourcePool.h"
+#include "Resource/ResourceBase.h"
 
 using namespace Oryol;
 
@@ -15,7 +15,7 @@ public:
     int bla;
 };
 
-class myResource : public resourceBase<mySetup> {
+class myResource : public ResourceBase<mySetup> {
 public:
     int blub = 0;
 };

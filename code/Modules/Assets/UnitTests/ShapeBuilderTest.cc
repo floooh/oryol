@@ -5,14 +5,14 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Gfx/Gfx.h"
-#include "Gfx/Core/displayMgr.h"
-#include "Gfx/Core/renderer.h"
-#include "Gfx/Resource/resourcePools.h"
-#include "Gfx/Resource/gfxFactory.h"
+#include "Gfx/private/displayMgr.h"
+#include "Gfx/private/renderer.h"
+#include "Gfx/private/resourcePools.h"
+#include "Gfx/private/gfxFactory.h"
 #include <cstring>
 
 #if ORYOL_OPENGL
-#include "Gfx/gl/gl_impl.h"
+#include "Gfx/private/gl/gl_impl.h"
 #endif
 
 using namespace Oryol;

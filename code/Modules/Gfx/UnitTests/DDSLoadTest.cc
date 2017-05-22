@@ -5,7 +5,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "HTTP/HTTPFileSystem.h"
+#include "HttpFS/HTTPFileSystem.h"
 #include "IO/IO.h"
 #define GLIML_ASSERT o_assert
 #include "gliml.h"

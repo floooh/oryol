@@ -4,13 +4,13 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Core.h"
-#include "IO/FS/FileSystem.h"
-#include "IO/Core/schemeRegistry.h"
+#include "IO/FileSystemBase.h"
+#include "IO/private/schemeRegistry.h"
 
 using namespace Oryol;
 using namespace Oryol::_priv;
 
-class TestFS_A : public FileSystem {
+class TestFS_A : public FileSystemBase {
     OryolClassDecl(TestFS_A);
     OryolClassCreator(TestFS_A);
 public:

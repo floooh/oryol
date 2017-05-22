@@ -37,9 +37,9 @@
     @see VertexWriter, ShapeBuilder
 */
 #include "Core/Types.h"
-#include "Gfx/Core/GfxTypes.h"
+#include "Gfx/GfxTypes.h"
 #include "Assets/Gfx/VertexWriter.h"
-#include "Resource/Core/SetupAndData.h"
+#include "Resource/SetupAndData.h"
 
 namespace Oryol {
 

@@ -4,8 +4,8 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/String/String.h"
-#include "Gfx/Core/GfxTypes.h"
-#include "Gfx/gl/gl_impl.h"
+#include "Gfx/GfxTypes.h"
+#include "Gfx/private/gl/gl_impl.h"
 #include <array>
 
 using namespace Oryol;
