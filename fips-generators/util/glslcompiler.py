@@ -31,7 +31,7 @@ def getToolPath() :
 #-------------------------------------------------------------------------------
 def writeFile(f, lines) :
     for line in lines :
-        f.write(str.encode(line.content + '\n'))
+        f.write(line.content + '\n')
 
 #-------------------------------------------------------------------------------
 def call(cmd) :

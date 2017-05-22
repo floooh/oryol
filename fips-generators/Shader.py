@@ -488,7 +488,7 @@ def getUniformBlockTypeHash(ub_refl):
     for member in ub_refl['members']:
         hashString += member['type']
         hashString += str(member['num'])
-    return zlib.crc32(hashString) & 0xFFFFFFFF
+    return zlib.crc32(str.encode(hashString)) & 0xFFFFFFFF
 
 #-------------------------------------------------------------------------------
 def roundup(val, round_to):
