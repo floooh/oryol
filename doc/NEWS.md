@@ -2,12 +2,12 @@
 
 - **22-May-2017**: I made some changes to Oryol's source file structure, code
 which uses the HTTP or Resource Module may need to be changed:
-  - I have moved module-private source files into subdirectories names 'private',
+  - I have moved module-private source files into subdirectories named 'private',
     there are 3 reasons for this: 
       1. when browsing the source it is now immediately obvious which parts 
       of a module are private, and which parts of the module belong to its public
       interface
-      2. public module headers should include private headers, so that private
+      2. public module headers should never include private headers, so that private
       types don't leak into the outside world, this should make sure that 
       code changes in the private area of a module are safe, and outside code
       doesn't need to updated.
