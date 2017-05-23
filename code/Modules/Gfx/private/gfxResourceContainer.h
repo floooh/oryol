@@ -5,7 +5,6 @@
     @ingroup _priv
     @brief resource container base implementation of the Gfx module
 */
-#include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "Core/Containers/Array.h"
 #include "Resource/ResourceLoader.h"
