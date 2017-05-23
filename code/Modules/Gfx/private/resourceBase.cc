@@ -9,34 +9,40 @@ namespace _priv {
 
 //------------------------------------------------------------------------------
 void
+shaderBase::Clear() {
+    this->Setup = ShaderSetup();
+}
+
+//------------------------------------------------------------------------------
+void
 textureBase::Clear() {
+    this->Setup = TextureSetup();
     this->textureAttrs = TextureAttrs();
-    ResourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 void
 meshBase::Clear() {
+    this->Setup = MeshSetup();
     this->vertexBufferAttrs = VertexBufferAttrs();
     this->indexBufferAttrs = IndexBufferAttrs();
     this->primGroups.Fill(PrimitiveGroup());
     this->numPrimGroups = 0;
-    ResourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 void
 pipelineBase::Clear() {
+    this->Setup = PipelineSetup();
     this->shd = nullptr;
-    ResourceBase::Clear();
 }
 
 //------------------------------------------------------------------------------
 void
 renderPassBase::Clear() {
+    this->Setup = PassSetup();
     this->colorTextures.Fill(nullptr);
     this->depthStencilTexture = nullptr;
-    ResourceBase::Clear();
 }
 
 } // namespace _priv

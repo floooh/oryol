@@ -14,7 +14,7 @@
 
 namespace Oryol {
     
-template<class RESOURCE, class SETUP> class ResourcePool {
+template<class RESOURCE> class ResourcePool {
 public:
     /// max number of resources in a pool
     static const int MaxNumPoolResources = (1<<16);
@@ -37,7 +37,7 @@ public:
     Id AllocId();
     
     /// assign a resource to a free slot
-    RESOURCE& Assign(const Id& id, const SETUP& setup, ResourceState::Code state);
+    RESOURCE& Assign(const Id& id, ResourceState::Code state);
     /// unassign/free a resource slot
     void Unassign(const Id& id);
     /// return pointer to resource object, may return placeholder or nullptr
@@ -76,8 +76,8 @@ protected:
 };
     
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP>
-ResourcePool<RESOURCE,SETUP>::ResourcePool() :
+template<class RESOURCE>
+ResourcePool<RESOURCE>::ResourcePool() :
 isValid(false),
 frameCounter(0),
 uniqueCounter(0),
@@ -86,14 +86,14 @@ resourceType(0xFF) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP>
-ResourcePool<RESOURCE,SETUP>::~ResourcePool() {
+template<class RESOURCE>
+ResourcePool<RESOURCE>::~ResourcePool() {
     o_assert_dbg(!this->isValid);
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Setup(Id::TypeT resType, int poolSize) {
+template<class RESOURCE> void
+ResourcePool<RESOURCE>::Setup(Id::TypeT resType, int poolSize) {
     o_assert_dbg(!this->isValid);
     o_assert_dbg(Id::InvalidType != resType);
     o_assert_dbg(poolSize > 0);
@@ -117,8 +117,8 @@ ResourcePool<RESOURCE,SETUP>::Setup(Id::TypeT resType, int poolSize) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Discard() {
+template<class RESOURCE> void
+ResourcePool<RESOURCE>::Discard() {
     o_assert_dbg(this->isValid);
     // make sure that all resources had been freed (or should we do this here?)
     o_assert_dbg(this->freeSlots.Size() == this->slots.Size());
@@ -129,21 +129,21 @@ ResourcePool<RESOURCE,SETUP>::Discard() {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> bool
-ResourcePool<RESOURCE,SETUP>::IsValid() const {
+template<class RESOURCE> bool
+ResourcePool<RESOURCE>::IsValid() const {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE, SETUP>::Update() {
+template<class RESOURCE> void
+ResourcePool<RESOURCE>::Update() {
     o_assert_dbg(this->isValid);
     this->frameCounter++;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> Id
-ResourcePool<RESOURCE,SETUP>::AllocId() {
+template<class RESOURCE> Id
+ResourcePool<RESOURCE>::AllocId() {
     o_assert_dbg(this->isValid);
     o_assert_dbg(Id::InvalidType != this->resourceType);
     Id newId(this->uniqueCounter++, this->freeSlots.Dequeue(), this->resourceType);
@@ -155,16 +155,16 @@ ResourcePool<RESOURCE,SETUP>::AllocId() {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::freeId(const Id& id) {
+template<class RESOURCE> void
+ResourcePool<RESOURCE>::freeId(const Id& id) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(ResourceState::Initial == this->slots[id.SlotIndex].State);
     this->freeSlots.Enqueue(id.SlotIndex);
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> RESOURCE&
-ResourcePool<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceState::Code state) {
+template<class RESOURCE> RESOURCE&
+ResourcePool<RESOURCE>::Assign(const Id& id, ResourceState::Code state) {
     o_assert_dbg(this->isValid);
     
     auto& slot = this->slots[id.SlotIndex];
@@ -172,13 +172,12 @@ ResourcePool<RESOURCE,SETUP>::Assign(const Id& id, const SETUP& setup, ResourceS
     slot.State = state;
     slot.StateStartFrame = this->frameCounter;
     slot.Id = id;
-    slot.Setup = setup;
     return slot;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id) {
+template<class RESOURCE> void
+ResourcePool<RESOURCE>::Unassign(const Id& id) {
     o_assert_dbg(this->isValid);
     
     auto& slot = this->slots[id.SlotIndex];
@@ -195,8 +194,8 @@ ResourcePool<RESOURCE,SETUP>::Unassign(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> RESOURCE*
-ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
+template<class RESOURCE> RESOURCE*
+ResourcePool<RESOURCE>::Lookup(const Id& id) const {
     o_assert_dbg(this->isValid);
     if (!id.IsValid()) {
         return nullptr;
@@ -214,8 +213,8 @@ ResourcePool<RESOURCE,SETUP>::Lookup(const Id& id) const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> RESOURCE*
-ResourcePool<RESOURCE,SETUP>::Get(const Id& id) const {
+template<class RESOURCE> RESOURCE*
+ResourcePool<RESOURCE>::Get(const Id& id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.Type == this->resourceType);
     const auto& slot = this->slots[id.SlotIndex];
@@ -229,8 +228,8 @@ ResourcePool<RESOURCE,SETUP>::Get(const Id& id) const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> void
-ResourcePool<RESOURCE, SETUP>::UpdateState(const Id& id, ResourceState::Code newState) {
+template<class RESOURCE> void
+ResourcePool<RESOURCE>::UpdateState(const Id& id, ResourceState::Code newState) {
     o_assert_dbg(this->isValid);
     auto& slot = this->slots[id.SlotIndex];
     if (id == slot.Id) {
@@ -244,16 +243,16 @@ ResourcePool<RESOURCE, SETUP>::UpdateState(const Id& id, ResourceState::Code new
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> bool
-ResourcePool<RESOURCE, SETUP>::Contains(const Id& id) const {
+template<class RESOURCE> bool
+ResourcePool<RESOURCE>::Contains(const Id& id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.Type == this->resourceType);
     return id == this->slots[id.SlotIndex].Id;
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> ResourceState::Code
-ResourcePool<RESOURCE,SETUP>::QueryState(const Id& id) const {
+template<class RESOURCE> ResourceState::Code
+ResourcePool<RESOURCE>::QueryState(const Id& id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.Type == this->resourceType);
     
@@ -267,8 +266,8 @@ ResourcePool<RESOURCE,SETUP>::QueryState(const Id& id) const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> ResourceInfo
-ResourcePool<RESOURCE, SETUP>::QueryResourceInfo(const Id& id) const {
+template<class RESOURCE> ResourceInfo
+ResourcePool<RESOURCE>::QueryResourceInfo(const Id& id) const {
     o_assert_dbg(this->isValid);
     o_assert_dbg(id.Type == this->resourceType);
     
@@ -282,8 +281,8 @@ ResourcePool<RESOURCE, SETUP>::QueryResourceInfo(const Id& id) const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> ResourcePoolInfo
-ResourcePool<RESOURCE, SETUP>::QueryPoolInfo() const {
+template<class RESOURCE> ResourcePoolInfo
+ResourcePool<RESOURCE>::QueryPoolInfo() const {
     o_assert_dbg(this->isValid);
     
     ResourcePoolInfo poolInfo;
@@ -300,20 +299,20 @@ ResourcePool<RESOURCE, SETUP>::QueryPoolInfo() const {
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> int
-ResourcePool<RESOURCE,SETUP>::GetNumSlots() const {
+template<class RESOURCE> int
+ResourcePool<RESOURCE>::GetNumSlots() const {
     return this->slots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> int
-ResourcePool<RESOURCE,SETUP>::GetNumUsedSlots() const {
+template<class RESOURCE> int
+ResourcePool<RESOURCE>::GetNumUsedSlots() const {
     return this->slots.Size() - this->freeSlots.Size();
 }
 
 //------------------------------------------------------------------------------
-template<class RESOURCE, class SETUP> int
-ResourcePool<RESOURCE,SETUP>::GetNumFreeSlots() const {
+template<class RESOURCE> int
+ResourcePool<RESOURCE>::GetNumFreeSlots() const {
     return this->freeSlots.Size();
 }
 

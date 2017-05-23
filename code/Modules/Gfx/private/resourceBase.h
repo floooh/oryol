@@ -16,7 +16,13 @@ namespace _priv {
     @ingroup _priv
     @brief shader resource base class
 */
-class shaderBase : public ResourceBase<ShaderSetup> { };
+class shaderBase : public ResourceBase {
+public:
+    /// the original setup object
+    ShaderSetup Setup;
+    /// clear the object
+    void Clear();    
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -24,13 +30,14 @@ class shaderBase : public ResourceBase<ShaderSetup> { };
     @ingroup _priv
     @brief private: base class for platform-specific texture implementation
 */
-class textureBase : public ResourceBase<TextureSetup> {
+class textureBase : public ResourceBase {
 public:
+    /// the original setup object
+    TextureSetup Setup;
     /// texture attributes
     TextureAttrs textureAttrs;
     /// was created from native texture handles
     bool nativeHandles = false;
-    
     /// clear the object
     void Clear();
 };
@@ -41,8 +48,10 @@ public:
     @ingroup _priv
     @brief private: base class for platform-specific mesh implementations
 */
-class meshBase : public ResourceBase<MeshSetup> {
+class meshBase : public ResourceBase {
 public:
+    /// the original setup object
+    MeshSetup Setup;
     /// vertex buffer attributes
     VertexBufferAttrs vertexBufferAttrs;
     /// index buffer attributes
@@ -51,7 +60,6 @@ public:
     int numPrimGroups = 0;
     /// primitive groups
     StaticArray<PrimitiveGroup, GfxConfig::MaxNumPrimGroups> primGroups;
-    
     /// clear the object
     void Clear();
 };
@@ -63,12 +71,14 @@ public:
     @brief base class for pipeline implementations
 */
 class shader;
-class pipelineBase : public ResourceBase<PipelineSetup> {
+class pipelineBase : public ResourceBase {
 public:
-    /// clear the object
-    void Clear();    
+    /// the original setup object
+    PipelineSetup Setup;
     /// shader pointer
     shader* shd = nullptr;
+    /// clear the object
+    void Clear();    
 };
 
 //------------------------------------------------------------------------------
@@ -78,19 +88,20 @@ public:
     @brief base class for render-pass implementations
 */
 class texture;
-class renderPassBase : public ResourceBase<PassSetup> {
+class renderPassBase : public ResourceBase {
 public:
     /// constructor
     renderPassBase() { 
         colorTextures.Fill(nullptr);
     }
-    /// clear the object
-    void Clear();
-
+    /// the original setup object
+    PassSetup Setup;
     /// color texture pointers
     StaticArray<texture*, GfxConfig::MaxNumColorAttachments> colorTextures;
     /// depth-stencil texture pointer
     texture* depthStencilTexture = nullptr;
+    /// clear the object
+    void Clear();
 };
 
 } // namespace _priv
