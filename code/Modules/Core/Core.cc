@@ -10,15 +10,17 @@
 
 namespace Oryol {
     
-static ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop = nullptr;
-static ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop = nullptr;
-struct _core_state {
-    std::thread::id mainThreadId;
-    #if ORYOL_PROFILING
-    Trace trace;
-    #endif
-};
-_core_state* coreState = nullptr;
+namespace {
+    ORYOL_THREADLOCAL_PTR(RunLoop) threadPreRunLoop = nullptr;
+    ORYOL_THREADLOCAL_PTR(RunLoop) threadPostRunLoop = nullptr;
+    struct _state {
+        std::thread::id mainThreadId;
+        #if ORYOL_PROFILING
+        Trace trace;
+        #endif
+    };
+    _state* state = nullptr;
+}
 
 //------------------------------------------------------------------------------
 void
@@ -26,8 +28,8 @@ Core::Setup() {
     o_assert_dbg(!IsValid());
     o_assert_dbg(nullptr == threadPreRunLoop);
     o_assert_dbg(nullptr == threadPostRunLoop);
-    coreState = Memory::New<_core_state>();
-    coreState->mainThreadId = std::this_thread::get_id();
+    state = Memory::New<_state>();
+    state->mainThreadId = std::this_thread::get_id();
     threadPreRunLoop = Memory::New<RunLoop>();
     threadPostRunLoop = Memory::New<RunLoop>();
 }
@@ -40,10 +42,10 @@ Core::Discard() {
     o_assert(threadPostRunLoop);
     Memory::Delete<RunLoop>(threadPreRunLoop);
     Memory::Delete<RunLoop>(threadPostRunLoop);
-    Memory::Delete(coreState);
+    Memory::Delete(state);
     threadPreRunLoop = nullptr;
     threadPostRunLoop = nullptr;
-    coreState = nullptr;
+    state = nullptr;
 
     // do NOT destroy the thread-local string atom table to
     // ensure that string atom data pointers still point to valid data!!!    
@@ -52,7 +54,7 @@ Core::Discard() {
 //------------------------------------------------------------------------------
 bool
 Core::IsValid() {
-    return nullptr != coreState;
+    return nullptr != state;
 }
 
 //------------------------------------------------------------------------------
@@ -74,7 +76,7 @@ bool
 Core::IsMainThread() {
     #if ORYOL_HAS_THREADS
     o_assert_dbg(IsValid());
-    return coreState->mainThreadId == std::this_thread::get_id();
+    return state->mainThreadId == std::this_thread::get_id();
     #else
     return true;
     #endif
