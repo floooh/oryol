@@ -19,8 +19,6 @@ public:
     /// max number of resources in a pool
     static const int MaxNumPoolResources = (1<<16);
 
-    /// constructor
-    ResourcePool();
     /// destructor
     ~ResourcePool();
     
@@ -64,25 +62,18 @@ public:
     /// get number of free slots
     int GetNumFreeSlots() const;
     
-    bool isValid;
-    int frameCounter;
-    int uniqueCounter;
-    Id::TypeT resourceType;
+    /// there will be no allocated slots beyond this (but there may be holes!)
+    Id::SlotIndexT LastAllocSlot = 0;
+
+    bool isValid = false;
+    int frameCounter = 0;
+    int uniqueCounter = 0;
+    Id::TypeT resourceType = 0xFF;
     
     Array<RESOURCE> slots;
     Queue<uint16_t> freeSlots;
 };
     
-//------------------------------------------------------------------------------
-template<class RESOURCE>
-ResourcePool<RESOURCE>::ResourcePool() :
-isValid(false),
-frameCounter(0),
-uniqueCounter(0),
-resourceType(0xFF) {
-    // empty
-}
-
 //------------------------------------------------------------------------------
 template<class RESOURCE>
 ResourcePool<RESOURCE>::~ResourcePool() {
@@ -100,6 +91,7 @@ ResourcePool<RESOURCE>::Setup(Id::TypeT resType, int poolSize) {
     this->slots.Reserve(poolSize);
     this->slots.SetAllocStrategy(0, 0);    // disable growing
     this->freeSlots.Reserve(poolSize);
+    this->LastAllocSlot = 0;
     
     // setup empty slots
     for (int i = 0; i < poolSize; i++) {
@@ -121,7 +113,7 @@ ResourcePool<RESOURCE>::Discard() {
     // make sure that all resources had been freed (or should we do this here?)
     o_assert_dbg(this->freeSlots.Size() == this->slots.Size());
     this->isValid = false;
-    
+    this->LastAllocSlot = 0;    
     this->slots.Clear();
     this->freeSlots.Clear();
 }
@@ -149,6 +141,9 @@ ResourcePool<RESOURCE>::AllocId() {
         const auto& slot = this->slots[newId.SlotIndex];
         o_assert_dbg(ResourceState::Initial == slot.State);
     #endif
+    if (newId.SlotIndex > this->LastAllocSlot) {
+        this->LastAllocSlot = newId.SlotIndex;
+    }
     return newId;
 }
 
@@ -156,7 +151,13 @@ ResourcePool<RESOURCE>::AllocId() {
 template<class RESOURCE> void
 ResourcePool<RESOURCE>::FreeId(const Id& id) {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(!this->slots[id.SlotIndex].Id.IsValid());
     o_assert_dbg(ResourceState::Initial == this->slots[id.SlotIndex].State);
+    o_assert_dbg(id.SlotIndex <= this->LastAllocSlot);
+    // find the next highest 'last alloc slot' 
+    while ((this->LastAllocSlot > 0) && !this->slots[this->LastAllocSlot].Id.IsValid()) {
+        this->LastAllocSlot--;
+    }
     this->freeSlots.Enqueue(id.SlotIndex);
 }
 

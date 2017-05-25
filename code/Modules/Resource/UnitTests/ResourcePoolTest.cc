@@ -24,12 +24,14 @@ TEST(ResourcePoolTest) {
     CHECK(resourcePool.GetNumSlots() == 256);
     CHECK(resourcePool.GetNumFreeSlots() == 256);
     CHECK(resourcePool.GetNumUsedSlots() == 0);
+    CHECK(resourcePool.LastAllocSlot == 0);
     
     Id resId = resourcePool.AllocId();
     CHECK(resId.IsValid());
     CHECK(resId.Type == 12);
     CHECK(resId.SlotIndex == 0);
     CHECK(ResourceState::InvalidState == resourcePool.QueryState(resId));
+    CHECK(resourcePool.LastAllocSlot == 0);
     
     resourcePool.Assign(resId, ResourceState::Valid);
     CHECK(resourcePool.GetNumFreeSlots() == 255);
@@ -46,6 +48,7 @@ TEST(ResourcePoolTest) {
     CHECK(resId1.Type == 12);
     CHECK(resId1.SlotIndex == 1);
     CHECK(ResourceState::InvalidState == resourcePool.QueryState(resId1));
+    CHECK(resourcePool.LastAllocSlot == 1);
     
     resourcePool.Assign(resId1, ResourceState::Valid);
     CHECK(resourcePool.GetNumFreeSlots() == 254);
@@ -67,11 +70,13 @@ TEST(ResourcePoolTest) {
     CHECK(resourcePool.GetNumFreeSlots() == 255);
     CHECK(resourcePool.GetNumUsedSlots() == 1);
     CHECK(resourcePool.QueryState(resId) == ResourceState::InvalidState);
+    CHECK(resourcePool.LastAllocSlot == 1);
 
     resourcePool.Unassign(resId1);
     CHECK(resourcePool.GetNumFreeSlots() == 256);
     CHECK(resourcePool.GetNumUsedSlots() == 0);
     CHECK(resourcePool.QueryState(resId1) == ResourceState::InvalidState);
+    CHECK(resourcePool.LastAllocSlot == 0);
 
     resourcePool.Discard();
     CHECK(!resourcePool.IsValid());
