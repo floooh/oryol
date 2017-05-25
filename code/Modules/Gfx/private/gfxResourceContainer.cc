@@ -117,6 +117,7 @@ gfxResourceContainer::initAsync(const Id& resId, const MeshSetup& setup, const v
     // the prepared resource may have been destroyed while it was loading
     if (this->meshPool.Contains(resId)) {
         mesh& res = this->meshPool.Assign(resId, ResourceState::Pending);
+        res.Setup = setup;
         const ResourceState::Code newState = this->factory.initMesh(res, data, size);
         o_assert((newState == ResourceState::Valid) || (newState == ResourceState::Failed));
         this->meshPool.UpdateState(resId, newState);
