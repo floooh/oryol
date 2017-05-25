@@ -44,10 +44,9 @@ public:
     /// (debug) get resource id by index
     Id GetIdByIndex(int index) const;
     
-private:
     #if ORYOL_DEBUG
     /// validate integrity of internal data structures
-    bool checkIntegrity() const;
+    bool CheckIntegrity() const;
     #endif
     
     struct Entry {

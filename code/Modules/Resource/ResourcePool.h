@@ -35,6 +35,8 @@ public:
     
     /// allocate a resource id
     Id AllocId();
+    /// free a resource id
+    void FreeId(const Id& id);
     
     /// assign a resource to a free slot
     RESOURCE& Assign(const Id& id, ResourceState::Code state);
@@ -61,10 +63,6 @@ public:
     int GetNumUsedSlots() const;
     /// get number of free slots
     int GetNumFreeSlots() const;
-    
-protected:
-    /// free a resource id
-    void freeId(const Id& id);
     
     bool isValid;
     int frameCounter;
@@ -156,7 +154,7 @@ ResourcePool<RESOURCE>::AllocId() {
 
 //------------------------------------------------------------------------------
 template<class RESOURCE> void
-ResourcePool<RESOURCE>::freeId(const Id& id) {
+ResourcePool<RESOURCE>::FreeId(const Id& id) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(ResourceState::Initial == this->slots[id.SlotIndex].State);
     this->freeSlots.Enqueue(id.SlotIndex);
@@ -186,7 +184,7 @@ ResourcePool<RESOURCE>::Unassign(const Id& id) {
         slot.Id.Invalidate();
         slot.State = ResourceState::Initial;
         slot.StateStartFrame = 0;
-        this->freeId(id);
+        this->FreeId(id);
     }
     else {
         o_warn("ResourcePool::Unassign(): id not in pool (type: '%d', slot: '%d')\n", id.Type, id.SlotIndex);

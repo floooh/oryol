@@ -15,7 +15,7 @@ ResourceContainerBase::~ResourceContainerBase() {
 
 //------------------------------------------------------------------------------
 void
-ResourceContainerBase::setup(int labelStackCapacity, int registryCapacity) {
+ResourceContainerBase::Setup(int labelStackCapacity, int registryCapacity) {
     o_assert_dbg(!this->valid);
     this->labelStack.Reserve(labelStackCapacity);
     this->registry.Setup(registryCapacity);
@@ -25,7 +25,7 @@ ResourceContainerBase::setup(int labelStackCapacity, int registryCapacity) {
 
 //------------------------------------------------------------------------------
 void
-ResourceContainerBase::discard() {
+ResourceContainerBase::Discard() {
     o_assert_dbg(this->valid);
     o_assert_dbg(this->labelStack.Size() == 1);
     this->PopLabel();
@@ -35,7 +35,7 @@ ResourceContainerBase::discard() {
 
 //------------------------------------------------------------------------------
 bool
-ResourceContainerBase::isValid() const {
+ResourceContainerBase::IsValid() const {
     return this->valid;
 }
 
@@ -66,7 +66,7 @@ ResourceContainerBase::PopLabel() {
 
 //------------------------------------------------------------------------------
 ResourceLabel
-ResourceContainerBase::peekLabel() const {
+ResourceContainerBase::PeekLabel() const {
     o_assert_dbg(this->valid);
     return this->labelStack.Back();
 }

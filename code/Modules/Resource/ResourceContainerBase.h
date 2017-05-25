@@ -22,6 +22,14 @@ public:
     /// destructor
     ~ResourceContainerBase();
     
+    /// setup the resource container
+    void Setup(int labelStackCapacity, int registryCapacity);
+    /// discard the resource container
+    void Discard();
+    /// return true if valid
+    bool IsValid() const;
+    /// peek top of label stack
+    ResourceLabel PeekLabel() const;
     /// generate new resource label and push on label stack
     ResourceLabel PushLabel();
     /// push explicit resource label on label stack
@@ -30,16 +38,6 @@ public:
     ResourceLabel PopLabel();
     /// lookup a resource Id by Locator
     Id Lookup(const Locator& locator) const;
-    
-protected:
-    /// setup the resource container
-    void setup(int labelStackCapacity, int registryCapacity);
-    /// discard the resource container
-    void discard();
-    /// return true if valid
-    bool isValid() const;
-    /// peek top of label stack
-    ResourceLabel peekLabel() const;
     
     Array<ResourceLabel> labelStack;
     ResourceRegistry registry;

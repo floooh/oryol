@@ -143,7 +143,7 @@ ResourceRegistry::Remove(ResourceLabel label) {
             
             // make sure nothing broke
             #if ORYOL_DEBUG
-            o_assert(this->checkIntegrity());
+            o_assert(this->CheckIntegrity());
             #endif
         }
     }
@@ -189,7 +189,7 @@ ResourceRegistry::GetIdByIndex(int index) const {
 //------------------------------------------------------------------------------
 #if ORYOL_DEBUG
 bool
-ResourceRegistry::checkIntegrity() const {
+ResourceRegistry::CheckIntegrity() const {
     for (const auto& kvp : this->locatorIndexMap) {
         const Locator& loc = kvp.key;
         const int entryIndex = kvp.value;
