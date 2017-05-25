@@ -116,6 +116,8 @@ public:
     void eraseSwapBack(int index);
     /// erase element at index, always swap-in element from the front
     void eraseSwapFront(int index);
+    /// erase a range of elements
+    void eraseRange(int index, int num);
     
     /// move elements towards front for insertion, return pointer to free insertion slot
     TYPE* moveInsertFront(int index);
@@ -686,6 +688,24 @@ elementBuffer<TYPE>::eraseSwapFront(int index) {
         this->buf[this->start + index] = std::move(this->buf[this->start]);
         this->buf[this->start++].~TYPE();
     }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+elementBuffer<TYPE>::eraseRange(int index, int num) {
+    o_assert_dbg(this->buf && (index>=0) && ((index+num) <= this->size()) && (num >= 0));
+    if (0 == num) {
+        return;
+    }
+    int i = this->start + index;
+    for (; i < (this->end - num); i++) {
+        this->buf[i] = std::move(this->buf[i + num]);
+    }
+    for (; i < this->end; i++) {
+        this->buf[i].~TYPE();
+    }
+    this->end -= num;
+    o_assert_dbg(this->end >= this->start);
 }
 
 //------------------------------------------------------------------------------

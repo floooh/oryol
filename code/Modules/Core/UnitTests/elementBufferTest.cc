@@ -563,4 +563,32 @@ TEST(elementBufferTest) {
     CHECK(buf5[0] == 3);
     CHECK(buf5.popBack() == 3);
     CHECK(buf5.size() == 0);
+
+    // eraseRange
+    elementBuffer<_test> buf6;
+    buf6.alloc(64, 0);
+    for (int i = 0; i < 16; i++) {
+        buf6.pushBack(i);
+    }
+    CHECK(buf6.size() == 16);
+    buf6.eraseRange(0, 3);
+    CHECK(buf6.size() == 13);
+    CHECK(buf6[0] == 3);
+    CHECK(buf6[1] == 4);
+    CHECK(TestMemory(buf6));
+    buf6.eraseRange(2, 3);
+    CHECK(buf6.size() == 10);
+    CHECK(buf6[0] == 3);
+    CHECK(buf6[1] == 4);
+    CHECK(buf6[2] == 8);
+    CHECK(buf6[3] == 9);
+    CHECK(TestMemory(buf6));
+    buf6.eraseRange(7, 3);
+    CHECK(buf6.size() == 7);
+    CHECK(buf6[0] == 3);
+    CHECK(buf6[1] == 4);
+    CHECK(buf6[2] == 8);
+    CHECK(buf6[3] == 9);
+    CHECK(buf6[6] == 12);
+    CHECK(TestMemory(buf6));
 }

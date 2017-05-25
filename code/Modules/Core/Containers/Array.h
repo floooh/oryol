@@ -105,7 +105,7 @@ public:
     TYPE PopBack();
     /// pop the first element
     TYPE PopFront();
-    /// erase element at index, keep element ordering
+    /// erase element at index, keep element order
     void Erase(int index);
     /// erase element at index, swap-in front or back element (destroys element ordering)
     void EraseSwap(int index);
@@ -113,6 +113,8 @@ public:
     void EraseSwapBack(int index);
     /// erase element at index, always swap-in from front (destroys element ordering)
     void EraseSwapFront(int index);
+    /// erase a range of elements, keep element order
+    void EraseRange(int index, int num);
     
     /// find element index with slow linear search, return InvalidIndex if not found
     int FindIndexLinear(const TYPE& elm, int startIndex=0, int endIndex=InvalidIndex) const;
@@ -383,7 +385,13 @@ template<class TYPE> void
 Array<TYPE>::EraseSwapFront(int index) {
     this->buffer.eraseSwapFront(index);
 }
-    
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+Array<TYPE>::EraseRange(int index, int num) {
+    this->buffer.eraseRange(index, num);
+}
+
 //------------------------------------------------------------------------------
 template<class TYPE> int
 Array<TYPE>::FindIndexLinear(const TYPE& elm, int startIndex, int endIndex) const {

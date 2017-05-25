@@ -339,5 +339,29 @@ TEST(ArrayTest) {
     CHECK(popArray.PopFront() == 1);
     CHECK(popArray.Size() == 6);
     CHECK(popArray.Front() == 2);
+    
+    // EraseRange
+    Array<int> array6;
+    for (int i = 0; i < 16; i++) {
+        array6.Add(i);
+    }
+    CHECK(array6.Size() == 16);
+    array6.EraseRange(0, 3);
+    CHECK(array6.Size() == 13);
+    CHECK(array6[0] == 3);
+    CHECK(array6[1] == 4);
+    array6.EraseRange(2, 3);
+    CHECK(array6.Size() == 10);
+    CHECK(array6[0] == 3);
+    CHECK(array6[1] == 4);
+    CHECK(array6[2] == 8);
+    CHECK(array6[3] == 9);
+    array6.EraseRange(7, 3);
+    CHECK(array6.Size() == 7);
+    CHECK(array6[0] == 3);
+    CHECK(array6[1] == 4);
+    CHECK(array6[2] == 8);
+    CHECK(array6[3] == 9);
+    CHECK(array6[6] == 12);
 }
 
