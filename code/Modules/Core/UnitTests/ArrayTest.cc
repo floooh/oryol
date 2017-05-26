@@ -376,5 +376,11 @@ TEST(ArrayTest) {
     CHECK(view.end() == &array7[7]);
     view[0] = 123;
     CHECK(array7[3] == 123);
+
+    // array view over full array
+    view = array7.View(0, array7.Size());
+    CHECK(view.Size() == 10);
+    CHECK(view[0] == 1);
+    CHECK(view[9] == 10);
 }
 

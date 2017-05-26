@@ -54,4 +54,9 @@ TEST(StaticArrayTest) {
     CHECK(view[2] == 4);
     CHECK(view[3] == 5);
     CHECK(view[4] == 6);
+
+    view = array2.View(0, array2.Size());
+    CHECK(view.Size() == 16);
+    CHECK(view[0] == 0);
+    CHECK(view[15] == 15);
 }

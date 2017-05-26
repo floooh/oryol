@@ -287,7 +287,7 @@ Array<TYPE>::Back() const {
 //------------------------------------------------------------------------------
 template<class TYPE> ArrayView<TYPE>
 Array<TYPE>::View(int startIndex, int numItems) {
-    o_assert_range_dbg(startIndex + numItems, this->buffer.size());
+    o_assert_dbg((startIndex >= 0) && ((startIndex + numItems) <= this->buffer.size()));
     return ArrayView<TYPE>(&this->buffer[startIndex], numItems);
 }
 
