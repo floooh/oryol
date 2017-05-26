@@ -7,6 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Assertion.h"
+#include "Core/Containers/ArrayView.h"
 #include <utility>
 
 namespace Oryol {
@@ -31,6 +32,8 @@ public:
     TYPE& operator[](int index);
     /// read-only access single element
     const TYPE& operator[](int index) const;
+    /// get array view over range of items
+    ArrayView<TYPE> View(int startIndex, int numItems);
     
     /// fill the array with a value
     void Fill(const TYPE& val);
@@ -105,7 +108,14 @@ StaticArray<TYPE, SIZE>::operator[](int index) const {
     o_assert_range_dbg(index, SIZE);
     return this->items[index];
 }
-    
+
+//------------------------------------------------------------------------------
+template<class TYPE, int SIZE> ArrayView<TYPE>
+StaticArray<TYPE, SIZE>::View(int startIndex, int numItems) {
+    o_assert_range_dbg(startIndex + numItems, SIZE);
+    return ArrayView<TYPE>(&this->items[startIndex], numItems);
+}
+
 //------------------------------------------------------------------------------
 template<class TYPE, int SIZE> void
 StaticArray<TYPE, SIZE>::Fill(const TYPE& val) {

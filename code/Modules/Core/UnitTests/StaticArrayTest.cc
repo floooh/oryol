@@ -46,4 +46,12 @@ TEST(StaticArrayTest) {
         CHECK(array2[i] == i);
         CHECK(array3[i] == i);
     }
+
+    ArrayView<int> view = array2.View(2, 5);
+    CHECK(view.Size() == 5);
+    CHECK(view[0] == 2);
+    CHECK(view[1] == 3);
+    CHECK(view[2] == 4);
+    CHECK(view[3] == 5);
+    CHECK(view[4] == 6);
 }

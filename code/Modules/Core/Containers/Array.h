@@ -33,6 +33,7 @@
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"
+#include "Core/Containers/ArrayView.h"
 #include <initializer_list>
 
 namespace Oryol {
@@ -82,6 +83,8 @@ public:
     TYPE& Back();
     /// read-only access to last element (must exist)
     const TYPE& Back() const;
+    /// get array view over range of items
+    ArrayView<TYPE> View(int startIndex, int numItems);
 
     /// increase capacity to hold at least numElements more elements
     void Reserve(int numElements);
@@ -279,6 +282,13 @@ Array<TYPE>::Back() {
 template<class TYPE> const TYPE&
 Array<TYPE>::Back() const {
     return this->buffer.back();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> ArrayView<TYPE>
+Array<TYPE>::View(int startIndex, int numItems) {
+    o_assert_range_dbg(startIndex + numItems, this->buffer.size());
+    return ArrayView<TYPE>(&this->buffer[startIndex], numItems);
 }
 
 //------------------------------------------------------------------------------

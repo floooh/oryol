@@ -363,5 +363,18 @@ TEST(ArrayTest) {
     CHECK(array6[2] == 8);
     CHECK(array6[3] == 9);
     CHECK(array6[6] == 12);
+
+    // ArrayView = Range
+    Array<int> array7 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    ArrayView<int> view = array7.View(3, 4);
+    CHECK(view.Size() == 4);
+    CHECK(view[0] == 4);
+    CHECK(view[1] == 5);
+    CHECK(view[2] == 6);
+    CHECK(view[3] == 7);
+    CHECK(view.begin() == &array7[3]);
+    CHECK(view.end() == &array7[7]);
+    view[0] = 123;
+    CHECK(array7[3] == 123);
 }
 
