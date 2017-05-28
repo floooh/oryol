@@ -49,6 +49,15 @@ TEST(ArrayViewTest) {
     CHECK(view2.begin() == &arr[3]);
     CHECK(view2.end() == &arr[7]);
 
+    // create view from view
+    ArrayView<int> view3(arr, 0, 10);
+    ArrayView<int> view4 = view3.View(3, 4);
+    CHECK(view4.Size() == 4);
+    CHECK(view4[0] == 3);
+    CHECK(view4[1] == 4);
+    CHECK(view4[2] == 5);
+    CHECK(view4[3] == 6);
+
     // make sure that all 3 views are actually pointing to the same data
     view[1] = 123;
     CHECK(view[1] == 123);

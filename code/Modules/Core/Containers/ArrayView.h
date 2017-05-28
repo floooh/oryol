@@ -37,6 +37,8 @@ public:
     int StartIndex() const;
     /// set the start index
     void SetStartIndex(int startIndex);
+    /// create a new view into this view
+    ArrayView View(int startIndex, int num) const;
     /// read/write access to indexed item
     TYPE& operator[](int index);
     /// read-only access to indexed item
@@ -99,6 +101,7 @@ ArrayView<TYPE>::Size() const {
 //------------------------------------------------------------------------------
 template<typename TYPE> void
 ArrayView<TYPE>::SetSize(int s) {
+    o_assert_dbg(s >= 0);
     this->size = s;
 }
 
@@ -113,6 +116,13 @@ template<typename TYPE> void
 ArrayView<TYPE>::SetStartIndex(int i) {
     o_assert_dbg(i >= 0);
     this->startIndex = i;
+}
+
+//------------------------------------------------------------------------------
+template<typename TYPE> ArrayView<TYPE>
+ArrayView<TYPE>::View(int s, int n) const {
+    o_assert_dbg(this->basePtr && ((s + n) <= this->num));
+    return ArrayView(this->basePtr, this->startIndex+s, n);
 }
 
 //------------------------------------------------------------------------------
