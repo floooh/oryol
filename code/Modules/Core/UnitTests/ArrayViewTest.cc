@@ -19,7 +19,7 @@ TEST(ArrayViewTest) {
     CHECK(view.end() == nullptr);
 
     // array view initialization
-    ArrayView<int> view1(&arr[3], 4);
+    ArrayView<int> view1(arr, 3, 4);
     CHECK(view1.Size() == 4);
     CHECK(!view1.Empty());
     CHECK(view1[0] == 3);

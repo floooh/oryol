@@ -113,7 +113,7 @@ StaticArray<TYPE, SIZE>::operator[](int index) const {
 template<class TYPE, int SIZE> ArrayView<TYPE>
 StaticArray<TYPE, SIZE>::View(int startIndex, int numItems) {
     o_assert_dbg((startIndex >= 0) && ((startIndex + numItems) <= SIZE));
-    return ArrayView<TYPE>(&this->items[startIndex], numItems);
+    return ArrayView<TYPE>(this->items, startIndex, numItems);
 }
 
 //------------------------------------------------------------------------------
