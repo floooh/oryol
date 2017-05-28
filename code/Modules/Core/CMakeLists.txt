@@ -29,6 +29,7 @@ fips_begin_module(Core)
     fips_files(
         Array.h
         ArrayMap.h
+        ArrayView.h
         Buffer.h
         HashSet.h
         KeyValuePair.h

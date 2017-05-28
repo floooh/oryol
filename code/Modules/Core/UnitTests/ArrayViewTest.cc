@@ -14,12 +14,14 @@ TEST(ArrayViewTest) {
     // empty array view
     ArrayView<int> view;
     CHECK(view.Size() == 0);
+    CHECK(view.Empty());
     CHECK(view.begin() == nullptr);
     CHECK(view.end() == nullptr);
 
     // array view initialization
     ArrayView<int> view1(&arr[3], 4);
     CHECK(view1.Size() == 4);
+    CHECK(!view1.Empty());
     CHECK(view1[0] == 3);
     CHECK(view1[1] == 4);
     CHECK(view1[2] == 5);

@@ -31,6 +31,8 @@ public:
     };
     /// copy-assignment
     void operator=(const ArrayView& rhs) { ptr=rhs.ptr; num=rhs.num; };
+    /// return true if ArrayView is empty
+    bool Empty() const { return num == 0; };
     /// get number of items
     int Size() const { return num; };
     /// read/write access to indexed item
