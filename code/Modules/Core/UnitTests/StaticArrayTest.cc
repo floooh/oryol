@@ -47,16 +47,18 @@ TEST(StaticArrayTest) {
         CHECK(array3[i] == i);
     }
 
-    ArrayView<int> view = array2.View(2, 5);
-    CHECK(view.Size() == 5);
-    CHECK(view[0] == 2);
-    CHECK(view[1] == 3);
-    CHECK(view[2] == 4);
-    CHECK(view[3] == 5);
-    CHECK(view[4] == 6);
+    Slice<int> slice = array2.MakeSlice(2, 5);
+    CHECK(slice.Size() == 5);
+    CHECK(slice.Offset() == 2);
+    CHECK(slice[0] == 2);
+    CHECK(slice[1] == 3);
+    CHECK(slice[2] == 4);
+    CHECK(slice[3] == 5);
+    CHECK(slice[4] == 6);
 
-    view = array2.View(0, array2.Size());
-    CHECK(view.Size() == 16);
-    CHECK(view[0] == 0);
-    CHECK(view[15] == 15);
+    slice = array2.MakeSlice();
+    CHECK(slice.Size() == 16);
+    CHECK(slice.Offset() == 0);
+    CHECK(slice[0] == 0);
+    CHECK(slice[15] == 15);
 }

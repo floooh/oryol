@@ -33,7 +33,7 @@
 */
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"
-#include "Core/Containers/ArrayView.h"
+#include "Core/Containers/Slice.h"
 #include <initializer_list>
 
 namespace Oryol {
@@ -83,8 +83,8 @@ public:
     TYPE& Back();
     /// read-only access to last element (must exist)
     const TYPE& Back() const;
-    /// get array view over range of items
-    ArrayView<TYPE> View(int startIndex, int numItems);
+    /// get a slice into the array (beware of iterator-invalidation!)
+    Slice<TYPE> MakeSlice(int offset=0, int numItems=EndOfRange);
 
     /// increase capacity to hold at least numElements more elements
     void Reserve(int numElements);
@@ -285,10 +285,12 @@ Array<TYPE>::Back() const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> ArrayView<TYPE>
-Array<TYPE>::View(int startIndex, int numItems) {
-    o_assert_dbg((startIndex >= 0) && ((startIndex + numItems) <= this->buffer.size()));
-    return ArrayView<TYPE>(this->buffer.buf, startIndex, numItems);
+template<class TYPE> Slice<TYPE>
+Array<TYPE>::MakeSlice(int offset, int numItems) {
+    if (numItems == EndOfRange) {
+        numItems = this->buffer.size() - offset;
+    }
+    return Slice<TYPE>(this->buffer.buf, this->buffer.size(), offset, numItems);
 }
 
 //------------------------------------------------------------------------------

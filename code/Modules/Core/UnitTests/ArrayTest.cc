@@ -364,23 +364,25 @@ TEST(ArrayTest) {
     CHECK(array6[3] == 9);
     CHECK(array6[6] == 12);
 
-    // ArrayView = Range
+    // MakeSlice
     Array<int> array7 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    ArrayView<int> view = array7.View(3, 4);
-    CHECK(view.Size() == 4);
-    CHECK(view[0] == 4);
-    CHECK(view[1] == 5);
-    CHECK(view[2] == 6);
-    CHECK(view[3] == 7);
-    CHECK(view.begin() == &array7[3]);
-    CHECK(view.end() == &array7[7]);
-    view[0] = 123;
+    Slice<int> slice = array7.MakeSlice(3, 4);
+    CHECK(slice.Size() == 4);
+    CHECK(slice.Offset() == 3);
+    CHECK(slice[0] == 4);
+    CHECK(slice[1] == 5);
+    CHECK(slice[2] == 6);
+    CHECK(slice[3] == 7);
+    CHECK(slice.begin() == &array7[3]);
+    CHECK(slice.end() == &array7[7]);
+    slice[0] = 123;
     CHECK(array7[3] == 123);
 
     // array view over full array
-    view = array7.View(0, array7.Size());
-    CHECK(view.Size() == 10);
-    CHECK(view[0] == 1);
-    CHECK(view[9] == 10);
+    slice = array7.MakeSlice();
+    CHECK(slice.Size() == 10);
+    CHECK(slice.Offset() == 0);
+    CHECK(slice[0] == 1);
+    CHECK(slice[9] == 10);
 }
 

@@ -29,7 +29,7 @@ fips_begin_module(Core)
     fips_files(
         Array.h
         ArrayMap.h
-        ArrayView.h
+        Slice.h
         Buffer.h
         HashSet.h
         KeyValuePair.h
@@ -113,7 +113,7 @@ fips_begin_unittest(Core)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
-        ArrayViewTest.cc
+        SliceTest.cc
         InlineArrayTest.cc
         StackTraceTest.cc
         BufferTest.cc

@@ -7,7 +7,7 @@
 */
 #include "Core/Types.h"
 #include "Core/Assertion.h"
-#include "Core/Containers/ArrayView.h"
+#include "Core/Containers/Slice.h"
 #include <utility>
 
 namespace Oryol {
@@ -32,8 +32,8 @@ public:
     TYPE& operator[](int index);
     /// read-only access single element
     const TYPE& operator[](int index) const;
-    /// get array view over range of items
-    ArrayView<TYPE> View(int startIndex, int numItems);
+    /// get a slice into the array
+    Slice<TYPE> MakeSlice(int offset=0, int numItems=EndOfRange);
     
     /// fill the array with a value
     void Fill(const TYPE& val);
@@ -110,10 +110,12 @@ StaticArray<TYPE, SIZE>::operator[](int index) const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int SIZE> ArrayView<TYPE>
-StaticArray<TYPE, SIZE>::View(int startIndex, int numItems) {
-    o_assert_dbg((startIndex >= 0) && ((startIndex + numItems) <= SIZE));
-    return ArrayView<TYPE>(this->items, startIndex, numItems);
+template<class TYPE, int SIZE> Slice<TYPE>
+StaticArray<TYPE, SIZE>::MakeSlice(int offset, int numItems) {
+    if (numItems == EndOfRange) {
+        numItems = SIZE - offset;
+    }
+    return Slice<TYPE>(&this->items[0], SIZE, offset, numItems);
 }
 
 //------------------------------------------------------------------------------
