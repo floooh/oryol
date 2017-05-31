@@ -40,7 +40,7 @@ Oryol::Args OryolArgs; \
 void android_main(struct android_app* app_) { \
     app_dummy(); \
     OryolAndroidAppState = app_; \
-    clazz* app = Memory::New<clazz>(); \
+    clazz* app = Oryol::Memory::New<clazz>(); \
     app->StartMainLoop(); \
     Oryol::Memory::Delete<clazz>(app); \
 }
