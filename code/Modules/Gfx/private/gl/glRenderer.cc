@@ -10,12 +10,7 @@
 #include "glRenderer.h"
 #include "glTypes.h"
 #include "glCaps.h"
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
-#include "glm/mat2x2.hpp"
-#include "glm/mat3x3.hpp"
-#include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
 namespace Oryol {
