@@ -44,6 +44,8 @@ public:
     int Size() const;
     /// return true if no items in array
     bool Empty() const;
+    /// return true if the array is full
+    bool Full() const;
     /// get capacity (always identical to CAPACITY templ param)
     int Capacity() const;
     /// get number of free slots at back 
@@ -121,8 +123,9 @@ InlineArray<TYPE, CAPACITY>::InlineArray(InlineArray&& rhs) {
 template<class TYPE, int CAPACITY>
 InlineArray<TYPE, CAPACITY>::InlineArray(std::initializer_list<TYPE> l) {
     this->size = 0;
+    this->checkRoom(int(l.size()));
     for (const auto& item : l) {
-        this->Add(item);
+        this->items[this->size++] = item;
     }
 }
 
@@ -176,6 +179,12 @@ InlineArray<TYPE, CAPACITY>::Empty() const {
 }
 
 //------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> bool
+InlineArray<TYPE, CAPACITY>::Full() const {
+    return CAPACITY == this->size;
+}
+
+//------------------------------------------------------------------------------
 template<class TYPE, int CAPACITY> int
 InlineArray<TYPE, CAPACITY>::Capacity() const {
     return CAPACITY;
@@ -213,7 +222,7 @@ InlineArray<TYPE, CAPACITY>::Clear() {
 //------------------------------------------------------------------------------
 template<class TYPE, int CAPACITY> void
 InlineArray<TYPE, CAPACITY>::checkRoom(int numItems) const {
-    if ((this->size + numItems) >= CAPACITY) {
+    if ((this->size + numItems) > CAPACITY) {
         o_error("InlineArray full!");
     }
 }

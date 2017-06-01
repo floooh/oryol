@@ -166,5 +166,10 @@ TEST(InlineArrayTest) {
     CHECK(arr0[1].val == 2);
     CHECK(arr0[2].val == 3);
     CHECK(arr0.begin()[3].val == 1);
+
+    // full
+    CHECK(!arr0.Full());
+    InlineArray<int, 3> arr3 = { 1, 2, 3 };
+    CHECK(arr3.Full());
 }
 
