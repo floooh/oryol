@@ -28,7 +28,7 @@ Oryol::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
     Oryol::WideString cmdLine = ::GetCommandLineW(); \
     OryolArgs = Oryol::Args(cmdLine); \
-    clazz* app = Memory::New<clazz>(); \
+    clazz* app = Oryol::Memory::New<clazz>(); \
     app->StartMainLoop(); \
     Oryol::Memory::Delete<clazz>(app); \
     return 0; \
