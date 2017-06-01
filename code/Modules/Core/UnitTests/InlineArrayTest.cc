@@ -119,5 +119,52 @@ TEST(InlineArrayTest) {
     for (int i = 3; i < 10; i++) {
         CHECK(arr2.begin()[i].val == 1);
     }
+
+    // insertion
+    arr0 = { 1, 2, 3 };
+    arr0.Insert(3, 4);  // insert at end
+    CHECK(arr0.Size() == 4);
+    CHECK(arr0[0].val == 1);
+    CHECK(arr0[1].val == 2);
+    CHECK(arr0[2].val == 3);
+    CHECK(arr0[3].val == 4);
+    arr0.Insert(0, 0);  // insert at beginning
+    CHECK(arr0.Size() == 5);
+    CHECK(arr0[0].val == 0);
+    CHECK(arr0[1].val == 1);
+    CHECK(arr0[2].val == 2);
+    CHECK(arr0[3].val == 3);
+    CHECK(arr0[4].val == 4);
+    arr0.Insert(2, 23); // insert in the middle
+    CHECK(arr0.Size() == 6);
+    CHECK(arr0[0].val == 0);
+    CHECK(arr0[1].val == 1);
+    CHECK(arr0[2].val == 23);
+    CHECK(arr0[3].val == 2);
+    CHECK(arr0[4].val == 3);
+    CHECK(arr0[5].val == 4);
+
+    // erase
+    arr0.Erase(5);      // erase from end
+    CHECK(arr0.Size() == 5);
+    CHECK(arr0[0].val == 0);
+    CHECK(arr0[1].val == 1);
+    CHECK(arr0[2].val == 23);
+    CHECK(arr0[3].val == 2);
+    CHECK(arr0[4].val == 3);
+    CHECK(arr0.begin()[5].val == 1);
+    arr0.Erase(0);      // erase from fron
+    CHECK(arr0.Size() == 4);
+    CHECK(arr0[0].val == 1);
+    CHECK(arr0[1].val == 23);
+    CHECK(arr0[2].val == 2);
+    CHECK(arr0[3].val == 3);
+    CHECK(arr0.begin()[4].val == 1);
+    arr0.Erase(1);      // erase from middle
+    CHECK(arr0.Size() == 3);
+    CHECK(arr0[0].val == 1);
+    CHECK(arr0[1].val == 2);
+    CHECK(arr0[2].val == 3);
+    CHECK(arr0.begin()[3].val == 1);
 }
 

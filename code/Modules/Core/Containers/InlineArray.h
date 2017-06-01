@@ -63,6 +63,12 @@ public:
     void Add(TYPE&& item);
     /// add new items by initializer_list
     void Add(std::initializer_list<TYPE> items);
+    /// copy-insert element at index, keep array order
+    void Insert(int index, const TYPE& elm);
+    /// move-insert element at index, keep array order
+    void Insert(int index, TYPE&& elm);
+    /// erase element at index, keep element order
+    void Erase(int index);
 
     /// C++ begin
     TYPE* begin();
@@ -76,6 +82,10 @@ public:
 private:
     /// check if enough room is avaible to add n items, fatal error otherwise
     void checkRoom(int numItems) const;
+    /// make room for an inserted element
+    void moveInsert(int index);
+    /// erase an element
+    void moveErase(int index);
 
     TYPE items[CAPACITY];
     int size;
@@ -204,7 +214,7 @@ InlineArray<TYPE, CAPACITY>::Clear() {
 template<class TYPE, int CAPACITY> void
 InlineArray<TYPE, CAPACITY>::checkRoom(int numItems) const {
     if ((this->size + numItems) >= CAPACITY) {
-        o_error("No more room in InlineArray!");
+        o_error("InlineArray full!");
     }
 }
 
@@ -228,6 +238,66 @@ InlineArray<TYPE, CAPACITY>::Add(std::initializer_list<TYPE> l) {
     this->checkRoom(int(l.size()));
     for (const auto& item : l) {
         this->items[this->size++] = item;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> void
+InlineArray<TYPE, CAPACITY>::moveInsert(int index) {
+    o_assert_dbg((this->size > 0) && (this->size < CAPACITY));
+    for (int i = this->size; i > index; i--) {
+        this->items[i] = std::move(this->items[i-1]);
+    }
+    this->size++;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> void
+InlineArray<TYPE, CAPACITY>::moveErase(int index) {
+    for (int i = index; i < (this->size - 1); i++) {
+        this->items[i] = std::move(this->items[i+1]);
+    }
+    this->items[--this->size] = TYPE();
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> void
+InlineArray<TYPE, CAPACITY>::Insert(int index, const TYPE& item) {
+    o_assert_dbg((index >= 0) && (index <= this->size));
+    this->checkRoom(1);
+    if (index == this->size) {
+        this->items[this->size++] = item;
+    }
+    else {
+        this->moveInsert(index);
+        this->items[index] = item;
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> void
+InlineArray<TYPE, CAPACITY>::Insert(int index, TYPE&& item) {
+    o_assert_dbg((index >= 0) && (index <= this->size));
+    this->checkRoom(1);
+    if (index == this->size) {
+        this->items[this->size++] = std::move(item);
+    }
+    else {
+        this->moveInsert(index);
+        this->items[index] = std::move(item);
+    }
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> void
+InlineArray<TYPE, CAPACITY>::Erase(int index) {
+    o_assert_dbg(this->size > 0);
+    o_assert_range_dbg(index, this->size);
+    if (index == (this->size - 1)) {
+        this->items[--this->size] = TYPE();
+    }
+    else {
+        this->moveErase(index);
     }
 }
 
