@@ -20,6 +20,12 @@ TEST(SliceTest) {
     CHECK(slice.begin() == nullptr);
     CHECK(slice.end() == nullptr);
 
+    // constructor default params
+    Slice<int> slice0(arr, size);
+    CHECK(slice0.Size() == 10);
+    CHECK(slice0.begin() == &arr[0]);
+    CHECK(slice0.end() == &arr[10]);
+
     // init from offset and size
     Slice<int> slice1(arr, size, 3, 4);
     CHECK(slice1.Size() == 4);

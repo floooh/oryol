@@ -20,7 +20,7 @@ public:
     /// default constructor
     Slice();
     /// init from base pointer, start index and number of items
-    Slice(TYPE* base, int numBaseItems, int sliceOffset, int numSliceItems);
+    Slice(TYPE* base, int numBaseItems, int sliceOffset=0, int numSliceItems=EndOfRange);
     /// copy constructor
     Slice(const Slice& rhs);
     /// copy-assignment
@@ -72,8 +72,12 @@ Slice<TYPE>::Slice() {
 //------------------------------------------------------------------------------
 template<typename TYPE>
 Slice<TYPE>::Slice(TYPE* base, int numBaseItems, int sliceOffset, int sliceNumItems):
-basePtr(base), baseSize(numBaseItems), offset(sliceOffset), num(sliceNumItems) {
-    o_assert_dbg(basePtr && (this->offset>=0) && (this->num>=0) && ((this->offset+this->num)<=this->baseSize));
+basePtr(base),
+baseSize(numBaseItems),
+offset(sliceOffset),
+num((sliceNumItems==EndOfRange)?numBaseItems:sliceNumItems)
+{
+    o_assert_dbg(basePtr && (offset>=0) && (num>=0) && ((offset+num)<=baseSize));
 }
 
 //------------------------------------------------------------------------------

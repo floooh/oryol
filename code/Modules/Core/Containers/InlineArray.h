@@ -19,6 +19,7 @@
 #include "Core/Config.h"
 #include "Core/Assertion.h"
 #include <initializer_list>
+#include <utility>
 
 namespace Oryol {
 
