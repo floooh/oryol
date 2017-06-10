@@ -55,8 +55,8 @@ TEST(Ptr) {
     // Ptr<B> b = a;                // this should not compile
     // Ptr<A> blob = new RefCounted();     // this should not compile
     // Ptr<A> blob = RefCounted::Create();  // this should not compile
-    Ptr<RefCounted> blub = new A();
-    Ptr<RefCounted> blob = A::Create();
+    //Ptr<RefCounted> blub = new A();
+    //Ptr<RefCounted> blob = A::Create();
 
     ptr3.invalidate();
     CHECK(ptr3.getUnsafe() == nullptr);
