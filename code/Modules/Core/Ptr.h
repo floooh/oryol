@@ -17,6 +17,7 @@
 namespace Oryol {
 
 template<class T> class Ptr {
+    struct __nat {int __for_bool_;};
 public:
     /// unsafe get, may return nullptr
     T* getUnsafe() const {
@@ -28,20 +29,26 @@ public:
         // empty
     };
     /// nullptr constructor
-    Ptr(std::nullptr_t) : p(nullptr) {
+    explicit Ptr(std::nullptr_t) : p(nullptr) {
         // empty
     };
     /// construct from compatible raw pointer
-    template<class U> Ptr(U* rhs) {
+    template<class U> explicit Ptr(U* rhs,
+        typename std::enable_if<std::is_convertible<U*, T*>::value, __nat>::type = __nat()) {
         set(static_cast<T*>(rhs));
     };
-    /// copy-construct from Ptr<TYPE>
+    /// copy-construct from Ptr<OTHER>
+    template<class U> explicit Ptr(const Ptr<U>& rhs,
+        typename std::enable_if<std::is_convertible<U*, T*>::value, __nat>::type = __nat()) {
+        set(static_cast<T*>(rhs.getUnsafe()));
+    };
+    /// copy-construct from raw ptr to T
+    Ptr(T* rhs) {
+        set(rhs);
+    };
+    /// copy-construct from const Ptr<TYPE>&
     Ptr(const Ptr<T>& rhs) {
         set(rhs.p);
-    };
-    /// copy-construct from Ptr<OTHER>
-    template<class U> explicit Ptr(const Ptr<U>& rhs) {
-        set(static_cast<T*>(rhs.getUnsafe()));
     };
 
     /// move constructor from Ptr<TYPE>
@@ -50,7 +57,8 @@ public:
         rhs.p = nullptr;
     };
     /// move constructor from compatible type
-    template<class U> Ptr(Ptr<U>&& rhs) {
+    template<class U> explicit Ptr(Ptr<U>&& rhs,
+        typename std::enable_if<std::is_convertible<U*, T*>::value, __nat>::type = __nat()) {
         p = static_cast<T*>(rhs.getUnsafe());
         rhs.p = nullptr;
     };
@@ -135,6 +143,10 @@ public:
     };
     /// cast to compatible type
     template<class U, class=typename std::enable_if<std::is_convertible<T*,U*>::value>::type> operator const Ptr<U>&() const {
+        return *(const Ptr<U>*)this;
+    };
+    /// unsafe downcast, this would require RTTI to make it runtime-safe
+    template<class U> const Ptr<U>& unsafeCast() const {
         return *(const Ptr<U>*)this;
     };
     /// operator*

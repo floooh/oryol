@@ -113,6 +113,7 @@ fips_begin_unittest(Core)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
+        PtrTest.cc
         SliceTest.cc
         InlineArrayTest.cc
         StackTraceTest.cc

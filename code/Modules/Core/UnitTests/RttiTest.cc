@@ -14,6 +14,7 @@
 using namespace std;
 using namespace Oryol;
 
+namespace {
 class A : public RefCounted {
     OryolClassDecl(A);
     OryolBaseTypeDecl(A);
@@ -43,6 +44,7 @@ public:
     /// destructor
     virtual ~AB() { Log::Info("destructor ~AB called for '%p'\n", this); };
 };
+}
 
 //------------------------------------------------------------------------------
 TEST(Rtti) {
