@@ -102,23 +102,23 @@ public:
     };
     /// operator!=
     template<class U> bool operator!=(const Ptr<U>& rhs) const {
-        return p != rhs.GetUnsafe();
+        return p != rhs.getUnsafe();
     };
     /// operator<
     template<class U> bool operator<(const Ptr<U>& rhs) const {
-        return p < rhs.GetUnsafe();
+        return p < rhs.getUnsafe();
     };
     /// operator>
     template<class U> bool operator>(const Ptr<U>& rhs) const {
-        return p > rhs.GetUnsafe();
+        return p > rhs.getUnsafe();
     };
     /// operator<=
     template<class U> bool operator<=(const Ptr<U>& rhs) const {
-        return p <= rhs.GetUnsafe();
+        return p <= rhs.getUnsafe();
     };
     /// operator>=
     template<class U> bool operator>=(const Ptr<U>& rhs) const {
-        return p >= rhs.GetUnsafe();
+        return p >= rhs.getUnsafe();
     };
     /// test if invalid (contains nullptr)
     bool operator==(std::nullptr_t) const {
