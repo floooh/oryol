@@ -29,16 +29,16 @@ public:
         // empty
     };
     /// nullptr constructor
-    explicit Ptr(std::nullptr_t) : p(nullptr) {
+    Ptr(std::nullptr_t) : p(nullptr) {
         // empty
     };
     /// construct from compatible raw pointer
-    template<class U> explicit Ptr(U* rhs,
+    template<class U> Ptr(U* rhs,
         typename std::enable_if<std::is_convertible<U*, T*>::value, __nat>::type = __nat()) {
         set(static_cast<T*>(rhs));
     };
     /// copy-construct from Ptr<OTHER>
-    template<class U> explicit Ptr(const Ptr<U>& rhs,
+    template<class U> Ptr(const Ptr<U>& rhs,
         typename std::enable_if<std::is_convertible<U*, T*>::value, __nat>::type = __nat()) {
         set(static_cast<T*>(rhs.getUnsafe()));
     };
@@ -57,7 +57,7 @@ public:
         rhs.p = nullptr;
     };
     /// move constructor from compatible type
-    template<class U> explicit Ptr(Ptr<U>&& rhs,
+    template<class U> Ptr(Ptr<U>&& rhs,
         typename std::enable_if<std::is_convertible<U*, T*>::value, __nat>::type = __nat()) {
         p = static_cast<T*>(rhs.getUnsafe());
         rhs.p = nullptr;
