@@ -63,11 +63,11 @@ public:
     void Reset();
 
     /// copy-add a new item to the back
-    void Add(const TYPE& item);
+    TYPE& Add(const TYPE& item);
     /// move-add a new item to the back
-    void Add(TYPE&& item);
+    TYPE& Add(TYPE&& item);
     /// emplace a new item to the back
-    template<class... ARGS> void Add(ARGS&&... args);
+    template<class... ARGS> TYPE& Add(ARGS&&... args);
     /// add new items by initializer_list
     void Add(std::initializer_list<TYPE> items);
     /// copy-insert element at index, keep array order
@@ -239,23 +239,26 @@ InlineArray<TYPE, CAPACITY>::checkRoom(int numItems) const {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CAPACITY> void
+template<class TYPE, int CAPACITY> TYPE&
 InlineArray<TYPE, CAPACITY>::Add(const TYPE& item) {
     this->checkRoom(1);
     this->items[this->size++] = item;
+    return this->items[this->size - 1];
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE, int CAPACITY> void
+template<class TYPE, int CAPACITY> TYPE&
 InlineArray<TYPE, CAPACITY>::Add(TYPE&& item) {
     this->checkRoom(1);
     this->items[this->size++] = std::move(item);
+    return this->items[this->size - 1];
 }
 //------------------------------------------------------------------------------
-template<class TYPE, int CAPACITY> template<class... ARGS> void
+template<class TYPE, int CAPACITY> template<class... ARGS> TYPE&
 InlineArray<TYPE, CAPACITY>::Add(ARGS&&... args) {
     this->checkRoom(1);
     this->items[this->size++] = TYPE(std::forward<ARGS>(args)...);
+    return this->items[this->size - 1];
 }
 
 //------------------------------------------------------------------------------

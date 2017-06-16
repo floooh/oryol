@@ -34,12 +34,12 @@ TEST(InlineArrayTest) {
 
     // populate array 
     myClass one(1), two(2), three(3);
-    arr0.Add(one);
+    CHECK(arr0.Add(one).val == 1);
     CHECK(!arr0.Empty());
     CHECK(arr0.Size() == 1);
     CHECK(arr0.Spare() == 31);
     CHECK(arr0[0].val == 1);
-    arr0.Add(std::move(two));
+    CHECK(arr0.Add(std::move(two)).val == 2);
     CHECK(two.val == 0);
     CHECK(arr0.Size() == 2);
     CHECK(arr0.Spare() == 30);

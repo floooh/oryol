@@ -94,11 +94,11 @@ public:
     void Clear();
     
     /// copy-add element to back of array
-    void Add(const TYPE& elm);
+    TYPE& Add(const TYPE& elm);
     /// move-add element to back of array
-    void Add(TYPE&& elm);
+    TYPE& Add(TYPE&& elm);
     /// construct-add new element at back of array
-    template<class... ARGS> void Add(ARGS&&... args);
+    template<class... ARGS> TYPE& Add(ARGS&&... args);
     /// copy-insert element at index, keep array order
     void Insert(int index, const TYPE& elm);
     /// move-insert element at index, keep array order
@@ -318,21 +318,23 @@ Array<TYPE>::Clear() {
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> void
+template<class TYPE> TYPE&
 Array<TYPE>::Add(const TYPE& elm) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }
     this->buffer.pushBack(elm);
+    return this->buffer.back();
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> void
+template<class TYPE> TYPE&
 Array<TYPE>::Add(TYPE&& elm) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }
     this->buffer.pushBack(std::move(elm));
+    return this->buffer.back();
 }
     
 //------------------------------------------------------------------------------
@@ -351,15 +353,17 @@ Array<TYPE>::Insert(int index, TYPE&& elm) {
         this->grow();
     }
     this->buffer.insert(index, std::move(elm));
+
 }
 
 //------------------------------------------------------------------------------
-template<class TYPE> template<class... ARGS> void
+template<class TYPE> template<class... ARGS> TYPE&
 Array<TYPE>::Add(ARGS&&... args) {
     if (this->buffer.backSpare() == 0) {
         this->grow();
     }
     this->buffer.emplaceBack(std::forward<ARGS>(args)...);
+    return this->buffer.back();
 }
 
 //------------------------------------------------------------------------------

@@ -42,9 +42,9 @@ TEST(ArrayTest) {
     
     // add some elements
     const int one = 1;
-    array0.Add(0);
-    array0.Add(one);
-    array0.Add(2);
+    CHECK(array0.Add(0) == 0);
+    CHECK(array0.Add(one) == one);
+    CHECK(array0.Add(2) == 2);
     CHECK(array0.Size() == 3);
     CHECK(array0.Capacity() == ORYOL_CONTAINER_DEFAULT_MIN_GROW);
     CHECK(!array0.Empty());
