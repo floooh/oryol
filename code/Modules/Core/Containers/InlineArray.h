@@ -59,11 +59,15 @@ public:
 
     /// clear the array (destruct items and reset size to 0)
     void Clear();
+    /// reset the array (do *not* destruct items, only reset size to 0)
+    void Reset();
 
     /// copy-add a new item to the back
     void Add(const TYPE& item);
     /// move-add a new item to the back
     void Add(TYPE&& item);
+    /// emplace a new item to the back
+    template<class... ARGS> void Add(ARGS&&... args);
     /// add new items by initializer_list
     void Add(std::initializer_list<TYPE> items);
     /// copy-insert element at index, keep array order
@@ -222,6 +226,12 @@ InlineArray<TYPE, CAPACITY>::Clear() {
 
 //------------------------------------------------------------------------------
 template<class TYPE, int CAPACITY> void
+InlineArray<TYPE, CAPACITY>::Reset() {
+    this->size = 0;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> void
 InlineArray<TYPE, CAPACITY>::checkRoom(int numItems) const {
     if ((this->size + numItems) > CAPACITY) {
         o_error("InlineArray full!");
@@ -240,6 +250,12 @@ template<class TYPE, int CAPACITY> void
 InlineArray<TYPE, CAPACITY>::Add(TYPE&& item) {
     this->checkRoom(1);
     this->items[this->size++] = std::move(item);
+}
+//------------------------------------------------------------------------------
+template<class TYPE, int CAPACITY> template<class... ARGS> void
+InlineArray<TYPE, CAPACITY>::Add(ARGS&&... args) {
+    this->checkRoom(1);
+    this->items[this->size++] = TYPE(std::forward<ARGS>(args)...);
 }
 
 //------------------------------------------------------------------------------

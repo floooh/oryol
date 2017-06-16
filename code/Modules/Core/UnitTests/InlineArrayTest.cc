@@ -13,13 +13,15 @@ using namespace Oryol;
 struct myClass {
     myClass() { };
     myClass(int v): val(v) { };
-    ~myClass() { val = 0; };
-    myClass(const myClass& rhs) { val = rhs.val; };
-    myClass(myClass&& rhs) { val = rhs.val; rhs.val = 0; };
-    void operator=(const myClass& rhs) { val = rhs.val; };
-    void operator=(myClass&& rhs) { val = rhs.val; rhs.val = 0; };
+    myClass(int v, int w): val(v), wal(w) { };
+    ~myClass() { val = 0; wal = 0; };
+    myClass(const myClass& rhs) { val = rhs.val; wal = rhs.wal; };
+    myClass(myClass&& rhs) { val = rhs.val; wal = rhs.wal; rhs.val = 0; rhs.wal = 0; };
+    void operator=(const myClass& rhs) { val = rhs.val; wal = rhs.wal; };
+    void operator=(myClass&& rhs) { val = rhs.val; wal = rhs.wal; rhs.val = 0; rhs.wal = 0; };
 
     int val = 1;
+    int wal = 2;
 };
 
 TEST(InlineArrayTest) {
@@ -171,5 +173,17 @@ TEST(InlineArrayTest) {
     CHECK(!arr0.Full());
     InlineArray<int, 3> arr3 = { 1, 2, 3 };
     CHECK(arr3.Full());
+
+    // emplace, reset
+    arr0.Clear();
+    arr0.Add(5, 6);
+    arr0.Add(7, 8);
+    CHECK(arr0.Size() == 2);
+    CHECK(arr0[0].val == 5);
+    CHECK(arr0[0].wal == 6);
+    CHECK(arr0[1].val == 7);
+    CHECK(arr0[1].wal == 8);
+    arr0.Reset();
+    CHECK(arr0.Size() == 0);
 }
 
