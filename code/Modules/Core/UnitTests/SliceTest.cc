@@ -104,4 +104,12 @@ TEST(SliceTest) {
     CHECK(slice6.Size() == 5);
     CHECK(slice6.Offset() == 3);
     CHECK(slice6[0] == 3);
+
+    // Reset
+    Slice<int> slice7(arr, size, 5, 5);
+    CHECK(slice7.Size() == 5);
+    CHECK(slice7.Offset() == 5);
+    slice7.Reset();
+    CHECK(slice7.Empty());
+    CHECK(slice7.Offset() == 0);
 }

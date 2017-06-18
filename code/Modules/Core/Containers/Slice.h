@@ -32,6 +32,8 @@ public:
     /// create a new slice from this slice
     class Slice MakeSlice(int sliceOffset=0, int numSliceItems=EndOfRange) const;
 
+    /// reset the slice to its default state
+    void Reset();
     /// return true if Slice is empty
     bool Empty() const;
     /// get number of items
@@ -117,6 +119,15 @@ Slice<TYPE>::MakeSlice(int sliceOffset, int numSliceItems) const {
         numSliceItems = this->num - sliceOffset;
     }
     return Slice(this->basePtr, this->baseSize, this->offset+sliceOffset, numSliceItems);
+}
+
+//------------------------------------------------------------------------------
+template<typename TYPE> void
+Slice<TYPE>::Reset() {
+    this->basePtr = nullptr;
+    this->baseSize = 0;
+    this->offset = 0;
+    this->num = 0;
 }
 
 //------------------------------------------------------------------------------
