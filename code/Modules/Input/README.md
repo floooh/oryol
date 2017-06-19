@@ -150,8 +150,8 @@ To check the current state of specific keys:
 > they don't necessarily represent what's actually printed on the 
 > key cap (especially on international keyboards)
 
-A list of all key codes can be found here: 
-[Input/Core/Key.h](https://github.com/floooh/oryol/blob/master/code/Modules/Input/Core/Key.h)
+A list of all key codes can be found in the **Key** enum class in
+the [Input/InputTypes.h header](https://github.com/floooh/oryol/blob/master/code/Modules/Input/InputTypes.h).
 
 ### Character Input 
 
