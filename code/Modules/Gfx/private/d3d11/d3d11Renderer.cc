@@ -650,7 +650,7 @@ d3d11Renderer::updateTexture(texture* tex, const void* data, const ImageDataAttr
         const uint8_t* srcPtr = ((const uint8_t*)data) + offsetsAndSizes.Offsets[0][mipIndex];
         if (srcPitch == mapped.RowPitch) {
             const int mipSize = offsetsAndSizes.Sizes[0][mipIndex];
-            o_assert_dbg(mipSize == (srcPitch*mipHeight));
+            o_assert_dbg(mipSize <= (srcPitch*mipHeight));
             std::memcpy(dstPtr, srcPtr, mipSize);
         }
         else {
