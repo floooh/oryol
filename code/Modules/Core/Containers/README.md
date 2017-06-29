@@ -78,3 +78,20 @@ unique elements. trying to add an identical item
 twice results in a fatal runtime error.
 
 See the [Header File](Set.h) and [Unit Test](../UnitTests/Set.cc) for more information.
+
+### InlineArray&lt;TYPE,CAPACITY&gt;
+
+The InlineArray class is similar to the Array class
+but doesn't allocate memory from the heap. The max capacity is fixed
+and must be provided as a template argument. A fatal runtime error
+will be thrown when attempting to add new items to a full array.
+
+### Slice&lt;TYPE&gt;
+
+A Slice is an array without its own data, instead it
+provides an array-like interface to a chunk of non-owned
+memory. The same concept also exists under different names,
+like array-views or ranges.
+
+> NOTE: Since Slices do not own the memory they are pointing to, they are potentially dangerous to use, since the items the Slice is pointing may have been moved are freed (similar to how iterators are affected by iterator-invalidation). Either make sure that the items referenced by Slices are 'pinned' into place, or use Slices only as a transient reference.
+

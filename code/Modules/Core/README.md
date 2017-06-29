@@ -24,7 +24,7 @@ is only available from the main (or UI-) thread, don't have shared-memory-thread
 even have a main() function or where an app can be suspended and restored at will by 
 the operating system.
 
-To hide all these dirty platform-specific details, Oryol offers a convenient application
+To hide all these platform-specific details, Oryol offers a convenient application
 class *Oryol::App* which implements a simple *application-state-model*. During the lifetime
 of an Oryol application, the app goes through different states, controlled by a derived 
 application subclass. While a state is active, an associated per-frame method is called
