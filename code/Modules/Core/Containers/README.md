@@ -93,5 +93,9 @@ provides an array-like interface to a chunk of non-owned
 memory. The same concept also exists under different names,
 like array-views or ranges.
 
-> NOTE: Since Slices do not own the memory they are pointing to, they are potentially dangerous to use, since the items the Slice is pointing may have been moved are freed (similar to how iterators are affected by iterator-invalidation). Either make sure that the items referenced by Slices are 'pinned' into place, or use Slices only as a transient reference.
+> NOTE: Since Slices do not own the memory they are pointing to, they are
+potentially dangerous to use. The underlying memory may have been moved or
+freed (similar to how iterators are affected by iterator-invalidation).
+Either make sure that the items referenced by Slices are 'pinned' into place,
+or use Slices only as a short-lived, transient reference.
 
