@@ -48,15 +48,26 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 * [IO Module](code/Modules/IO/README.md)
 * [Input Module](code/Modules/Input/README.md)
 * [Gfx Module](code/Modules/Gfx/README.md)
+* [Resource Module](code/Modules/Resource/README.md)
+* [HttpFS Module](code/Modules/HttpFS/README.md)
+* [LocalFS Module](code/Modules/LocalFS/README.md)
+
 
 ### Extension Modules:
 
+- Skeletal Animation System: https://github.com/floooh/oryol-animation
 - Dear Imgui integration: https://github.com/floooh/oryol-imgui
 - Nuklear UI integration: https://github.com/floooh/oryol-nuklear
 - TurboBadger UI integration: https://github.com/floooh/oryol-tbui
 - OpenAL based sound module: https://github.com/floooh/oryol-sound
 - SoLoud portable audio library: https://github.com/floooh/fips-soloud
-- ...more coming soon!
+
+See the [Oryol Extension Sample](http://floooh.github.io/oryol-samples/) webpage for more interesting 3rd-party library integrations.
+
+### Tools etc.:
+
+- Oryol Asset Tools (WIP): https://github.com/floooh/oryol-tools
+- Oryol Fileformat Definitions: https://github.com/floooh/oryol-fileformats
 
 ### Standalone App Demo:
 
