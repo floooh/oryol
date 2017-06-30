@@ -384,5 +384,13 @@ TEST(ArrayTest) {
     CHECK(slice.Offset() == 0);
     CHECK(slice[0] == 1);
     CHECK(slice[9] == 10);
+
+    // fixed capacity
+    Array<int> array8;
+    array8.SetFixedCapacity(128);
+    CHECK(array8.Size() == 0);
+    CHECK(array8.Capacity() == 128);
+    CHECK(array8.GetMinGrow() == 0);
+    CHECK(array8.GetMaxGrow() == 0);
 }
 
