@@ -9,13 +9,14 @@
     @brief Dbg module facade
 */
 #include "Core/Types.h"
+#include "Dbg/DbgTypes.h"
 
 namespace Oryol {
     
 class Dbg {
 public:
     /// setup the Debug module
-    static void Setup();
+    static void Setup(const DbgSetup& setup=DbgSetup());
     /// discard the Debug module
     static void Discard();
     /// return true if Debug module is valid

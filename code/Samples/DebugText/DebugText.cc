@@ -34,8 +34,10 @@ DebugTextApp::OnInit() {
     auto gfxSetup = GfxSetup::Window(800, 600, "Oryol DebugText Sample");
     gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
-    Dbg::Setup();
-    Dbg::TextScale(2.0f, 2.0f);
+    DbgSetup dbgSetup;
+    dbgSetup.TextScaleX = 2.0f;
+    dbgSetup.TextScaleY = 2.0f;
+    Dbg::Setup(dbgSetup);
     
     this->width = Gfx::DisplayAttrs().FramebufferWidth / 16;
     this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;

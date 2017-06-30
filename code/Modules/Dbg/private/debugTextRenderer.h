@@ -9,6 +9,7 @@
 #include "Resource/ResourceLabel.h"
 #include "Core/String/StringBuilder.h"
 #include "Gfx/Gfx.h"
+#include "Dbg/DbgTypes.h"
 #include <cstdarg>
 
 namespace Oryol {
@@ -16,10 +17,13 @@ namespace _priv {
 
 class debugTextRenderer {
 public:
-    debugTextRenderer();
     ~debugTextRenderer();
 
+    /// setup the text renderer
+    void setup(const DbgSetup& setup);
+    /// discard the text renderer
     void discard();
+    /// return true if the text renderer has been setup
     bool isValid() const;
 
     float textScaleX = 1.0f, textScaleY = 1.0f;
@@ -36,37 +40,34 @@ public:
     void drawTextBuffer();
     
 private:
-    /// setup the text renderer (will be called as needed)
-    void setup();
-
     /// setup the font texture
     void setupFontTexture();
     /// setup the text dynamic mesh
-    void setupTextMesh();
-    /// setup the text pipeline state object
-    void  setupTextPipeline();
+    void setupMesh();
+    /// setup the text pipeline state object (happens deferred)
+    void  setupPipeline();
     /// convert the provides string object into vertices, and return number of vertices
-    int convertStringToVertices(const String& str);
+    void convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
-    int writeVertex(int vertexIndex, uint8_t x, uint8_t y, uint8_t u, uint8_t v, uint32_t rgba);
+    void addVertex(uint8_t x, uint8_t y, uint8_t u, uint8_t v, uint32_t rgba);
     
-    static const int MaxNumColumns = 120;
-    static const int MaxNumLines = 80;
-    static const int MaxNumChars = MaxNumColumns * MaxNumLines;
-    static const int MaxNumVertices = MaxNumChars * 6;
     static const int TabWidth = 8; // must be 2^n
-    
+
+    bool valid = false;
     VertexLayout vertexLayout;
     DrawState drawState;
     StringBuilder stringBuilder;
-    bool valid = false;
     ResourceLabel resourceLabel;
-    
+    int numColumns = 0;
+    int numRows = 0;
+    int maxNumChars = 0;
+    int maxNumVertices = 0;
     struct Vertex {
         float x, y, u, v;
         uint32_t color;
     };
-    struct Vertex vertexData[MaxNumVertices];
+    int curNumVertices = 0;
+    Vertex* vertexData = nullptr;
 };
 
 } // namespace _priv

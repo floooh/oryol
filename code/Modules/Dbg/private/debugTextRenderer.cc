@@ -20,13 +20,6 @@ namespace _priv {
 extern const char *kc85_4_Font;
 
 //------------------------------------------------------------------------------
-debugTextRenderer::debugTextRenderer() {
-    // NOTE: text rendering will be setup lazily when the text rendering
-    // method is called first
-    this->stringBuilder.Reserve(MaxNumChars * 2);
-}
-
-//------------------------------------------------------------------------------
 debugTextRenderer::~debugTextRenderer() {
     if (this->valid) {
         this->discard();
@@ -35,21 +28,34 @@ debugTextRenderer::~debugTextRenderer() {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setup() {
-    o_assert(!this->valid);
-    this->resourceLabel = Gfx::PushResourceLabel();
-    this->setupTextMesh();
-    this->setupTextPipeline();
+debugTextRenderer::setup(const DbgSetup& s) {
+    o_assert_dbg(!this->valid);
+    o_assert_dbg(nullptr == this->vertexData);
+
+    this->numColumns = s.NumTextColumns;
+    this->numRows = s.NumTextRows;
+    this->maxNumChars = s.NumTextColumns * s.NumTextRows;
+    this->textScaleX = s.TextScaleX;
+    this->textScaleY = s.TextScaleY;
+    this->maxNumVertices = this->maxNumChars * 6;
+    this->stringBuilder.Reserve(this->maxNumChars * 2);
+    this->curNumVertices = 0;
+    this->vertexData = (Vertex*) Memory::Alloc(this->maxNumVertices * sizeof(Vertex));
+    Gfx::PushResourceLabel();
+    this->setupMesh();
     this->setupFontTexture();
-    Gfx::PopResourceLabel();
+    this->resourceLabel = Gfx::PopResourceLabel();
     this->valid = true;
 }
 
 //------------------------------------------------------------------------------
 void
 debugTextRenderer::discard() {
-    o_assert(this->valid);
+    o_assert_dbg(this->valid);
+    o_assert_dbg(this->vertexData);
     this->valid = false;
+    Memory::Free(this->vertexData);
+    this->vertexData = nullptr;
     Gfx::DestroyResources(this->resourceLabel);
 }
 
@@ -99,9 +105,12 @@ debugTextRenderer::textColor(float r, float g, float b, float a) {
 void
 debugTextRenderer::drawTextBuffer() {
     
-    // one-time setup
-    if (!this->valid) {
-        this->setup();
+    // lazy-setup the pipeline-state-object (this is done deferred to 
+    // initialize the pipeline with the right render pass params
+    if (!this->drawState.Pipeline.IsValid()) {
+        Gfx::PushResourceLabel(this->resourceLabel);
+        this->setupPipeline();
+        Gfx::PopResourceLabel();
     }
     
     // get the currently accumulated string
@@ -113,23 +122,23 @@ debugTextRenderer::drawTextBuffer() {
     }
     
     // convert string into vertices
-    int numVertices = this->convertStringToVertices(str);
+    this->convertStringToVertices(str);
 
     // draw the vertices
-    if (numVertices > 0) {
+    if (this->curNumVertices > 0) {
         // compute the size factor for one 8x8 glyph on screen
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
+        Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
+        Gfx::ApplyDrawState(this->drawState);
         DbgTextShader::vsParams vsParams;
         const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
-
-        Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, numVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->drawState);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::Draw(PrimitiveGroup(0, numVertices));
+        Gfx::Draw(PrimitiveGroup(0, this->curNumVertices));
+        this->curNumVertices = 0;
     }
 }
 
@@ -145,7 +154,7 @@ debugTextRenderer::setupFontTexture() {
     const int imgHeight = charHeight;
     const int bytesPerChar = charWidth * charHeight;
     const int imgDataSize = numChars * bytesPerChar;
-    o_assert((imgWidth * imgHeight) == imgDataSize);
+    o_assert_dbg((imgWidth * imgHeight) == imgDataSize);
     
     // setup a memory buffer and write font image data to it
     Buffer data;
@@ -178,26 +187,24 @@ debugTextRenderer::setupFontTexture() {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextMesh() {
-    o_assert(this->vertexLayout.Empty());
+debugTextRenderer::setupMesh() {
+    o_assert_dbg(this->vertexLayout.Empty());
+    o_assert_dbg((this->maxNumVertices > 0) && (this->maxNumVertices == this->maxNumChars*6));
     
     // setup an empty mesh, only vertices
-    int maxNumVerts = MaxNumChars * 6;
     this->vertexLayout = {
         { VertexAttr::Position, VertexFormat::Float4 },
         { VertexAttr::Color0, VertexFormat::UByte4N }
     };
-    o_assert(sizeof(this->vertexData) == maxNumVerts * this->vertexLayout.ByteSize());
-    MeshSetup setup = MeshSetup::Empty(maxNumVerts, Usage::Stream);
+    MeshSetup setup = MeshSetup::Empty(this->maxNumVertices, Usage::Stream);
     setup.Layout = this->vertexLayout;
     this->drawState.Mesh[0] = Gfx::CreateResource(setup);
-    o_assert(this->drawState.Mesh[0].IsValid());
-    o_assert(Gfx::QueryResourceInfo(this->drawState.Mesh[0]).State == ResourceState::Valid);
+    o_assert_dbg(this->drawState.Mesh[0].IsValid());
 }
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupTextPipeline() {
+debugTextRenderer::setupPipeline() {
     // finally create pipeline object
     Id shd = Gfx::CreateResource(DbgTextShader::Setup());
     auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, shd);
@@ -217,28 +224,28 @@ debugTextRenderer::setupTextPipeline() {
 }
 
 //------------------------------------------------------------------------------
-int
-debugTextRenderer::writeVertex(int index, uint8_t x, uint8_t y, uint8_t u, uint8_t v, uint32_t rgba) {
-    this->vertexData[index].x = (float) x;
-    this->vertexData[index].y = (float) y;
-    this->vertexData[index].u = (float) u;
-    this->vertexData[index].v = (float) v;
-    this->vertexData[index].color = rgba;
-    return index + 1;
+void
+debugTextRenderer::addVertex(uint8_t x, uint8_t y, uint8_t u, uint8_t v, uint32_t rgba) {
+    o_assert_dbg(this->curNumVertices < this->maxNumVertices);
+    auto& vtx = this->vertexData[this->curNumVertices++];
+    vtx.x = (float) x;
+    vtx.y = (float) y;
+    vtx.u = (float) u;
+    vtx.v = (float) v;
+    vtx.color = rgba;
 }
 
 //------------------------------------------------------------------------------
-int
+void
 debugTextRenderer::convertStringToVertices(const String& str) {
 
     int cursorX = 0;
     int cursorY = 0;
-    const int cursorMaxX = MaxNumColumns - 1;
-    const int cursorMaxY = MaxNumLines - 1;
-    int vIndex = 0;
+    const int cursorMaxX = this->numColumns - 1;
+    const int cursorMaxY = this->numRows - 1;
     uint32_t rgba = 0xFF00FFFF;
     
-    const int numChars = str.Length() > MaxNumChars ? MaxNumChars : str.Length();
+    const int numChars = str.Length() > this->maxNumChars ? this->maxNumChars : str.Length();
     const char* ptr = str.AsCStr();
     for (int charIndex = 0; charIndex < numChars; charIndex++) {
         unsigned char c = (unsigned char) ptr[charIndex];
@@ -264,18 +271,18 @@ debugTextRenderer::convertStringToVertices(const String& str) {
                     cursorX = 0; cursorY = 0; break;
                 case 0x1B: // handle escape sequence (position cursor or change text color)
                     {
-                        o_assert((charIndex + 1) < numChars);
+                        o_assert_dbg((charIndex + 1) < numChars);
                         char escCode = ptr[charIndex + 1];
                         if (escCode == 1) {
                             // reposition cursor
-                            o_assert((charIndex + 3) < numChars);
+                            o_assert_dbg((charIndex + 3) < numChars);
                             cursorX = ptr[charIndex + 2];
                             cursorY = ptr[charIndex + 3];
                             charIndex += 3;
                         }
                         else if (escCode == 2) {
                             // change color
-                            o_assert((charIndex + 5) < numChars);
+                            o_assert_dbg((charIndex + 5) < numChars);
                             uint8_t r = (uint8_t) ptr[charIndex + 2];
                             uint8_t g = (uint8_t) ptr[charIndex + 3];
                             uint8_t b = (uint8_t) ptr[charIndex + 4];
@@ -292,19 +299,19 @@ debugTextRenderer::convertStringToVertices(const String& str) {
         }
         else {
             // still space in vertex buffer?
-            if ((vIndex < (MaxNumVertices - 6)) && (cursorX <= cursorMaxX)) {
+            if ((this->curNumVertices < (this->maxNumVertices - 6)) && (cursorX <= cursorMaxX)) {
                 // renderable character, only consider 7 bit (codes > 127 can be
                 // used to render control-code characters)
                 c &= 0x7F;
                 
                 // write 6 vertices
-                vIndex = this->writeVertex(vIndex, cursorX, cursorY, c, 0, rgba);
-                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY, c+1, 0, rgba);
-                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY+1, c+1, 1, rgba);
-                vIndex = this->writeVertex(vIndex, cursorX, cursorY, c, 0, rgba);
-                vIndex = this->writeVertex(vIndex, cursorX+1, cursorY+1, c+1, 1, rgba);
-                vIndex = this->writeVertex(vIndex, cursorX, cursorY+1, c, 1, rgba);
-                
+                this->addVertex(cursorX, cursorY, c, 0, rgba);
+                this->addVertex(cursorX+1, cursorY, c+1, 0, rgba);
+                this->addVertex(cursorX+1, cursorY+1, c+1, 1, rgba);
+                this->addVertex(cursorX, cursorY, c, 0, rgba);
+                this->addVertex(cursorX+1, cursorY+1, c+1, 1, rgba);
+                this->addVertex(cursorX, cursorY+1, c, 1, rgba);
+
                 // advance horizontal cursor position
                 cursorX++;
             }
@@ -314,7 +321,6 @@ debugTextRenderer::convertStringToVertices(const String& str) {
             }
         }
     }
-    return vIndex;
 }
 
 } // namespace _priv
