@@ -28,6 +28,8 @@ public:
     
     /// set allocation strategy
     void SetAllocStrategy(int minGrow, int maxGrow);
+    /// initialize to a fixed capacity (guarantees that no re-allocs happen)
+    void SetFixedCapacity(int fixedCapacity);
     /// get min-grow value
     int GetMinGrow() const;
     /// get max-grow value
@@ -207,6 +209,16 @@ template<class TYPE> void
 Queue<TYPE>::SetAllocStrategy(int minGrow_, int maxGrow_) {
     this->minGrow = minGrow_;
     this->maxGrow = maxGrow_;
+}
+
+//------------------------------------------------------------------------------
+template<class TYPE> void
+Queue<TYPE>::SetFixedCapacity(int fixedCapacity) {
+    this->minGrow = 0;
+    this->maxGrow = 0;
+    if (fixedCapacity > this->buffer.capacity()) {
+        this->adjustCapacity(fixedCapacity);
+    }
 }
 
 //------------------------------------------------------------------------------

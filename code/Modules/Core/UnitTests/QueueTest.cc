@@ -78,5 +78,14 @@ TEST(QueueTest) {
     CHECK(queue0.SpareDequeue() == 0);
     CHECK(queue0.Size() == 1);
     CHECK(queue0.Dequeue() == "Bla");
+
+    // SetFixedCapacity
+    // fixed capacity
+    Queue<int> queue3;
+    queue3.SetFixedCapacity(128);
+    CHECK(queue3.Size() == 0);
+    CHECK(queue3.Capacity() == 128);
+    CHECK(queue3.GetMinGrow() == 0);
+    CHECK(queue3.GetMaxGrow() == 0);
 }
     
