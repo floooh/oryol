@@ -5,7 +5,6 @@
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
 #include "glm/glm.hpp"
-#include "glm/gtc/constants.hpp"
 
 using namespace Oryol;
 
