@@ -88,9 +88,8 @@ ResourcePool<RESOURCE>::Setup(Id::TypeT resType, int poolSize) {
     o_assert_dbg(poolSize > 0);
     
     this->resourceType = resType;
-    this->slots.Reserve(poolSize);
-    this->slots.SetAllocStrategy(0, 0);    // disable growing
-    this->freeSlots.Reserve(poolSize);
+    this->slots.SetFixedCapacity(poolSize);
+    this->freeSlots.SetFixedCapacity(poolSize);
     this->LastAllocSlot = 0;
     
     // setup empty slots
