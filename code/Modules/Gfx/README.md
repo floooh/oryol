@@ -44,7 +44,4 @@ information necessary to work with the Gfx module:
     * [Render Passes](doc/RenderPasses.md)
     * [Shaders](doc/Shaders.md)
     * [Pipeline Objects](doc/Pipelines.md)
-* [Shader Programming](doc/Shaders.md)
-* [Offscreen Rendering](doc/OffscreenRendering.md)
-* [Dynamic Resources](doc/DynamicResources.md)
 
