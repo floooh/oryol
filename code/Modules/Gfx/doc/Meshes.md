@@ -200,7 +200,55 @@ this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, &data, sizeof(data));
 
 #### Create a mesh with dynamically updated data
 
-TODO
+To create a mesh with a dynamically updated vertex buffer, and
+without index buffer:
+
+```cpp
+const int numVertices = 1024;
+MeshSetup setup = MeshSetup::Empty(numVertices, Usage::Stream);
+setup.Layout = {
+    { VertexAttr::Position, VertexFormat::Float4 },
+    { VertexAttr::Color0, VertexFormat::UByte4N }
+};
+Id mesh = Gfx::CreateResource(setup);
+```
+
+To create a mesh where both the vertex- and index-buffer are dynamically
+updates:
+
+```cpp
+const int numVertices = 1024;
+const int numIndices = 3 * numVertices;
+MeshSetup meshSetup = MeshSetup::Empty(numVertices, Usage::Stream, IndexType::Index16, numIndices, Usage::Stream);
+Id mesh = Gfx::CreateResource(setup);
+```
+
+It is also possible to create all other combinations, for instance:
+
+- dynamically updated index buffer, no vertex buffer
+- static vertex buffer, dynamically updated index buffer
+- dynamic vertex buffer, static index buffer
+
+The usage hint **Usage::Stream** means that the vertex- or index-buffers
+are overwritten with new data **each frame**. If the data is updated
+much less frequently, use the **Usage::Dynamic** hint.
+
+To update the vertex- or index-data, call the methods **Gfx::UpdateVertices()** and/or **Gfx::UpdateIndex()**. These methods can only be called 
+once per buffer per frame, and they need will overwrite the previous
+content of the buffer. The update methods must be called in the same
+frame *before* a draw call which needs the updated data
+
+```cpp
+// update vertex data from 'raw data'
+const void* vertexData = ...;
+const int vertexDataSizeInBytes = ...;
+Gfx::UpdateVertices(mesh, vertexData, vertexDataSizeInBytes);
+
+// ...and the same for index data
+const void* indexData = ...;
+const int indexDataSizeInBytes = ...;
+Gfx::UpdateIndices(mesh, indexData, indexDataSizeInBytes);
+```
 
 ### Mesh Data Creation Helpers
 
@@ -286,10 +334,106 @@ public:
 
 ### Multiple Input Meshes
 
-TODO
+A draw call can feed its vertex data from up to 4 different input
+meshes, this may make sense to reduce the amount of data that
+needs to be written by the CPU, or read by the GPU in some
+situations:
+
+- *mixed static and dynamic vertex data*: Let's say you want 3d geometry
+where the position and surface normal vertex components are static,
+but the texture coordinates should be generated each frame by the
+CPU. In this case you should create 2 meshes: one with all static 
+components (including the index buffer), and another mesh with the
+dynamic vertex buffer for texture coordinates.
+- *optional vertex components*: Not all vertex components of a mesh 
+are needed in all render passes, for instance in a shadow pass, 
+the surface normals are usually not needed, only the the vertex positions.
+In this case it may make sense to group vertex components into different
+vertex buffers by usage (for instance the positions would go into
+one vertex buffer, and all other components into a second vertex buffer)
+- *hardware instancing*: hardware instancing requires at least 2
+meshes, the first mesh with the static 'model data' (the usual
+vertex- and index-data), and the second mesh with an instance-data
+vertex buffer, which has one vertex per instance to be rendered.
+
+The following sample pseudo-code creates 2 meshes, one with
+positions and another one with colors. Finally a pipeline object
+is created which needs to know how a combined vertex looks like
+by setting the original mesh vertex layouts into 'bind slots'
+in the PipelineSetup object:
+
+```cpp
+DrawState drawState;
+
+// first mesh with positions into the first mesh bind slot
+float posData[] = { ... };
+MeshSetup posMeshSetup = MeshSetup::FromData();
+posMeshSetup.Layout = {
+    { VertexAttr::Position, VertexFormat::Float3 }
+};
+drawState.Mesh[0] = Gfx::CreateResource(posSetup, posData, sizeof(posData));
+
+// second mesh with color data into the second mesh bind slot
+float clrData[] = { ... };
+MeshSetup clrMeshSetup = MeshSetup::FromData();
+clrMeshSetup = MeshSetup::FromData();
+clrMeshSetup.Layout = { 
+    { VertexAttr::Color0, VertexFormat::Float4 }
+};
+drawState.Mesh[1] = Gfx::CreateResource(clrSetup, clrData, sizeof(clrData));
+
+// pipeline object needs to know combined layouts which form a vertex
+PipelineSetup pipSetup = PipelineSetup::FromShader(shd);
+pipSetup.Layouts[0] = posMeshSetup.Layout;
+pipSetup.Layouts[1] = clrMeshSetup.Layout;
+...
+drawState.Pipeline = Gfx::CreateResource(pipSetup);
+```
 
 ### Hardware Instancing
 
-TODO
+Hardware-instancing uses one mesh for the geometry to be instanced 
+(vertex-buffer only, or vertex+index buffer), and a second mesh
+with a per-instance-data vertex buffer. The instance data buffer
+is usually created as dynamic buffer so that the CPU can update
+it with new instance-data each frame.
 
+The following code sample to create the 2 meshes is taken from the
+[Instancing sample](https://github.com/floooh/oryol/blob/master/code/Samples/Instancing/Instancing.cc):
 
+```cpp
+// create static mesh at mesh slot 0
+const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+ShapeBuilder shapeBuilder;
+shapeBuilder.RandomColors = true;
+shapeBuilder.Layout = {
+    { VertexAttr::Position, VertexFormat::Float3 },
+    { VertexAttr::Color0, VertexFormat::Float4 }
+};
+shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
+auto shapeBuilderResult = shapeBuilder.Build();
+this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilderResult);
+
+// create dynamic instance data mesh at mesh slot 1
+auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
+instMeshSetup.Layout
+    .EnableInstancing()
+    .Add(VertexAttr::Instance0, VertexFormat::Float4);
+this->drawState.Mesh[1] = Gfx::CreateResource(instMeshSetup);
+```
+
+Note the **EnableInstancing()** call in the vertex layout definition
+of the second mesh. This tells the layout that the instance data
+has a different 'vertex step rate' than the geometry vertex data.
+
+When creating the pipeline state object for instanced rendering,
+the vertex layouts must be set into the PipelineSetup layout
+slots:
+
+```cpp
+auto ps = PipelineSetup::FromShader(shd);
+ps.Layouts[0] = shapeBuilder.Layout;
+ps.Layouts[1] = instMeshSetup.Layout;
+...
+this->drawState.Pipeline = Gfx::CreateResource(ps);
+```
