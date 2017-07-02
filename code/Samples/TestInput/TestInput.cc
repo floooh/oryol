@@ -22,7 +22,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 
-private:
     void testMouseButton(MouseButton::Code btn, const char* name);
     void testKey(Key::Code key, const char* name);
     void printMouseState();

@@ -23,7 +23,6 @@ public:
     /// discard the input manager
     void discard();
 
-private:
     /// open mouse and keyboard device file under /dev/input
     bool openDevices();
     /// close mouse and keyboard device

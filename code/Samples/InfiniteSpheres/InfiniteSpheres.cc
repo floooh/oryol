@@ -18,7 +18,6 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
     
-private:
     glm::mat4 computeModel(float rotX, float rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 

@@ -26,7 +26,6 @@ public:
     /// discard the windows input manager
     void discard();
 
-private:
     /// setup the key mapping table
     void setupKeyTable();
     /// setup input callbacks

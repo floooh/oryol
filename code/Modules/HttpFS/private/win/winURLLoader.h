@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::winURLLoader
     @ingroup _priv
-    @brief private: Windows implementation of URLLoader
+    @brief Windows implementation of URLLoader
     @see urlLoader HTTPClient
 
     The winURLLoader will keep an internal pool of open HTTP connections
@@ -28,7 +28,6 @@ public:
     /// process one HTTPRequest
     bool doRequest(const Ptr<IORead>& ioRequest);
 
-private:
     /// process a single HTTP request
     void doRequestInternal(const Ptr<IORead>& req);
     /// open connection, or get already open connection

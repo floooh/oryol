@@ -29,7 +29,6 @@ public:
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
     
-private: 
     EGLDisplay eglDisplay;
     EGLConfig eglConfig;
     EGLSurface eglSurface;

@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::baseURLLoader
     @ingroup _priv
-    @brief private: base class for platform specific URL loaders
+    @brief base class for platform specific URL loaders
     @see urlLoader, HTTPClient
 */
 #include "IO/private/ioRequests.h"

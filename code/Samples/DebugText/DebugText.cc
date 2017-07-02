@@ -16,7 +16,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     void dropChar();
     void moveChars();
     void drawText();

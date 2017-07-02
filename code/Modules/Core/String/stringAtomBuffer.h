@@ -29,11 +29,8 @@ public:
 
     /// destructor
     ~stringAtomBuffer();
-    
     /// add a new string to the buffer, return pointer to start of header
     const Header* AddString(stringAtomTable* table, int32_t hash, const char* str);
-    
-private:
     /// allocate a new chunk
     void allocChunk();
 

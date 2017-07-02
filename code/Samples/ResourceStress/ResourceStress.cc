@@ -21,7 +21,7 @@ public:
     AppState::Code OnInit();
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
-private:
+
     void createObjects();
     void updateObjects();
     void showInfo();

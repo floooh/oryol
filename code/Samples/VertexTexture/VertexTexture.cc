@@ -19,7 +19,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     glm::mat4 computeMVP(const glm::vec2& angles);
 
     Id plasmaRenderPass;

@@ -25,7 +25,6 @@ public:
     /// resolve assigns in the provided string
     String ResolveAssigns(const String& str) const;
     
-private:
     /// setup the standard assigns
     void setStandardAssigns();
     

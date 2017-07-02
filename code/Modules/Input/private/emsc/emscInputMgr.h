@@ -24,7 +24,6 @@ public:
     /// discard the input manager
     void discard();
 
-private:
     /// setup game pad mappings for known gamepads
     void setupGamepadMappings();
     /// polling for the gamepad

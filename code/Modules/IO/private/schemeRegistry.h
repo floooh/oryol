@@ -26,7 +26,6 @@ public:
     /// return a new filesystem instance
     Ptr<FileSystemBase> CreateFileSystem(const StringAtom& scheme) const;
     
-private:
     Map<StringAtom, std::function<Ptr<FileSystemBase>()>> registry;
 };
 

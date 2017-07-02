@@ -94,7 +94,6 @@ public:
     /// wrapper function for glDrawElementsInstanced
     static void DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void* indices, GLsizei primcount);
 
-private:
     /// setup the limit values
     static void setupLimits(Flavour flav);
     /// setup the feature flags

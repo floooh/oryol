@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::glfwDisplayMgr
     @ingroup _priv
-    @brief private: display manager class on top of GLFW
+    @brief display manager class on top of GLFW
     
     This is the display manager class for desktop platforms (OSX, Windows,
     Linux). It uses GLFW ( https://github.com/glfw/glfw ) for window and
@@ -38,10 +38,9 @@ public:
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
     
-    /// private: get glfwWindow handle
+    /// get glfwWindow handle
     static GLFWwindow* getGlfwWindow();
     
-private:
     /// error callback for GLFW
     static void glfwErrorCallback(int error, const char* desc);
     /// framebuffer size changed callback for GLFW

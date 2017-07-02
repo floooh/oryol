@@ -82,7 +82,6 @@ public:
     /// bind a texture to a sampler index
     void bindTexture(int samplerIndex, GLenum target, GLuint tex);
 
-private:
     /// setup the initial depth-stencil-state
     void setupDepthStencilState();
     /// setup the initial blend-state

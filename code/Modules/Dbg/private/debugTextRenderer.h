@@ -38,8 +38,6 @@ public:
     void textColor(float r, float g, float b, float a);
     /// draw the accumulated text
     void drawTextBuffer();
-    
-private:
     /// setup the font texture
     void setupFontTexture();
     /// setup the text dynamic mesh

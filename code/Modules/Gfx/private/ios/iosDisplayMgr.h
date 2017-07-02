@@ -29,7 +29,6 @@ public:
     /// bind the default frame buffer
     void glBindDefaultFramebuffer();
 
-private:
     static iosDisplayMgr* self;
     GLuint glDefaultFramebuffer;
     GLint glFramebufferWidth;

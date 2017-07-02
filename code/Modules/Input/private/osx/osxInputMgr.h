@@ -22,7 +22,6 @@ public:
     /// discard the input manager
     void discard();
 
-private:
     /// setup the key mapping table
     void setupKeyTable();
     /// setup glfw input callbacks

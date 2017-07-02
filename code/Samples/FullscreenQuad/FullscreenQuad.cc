@@ -14,7 +14,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     DrawState drawState;
     Shader::params params;
 };

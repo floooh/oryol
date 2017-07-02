@@ -20,7 +20,6 @@ public:
     /// process one request
     bool doRequest(const Ptr<IORead>& req);
 
-private:
     /// setup curl session
     void setupCurlSession();
     /// discard the curl session

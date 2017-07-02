@@ -13,7 +13,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnInit();
     AppState::Code OnCleanup();
-private:
+
     DrawState drawState;
 };
 OryolMain(TriangleApp);

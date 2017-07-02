@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::displayMgrBase
     @ingroup _priv
-    @brief private: display managers base class
+    @brief display managers base class
     
     @see displayMgr
 */

@@ -14,7 +14,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     PassAction passAction;
 };
 OryolMain(ClearApp);

@@ -17,7 +17,7 @@ public:
     AppState::Code OnInit();
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
-private:
+
     glm::mat4 computeMVP(const glm::mat4& proj, float rotX, float rotY, const glm::vec3& pos);
 
     Id renderPass;

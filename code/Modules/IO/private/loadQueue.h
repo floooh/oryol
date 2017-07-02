@@ -50,7 +50,6 @@ public:
     /// get number of pending load actions
     int numPending() const;
 
-private:
     struct item {
         Ptr<IORead> ioRequest;
         successFunc onSuccess;

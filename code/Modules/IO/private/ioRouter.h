@@ -23,7 +23,6 @@ public:
     /// perform per-frame work
     void doWork();
 
-private:
     static const int NumWorkers = 4;
     int curWorker = 0;
     StaticArray<ioWorker, NumWorkers> workers;

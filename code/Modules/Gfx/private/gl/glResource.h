@@ -84,7 +84,7 @@ public:
 /**
     @class Oryol::_priv::glShader
     @ingroup _priv
-    @brief private: GL implementation of shader
+    @brief GL implementation of shader
 */
 class glShader : public shaderBase {
 public:

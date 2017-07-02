@@ -24,7 +24,6 @@ public:
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
 
-private:
     /// configure the app window
     void configureWindow(const GfxSetup& setup);
     /// callback for window-resize

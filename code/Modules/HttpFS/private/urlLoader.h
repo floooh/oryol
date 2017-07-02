@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::urlLoader
     @ingroup _priv
-    @brief private: processes a HTTP request and returns HTTP response    
+    @brief processes a HTTP request and returns HTTP response    
     @see HTTPClient
 */
 #if ORYOL_USE_LIBCURL

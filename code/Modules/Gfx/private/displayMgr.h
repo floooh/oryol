@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::displayMgr
     @ingroup _priv
-    @brief private: create and manage the app window and GL context
+    @brief create and manage the app window and GL context
     
     The display manager object manages application window and
     GL context creation, and usually processes host window system

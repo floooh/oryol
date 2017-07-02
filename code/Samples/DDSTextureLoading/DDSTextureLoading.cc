@@ -20,7 +20,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnInit();
     AppState::Code OnCleanup();
-private:
+
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float distVal = 0.0f;

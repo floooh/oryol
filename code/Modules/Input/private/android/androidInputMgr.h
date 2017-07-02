@@ -26,7 +26,6 @@ public:
     /// discard the input manager
     void discard();
 
-private:
     /// callback method from global android_app object
     static int32_t onInputEvent(struct android_app* app, AInputEvent* event);
     /// sensor event callback

@@ -28,7 +28,7 @@ public:
 /**
     @class Oryol::_priv::textureBase
     @ingroup _priv
-    @brief private: base class for platform-specific texture implementation
+    @brief base class for platform-specific texture implementation
 */
 class textureBase : public ResourceBase {
 public:
@@ -46,7 +46,7 @@ public:
 /**
     @class Oryol::_priv::meshBase
     @ingroup _priv
-    @brief private: base class for platform-specific mesh implementations
+    @brief base class for platform-specific mesh implementations
 */
 class meshBase : public ResourceBase {
 public:

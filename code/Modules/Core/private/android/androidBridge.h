@@ -43,7 +43,6 @@ public:
     /// called at end of start main loop
     void onStop();
 
-private:
     static void onAppCmd(struct android_app* app, int32_t cmd);
 
     static androidBridge* self;

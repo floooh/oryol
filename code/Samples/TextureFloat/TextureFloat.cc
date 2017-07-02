@@ -18,7 +18,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     Id renderPass;
     DrawState offscreenDrawState;
     DrawState copyDrawState;

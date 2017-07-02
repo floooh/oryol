@@ -21,7 +21,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     void updateCamera();
     void emitParticles();
     void updateParticles();

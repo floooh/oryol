@@ -21,7 +21,6 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-private:
     glm::mat4 computeMVP();
 
     DrawState drawState;

@@ -83,7 +83,6 @@ public:
     /// pointer to immediate mode device context
     ID3D11DeviceContext* d3d11DeviceContext;
 
-private:
     bool valid;
     bool rpValid;
     int frameIndex;

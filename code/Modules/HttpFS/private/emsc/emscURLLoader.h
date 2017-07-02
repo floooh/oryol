@@ -3,7 +3,7 @@
 /**
     @class Oryol::_priv::emscURLLoader
     @ingroup _priv
-    @brief private: emscripten implementation of URL loader
+    @brief emscripten implementation of URL loader
     @see urlLoader
 */
 #include "HttpFS/private/baseURLLoader.h"
@@ -16,7 +16,6 @@ public:
     /// process one request
     bool doRequest(const Ptr<IORead>& req);
 
-private:
     /// start the next, called from doWork
     void startRequest(const Ptr<IORead>& req);
     /// success callback

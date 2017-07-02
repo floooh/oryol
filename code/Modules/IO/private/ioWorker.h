@@ -42,7 +42,6 @@ public:
     /// do work on the main thread, this moves queued messages to transfer queue
     void doWork();
 
-private:
     /// lookup filesystem for URL
     Ptr<FileSystemBase> fileSystemForURL(const URL& url);
     /// check for and handle cancelled message

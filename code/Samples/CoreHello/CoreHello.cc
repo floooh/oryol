@@ -16,7 +16,6 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         App::onFrame();        
     }
-private:
     int frameCount = 0;
 };
 OryolMain(CoreHelloApp);

@@ -82,7 +82,6 @@ public:
     /// get uniform block constant buffer at bind stage and slot (can return nullptr)
     ID3D11Buffer* getConstantBuffer(ShaderStage::Code bindStage, int bindSlot) const;
 
-private:
     static const int NumConstantBuffers = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
     StaticArray<ID3D11Buffer*, NumConstantBuffers> constantBuffers;
 };

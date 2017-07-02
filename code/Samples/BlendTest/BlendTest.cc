@@ -14,7 +14,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnInit();
     AppState::Code OnCleanup();
-private:
+
     DrawState bgDrawState;
     Id triMesh;
     Id pipelines[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];

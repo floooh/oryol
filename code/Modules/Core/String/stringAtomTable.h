@@ -23,7 +23,6 @@ public:
     /// add a string to the atom table
     const stringAtomBuffer::Header* Add(int32_t hash, const char* str);
     
-private:
     static ORYOL_THREADLOCAL_PTR(stringAtomTable) ptr;
 
     /// a bucket entry
