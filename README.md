@@ -52,6 +52,17 @@ with IDEs) see here: [How to Build](doc/BUILD.md)
 * [HttpFS Module](code/Modules/HttpFS/README.md)
 * [LocalFS Module](code/Modules/LocalFS/README.md)
 
+### Useful Blog Posts:
+
+* [System Design Philosophy](http://floooh.github.io/2017/07/01/oryol-system-design.html)
+* [SPIRV-based Shader Pipeline](http://floooh.github.io/2017/05/15/oryol-spirv.html)
+* [WebGL2/RenderPass Merge](http://floooh.github.io/2017/04/04/oryol-webgl2-merge.html)
+* [About Webpage Integration (asm.js/wasm)](http://floooh.github.io/2017/02/22/emsc-html.html)
+* [Slimmer asm.js/wasm Applications](http://floooh.github.io/2016/08/27/asmjs-diet.html)
+* [2016 Spring Cleaning](http://floooh.github.io/2016/04/26/oryol-spring-cleaning.html)
+* [Tour of 3rd-party Code (2016)](http://floooh.github.io/2016/04/09/oryol-3rd-party-code.html)
+* [Gfx Module Changes (2016)](http://floooh.github.io/2016/03/10/oryol-gfx-changes.html)
+* [Tour of the Metal Renderer](http://floooh.github.io/2016/01/15/oryol-metal-tour.html)
 
 ### Extension Modules:
 
