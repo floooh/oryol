@@ -35,7 +35,7 @@ See the [Array Header File](Array.h) and
 [Array Unit Test](../UnitTests/ArrayTest.cc) for more
 information and code samples.
 
-### Map&lt;TYPE&gt;
+### Map&lt;KEYTYPE,VALUETYPE&gt;
 
 The **Map** class is Oryol's version of std::map, with one important
 difference: trying to access an element with operator\[\] creates
@@ -45,7 +45,7 @@ a new element like std::map).
 Check out the [Map Header File](Map.h) and [Unit Test](../UnitTests/MapTest.cc)
 for more information and code samples.
 
-### ArrayMap&lt;TYPE&gt;
+### ArrayMap&lt;KEYTYPE,VALUETYPE&gt;
 
 The **ArrayMap** class combines features of the Array and Map class.
 It keeps value-items in a separate Array in the order they were added,
