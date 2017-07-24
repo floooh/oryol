@@ -361,14 +361,10 @@ glFactory::initTexture(texture& tex, const void* data, int size) {
         // create depth buffer
         if (setup.HasDepth()) {
             o_assert_dbg(PixelFormat::IsValidTextureDepthFormat(setup.DepthFormat));
-
-            // FIXME: optionally create a depth texture instead of a render buffer here...
-            o_assert_dbg(PixelFormat::InvalidPixelFormat != setup.DepthFormat);
-            
             ::glGenRenderbuffers(1, &tex.glDepthRenderbuffer);
             o_assert_dbg(0 != tex.glDepthRenderbuffer);
             ::glBindRenderbuffer(GL_RENDERBUFFER, tex.glDepthRenderbuffer);
-            GLint glDepthFormat = glTypes::asGLDepthAttachmentFormat(setup.DepthFormat);
+            GLenum glDepthFormat = glTypes::asGLDepthAttachmentFormat(setup.DepthFormat);
             #if !ORYOL_OPENGLES2
             if (msaa) {
                 ::glRenderbufferStorageMultisample(GL_RENDERBUFFER, setup.SampleCount, glDepthFormat, setup.Width, setup.Height);
