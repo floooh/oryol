@@ -1,9 +1,0 @@
----
-platform: emscripten 
-generator: Ninja 
-build_tool: ninja
-build_type: Release
-cmake-toolchain: emscripten.toolchain.cmake
-defines:
-    FIPS_NO_ASSERTS_IN_RELEASE: ON
-    FIPS_EMSCRIPTEN_USE_WEBGL2: ON
