@@ -89,10 +89,10 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
                 this->displayAttrs.FramebufferWidth,
                 this->displayAttrs.FramebufferHeight);
         }
-        emscripten_set_canvas_size(this->displayAttrs.FramebufferWidth, this->displayAttrs.FramebufferHeight);
+        emscripten_set_canvas_element_size(renderSetup.HtmlElement.AsCStr(), this->displayAttrs.FramebufferWidth, this->displayAttrs.FramebufferHeight);
         emscripten_set_resize_callback(nullptr, nullptr, false, emscWindowSizeChanged); 
     } else if (renderSetup.Windowed) {
-        emscripten_set_canvas_size(renderSetup.Width, renderSetup.Height);
+        emscripten_set_canvas_element_size("#canvas", renderSetup.Width, renderSetup.Height);
     }
     else {
         enter_soft_fullscreen();
@@ -157,8 +157,8 @@ emscDisplayMgr::glBindDefaultFramebuffer() {
 //------------------------------------------------------------------------------
 EM_BOOL
 emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void* userData) {
-    int newWidth, newHeight, isFullscreen;
-    emscripten_get_canvas_size(&newWidth, &newHeight, &isFullscreen);
+    int newWidth, newHeight;
+    emscripten_get_canvas_element_size("#canvas", &newWidth, &newHeight);
     self->displayAttrs.FramebufferWidth = newWidth; 
     self->displayAttrs.FramebufferHeight = newHeight;
     return true;
@@ -171,7 +171,7 @@ emscDisplayMgr::emscWindowSizeChanged(int eventType, const EmscriptenUiEvent* ui
     if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(self->gfxSetup.HtmlElement.AsCStr(), &width, &height)) {
         self->displayAttrs.FramebufferWidth = (int) width;
         self->displayAttrs.FramebufferHeight = (int) height;
-        emscripten_set_canvas_size(self->displayAttrs.FramebufferWidth, self->displayAttrs.FramebufferHeight);
+        emscripten_set_canvas_element_size(self->gfxSetup.HtmlElement.AsCStr(), self->displayAttrs.FramebufferWidth, self->displayAttrs.FramebufferHeight);
     }
     return true;
 }
