@@ -78,7 +78,7 @@ stringAtomTable::HashForString(const char* str) {
 
     // see here: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
     const char* p = str;
-    int32_t h = 0;
+    uint32_t h = 0;
     char c;
     while (0 != (c = *p++))
     {
