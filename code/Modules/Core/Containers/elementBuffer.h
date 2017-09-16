@@ -164,8 +164,13 @@ end(0)
 {
     if (rhs.buf) {
         this->alloc(rhs.size(), 0);
+        o_assert_range_dbg(rhs.start, rhs.cap);
+        o_assert_dbg((rhs.start + rhs.size()) <= rhs.cap);
+        o_assert_range_dbg(this->start, this->cap);
+        o_assert_dbg((this->start + this->size()) <= this->cap);
         copyConstruct(&rhs.buf[rhs.start], &this->buf[this->start], rhs.size());
         this->end = this->start + rhs.size();
+        o_assert_dbg(rhs.end <= rhs.cap);
     }
 }
 
@@ -177,10 +182,11 @@ cap(rhs.cap),
 start(rhs.start),
 end(rhs.end)
 {
+    // reset rhs to default-constructed state
     rhs.buf = nullptr;
     rhs.cap = 0;
-    rhs.start = InvalidIndex;
-    rhs.end = InvalidIndex;
+    rhs.start = 0;
+    rhs.end = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -198,8 +204,13 @@ elementBuffer<TYPE>::operator=(const elementBuffer<TYPE>& rhs) {
         if (newSize > 0)
         {
             this->alloc(rhs.size(), 0);
+            o_assert_range_dbg(rhs.start, rhs.cap);
+            o_assert_dbg((rhs.start + rhs.size()) <= rhs.cap);
+            o_assert_range_dbg(this->start, this->cap);
+            o_assert_dbg((this->start + this->size()) <= this->cap);
             copyConstruct(&rhs.buf[rhs.start], &this->buf[this->start], rhs.size());
             this->end = this->start + rhs.size();
+            o_assert_dbg(rhs.end <= rhs.cap);
         }
     }
 }
@@ -255,6 +266,7 @@ template<class TYPE> TYPE&
 elementBuffer<TYPE>::operator[](int index) {
     o_assert_dbg((index >= 0) && (index < this->size()));
     o_assert_dbg(this->buf);
+    o_assert_range_dbg(this->start+index, this->cap);
     return this->buf[this->start + index];
 }
 
@@ -263,6 +275,7 @@ template<class TYPE> const TYPE&
 elementBuffer<TYPE>::operator[](int index) const {
     o_assert_dbg((index >= 0) && (index < this->size()));
     o_assert_dbg(this->buf);
+    o_assert_range_dbg(this->start+index, this->cap);
     return this->buf[this->start + index];
 }
 
@@ -270,6 +283,7 @@ elementBuffer<TYPE>::operator[](int index) const {
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::front() {
     o_assert((this->start != this->end) && this->buf);
+    o_assert_range_dbg(this->start, this->cap);
     return this->buf[this->start];
 }
 
@@ -277,6 +291,7 @@ elementBuffer<TYPE>::front() {
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::front() const {
     o_assert((this->start != this->end) && this->buf);
+    o_assert_range_dbg(this->start, this->cap);
     return this->buf[this->start];
 }
 
@@ -284,6 +299,7 @@ elementBuffer<TYPE>::front() const {
 template<class TYPE> TYPE&
 elementBuffer<TYPE>::back() {
     o_assert((this->start != this->end) && this->buf);
+    o_assert_range_dbg(this->end-1, this->cap);
     return this->buf[this->end - 1];
 }
 
@@ -291,6 +307,7 @@ elementBuffer<TYPE>::back() {
 template<class TYPE> const TYPE&
 elementBuffer<TYPE>::back() const {
     o_assert((this->start != this->end) && this->buf);
+    o_assert_range_dbg(this->end-1, this->cap);
     return this->buf[this->end - 1];
 }
 
@@ -313,6 +330,7 @@ elementBuffer<TYPE>::alloc(int newCapacity, int newStart) {
     if (curSize > 0) {
         // move-construct elements over to new buffer
         o_assert_dbg(this->buf);
+        o_assert_range_dbg(this->start, this->cap);
         TYPE* src = &this->buf[this->start];
         TYPE* dst = newElmStart;
         for (int i = 0; i < curSize; i++) {
@@ -340,6 +358,7 @@ elementBuffer<TYPE>::destroy() {
     // destroy elements and free buffer
     if (this->buf) {
         for (int i = this->start; i < this->end; i++) {
+            o_assert_range_dbg(i, this->cap);
             this->buf[i].~TYPE();
         }
         Memory::Free(this->buf);
@@ -361,6 +380,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::clear() {
     if (this->buf) {
         for (int i = this->start; i < this->end; i++) {
+            o_assert_range_dbg(i, this->cap);
             this->buf[i].~TYPE();
         }
     }
@@ -396,7 +416,8 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushBack(const TYPE& elm) {
     // NOTE: this will fail if there is no spare space at the back,
     // use insert(size(), elm) which will move towards front if possible
-    o_assert_dbg(this->buf && (this->end < this->cap));
+    o_assert_dbg(this->buf);
+    o_assert_range_dbg(this->end, this->cap);
     new(&this->buf[this->end++]) TYPE(elm);
 }
 
@@ -405,7 +426,8 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushBack(TYPE&& elm) {
     // NOTE: this will fail if there is no spare space at the back,
     // use insert(size(), elm) which will move towards front if possible
-    o_assert_dbg(this->buf && (this->end < this->cap));
+    o_assert_dbg(this->buf);
+    o_assert_range_dbg(this->end, this->cap);
     new(&this->buf[this->end++]) TYPE(std::move(elm));
 }
 
@@ -414,7 +436,8 @@ template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceBack(ARGS&&... args) {
     // NOTE: this will fail if there is no spare space at the back,
     // use insert(size(), elm) which will move towards front if possible
-    o_assert_dbg(this->buf && (this->end < this->cap));
+    o_assert_dbg(this->buf);
+    o_assert_range_dbg(this->end, this->cap);
     new(&this->buf[this->end++]) TYPE(std::forward<ARGS>(args)...);
 }
 
@@ -423,7 +446,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushFront(const TYPE& elm) {
     // NOTE: this will fail if there is no spare space at the front,
     // use insert(0, elm) which will move towards back if possible
-    o_assert_dbg(this->buf && (this->start > 0));
+    o_assert_dbg(this->buf && (this->start > 0) && (this->start <= this->cap));
     new(&this->buf[--this->start]) TYPE(elm);
 }
 
@@ -432,7 +455,7 @@ template<class TYPE> void
 elementBuffer<TYPE>::pushFront(TYPE&& elm) {
     // NOTE: this will fail if there is no spare space at the front,
     // use insert(0, elm) which will move towards back if possible
-    o_assert_dbg(this->buf && (this->start > 0));
+    o_assert_dbg(this->buf && (this->start > 0) && (this->start <= this->cap));
     new(&this->buf[--this->start]) TYPE(std::move(elm));
 }
 
@@ -441,7 +464,7 @@ template<class TYPE> template<class... ARGS> void
 elementBuffer<TYPE>::emplaceFront(ARGS&&... args) {
     // NOTE: this will fail if there is no spare space at the front,
     // use insert(0, elm) which will move towards back if possible
-    o_assert_dbg(this->buf && (this->start > 0));
+    o_assert_dbg(this->buf && (this->start > 0) && (this->start <= this->cap));
     new(&this->buf[--this->start]) TYPE(std::forward<ARGS>(args)...);
 }
 
@@ -451,14 +474,17 @@ elementBuffer<TYPE>::moveInsertFront(int index) {
     // free a slot for insertion by moving the elements
     // at and before it towards the front
     // the freed slot will NOT be deconstructed!
-    o_assert_dbg(this->buf && (this->start > 0));
+    o_assert_dbg(this->buf);
     o_assert_dbg((index >= 0) && (index <= this->size()));
     
+    o_assert_dbg((this->start > 0) && (this->start < this->cap));
     new(&this->buf[this->start-1]) TYPE(std::move(this->buf[start]));
     for (int i = this->start; i < (this->start + index - 1); i++) {
+        o_assert_dbg((i >= 0) && ((i+1) < this->cap));
         this->buf[i] = std::move(this->buf[i+1]);
     }
     this->start--;
+    o_assert_range_dbg(this->start+index, this->cap);
     return &this->buf[this->start + index];
 }
 
@@ -468,14 +494,17 @@ elementBuffer<TYPE>::moveInsertBack(int index) {
     // free a slot for insertion by moving the elements
     // after it towards the back
     // the freed slot will NOT be deconstructed!
-    o_assert_dbg(this->buf && (this->end > 0) && (this->end < this->cap));
+    o_assert_dbg(this->buf);
     o_assert_dbg((index >= 0) && (index < this->size()));
-    
+
+    o_assert_dbg((this->end > 0) && (this->end < this->cap));
     new(&this->buf[this->end]) TYPE(std::move(this->buf[this->end-1]));
     for (int i = this->end - 1; i > (this->start + index); i--) {
+        o_assert_dbg(((i-1) >= 0) && (i < this->cap));
         this->buf[i] = std::move(this->buf[i-1]);
     }
     this->end++;
+    o_assert_range_dbg(this->start+index, this->cap);
     return &this->buf[this->start + index];
 }
 
@@ -485,9 +514,11 @@ elementBuffer<TYPE>::moveEraseFront(int index) {
     // erase a slot by moving elements from the front
     o_assert_dbg(this->buf && (index >= 0) && (index < this->size()));
     for (int i = this->start + index; i > this->start; i--) {
+        o_assert_dbg(((i-1) >= 0) && (i < this->cap));
         this->buf[i] = std::move(this->buf[i - 1]);
     }
     // must deconstruct the previous front element
+    o_assert_range_dbg(this->start, this->cap);
     this->buf[this->start++].~TYPE();
 }
 
@@ -497,9 +528,11 @@ elementBuffer<TYPE>::moveEraseBack(int index) {
     // erase a slot by moving elements from the back
     o_assert_dbg(this->buf && (index >= 0) && (index < this->size()));
     for (int i = this->start + index; i < (this->end - 1); i++) {
+        o_assert_dbg((i >= 0) && ((i+1) < this->cap));
         this->buf[i] = std::move(this->buf[i + 1]);
     }
     // must deconstruct the previous back element
+    o_assert_dbg((this->end > 0) && (this->end <= this->cap));
     this->buf[--this->end].~TYPE();
 }
 
@@ -516,6 +549,7 @@ elementBuffer<TYPE>::prepareInsert(int index, bool& outSlotConstructed) {
         if (this->end < this->cap) {
             // still room to spare at end
             outSlotConstructed = false;
+            o_assert_range_dbg(this->end, this->cap);
             return &this->buf[this->end++];
         }
         else if (this->start > 0) {
@@ -532,6 +566,7 @@ elementBuffer<TYPE>::prepareInsert(int index, bool& outSlotConstructed) {
         if (this->start > 0) {
             // still room at front, don't need to move
             outSlotConstructed = false;
+            o_assert_dbg((this->start > 0) && (this->start <= this->cap));
             return &this->buf[--this->start];
         }
         else if (this->end < this->cap) {
@@ -544,9 +579,11 @@ elementBuffer<TYPE>::prepareInsert(int index, bool& outSlotConstructed) {
         }
     }
     else {
-        // a "normal" insert, decide whether to move forward or backward
+        // a "normal" insert, decide whether to move forward or backward,
+        // try to keep the front- and back-spare size balanced
+        o_assert_range_dbg(this->start+index, this->cap);
         TYPE* ptr = &this->buf[this->start + index];
-        if (index < (size>>1)) {
+        if (this->frontSpare() > this->backSpare()) {
             // prefer move toward front
             if (this->start > 0) {
                 // move towards front
@@ -609,13 +646,15 @@ elementBuffer<TYPE>::erase(int index) {
     const int size = this->size();
     o_assert_dbg(this->buf && (index >= 0) && (index < size));
     
-    if (0 == index) {
-        // special case: first element
-        this->buf[this->start++].~TYPE();
-    }
-    else if (index == (size - 1)) {
+    if (index == (size - 1)) {
         // special case: last element
+        o_assert_dbg((this->end > 0) && (this->end <= this->cap));
         this->buf[--this->end].~TYPE();
+    }
+    else if (0 == index) {
+        // special case: first element
+        o_assert_range_dbg(this->start, this->cap);
+        this->buf[this->start++].~TYPE();
     }
     else {
         // move the smaller amount of elements to fill the gap
@@ -638,21 +677,27 @@ elementBuffer<TYPE>::eraseSwap(int index) {
     
     if (0 == index) {
         // special case: first element
+        o_assert_range_dbg(this->start, this->cap);
         this->buf[this->start++].~TYPE();
     }
     else if (index == (size - 1)) {
         // special case: last element
+        o_assert_dbg((this->end > 0) && (this->end <= this->cap));
         this->buf[--this->end].~TYPE();
     }
     else {
         // either swap in the first or last element (keep frontSpare and backSpare balanced)
         if (this->frontSpare() > this->backSpare()) {
             // swap-in element from back
+            o_assert_range_dbg(this->start+index, this->cap);
+            o_assert_dbg((this->end > 0) && (this->end <= this->cap));
             this->buf[this->start + index] = std::move(this->buf[--this->end]);
             this->buf[this->end].~TYPE();
         }
         else {
             // swap-in element from front
+            o_assert_range_dbg(this->start+index, this->cap);
+            o_assert_range_dbg(this->start, this->cap);
             this->buf[this->start + index] = std::move(this->buf[this->start]);
             this->buf[this->start++].~TYPE();
         }
@@ -666,10 +711,13 @@ elementBuffer<TYPE>::eraseSwapBack(int index) {
     o_assert_dbg(this->buf && (index >= 0) && (index < size));
     if (index == (size - 1)) {
         // special case: last element
+        o_assert_dbg((this->end > 0) && (this->end <= this->cap));
         this->buf[--this->end].~TYPE();
     }
     else {
         // swap-in element from back
+        o_assert_range_dbg(this->start+index, this->cap);
+        o_assert_dbg((this->end > 0) && (this->end <= this->cap));
         this->buf[this->start + index] = std::move(this->buf[--this->end]);
         this->buf[this->end].~TYPE();
     }
@@ -681,10 +729,13 @@ elementBuffer<TYPE>::eraseSwapFront(int index) {
     o_assert_dbg(this->buf && (index >= 0) && (index < this->size()));
     if (0 == index) {
         // special case: first element
+        o_assert_range_dbg(this->start, this->cap);
         this->buf[this->start++].~TYPE();
     }
     else {
         // swap-in element from front
+        o_assert_range_dbg(this->start+index, this->cap);
+        o_assert_range_dbg(this->start, this->cap);
         this->buf[this->start + index] = std::move(this->buf[this->start]);
         this->buf[this->start++].~TYPE();
     }
@@ -699,9 +750,12 @@ elementBuffer<TYPE>::eraseRange(int index, int num) {
     }
     int i = this->start + index;
     for (; i < (this->end - num); i++) {
+        o_assert_range_dbg(i, this->cap);
+        o_assert_range_dbg(i+num, this->cap);
         this->buf[i] = std::move(this->buf[i + num]);
     }
     for (; i < this->end; i++) {
+        o_assert_range_dbg(i, this->cap);
         this->buf[i].~TYPE();
     }
     this->end -= num;
@@ -712,6 +766,7 @@ elementBuffer<TYPE>::eraseRange(int index, int num) {
 template<class TYPE> TYPE
 elementBuffer<TYPE>::popBack() {
     o_assert_dbg(this->buf && (this->end > this->start));
+    o_assert_dbg((this->end > 0) && (this->end <= this->cap));
     TYPE val(std::move(this->buf[--this->end]));
     this->buf[this->end].~TYPE();
     return val;
@@ -721,6 +776,7 @@ elementBuffer<TYPE>::popBack() {
 template<class TYPE> TYPE
 elementBuffer<TYPE>::popFront() {
     o_assert_dbg(this->buf && (this->start < this->end));
+    o_assert_range_dbg(this->start, this->cap);
     TYPE val(std::move(this->buf[this->start]));
     this->buf[this->start++].~TYPE();
     return val;
@@ -730,6 +786,7 @@ elementBuffer<TYPE>::popFront() {
 template<class TYPE> TYPE*
 elementBuffer<TYPE>::_begin() {
     if (this->buf) {
+        // NOTE: the returned pointer may point to invalid memory!
         return &this->buf[this->start];
     }
     else {
@@ -741,6 +798,7 @@ elementBuffer<TYPE>::_begin() {
 template<class TYPE> const TYPE*
 elementBuffer<TYPE>::_begin() const {
     if (this->buf) {
+        // NOTE: the returned pointer may point to invalid memory!
         return &this->buf[this->start];
     }
     else {
@@ -752,6 +810,7 @@ elementBuffer<TYPE>::_begin() const {
 template<class TYPE> TYPE*
 elementBuffer<TYPE>::_end() {
     if (this->buf) {
+        // NOTE: the returned pointer may point to invalid memory!
         return &this->buf[this->end];
     }
     else {
@@ -763,6 +822,7 @@ elementBuffer<TYPE>::_end() {
 template<class TYPE> const TYPE*
 elementBuffer<TYPE>::_end() const {
     if (this->buf) {
+        // NOTE: the returned pointer may point to invalid memory!
         return &this->buf[this->end];
     }
     else {
@@ -772,4 +832,4 @@ elementBuffer<TYPE>::_end() const {
 
 } // namespace _priv
 } // namespace Oryol
-//------------------------------------------------------------------------------
+

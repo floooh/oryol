@@ -5,6 +5,7 @@
 #include "Pre.h"
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Map.h"
+#include "Core/String/String.h"
 
 using namespace Oryol;
 
@@ -147,4 +148,11 @@ TEST(MapTest) {
     CHECK(map4[32] == 32);
     int index = map4.FindIndex(32);
     CHECK(InvalidIndex == map4.FindDuplicate(index));
+
+    // test for https://github.com/floooh/oryol/issues/271
+    Map<int32_t, String> testMap;
+    for (int32_t counter = 0; counter < 20; ++counter) {
+        testMap.Add(counter, "testString");
+        testMap.Erase(counter);
+    }
 }
