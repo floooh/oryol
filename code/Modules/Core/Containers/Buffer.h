@@ -214,7 +214,7 @@ Buffer::Remove(int offset, int numBytes) {
     if (numBytes > 0) {
         int bytesToMove = this->size - (offset + numBytes);
         if (bytesToMove > 0) {
-            Memory::Move(this->data + offset + numBytes, this->data + offset, this->size - numBytes);
+            Memory::Move(this->data + offset + numBytes, this->data + offset, bytesToMove);
         }
         this->size -= numBytes;
         o_assert_dbg(this->size >= 0);
