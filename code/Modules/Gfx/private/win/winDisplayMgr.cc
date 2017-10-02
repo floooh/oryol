@@ -131,6 +131,9 @@ winDisplayMgr::ProcessSystemEvents() {
     // FIXME: there's some more LSHIFT/RSHIFT related stuff in GLFW, 
     // see _glfwPlatformPollEvents in win32_window.c
 
+    // track window size changes
+    this->checkWindowResize();
+
     displayMgrBase::ProcessSystemEvents();
 }
 
@@ -303,20 +306,25 @@ winDisplayMgr::computeWindowSize(int clientWidth, int clientHeight, int& outWidt
 
 //------------------------------------------------------------------------------
 void
-winDisplayMgr::windowResize(int newWidth, int newHeight) {
-    o_assert((0 != newWidth) && (0 != newHeight));
-    const int windowWidth = newWidth / this->windowScale;
-    const int windowHeight = newHeight / this->windowScale;
+winDisplayMgr::checkWindowResize() {
+    o_assert(this->hwnd);
+    RECT curClientRect;
+    ::GetClientRect(this->hwnd, &curClientRect);
+    const int crWidth = (curClientRect.right - curClientRect.left);
+    const int crHeight = (curClientRect.bottom - curClientRect.top);
+    const int windowWidth = crWidth / this->windowScale;
+    const int windowHeight = crHeight / this->windowScale;
 
     // NOTE: this method is not called when minimized, or restored from minimized
-    if ((windowWidth != this->displayAttrs.WindowWidth) ||
-        (windowWidth != this->displayAttrs.WindowHeight)) {
+    if ((windowWidth != this->displayAttrs.WindowWidth) || (windowHeight != this->displayAttrs.WindowHeight)) {
 
         this->displayAttrs.WindowWidth = windowWidth;
         this->displayAttrs.WindowHeight = windowHeight;
         this->displayAttrs.FramebufferWidth = int(windowWidth * this->contentScale);
         this->displayAttrs.FramebufferHeight = int(windowHeight * this->contentScale);
 
+        this->inputFramebufferSize(crWidth, crHeight);
+        this->inputWindowSize(crWidth, crHeight);
         this->onWindowDidResize();
     }
 }
@@ -864,11 +872,6 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 self->iconified = false;
                 self->inputWindowIconify(false);
             }
-            else {
-                self->windowResize(LOWORD(lParam), HIWORD(lParam));
-            }
-            self->inputFramebufferSize(LOWORD(lParam), HIWORD(lParam));
-            self->inputWindowSize(LOWORD(lParam), HIWORD(lParam));
             return 0;
         }
         break;

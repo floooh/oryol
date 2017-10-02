@@ -88,9 +88,9 @@ public:
     /// window has been iconified/restored
     void inputWindowIconify(bool iconified);
 
-    /// react to WM_SIZE (resize frame buffer)
-    void windowResize(int newWidth, int newHeight);
-    /// called from windowResize when window did actually resize
+    /// check if window size was changed, and track those changes
+    void checkWindowResize();
+    /// called from checkWindowResize when window did actually resize
     virtual void onWindowDidResize();
 
     static winDisplayMgr* self;
