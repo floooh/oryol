@@ -577,7 +577,7 @@ winDisplayMgr::setCursorMode(int newMode) {
 
 //------------------------------------------------------------------------------
 void
-winDisplayMgr::updateClipRect() {
+winDisplayMgr::updateClipCursor() {
     o_assert_dbg(this->hwnd);
     RECT clipRect;
     ::GetClientRect(this->hwnd, &clipRect);
@@ -590,7 +590,7 @@ winDisplayMgr::updateClipRect() {
 void
 winDisplayMgr::winSetCursorMode(int mode) {
     if (mode == ORYOL_WIN_CURSOR_DISABLED) {
-        this->updateClipRect();
+        this->updateClipCursor();
     }
     else {
         ::ClipCursor(NULL);
@@ -854,7 +854,7 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_SIZE:
         if (self && !self->inCreateWindow) {
             if (self->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
-                self->updateClipRect();
+                self->updateClipCursor();
             }
             if (!self->iconified && (wParam == SIZE_MINIMIZED)) {
                 self->iconified = true;
@@ -876,7 +876,7 @@ winProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_MOVE:
         if (self) {
             if (self->cursorMode == ORYOL_WIN_CURSOR_DISABLED) {
-                self->updateClipRect();
+                self->updateClipCursor();
             }
             self->inputWindowPos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return 0;

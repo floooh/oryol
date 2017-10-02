@@ -59,7 +59,7 @@ public:
     /// lowlevel get window size
     void winGetWindowSize(int* width, int* height);
     /// update cursor clip rect
-    void updateClipRect();
+    void updateClipCursor();
 
     /// get modifier keys
     int inputGetKeyMods();
