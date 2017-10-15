@@ -4,49 +4,6 @@ Python wrapper for metal shader compiler.
 import subprocess, os, sys, binascii
 import genutil as util
 
-platform_roots = {
-    'osx': [
-        '/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/',
-        '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/'
-    ],
-    'ios': [
-        '/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/',
-        '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/'
-    ]
-}
-rel_sys_root = {
-    'osx': [
-        'Developer/SDKs/MacOSX.sdk',
-        'Developer/SDKs/MacOSX10.12.sdk',
-        'Developer/SDKs/MacOSX10.11.sdk'
-    ],
-    'ios': [
-        'Developer/SDKs/iPhoneOS.sdk',
-        'Developer/SDKs/iPhoneOS10.0.sdk',
-        'Developer/SDKs/iPhoneOS9.3.sdk',
-        'Developer/SDKs/iPhoneOS9.2.sdk',
-        'Developer/SDKs/iPhoneOS9.1.sdk',
-        'Developer/SDKs/iPhoneOS9.0.sdk'
-    ]
-}
-
-#-------------------------------------------------------------------------------
-def get_sys_root(platform) :
-    for platform_root in platform_roots[platform] :
-        for sys_root in rel_sys_root[platform] :
-            sys_root_path = platform_root + sys_root
-            if os.path.isdir(sys_root_path) :
-                return sys_root_path
-    return None
-
-#-------------------------------------------------------------------------------
-def get_tool(platform, tool_name) :
-    for platform_root in platform_roots[platform] :
-        tool_path = platform_root + 'usr/bin/' + tool_name
-        if os.path.isfile(tool_path) :
-            return tool_path
-    return None
-
 #-------------------------------------------------------------------------------
 def writeFile(f, lines) :
     '''
@@ -56,8 +13,14 @@ def writeFile(f, lines) :
         f.write(str.encode(line.content + '\n'))
 
 #-------------------------------------------------------------------------------
-def run(cmd) :
-    # run a generic command an capture stdout
+def run(platform, run_cmd) :
+    # run a generic command through xcrun an capture stdout
+    if platform == 'ios':
+        sdk = 'iphoneos'
+    else:
+        sdk = 'macosx'
+    cmd = ['xcrun', '--sdk', sdk, '--run']
+    cmd.extend(run_cmd)
     child = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     out = ''
     while True :
@@ -69,32 +32,30 @@ def run(cmd) :
 #-------------------------------------------------------------------------------
 def cc(platform, in_src, out_dia, out_air) :
     # run the metal compiler
-    tool = get_tool(platform, 'metal')
     if platform == 'ios':
         min_version_arg = '-miphoneos-version-min=9.0'
         std_arg = '-std=ios-metal1.0'
     else :
         min_version_arg = '-mmacosx-version-min=10.11'
         std_arg = '-std=osx-metal1.1'
-    cmd = [tool, '-arch', 'air64', '-emit-llvm', '-ffast-math', '-c', 
-           '-isysroot', get_sys_root(platform),
+    cmd = ['metal', '-arch', 'air64', '-emit-llvm', '-ffast-math', '-c', 
            '-serialize-diagnostics', out_dia,
            '-o', out_air,
            min_version_arg, std_arg,
            in_src]
-    return run(cmd)
+    return run(platform, cmd)
 
 #-------------------------------------------------------------------------------
 def ar(platform, in_air, out_lib) :
     # run the metal librarian
-    cmd = [get_tool(platform, 'metal-ar'), 'r', out_lib, in_air]
-    return run(cmd)
+    cmd = ['metal-ar', 'r', out_lib, in_air]
+    return run(platform, cmd)
 
 #-------------------------------------------------------------------------------
 def link(platform, in_lib, out_bin) :
     # run the metal linker
-    cmd = [get_tool(platform, 'metallib'), '-o', out_bin, in_lib]
-    return run(cmd)
+    cmd = ['metallib', '-o', out_bin, in_lib]
+    return run(platform, cmd)
 
 #-------------------------------------------------------------------------------
 def parseOutput(output, lines) :
@@ -156,17 +117,6 @@ def compile(lines, base_path, c_name, args) :
    
     platform = util.getEnv('target_platform')
     if platform != 'ios' and platform != 'osx' :
-        return
-
-    # test if tools exists
-    if not get_tool(platform, 'metal') :
-        util.fmtWarning('metal compiler not found\n')
-        return
-    if not get_tool(platform, 'metal-ar') :
-        util.fmtWarning('metal librarian not found\n')
-        return
-    if not get_tool(platform, 'metallib') :
-        util.fmtWarning('metal linker not found\n')
         return
 
     # filenames
