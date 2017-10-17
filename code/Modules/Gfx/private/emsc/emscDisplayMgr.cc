@@ -129,6 +129,19 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
         glFlavour = glCaps::GLES2;
     }
     o_assert2(this->ctx > 0, "Failed to create WebGL context");
+
+    // in case we run on an iOS device, need to enabled the 
+    // WEBKIT_WEBGL_compressed_texture_pvrtc, this is not done automatically
+    // by emscripten (only for WEBGL_compressed_texture_pvrtc)
+    if (glFlavour == glCaps::GLES2) {
+        Log::Info("emscDisplayMgr: try enabling WEBKIT_WEBGL_compressed_texture_pvrtc\n");
+        if (emscripten_webgl_enable_extension(this->ctx, "WEBKIT_WEBGL_compressed_texture_pvrtc")) {
+            Log::Info("emscDisplayMgr: WEBKIT_WEBGL_compressed_texture_pvrtc enabled\n");
+        }
+        else {
+            Log::Info("emscDisplayMgr: WEBKIT_WEBGL_compressed_texture_pvrtc not supported\n");
+        }
+    }
     emscripten_webgl_make_context_current(this->ctx);
 
     glCaps::Setup(glFlavour);
