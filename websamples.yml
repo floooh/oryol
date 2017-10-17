@@ -1,48 +1,53 @@
 - name: Clear
   desc: Just call glClear in a loop
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Clear/Clear.jpg
   src: Clear/Clear.cc
 - name: Triangle
   desc: The canonical triangle demo
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Triangle/Triangle.jpg
   src: Triangle/Triangle.cc
 - name: Quad
   desc: Render a quad with vertex-indices
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Quad/Quad.jpg
   src: Quad/Quad.cc
 - name: Shapes
   desc: Shapes with random vertex colors, created with ShapeBuilder class
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Shapes/Shapes.jpg
   src: Shapes/Shapes.cc
 - name: PackedNormals
   desc: Shapes with packed vertex normals
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/PackedNormals/PackedNormals.jpg
   src: PackedNormals/PackedNormals.cc
 - name: PrimitiveTypes
   desc: Test Gfx primitive types
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/PrimitiveTypes/PrimitiveTypes.jpg
   src: PrimitiveTypes/PrimitiveTypes.cc
 - name: BlendTest
   desc: Test BlendState implementation
-  type: emscripten,android,pnacl
+  type: emscripten,android
   image: /Users/floh/projects/oryol/code/Samples/BlendTest/BlendTest.jpg
   src: BlendTest/BlendTest.cc
+- name: SeparateBuffers
+  desc: Test rendering from separate vertex buffers
+  type: emscripten
+  image: /Users/floh/projects/oryol/code/Samples/SeparateBuffers/SeparateBuffers.jpg
+  src: SeparateBuffers/SeparateBuffers.cc
 - name: SimpleRenderTarget
   desc: Demonstrate simple offscreen rendering
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/SimpleRenderTarget/SimpleRenderTarget.jpg
   src: SimpleRenderTarget/SimpleRenderTarget.cc
 - name: MultipleRenderTarget
   desc: Demonstrate MRT rendering
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/MultipleRenderTarget/MultipleRenderTarget.jpg
-  src: MultipleRenderTarget/MultipleTarget.cc
+  src: MultipleRenderTarget/MultipleRenderTarget.cc
 - name: RenderToCubeMap
   desc: Render to cubemap faces
   type: emscripten
@@ -50,37 +55,37 @@
   src: RenderToCubeMap/RenderToCubeMap.cc
 - name: InfiniteSpheres
   desc: Infinite recursive spheres
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/InfiniteSpheres/InfiniteSpheres.jpg
   src: InfiniteSpheres/InfiniteSpheres.cc
 - name: TextureFloat
   desc: RGB plasma using float render texture
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/TextureFloat/TextureFloat.jpg
   src: TextureFloat/TextureFloat.cc
 - name: DrawCallPerf
   desc: Measure draw call performance
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/DrawCallPerf/DrawCallPerf.jpg
   src: DrawCallPerf/DrawCallPerf.cc
 - name: Instancing
   desc: Instanced rendering
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Instancing/Instancing.jpg
   src: Instancing/Instancing.cc
 - name: GPUParticles
   desc: Fully GPU driven 3D particles
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/GPUParticles/GPUParticles.jpg
   src: GPUParticles/GPUParticles.cc
 - name: FullscreenQuad
   desc: Fullscreen quad with some distance field ray-marching
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/FullscreenQuad/FullscreenQuad.jpg
   src: FullscreenQuad/FullscreenQuad.cc
 - name: VertexTexture
   desc: Vertex texture fetch from offscreen render target
-  type: emscripten,android,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/VertexTexture/VertexTexture.jpg
   src: VertexTexture/VertexTexture.cc
 - name: VolumeTexture
@@ -95,22 +100,22 @@
   src: ArrayTexture/ArrayTexture.cc
 - name: DDSTextureLoading
   desc: Load and render various DDS texture formats
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/DDSTextureLoading/DDSTextureLoading.jpg
   src: DDSTextureLoading/DDSTextureLoading.cc
 - name: DDSCubeMap
   desc: Load and display DDS DXT1 cube map
-  type: emscripten,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/DDSCubeMap/DDSCubeMap.jpg
   src: DDSCubeMap/DDSCubeMap.cc
 - name: DebugText
   desc: Demonstrate debug text rendering
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/DebugText/DebugText.jpg
   src: DebugText/DebugText.cc
 - name: TestInput
   desc: Test Input module functionality
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/TestInput/TestInput.jpg
   src: TestInput/TestInput.cc
 - name: GamepadExplorer
@@ -120,12 +125,12 @@
   src: GamepadExplorer/GamepadExplorer.cc
 - name: NativeTexture
   desc: Demonstrates native 3D-API texture usage
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/NativeTexture/NativeTexture.jpg
   src: NativeTexture/NativeTexture.cc
 - name: ResourceStress
   desc: Resource loading stresstest
-  type: emscripten,pnacl,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/ResourceStress/none
   src: ResourceStress/ResourceStress.cc
 - name: CoreHello
@@ -135,11 +140,11 @@
   src: CoreHello/CoreHello.cc
 - name: Sensors
   desc: Device sensors sample
-  type: emscripten,android
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Sensors/none
   src: Sensors/Sensors.cc
 - name: IOQueueSample
   desc: Asynchronous file loading with IOQueue
-  type: emscripten,pnacl
+  type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/IOQueueSample/none
   src: IOQueueSample/IOQueueSample.cc

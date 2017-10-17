@@ -2,19 +2,19 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
-<title>MultipleRenderTarget</title>
+<title>SeparateBuffers</title>
 <link href='https://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="../style.css"/>
 <link rel="icon" type="image/png" href="favicon.png"/>
 </head>
 <body>
-  <div class="game-title">MultipleRenderTarget<span class="game-subtitle"><a class="game-sdk-link" href="https://github.com/WebAssembly/">WebAssembly</a></span></div>
+  <div class="game-title">SeparateBuffers<span class="game-subtitle"><a class="game-sdk-link" href="https://github.com/WebAssembly/">WebAssembly</a></span></div>
   <div class="game-rainbow"></div>
 
   <div class="nav-bar" style="width:400px">
     <ul class="nav-list">
         <li class="nav-item"><a class="nav-link" style="width:90px" href="../index.html">home</a></li>
-        <li class="nav-item"><a class="nav-link" style="width:90px" href="https://github.com/floooh/oryol/tree/master/code/Samples/MultipleRenderTarget/MultipleRenderTarget.cc" target="_blank">source</a></li>
+        <li class="nav-item"><a class="nav-link" style="width:90px" href="https://github.com/floooh/oryol/tree/master/code/Samples/SeparateBuffers/SeparateBuffers.cc" target="_blank">source</a></li>
         <li class="nav-item"><a class="nav-link" style="width:90px" onclick="callAsEventHandler('enter_soft_fullscreen')" href="javascript:void(0);">expand</a></li>
         <li class="nav-item"><a class="nav-link" style="width:130px" onclick="callAsEventHandler('enter_fullscreen')" href="javascript:void(0);">fullscreen</a></li>
         <div class="break"></div>
@@ -30,12 +30,12 @@
   <script type="text/javascript" src="../wasm.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'MultipleRenderTarget.wasm.txt', true)
+    xhr.open('GET', 'SeparateBuffers.wasm.txt', true)
     xhr.responseType = 'arraybuffer';
     xhr.onload = function() {
       Module.wasmBinary = xhr.response;
       (function() {
-        var memoryInitializer = 'MultipleRenderTarget.html.mem.txt';
+        var memoryInitializer = 'SeparateBuffers.html.mem.txt';
         if (typeof Module['locateFile'] === 'function') {
           memoryInitializer = Module['locateFile'](memoryInitializer);
         } else if (Module['memoryInitializerPrefixURL']) {
@@ -47,7 +47,7 @@
         xhr.send(null)
       })();
       var script = document.createElement('script');
-      script.src = "MultipleRenderTarget.js";
+      script.src = "SeparateBuffers.js";
       document.body.appendChild(script);
     };
     xhr.send(null);
