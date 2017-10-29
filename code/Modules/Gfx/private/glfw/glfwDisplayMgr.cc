@@ -164,6 +164,8 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     glfwWindowHint(GLFW_GREEN_BITS, 8); 
     glfwWindowHint(GLFW_BLUE_BITS, 8); 
     glfwWindowHint(GLFW_ALPHA_BITS, 8); 
+    // this is necessary after the 29-Oct-2017 fips-glfw update to get the old behaviour
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     #else
     glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Red));
     glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Green));
