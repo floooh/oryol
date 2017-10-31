@@ -57,7 +57,7 @@ def parseOutput(output, lines) :
             hasError = True
 
             # extract generated shader source column, line and message
-            lineStartIndex = outLine.find(':', 6) + 1
+            lineStartIndex = outLine.find(':', 9) + 1
             if lineStartIndex == 0:
                 continue
             lineEndIndex = outLine.find(':', lineStartIndex)
