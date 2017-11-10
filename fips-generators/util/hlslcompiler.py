@@ -16,23 +16,29 @@ def findFxc() :
     '''
     fcx.exe is located in the 'Windows Kits' SDKs, we first check the
     registry for the installation paths, and then see if we can 
-    find the fxc.exe file there under 'bin/x86'
+    find the fxc.exe file there under 'bin/x86', if it's not there
+    try any of the subdirectories.
 
     Returns an unicode path string of fxc.exe if found, or None if
     not found.
     '''
     fxcPath = None;
-    fxcSubPath = u'bin\\x86\\fxc.exe'
+    fxcSubPath = u'\\x86\\fxc.exe'
 
     # first get the preferred kit name (either 8.1 or 10, are there others?)
     try :
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'Software\\Microsoft\\Windows Kits\\Installed Roots') as key :
             for kit in ['KitsRoot10', 'KitsRoot81'] :
                 try :
-                    fxcPath, _ = winreg.QueryValueEx(key, kit)
-                    fxcPath += fxcSubPath
+                    winkit_dir, _ = winreg.QueryValueEx(key, kit)
+                    fxcPath = winkit_dir + u'bin' + fxcSubPath
                     if os.path.isfile(fxcPath) :
                         return fxcPath
+                    # try subdirectories
+                    for cur_dir in os.listdir(winkit_dir + u'bin'):
+                        fxcPath = winkit_dir + u'bin\\' + cur_dir + fxcSubPath
+                        if os.path.isfile(fxcPath):
+                            return fxcPath
                 except :
                     fxcPath = None
 
