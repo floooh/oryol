@@ -132,7 +132,7 @@ NativeTextureApp::OnRunning() {
                          uint8_t(this->counter) << 16 |
                          uint8_t(this->counter * 3) << 8 |
                          uint8_t(this->counter * 23);
-            this->Buffer[y * TexHeight + x] = c;
+            this->Buffer[y * TexWidth + x] = c;
             this->counter++;
         }
     }
