@@ -32,7 +32,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
     app->StartMainLoop(); \
     Oryol::Memory::Delete<clazz>(app); \
     return 0; \
-}
+} \
+/********for vs console app********/ \
+int main(int argc, const char** argv) { \
+    OryolArgs = Oryol::Args(argc, argv); \
+    clazz* app = Oryol::Memory::New<clazz>(); \
+    app->StartMainLoop(); \
+    Oryol::Memory::Delete(app); \
+    return 0; \
+} \
 #elif ORYOL_ANDROID
 #define OryolMain(clazz) \
 android_app* OryolAndroidAppState = nullptr; \
