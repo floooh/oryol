@@ -23,6 +23,18 @@
 #include "Core/String/WideString.h"
 
 #if ORYOL_WINDOWS
+#if FIPS_APP_CMDLINE
+#define OryolMain(clazz) \
+Oryol::Args OryolArgs; \
+int main(int argc, const char** argv) { \
+    OryolArgs = Oryol::Args(argc, argv); \
+    clazz* app = Oryol::Memory::New<clazz>(); \
+    app->StartMainLoop(); \
+    Oryol::Memory::Delete(app); \
+    return 0; \
+}
+#else 
+// FIPS_ADD_WINDOWED
 #define OryolMain(clazz) \
 Oryol::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
@@ -33,6 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine,
     Oryol::Memory::Delete<clazz>(app); \
     return 0; \
 }
+#endif // ORYOL_WINDOWS
 #elif ORYOL_ANDROID
 #define OryolMain(clazz) \
 android_app* OryolAndroidAppState = nullptr; \

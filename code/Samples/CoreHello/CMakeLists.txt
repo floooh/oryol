@@ -1,4 +1,4 @@
-fips_begin_app(CoreHello windowed)
+fips_begin_app(CoreHello cmdline)
     fips_vs_warning_level(3)
     fips_files(CoreHello.cc)
     fips_deps(Core)
