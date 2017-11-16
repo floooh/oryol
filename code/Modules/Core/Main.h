@@ -33,8 +33,7 @@ int main(int argc, const char** argv) { \
     Oryol::Memory::Delete(app); \
     return 0; \
 }
-#else 
-// FIPS_ADD_WINDOWED
+#else // FIPS_APP_WINDOWED
 #define OryolMain(clazz) \
 Oryol::Args OryolArgs; \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR lpCmdLine, int nShowCmd) {\
