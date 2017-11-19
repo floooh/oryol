@@ -74,4 +74,21 @@ TEST(SetTest) {
     set.Clear();
     CHECK(set.Size() == 0);
     CHECK(set.Empty());
+
+    // copy and move construction
+    set.Add(0);
+    set.Add(1);
+    set.Add(2);
+    Set<int> set1(set);
+    CHECK(set.ValueAtIndex(0) == 0);
+    CHECK(set.ValueAtIndex(1) == 1);
+    CHECK(set.ValueAtIndex(2) == 2);
+    CHECK(set1.ValueAtIndex(0) == 0);
+    CHECK(set1.ValueAtIndex(1) == 1);
+    CHECK(set1.ValueAtIndex(2) == 2);
+    Set<int> set2(std::move(set1));
+    CHECK(set1.Empty());
+    CHECK(set2.ValueAtIndex(0) == 0);
+    CHECK(set2.ValueAtIndex(1) == 1);
+    CHECK(set2.ValueAtIndex(2) == 2);
 }

@@ -76,14 +76,14 @@ Set<VALUE>::Set() {
 //------------------------------------------------------------------------------
 template<class VALUE>
 Set<VALUE>::Set(const Set& rhs) :
-valueArray(rhs.values) {
+valueArray(rhs.valueArray) {
     // empty
 }
 
 //------------------------------------------------------------------------------
 template<class VALUE>
 Set<VALUE>::Set(Set&& rhs) :
-valueArray(std::move(rhs.values)) {
+valueArray(std::move(rhs.valueArray)) {
     // empty
 }
     
