@@ -11,7 +11,7 @@ fips_begin_module(Resource)
         ResourceLoader.cc ResourceLoader.h
         ResourcePool.h
         SetupAndData.h
-        ResourceContainerBase.cc ResourceContainerBase.h
+        ResourceLabelStack.cc ResourceLabelStack.h
         ResourceRegistry.cc ResourceRegistry.h
         ResourceBase.h
     )

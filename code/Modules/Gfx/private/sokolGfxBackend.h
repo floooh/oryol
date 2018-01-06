@@ -6,6 +6,10 @@
     @brief graphics backend implementation on top of sokol_gfx.h
 */
 #include "Gfx/GfxTypes.h"
+#include "Gfx/private/displayMgr.h"
+#include "Gfx/private/gfxResourceContainer.h"
+#include "Gfx/private/renderer.h"
+#include "Gfx/private/gfxPointers.h"
 #include "Resource/ResourceLabel.h"
 #include "sokol_gfx.h"
 
@@ -18,7 +22,7 @@ public:
     ~sokolGfxBackend();
 
     /// setup the Gfx backend
-    void Setup(const GfxSetup& setup);
+    void Setup(const GfxSetup& setup, const gfxPointers& ptrs);
     /// shutdown the Gfx backend
     void Discard();
     /// check if Gfx backend has been setup
@@ -79,10 +83,17 @@ public:
 
     /// commit current frame
     void CommitFrame();
+    /// present current frame
+    void Preset();
     /// reset the internal state cache
     void ResetStateCache();
+    /// process window system events
+    void ProcessSystemEvents();
 
     bool isValid = false;
+    displayMgr displayManager;
+    gfxResourceContainer resourceContainer;
+    class renderer renderer;
 };
 
 } // namespace _priv

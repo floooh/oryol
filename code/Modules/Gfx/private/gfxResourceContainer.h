@@ -8,7 +8,8 @@
 #include "Core/RunLoop.h"
 #include "Core/Containers/Array.h"
 #include "Resource/ResourceLoader.h"
-#include "Resource/ResourceContainerBase.h"
+#include "Resource/ResourceRegistry.h"
+#include "Resource/ResourceLabelStack.h"
 #include "Resource/ResourceInfo.h"
 #include "Gfx/GfxTypes.h"
 #include "Gfx/private/resourcePools.h"
@@ -21,7 +22,7 @@ namespace _priv {
 class renderer;
 class displayMgr;
 
-class gfxResourceContainer : public ResourceContainerBase {
+class gfxResourceContainer {
 public:
     /// setup the resource container
     void setup(const GfxSetup& setup, const gfxPointers& ptrs);
@@ -68,8 +69,11 @@ public:
     /// destroy a single resource
     void destroyResource(const Id& id);
 
+    bool valid = false;
     gfxPointers pointers;
     gfxFactory factory;
+    ResourceRegistry registry;
+    ResourceLabelStack labelStack;
     class meshPool meshPool;
     class shaderPool shaderPool;
     class texturePool texturePool;
