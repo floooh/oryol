@@ -10,6 +10,7 @@
 #include "Gfx/GfxConfig.h"
 #include "glm/vec4.hpp"
 #include <initializer_list>
+#include <functional>
 
 namespace Oryol {
 
@@ -1032,6 +1033,10 @@ struct DisplayAttrs {
 */
 class GfxEvent {
 public:
+    /// handler function typedef
+    typedef std::function<void(const GfxEvent&)> Handler;
+    /// id for an event handler subscription
+    typedef uint32_t HandlerId;
     /// event types
     enum Type {
         DisplayModified,
@@ -1166,6 +1171,17 @@ public:
     DisplayAttrs GetDisplayAttrs() const;
     /// default constructor
     GfxSetup();
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::MeshSetup
+    @ingroup Gfx
+    @brief setup attributes for meshes
+*/
+class BufferSetup {
+public:
+    // FIXME!
 };
 
 //------------------------------------------------------------------------------

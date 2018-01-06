@@ -37,14 +37,10 @@ public:
     /// test if the window system wants the application to quit
     static bool QuitRequested();
 
-    /// event handler callback typedef
-    typedef std::function<void(const GfxEvent&)> EventHandler;
-    /// event handler id typedef
-    typedef unsigned int EventHandlerId;
     /// subscribe to display events
-    static EventHandlerId Subscribe(EventHandler handler);
+    static GfxEvent::HandlerId Subscribe(GfxEvent::Handler handler);
     /// unsubscribe from display events
-    static void Unsubscribe(EventHandlerId id);
+    static void Unsubscribe(GfxEvent::HandlerId id);
     
     /// get the original render setup object
     static const class GfxSetup& GfxSetup();

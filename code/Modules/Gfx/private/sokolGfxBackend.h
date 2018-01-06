@@ -7,6 +7,7 @@
 */
 #include "Gfx/GfxTypes.h"
 #include "Resource/ResourceLabel.h"
+#include "sokol_gfx.h"
 
 namespace Oryol {
 namespace _priv {
@@ -28,9 +29,9 @@ public:
     bool QueryFeature(GfxFeature::Code feature);
 
     /// subscribe to display events
-    GfxEventHandlerId Subscribe(GfxEventHandler handler);
+    GfxEvent::HandlerId Subscribe(GfxEvent::Handler handler);
     /// unsubscribe from display events
-    void Unsubscribe(GfxEventHandlerId id);
+    void Unsubscribe(GfxEvent::HandlerId id);
 
     /// generate new resource label and push on label stack
     ResourceLabel PushResourceLabel();
@@ -41,8 +42,8 @@ public:
     
     /// create a buffer resource
     Id CreateBuffer(const BufferSetup& setup);
-    /// create an image resource
-    Id CreateImage(const ImageSetup& setup);
+    /// create an texture resource
+    Id CreateTexture(const TextureSetup& setup);
     /// create a shader resource
     Id CreateShader(const ShaderSetup& setup);
     /// create a pipeline resource
@@ -56,8 +57,8 @@ public:
 
     /// update dynamic buffer data
     void UpdateBuffer(const Id& id, const void* data, int numBytes);
-    /// update dynamic image data
-    void UpdateImage(const Id& id, const ImageContent& data);
+    /// update dynamic texture data
+    void UpdateTexture(const Id& id, const ImageDataAttrs& attrs, const void* data, int numBytes);
 
     /// begin rendering pass
     void BeginPass(Id passId, const PassAction* action);

@@ -32,6 +32,7 @@ fips_begin_module(Gfx)
     )
     fips_dir(private)
     fips_files(
+        sokolGfxBackend.cc sokolGfxBackend.h
         displayMgrBase.cc displayMgrBase.h
         displayMgr.h
         renderer.h

@@ -82,15 +82,15 @@ Gfx::QuitRequested() {
 }
 
 //------------------------------------------------------------------------------
-Gfx::EventHandlerId
-Gfx::Subscribe(EventHandler handler) {
+GfxEvent::HandlerId
+Gfx::Subscribe(GfxEvent::Handler handler) {
     o_assert_dbg(IsValid());
     return state->displayManager.Subscribe(handler);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::Unsubscribe(EventHandlerId id) {
+Gfx::Unsubscribe(GfxEvent::HandlerId id) {
     o_assert_dbg(IsValid());
     state->displayManager.Unsubscribe(id);
 }

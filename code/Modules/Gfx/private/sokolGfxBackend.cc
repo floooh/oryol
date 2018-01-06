@@ -3,6 +3,31 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Assertion.h"
+#include "Core/Memory/Memory.h"
+#define SOKOL_IMPL
+#define SOKOL_ASSERT(c) o_assert_dbg(c)
+#define SOKOL_MALLOC(s) Oryol::Memory::Alloc(s)
+#define SOKOL_FREE(p) Oryol::Memory::Free(p)
+#define SOKOL_LOG(m) Oryol::Log::Info("%s\n",m)
+#define SOKOL_UNREACHABLE o_assert_dbg(false)
+#if ORYOL_OPENGL
+#include "Gfx/private/gl/gl_impl.h"
+#endif
+#if ORYOL_OPENGLES2
+#define SOKKOL_GLES2
+#elif ORYOL_OPENGL3
+#define SOKOL_GLES3
+#elif ORYOL_OPENGL_CORE_PROFILE
+#define SOKOL_GLCORE33
+#elif ORYOL_D3D11
+#define SOKOL_D3D11
+#elif ORYOL_METAL
+#if ORYOL_MACOS
+#define SOKOL_METAL_MACOS
+#else
+#define SOKOL_METAL_IOS
+#endif
+#endif
 #include "sokolGfxBackend.h"
 
 namespace Oryol {
@@ -46,14 +71,14 @@ bool sokolGfxBackend::QueryFeature(GfxFeature::Code feature) {
 }
 
 //------------------------------------------------------------------------------
-GfxEventHandlerId sokolGfxBackend::Subscribe(GfxEventHandler handler) {
+GfxEvent::HandlerId sokolGfxBackend::Subscribe(GfxEvent::Handler handler) {
     o_assert_dbg(this->isValid);
     // FIXME!
-    return GfxEventHandlerId();
+    return GfxEvent::HandlerId();
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::Unsubscribe(GfxEventHandlerId id) {
+void sokolGfxBackend::Unsubscribe(GfxEvent::HandlerId id) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
@@ -62,6 +87,7 @@ void sokolGfxBackend::Unsubscribe(GfxEventHandlerId id) {
 ResourceLabel sokolGfxBackend::PushResourceLabel() {
     o_assert_dbg(this->isValid);
     // FIXME
+    return ResourceLabel();
 }
 
 //------------------------------------------------------------------------------
@@ -85,7 +111,7 @@ Id sokolGfxBackend::CreateBuffer(const BufferSetup& setup) {
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::CreateImage(const ImageSetup& setup) {
+Id sokolGfxBackend::CreateTexture(const TextureSetup& setup) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();
@@ -120,7 +146,7 @@ Id sokolGfxBackend::LookupResource(const Locator& loc) {
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::DestroyResource(ResourceLabel label) {
+void sokolGfxBackend::DestroyResources(ResourceLabel label) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
@@ -132,7 +158,7 @@ void sokolGfxBackend::UpdateBuffer(const Id& id, const void* data, int numBytes)
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::UpdateImage(const Id& id, const ImageContent& data) {
+void sokolGfxBackend::UpdateTexture(const Id& id, const ImageDataAttrs& attrs, const void* data, int numBytes) {
     o_assert(this->isValid);
     // FIXME
 }
