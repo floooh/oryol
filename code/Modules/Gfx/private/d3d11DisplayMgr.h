@@ -8,6 +8,14 @@
 #include "Gfx/private/win/winDisplayMgr.h"
 #include "Gfx/private/d3d11/d3d11_decl.h"
 
+// d3d11 forward declarations
+struct IDXGISwapChain;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3D11Texture2D;
+struct ID3D11RenderTargetView;
+struct ID3D11DepthStencilView;
+
 namespace Oryol {
 namespace _priv {
 
