@@ -7,10 +7,10 @@
 */
 #include "Gfx/GfxTypes.h"
 #include "Gfx/private/displayMgr.h"
-#include "Gfx/private/gfxResourceContainer.h"
-#include "Gfx/private/renderer.h"
 #include "Gfx/private/gfxPointers.h"
 #include "Resource/ResourceLabel.h"
+#include "Resource/ResourceRegistry.h"
+#include "Resource/ResourceLabelStack.h"
 #include "sokol_gfx.h"
 
 namespace Oryol {
@@ -44,16 +44,39 @@ public:
     /// pop resource label from label stack
     ResourceLabel PopResourceLabel();
     
-    /// create a buffer resource
-    Id CreateBuffer(const BufferSetup& setup);
-    /// create an texture resource
-    Id CreateTexture(const TextureSetup& setup);
-    /// create a shader resource
+    /// create (alloc+init) a buffer resource
+    Id CreateBuffer(const BufferSetup& setup, const void* data, int size);
+    /// create (alloc+init) an texture resource
+    Id CreateTexture(const TextureSetup& setup, const void* data, int size);
+    /// create (alloc+init) a shader resource
     Id CreateShader(const ShaderSetup& setup);
-    /// create a pipeline resource
+    /// create (alloc+init) a pipeline resource
     Id CreatePipeline(const PipelineSetup& setup);
-    /// create a pass resource
+    /// create (alloc+init) a pass resource
     Id CreatePass(const PassSetup& setup);
+
+    /// allocate a new buffer id
+    Id AllocBuffer(const Locator& loc);
+    /// allocate a new texture id
+    Id AllocTexture(const Locator& loc);
+    /// allocate a new shader id
+    Id AllocShader(const Locator& loc);
+    /// allocate a new pipeline id
+    Id AllocPipeline(const Locator& loc);
+    /// allocate a new pass id
+    Id AllocPass(const Locator& loc);
+
+    /// initialize a buffer
+    void InitBuffer(Id id, const BufferSetup& setup);
+    /// initialize a texture
+    void InitTexture(Id id, const TextureSetup& setup);
+    /// initialize a shader
+    void InitShader(Id id, const ShaderSetup& setup);
+    /// initialize a pipeline
+    void InitPipeline(Id id, const PipelineSetup& setup);
+    /// initialize a pass
+    void InitPass(Id id, const PassSetup& setup);
+
     /// lookup a resource Id by locator
     Id LookupResource(const Locator& loc);
     /// destroy one or multiple resource(s) by matching label
@@ -62,7 +85,7 @@ public:
     /// update dynamic buffer data
     void UpdateBuffer(const Id& id, const void* data, int numBytes);
     /// update dynamic texture data
-    void UpdateTexture(const Id& id, const ImageDataAttrs& attrs, const void* data, int numBytes);
+    void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs);
 
     /// begin rendering pass
     void BeginPass(Id passId, const PassAction* action);
@@ -76,7 +99,7 @@ public:
     /// apply a draw state
     void ApplyDrawState(const DrawState& drawState);
     /// apply a uniform block
-    void ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes);
+    void ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, uint32_t layoutHash, const void* data, int numBytes);
 
     /// issue a draw call
     void Draw(int baseElement, int numElements, int numInstances);
@@ -92,8 +115,8 @@ public:
 
     bool isValid = false;
     displayMgr displayManager;
-    gfxResourceContainer resourceContainer;
-    class renderer renderer;
+    ResourceRegistry registry;
+    ResourceLabelStack labelStack;
 };
 
 } // namespace _priv

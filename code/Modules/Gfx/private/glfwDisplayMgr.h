@@ -10,7 +10,6 @@
     GL context management, and consuming window input events.
 */
 #include "Gfx/private/displayMgrBase.h"
-#include "Gfx/private/gl/gl_decl.h"
 
 struct GLFWwindow;
 
@@ -34,9 +33,6 @@ public:
     void Present();
     /// check whether the window system requests to quit the application
     bool QuitRequested() const;
-    
-    /// bind the default frame buffer
-    void glBindDefaultFramebuffer();
     
     /// get glfwWindow handle
     static GLFWwindow* getGlfwWindow();

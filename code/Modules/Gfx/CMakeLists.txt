@@ -3,24 +3,6 @@
 #
 #-------------------------------------------------------------------------------
 
-if (ORYOL_OPENGL)
-# 
-# This option forces the use of glGetAttribLocation() instead of
-# glBindAttribLocation() to bind vertex components to shader 
-# vertex attributes. This must be used on platforms where
-# GL_MAX_VERTEX_ATTRS is less then 16 (the only platform with this
-# restriction so far seems to be the Raspberry Pi). This option
-# is mutually exclusive with vertex array objects.
-#
-option(ORYOL_GL_USE_GETATTRIBLOCATION "Use glGetAttribLocation instead of glBindAttribLocation" OFF)
-if (ORYOL_GL_USE_GETATTRIBLOCATION OR FIPS_RASPBERRYPI)
-    add_definitions(-DORYOL_GL_USE_GETATTRIBLOCATION=1)
-else()
-    add_definitions(-DORYOL_GL_USE_GETATTRIBLOCATION=0)    
-endif()
-
-endif() # ORYOL_OPENGL
-
 fips_begin_module(Gfx)
     fips_vs_warning_level(3)
     fips_files(
@@ -35,7 +17,6 @@ fips_begin_module(Gfx)
         sokolGfxBackend.cc sokolGfxBackend.h
         displayMgrBase.cc displayMgrBase.h
         displayMgr.h
-        gfxResourceContainer.h gfxResourceContainer.cc 
     )
     if (ORYOL_D3D11)
         fips_files(winDisplayMgr.cc winDisplayMgr.h)
@@ -61,7 +42,6 @@ fips_begin_module(Gfx)
             fips_libs(GLESv2 EGL bcm_host)
         elseif (FIPS_MACOS OR FIPS_WINDOWS OR FIPS_LINUX)
             fips_files(glfwDisplayMgr.cc glfwDisplayMgr.h)
-            fips_dir(private/flextgl)
             fips_files(flextGL.c flextGL.h)
             fips_deps(glfw3)
         endif()

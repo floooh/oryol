@@ -85,8 +85,6 @@ public:
     static void BeginPass();
     /// begin rendering to default render pass with override clear values
     static void BeginPass(const PassAction& action);
-    /// begin offscreen rendering
-    static void BeginPass(const Id& passId);
     /// begin offscreen rendering with override clear colors
     static void BeginPass(const Id& passId, const PassAction& action);
     /// finish rendering to current pass
@@ -101,43 +99,20 @@ public:
     /// apply a uniform block (call between ApplyDrawState and Draw)
     template<class T> static void ApplyUniformBlock(const T& ub);
 
-    /// update dynamic vertex data (complete replace)
-    static void UpdateVertices(const Id& id, const void* data, int numBytes);
-    /// update dynamic index data (complete replace)
-    static void UpdateIndices(const Id& id, const void* data, int numBytes);
+    /// update dynamic vertex or index data (complete replace)
+    static void UpdateBuffer(const Id& id, const void* data, int numBytes);
     /// update dynamic texture image data (complete replace)
     static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
     
-    /// submit a draw call with primitive group index
-    static void Draw(int primGroupIndex=0, int numInstances=1);
-    /// submit a draw call with explicit primitve range
-    static void Draw(const PrimitiveGroup& primGroup, int numInstances=1);
+    /// submit a draw call
+    static void Draw(int baseElement, int numElements, int numInstances);
 
     /// commit (and display) the current frame
     static void CommitFrame();
     /// reset the native 3D-API state-cache
     static void ResetStateCache();
 
-    /// direct access to resource container (private interface for resource loaders)
-    static _priv::gfxResourceContainer* resource();
-
 private:
-    #if ORYOL_DEBUG
-    /// validate texture setup params
-    static void validateTextureSetup(const TextureSetup& setup, const void* data, int size);
-    /// validate mesh setup params
-    static void validateMeshSetup(const MeshSetup& setup, const void* data, int size);
-    /// validate pipeline setup params
-    static void validatePipelineSetup(const PipelineSetup& setup);
-    /// validate render pass setup params
-    static void validatePassSetup(const PassSetup& setup);
-    /// validate shader setup params
-    static void validateShaderSetup(const ShaderSetup& setup);
-    /// validate mesh binding
-    static void validateMeshes(_priv::pipeline* pip, _priv::mesh** meshes, int numMeshes);
-    /// validate texture binding
-    static void validateTextures(ShaderStage::Code stage, _priv::pipeline* pip, _priv::texture** textures, int numTextures);
-    #endif
     /// apply uniform block, non-template version
     static void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
 };

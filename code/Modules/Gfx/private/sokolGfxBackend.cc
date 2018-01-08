@@ -2,6 +2,7 @@
 //  sokolGfxBackend.cc
 //------------------------------------------------------------------------------
 #include "Pre.h"
+#include "Core/Core.h"
 #include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
 #define SOKOL_IMPL
@@ -11,7 +12,30 @@
 #define SOKOL_LOG(m) Oryol::Log::Info("%s\n",m)
 #define SOKOL_UNREACHABLE o_assert_dbg(false)
 #if ORYOL_OPENGL
-#include "Gfx/private/gl/gl_impl.h"
+    #if ORYOL_RASPBERRYPI
+    #define GL_GLEXT_PROTOTYPES
+    #include "GLES2/gl2.h"
+    #include "GLES2/gl2ext.h"
+    #elif ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
+    #include "Gfx/private/flextGL.h"
+    #elif ORYOL_IOS
+    #include <OpenGLES/ES3/gl.h>
+    #include <OpenGLES/ES3/glext.h>
+    #elif ORYOL_EMSCRIPTEN
+        #if ORYOL_OPENGLES2
+        #define GL_GLEXT_PROTOTYPES
+        #include <GL/gl.h>
+        #include <GL/glext.h>
+        #else
+        #include <GLES3/gl3.h>
+        #endif
+    #elif ORYOL_ANDROID
+    #define GL_GLEXT_PROTOTYPES
+    #include <GLES3/gl3.h>
+    #include <GLES3/gl3ext.h>
+    #else
+    #error "Missing platform for GL header include!"
+    #endif
 #endif
 #if ORYOL_OPENGLES2
 #define SOKKOL_GLES2
@@ -39,152 +63,174 @@ sokolGfxBackend::~sokolGfxBackend() {
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::Setup(const GfxSetup& setup, const gfxPointers& ptrs) {
+void
+sokolGfxBackend::Setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->isValid);
     this->displayManager.SetupDisplay(setup, ptrs);
-    this->resourceContainer.setup(setup, ptrs);
-    this->renderer.setup(setup, ptrs);
+    this->registry.Setup(setup.ResourceRegistryCapacity);
+    this->labelStack.Setup(setup.ResourceLabelStackCapacity);
     this->isValid = true;
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::Discard() {
+void
+sokolGfxBackend::Discard() {
     o_assert(this->isValid);
-    this->resourceContainer.GarbageCollect();
-    this->resourceContainer.Destroy(ResourceLabel::All);
-    this->renderer.discard();
-    this->resourceContainer.discard();
+    this->registry.Discard();
+    this->labelStack.Discard();
     this->displayManager.DiscardDisplay();
     this->isValid = false;
 }
 
 //------------------------------------------------------------------------------
-bool sokolGfxBackend::IsValid() {
+bool
+sokolGfxBackend::IsValid() {
     return this->isValid;
 }
 
 //------------------------------------------------------------------------------
-bool sokolGfxBackend::QuitRequested() {
+bool
+sokolGfxBackend::QuitRequested() {
     return this->displayManager.QuitRequested();
 }
 
 //------------------------------------------------------------------------------
-bool sokolGfxBackend::QueryFeature(GfxFeature::Code feature) {
+bool
+sokolGfxBackend::QueryFeature(GfxFeature::Code feature) {
     o_assert_dbg(this->isValid);
-    return this->renderer.queryFeature(feature);
+    // FIXME
+    return false;
 }
 
 //------------------------------------------------------------------------------
-GfxEvent::HandlerId sokolGfxBackend::Subscribe(GfxEvent::Handler handler) {
+GfxEvent::HandlerId
+sokolGfxBackend::Subscribe(GfxEvent::Handler handler) {
     o_assert_dbg(this->isValid);
     return this->displayManager.Subscribe(handler);
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::Unsubscribe(GfxEvent::HandlerId id) {
+void
+sokolGfxBackend::Unsubscribe(GfxEvent::HandlerId id) {
     o_assert_dbg(this->isValid);
     this->displayManager.Unsubscribe(id);
 }
 
 //------------------------------------------------------------------------------
-ResourceLabel sokolGfxBackend::PushResourceLabel() {
+ResourceLabel
+sokolGfxBackend::PushResourceLabel() {
     o_assert_dbg(this->isValid);
-    return this->resourceContainer.labelStack.PushLabel();
+    return this->labelStack.PushLabel();
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::PushResourceLabel(ResourceLabel label) {
+void
+sokolGfxBackend::PushResourceLabel(ResourceLabel label) {
     o_assert_dbg(this->isValid);
-    return this->resourceContainer.labelStack.PushLabel(label);
+    return this->labelStack.PushLabel(label);
 }
 
 //------------------------------------------------------------------------------
-ResourceLabel sokolGfxBackend::PopResourceLabel() {
+ResourceLabel
+sokolGfxBackend::PopResourceLabel() {
     o_assert_dbg(this->isValid);
-    return this->resourceContainer.labelStack.PopLabel();
+    return this->labelStack.PopLabel();
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::CreateBuffer(const BufferSetup& setup) {
+Id
+sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::CreateTexture(const TextureSetup& setup) {
+Id
+sokolGfxBackend::CreateTexture(const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
+Id
+sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::CreatePipeline(const PipelineSetup& setup) {
+Id
+sokolGfxBackend::CreatePipeline(const PipelineSetup& setup) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::CreatePass(const PassSetup& setup) {
+Id
+sokolGfxBackend::CreatePass(const PassSetup& setup) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();
 }
 
 //------------------------------------------------------------------------------
-Id sokolGfxBackend::LookupResource(const Locator& loc) {
+Id
+sokolGfxBackend::LookupResource(const Locator& loc) {
     o_assert_dbg(this->isValid);
-    return this->resourceContainer.registry.Lookup(loc);
+    return this->registry.Lookup(loc);
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::DestroyResources(ResourceLabel label) {
-    o_assert_dbg(this->isValid);
-    return this->resourceContainer.DestroyDeferred(label);
-}
-
-//------------------------------------------------------------------------------
-void sokolGfxBackend::UpdateBuffer(const Id& id, const void* data, int numBytes) {
+void
+sokolGfxBackend::DestroyResources(ResourceLabel label) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::UpdateTexture(const Id& id, const ImageDataAttrs& attrs, const void* data, int numBytes) {
+void
+sokolGfxBackend::UpdateBuffer(const Id& id, const void* data, int numBytes) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::BeginPass(Id passId, const PassAction* action) {
+void
+sokolGfxBackend::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::EndPass() {
+void
+sokolGfxBackend::BeginPass(Id passId, const PassAction* action) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::ApplyViewPort(int x, int y, int w, int h, bool originTopLeft) {
+void
+sokolGfxBackend::EndPass() {
     o_assert_dbg(this->isValid);
-    this->renderer.applyViewPort(x, y, w, h, originTopLeft);
+    // FIXME
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::ApplyScissorRect(int x, int y, int w, int h, bool originTopLeft) {
+void
+sokolGfxBackend::ApplyViewPort(int x, int y, int w, int h, bool originTopLeft) {
     o_assert_dbg(this->isValid);
-    this->renderer.applyScissorRect(x, y, w, h, originTopLeft);
+    sg_apply_viewport(x, y, w, h, originTopLeft);
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::ApplyScissorRect(int x, int y, int w, int h, bool originTopLeft) {
+    o_assert_dbg(this->isValid);
+    sg_apply_scissor_rect(x, y, w, h, originTopLeft);
 }
 
 //------------------------------------------------------------------------------
@@ -194,33 +240,37 @@ void sokolGfxBackend::ApplyDrawState(const DrawState& drawState) {
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes) {
+void
+sokolGfxBackend::ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, uint32_t layoutHash, const void* data, int numBytes) {
     o_assert_dbg(this->isValid);
     // FIXME
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::Draw(int baseElement, int numElements, int numInstances) {
+void
+sokolGfxBackend::Draw(int baseElement, int numElements, int numInstances) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    sg_draw(baseElement, numElements, numInstances);
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::CommitFrame() {
+void
+sokolGfxBackend::CommitFrame() {
     o_assert_dbg(this->isValid);
-    this->renderer.commitFrame();
+    sg_commit();
     this->displayManager.Present();
-    this->resourceContainer.GarbageCollect();
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::ResetStateCache() {
+void
+sokolGfxBackend::ResetStateCache() {
     o_assert_dbg(this->isValid);
-    this->renderer.resetStateCache();
+    sg_reset_state_cache();
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::ProcessSystemEvents() {
+void
+sokolGfxBackend::ProcessSystemEvents() {
     o_assert_dbg(this->isValid);
     this->displayManager.ProcessSystemEvents();
 }

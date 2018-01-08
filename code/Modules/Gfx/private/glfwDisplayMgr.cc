@@ -3,13 +3,12 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "Core/Core.h"
-#include "Gfx/private/gl/gl_impl.h"
-#include "Gfx/private/gl/glCaps.h"
 #include "glfwDisplayMgr.h"
 #include "Core/Log.h"
 #include "Core/String/StringBuilder.h"
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
+#include "flextGL.h"
 
 namespace Oryol {
 namespace _priv {
@@ -61,14 +60,8 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     glfwSwapInterval(setup.SwapInterval);
 
     // setup extensions and platform-dependent constants
-    ORYOL_GL_CHECK_ERROR();
     flextInit(glfwWindow);
-    ORYOL_GL_CHECK_ERROR();
-    glCaps::Setup(glCaps::GL_3_3_CORE);
-    #if ORYOL_DEBUG
-    glCaps::EnableDebugOutput(glCaps::SeverityMedium);
-    #endif
-    
+
     // now set the actual display attributes
     int fbWidth = 0, fbHeight = 0;
     int posX = 0, posY = 0;
@@ -95,7 +88,6 @@ glfwDisplayMgr::DiscardDisplay() {
     
     this->destroyMainWindow();
     glfwTerminate();
-    glCaps::Discard();
     displayMgrBase::DiscardDisplay();
 }
 
@@ -123,13 +115,6 @@ glfwDisplayMgr::Present() {
     
     glfwSwapBuffers(glfwWindow);
     displayMgrBase::Present();
-}
-
-//------------------------------------------------------------------------------
-void
-glfwDisplayMgr::glBindDefaultFramebuffer() {
-    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------

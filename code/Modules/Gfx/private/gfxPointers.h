@@ -14,24 +14,10 @@ namespace Oryol {
 
 namespace _priv {
 
-class renderer;
 class displayMgr;
-class gfxResourceContainer;
-class meshPool;
-class shaderPool;
-class texturePool;
-class pipelinePool;
-class renderPassPool;
 
 struct gfxPointers {
-    class renderer* renderer = nullptr;
     class displayMgr* displayMgr = nullptr;
-    class gfxResourceContainer* resContainer = nullptr; 
-    class meshPool* meshPool = nullptr;
-    class shaderPool* shaderPool = nullptr;
-    class texturePool* texturePool = nullptr;
-    class pipelinePool* pipelinePool = nullptr;
-    class renderPassPool* renderPassPool = nullptr;
 };
 
 } // namespace _priv

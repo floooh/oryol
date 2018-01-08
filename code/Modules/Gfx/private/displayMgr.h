@@ -10,37 +10,37 @@
     events (such as input events) and forwards them to Oryol.
 */
 #if ORYOL_D3D11
-#include "Gfx/private/d3d11/d3d11DisplayMgr.h"
+#include "Gfx/private/d3d11DisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public d3d11DisplayMgr { };
 } }
 #elif ORYOL_METAL
-#include "Gfx/private/mtl/mtlDisplayMgr.h"
+#include "Gfx/private/mtlDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public mtlDisplayMgr { };
 } }
 #elif (ORYOL_ANDROID || ORYOL_RASPBERRYPI)
-#include "Gfx/private/egl/eglDisplayMgr.h"
+#include "Gfx/private/eglDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public eglDisplayMgr { };
 } }
 #elif (ORYOL_WINDOWS || ORYOL_MACOS || ORYOL_LINUX)
-#include "Gfx/private/glfw/glfwDisplayMgr.h"
+#include "Gfx/private/glfwDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public glfwDisplayMgr { };
 } }
 #elif ORYOL_EMSCRIPTEN
-#include "Gfx/private/emsc/emscDisplayMgr.h"
+#include "Gfx/private/emscDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public emscDisplayMgr { };
 } }
 #elif ORYOL_IOS
-#include "Gfx/private/ios/iosDisplayMgr.h"
+#include "Gfx/private/iosDisplayMgr.h"
 namespace Oryol {
 namespace _priv {
 class displayMgr : public iosDisplayMgr { };
