@@ -16,6 +16,23 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 /**
+    @class Oryol::BufferType
+    @ingroup Gfx
+    @brief whether a Buffer contains vertex- or index-data
+*/
+class BufferType {
+public:
+    enum Code {
+        VertexBuffer = 0,
+        IndexBuffer,
+
+        NumBufferTypes,
+        InvalidBufferType = 0xFFFFFFFF
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
     @class Oryol::IndexType
     @ingroup Gfx
     @brief selects 16- or 32-bit indices
@@ -192,7 +209,7 @@ public:
     /// type enum
     enum Code {
         Texture,            ///< a texture
-        Mesh,               ///< a mesh
+        Buffer,             ///< a vertex- or index-buffer
         Shader,             ///< a shader
         Pipeline,           ///< a pipeline state object
         RenderPass,         ///< a render-pass object
@@ -304,49 +321,6 @@ public:
         NumUsages,
         InvalidUsage = 0xFFFFFFFF,
     };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::VertexAttr
-    @ingroup Gfx
-    @brief vertex attribute enum (position, texcoord, ...)
-
-    The VertexAttr definitions don't have a hardwired meaning, they just
-    exist to make the binding of vertex components (living in vertex buffers)
-    to vertex attribute definition in vertex shaders easier to understand.
-    The maximum number of vertex attributes should not exceed 16
-    (this is the GL_MAX_VERTEX_ATTRIBS value).
-*/
-class VertexAttr {
-public:
-    /// vertex attribute enum
-    enum Code : uint8_t {
-        Position = 0,   ///< "position"
-        Normal,         ///< "normal"
-        TexCoord0,      ///< "texcoord0"
-        TexCoord1,      ///< "texcoord1"
-        TexCoord2,      ///< "texcoord2"
-        TexCoord3,      ///< "texcoord3"
-        Tangent,        ///< "tangent
-        Binormal,       ///< "binormal"
-        Weights,        ///< "weights" (skin weights)
-        Indices,        ///< "indices" (skin indices)
-        Color0,         ///< "color0"
-        Color1,         ///< "color1"
-        Instance0,      ///< "instance0"
-        Instance1,      ///< "instance1"
-        Instance2,      ///< "instance2"
-        Instance3,      ///< "instance3"
-
-        NumVertexAttrs,
-        InvalidVertexAttr,
-    };
-
-    /// convert to string
-    static const char* ToString(Code c);
-    /// convert from string
-    static Code FromString(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -848,15 +822,18 @@ public:
     with the exception of shader uniforms:
     
     - 1 pipeline state object
-    - 1..4 mesh objects
+    - 1..4 vertex buffers
+    - 0..1 index buffer
     - 0..N textures for the vertex shader stage
     - 0..N textures for the fragment shader stage
 */
 struct DrawState {
     /// the pipeline state object
     Id Pipeline;
-    /// input meshes
-    StaticArray<Id, GfxConfig::MaxNumInputMeshes> Mesh;
+    /// vertex buffers
+    StaticArray<Id, GfxConfig::MaxNumVertexBuffers> VertexBuffers;
+    /// optional index buffer
+    Id IndexBuffer;
     /// vertex shader stage textures
     StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
     /// fragment shader stage textures
@@ -885,28 +862,37 @@ struct GfxFrameInfo {
     @class Oryol::VertexLayout
     @ingroup Gfx
     @brief describes the data layout of a vertex in a vertex buffer
+
+    FIXME: support vertex components with gaps (manually defined offset and stride)
 */
 class VertexLayout {
 public:
     /// a component in a vertex layout
-    #pragma pack(push,1)
     class Component {
     public:
         /// default constructor
         Component() {};
-        /// construct from vertex attr and format
-        Component(VertexAttr::Code attr, VertexFormat::Code fmt) : Attr(attr), Format(fmt) { }
+        /// construct from format (no attr name)
+        Component(VertexFormat::Code fmt): Format(fmt) { };
+        /// construct from vertex attr name and format
+        Component(const StringAtom& name, VertexFormat::Code fmt): Name(name), Format(fmt) { }
         /// return true if valid (attr and format set)
-        bool IsValid() const;
+        bool IsValid() const {
+            return this->Format != VertexFormat::InvalidVertexFormat;
+        }
         /// clear the component (unset attr and format)
-        void Clear();
+        void Clear() {
+            *this = Component();
+        }
         /// get byte size of component
-        int ByteSize() const;
+        int ByteSize() const {
+            return VertexFormat::ByteSize(this->Format);
+        }
 
-        VertexAttr::Code Attr = VertexAttr::InvalidVertexAttr;
+        StringAtom Name;
         VertexFormat::Code Format = VertexFormat::InvalidVertexFormat;
+        int Offset = 0;     // offset will be written in VertexLayout::Add
     };
-    #pragma pack(pop)
 
     /// the vertex step function, used for instancing, default is 'PerVertex'
     VertexStepFunction::Code StepFunction = VertexStepFunction::PerVertex;
@@ -923,8 +909,10 @@ public:
     bool Empty() const;
     /// add a component
     VertexLayout& Add(const Component& comp);
-    /// add component by name and format
-    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
+    /// add an unnamed component
+    VertexLayout& Add(VertexFormat::Code format);
+    /// add a named component
+    VertexLayout& Add(const StringAtom& name, VertexFormat::Code format);
     /// add multiple components via initializer list
     VertexLayout& Add(std::initializer_list<Component> l);
     /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
@@ -933,20 +921,18 @@ public:
     int NumComponents() const;
     /// get component at index
     const Component& ComponentAt(int index) const;
-    /// get component index by vertex attribute, return InvalidIndex if layout doesn't include attr
-    int ComponentIndexByVertexAttr(VertexAttr::Code attr) const;
+    /// find component index by name, return InvalidIndex if not found
+    int ComponentIndexByName(const StringAtom& name) const;
+    /// test if the layout contains a specific vertex attribute by name
+    bool Contains(const StringAtom& name) const;
     /// get byte size of vertex (aka stride)
     int ByteSize() const;
     /// get byte offset of a component
     int ComponentByteOffset(int componentIndex) const;
-    /// test if the layout contains a specific vertex attribute
-    bool Contains(VertexAttr::Code attr) const;
 private:
     StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents> comps;
-    StaticArray<uint8_t, GfxConfig::MaxNumVertexLayoutComponents> byteOffsets;
-    StaticArray<int8_t, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
-    int8_t numComps = 0;
-    uint8_t byteSize = 0;
+    int numComps = 0;
+    int byteSize = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -1174,76 +1160,24 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::MeshSetup
+    @class Oryol::BufferSetup
     @ingroup Gfx
-    @brief setup attributes for meshes
+    @brief setup attributes for vertex- and index-buffers
 */
 class BufferSetup {
 public:
-    // FIXME!
-};
+    /// create initialized BufferSetup object
+    static BufferSetup Make(int size, BufferType::Code type=BufferType::VertexBuffer, Usage::Code usage=Usage::Immutable);
+    /// the buffer type (vertex- or index-buffer)
+    BufferType::Code Type = BufferType::VertexBuffer;
+    /// the buffer usage
+    Usage::Code Usage = Usage::Immutable;
+    /// the buffer size in bytes
+    int Size = 0;
+    /// optional native 3D-API buffers
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
 
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::MeshSetup
-    @ingroup Gfx
-    @brief setup attributes for meshes
-*/
-class MeshSetup {
-public:
-    /// asynchronously load from file
-    static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId());
-    /// setup from from data in memory
-    static MeshSetup FromData(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
-    /// setup from data in memory with blueprint
-    static MeshSetup FromData(const MeshSetup& blueprint);
-    /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup Empty(int numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
-    /// setup a fullscreen quad mesh
-    static MeshSetup FullScreenQuad(bool flipV=false);
-    /// check if should load asynchronously
-    bool ShouldSetupFromFile() const;
-    /// check if should setup from data in memory
-    bool ShouldSetupFromData() const;
-    /// check if should setup empty mesh
-    bool ShouldSetupEmpty() const;
-    /// check if should setup fullscreen quad mesh
-    bool ShouldSetupFullScreenQuad() const;
-    /// add a primitive group (required for CreateEmpty)
-    void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
-    /// get number of primitive groups
-    int NumPrimitiveGroups() const;
-    /// get primitive group at index
-    const class PrimitiveGroup& PrimitiveGroup(int index) const;
-    /// vertex-data usage
-    Usage::Code VertexUsage = Usage::InvalidUsage;
-    /// index-data usage
-    Usage::Code IndexUsage = Usage::InvalidUsage;
-    /// vertex layout
-    VertexLayout Layout;
-    /// number of vertices
-    int NumVertices = 0;
-    /// number of indices
-    int NumIndices = 0;
-    /// index type 
-    IndexType::Code IndicesType = IndexType::None;
-    /// flip v coordinates for fullscreen quad (so that origin is top-left)
-    bool FullScreenQuadFlipV = false;
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// placeholder Id
-    Id Placeholder;
-    /// vertex data byte offset in data (default: 0, set to InvalidIndex if no vertex data provided)
-    int VertexDataOffset = 0;
-    /// index data byte offset in data (default: InvalidIndex, no index data provided)
-    int IndexDataOffset = 0;
-private:
-    int numPrimGroups = 0;
-    class PrimitiveGroup primGroups[GfxConfig::MaxNumPrimGroups];
-    bool setupFromFile = false;
-    bool setupFromData = false;
-    bool setupEmpty = false;
-    bool setupFullScreenQuad = false;
+    BufferSetup();
 };
 
 //------------------------------------------------------------------------------
@@ -1257,7 +1191,7 @@ public:
     /// construct from shader
     static PipelineSetup FromShader(const Id& shd);
     /// construct from vertex layout and shader
-    static PipelineSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd);
+    static PipelineSetup FromShaderAndLayout(const Id& shd, const VertexLayout& layout);
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// blend state (GLES3.0 doesn't allow separate MRT blend state
@@ -1269,7 +1203,7 @@ public:
     /// rasterizer state
     class RasterizerState RasterizerState;
     /// input vertex layouts (one per mesh slot)
-    StaticArray<VertexLayout, GfxConfig::MaxNumInputMeshes> Layouts;
+    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> Layouts;
     /// primitive type 
     PrimitiveType::Code PrimType = PrimitiveType::Triangles;
     /// shader 
@@ -1321,14 +1255,10 @@ public:
     void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource);
     /// set shader program from precompiled shader byte code
     void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc=nullptr, const char* fsFunc=nullptr);
-    /// set vertex shader input layout
-    void SetInputLayout(const VertexLayout& vsInputLayout);
     /// add a uniform block
     void AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture declaration
     void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
-    /// get the vertex shader input layout
-    const VertexLayout& InputLayout() const;
     /// get program vertex shader source (only valid if setup from sources)
     const String& VertexShaderSource(ShaderLang::Code slang) const;
     /// get program fragment shader source (only valid if setup from sources)
@@ -1381,7 +1311,6 @@ private:
         };
         StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> vsByteCode;
         StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> fsByteCode;
-        VertexLayout vsInputLayout;
     };
     struct uniformBlockEntry {
         StringAtom type;
@@ -1414,10 +1343,6 @@ private:
 */
 class TextureSetup {
 public:
-    /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
-    /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
     /// setup 2D texture from raw pixel data
     static TextureSetup FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
     /// setup cube texture from raw pixel data
@@ -1444,8 +1369,6 @@ public:
     static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
     /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
     static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
-    /// return true if texture should be setup from a file
-    bool ShouldSetupFromFile() const;
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;
     /// return true if texture should be setup from native texture handles
@@ -1488,7 +1411,6 @@ public:
     /// default constructor 
     TextureSetup();
 private:
-    bool setupFromFile = false;
     bool setupFromPixelData = false;
     bool setupFromNativeHandle = false;
     bool setupEmpty = false;

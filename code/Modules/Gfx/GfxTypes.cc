@@ -331,54 +331,6 @@ const char* PrimitiveType::ToString(PrimitiveType::Code c) {
 }
 
 //------------------------------------------------------------------------------
-const char* VertexAttr::ToString(Code c) {
-    switch (c) {
-        case Position:  return "position";
-        case Normal:    return "normal";
-        case TexCoord0: return "texcoord0";
-        case TexCoord1: return "texcoord1";
-        case TexCoord2: return "texcoord2";
-        case TexCoord3: return "texcoord3";
-        case Tangent:   return "tangent";
-        case Binormal:  return "binormal";
-        case Weights:   return "weights";
-        case Indices:   return "indices";
-        case Color0:    return "color0";
-        case Color1:    return "color1";
-        case Instance0: return "instance0";
-        case Instance1: return "instance1";
-        case Instance2: return "instance2";
-        case Instance3: return "instance3";
-        default:
-            o_error("VertexAttr::ToString(): invalid value!\n");
-            return nullptr;
-    }
-}
-
-//------------------------------------------------------------------------------
-VertexAttr::Code VertexAttr::FromString(const char* str) {
-    if (str) {
-        if (0 == std::strcmp("position", str)) return Position;
-        else if (0 == std::strcmp("normal", str)) return Normal;
-        else if (0 == std::strcmp("texcoord0", str)) return TexCoord0;
-        else if (0 == std::strcmp("texcoord1", str)) return TexCoord1;
-        else if (0 == std::strcmp("texcoord2", str)) return TexCoord2;
-        else if (0 == std::strcmp("texcoord3", str)) return TexCoord3;
-        else if (0 == std::strcmp("tangent", str)) return Tangent;
-        else if (0 == std::strcmp("binormal", str)) return Binormal;
-        else if (0 == std::strcmp("weights", str)) return Weights;
-        else if (0 == std::strcmp("indices", str)) return Indices;
-        else if (0 == std::strcmp("color0", str)) return Color0;
-        else if (0 == std::strcmp("color1", str)) return Color1;
-        else if (0 == std::strcmp("instance0", str)) return Instance0;
-        else if (0 == std::strcmp("instance1", str)) return Instance1;
-        else if (0 == std::strcmp("instance2", str)) return Instance2;
-        else if (0 == std::strcmp("instance3", str)) return Instance3;
-    }
-    return InvalidVertexAttr;
-}
-
-//------------------------------------------------------------------------------
 int VertexFormat::ByteSize(Code c) {
     switch (c) {
         case Float:
@@ -592,22 +544,6 @@ PassAction& PassAction::LoadDepthStencil() {
 }
 
 //------------------------------------------------------------------------------
-bool VertexLayout::Component::IsValid() const {
-    return (VertexAttr::InvalidVertexAttr != this->Attr);
-}
-
-//------------------------------------------------------------------------------
-void VertexLayout::Component::Clear() {
-    this->Attr = VertexAttr::InvalidVertexAttr;
-    this->Format = VertexFormat::InvalidVertexFormat;
-}
-
-//------------------------------------------------------------------------------
-int VertexLayout::Component::ByteSize() const {
-    return VertexFormat::ByteSize(this->Format);
-}
-
-//------------------------------------------------------------------------------
 VertexLayout::VertexLayout() {
     this->Clear();
 }
@@ -626,8 +562,6 @@ VertexLayout& VertexLayout::Clear() {
     this->StepRate = 1;
     this->numComps = 0;
     this->byteSize = 0;
-    this->attrCompIndices.Fill(InvalidIndex);
-    this->byteOffsets.Fill(0);
     return *this;
 }
 
@@ -639,19 +573,21 @@ bool VertexLayout::Empty() const {
 //------------------------------------------------------------------------------
 VertexLayout& VertexLayout::Add(const Component& comp) {
     o_assert_dbg(this->numComps < GfxConfig::MaxNumVertexLayoutComponents);
-    o_assert_dbg(InvalidIndex == this->attrCompIndices[comp.Attr]);
     this->comps[this->numComps] = comp;
-    this->attrCompIndices[comp.Attr] = this->numComps;
-    this->byteOffsets[this->numComps] = this->byteSize;
+    this->comps[this->numComps].Offset = this->byteSize;
     this->byteSize += comp.ByteSize();
-    o_assert_dbg(this->byteSize < 248);
     this->numComps++;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-VertexLayout& VertexLayout::Add(VertexAttr::Code attr, VertexFormat::Code format) {
-    return this->Add(Component(attr, format));
+VertexLayout& VertexLayout::Add(VertexFormat::Code format) {
+    return this->Add(Component(format));
+}
+
+//------------------------------------------------------------------------------
+VertexLayout& VertexLayout::Add(const StringAtom& name, VertexFormat::Code format) {
+    return this->Add(Component(name, format));
 }
 
 //------------------------------------------------------------------------------
@@ -680,8 +616,18 @@ const VertexLayout::Component& VertexLayout::ComponentAt(int index) const {
 }
 
 //------------------------------------------------------------------------------
-int VertexLayout::ComponentIndexByVertexAttr(VertexAttr::Code attr) const {
-    return this->attrCompIndices[attr];
+int VertexLayout::ComponentIndexByName(const StringAtom& name) const {
+    for (int i = 0; i < this->numComps; i++) {
+        if (this->comps[i].Name == name) {
+            return i;
+        }
+    }
+    return InvalidIndex;
+}
+
+//------------------------------------------------------------------------------
+bool VertexLayout::Contains(const StringAtom& name) const {
+    return InvalidIndex != this->ComponentIndexByName(name);
 }
 
 //------------------------------------------------------------------------------
@@ -691,12 +637,8 @@ int VertexLayout::ByteSize() const {
 
 //------------------------------------------------------------------------------
 int VertexLayout::ComponentByteOffset(int componentIndex) const {
-    return this->byteOffsets[componentIndex];
-}
-
-//------------------------------------------------------------------------------
-bool VertexLayout::Contains(VertexAttr::Code attr) const {
-    return InvalidIndex != this->ComponentIndexByVertexAttr(attr);
+    o_assert_dbg(componentIndex < this->numComps);
+    return this->comps[componentIndex].Offset;
 }
 
 //------------------------------------------------------------------------------
@@ -799,93 +741,19 @@ GfxSetup::GfxSetup() {
 }
 
 //------------------------------------------------------------------------------
-MeshSetup MeshSetup::FromFile(const class Locator& loc, Id placeholder) {
-    MeshSetup setup;
-    setup.VertexUsage = Usage::Immutable;
-    setup.IndexUsage = Usage::Immutable;
-    setup.Locator = loc;
-    setup.Placeholder = placeholder;
-    setup.setupFromFile = true;
+BufferSetup::BufferSetup() {
+    this->NativeBuffers.Fill(0);
+}
+
+//------------------------------------------------------------------------------
+BufferSetup
+BufferSetup::Make(int size, BufferType::Code type, Usage::Code usage) {
+    o_assert_dbg(size > 0);
+    BufferSetup setup;
+    setup.Size = size;
+    setup.Type = type;
+    setup.Usage = usage;
     return setup;
-}
-
-//------------------------------------------------------------------------------
-MeshSetup MeshSetup::FromData(Usage::Code vertexUsage, Usage::Code indexUsage) {
-    MeshSetup setup;
-    setup.VertexUsage = vertexUsage;
-    setup.IndexUsage = indexUsage;
-    setup.setupFromData = true;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-MeshSetup MeshSetup::FromData(const MeshSetup& blueprint) {
-    MeshSetup setup(blueprint);
-    setup.setupFromData = true;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-MeshSetup MeshSetup::Empty(int numVertices, Usage::Code vertexUsage, IndexType::Code indexType, int numIndices, Usage::Code indexUsage) {
-    o_assert_dbg(numVertices > 0);
-    MeshSetup setup;
-    setup.setupEmpty = true;
-    setup.VertexUsage = vertexUsage;
-    setup.IndexUsage = indexUsage;
-    setup.NumVertices = numVertices;
-    setup.NumIndices = numIndices;
-    setup.IndicesType = indexType;
-    setup.VertexDataOffset = InvalidIndex;
-    setup.IndexDataOffset = InvalidIndex;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-MeshSetup MeshSetup::FullScreenQuad(bool flipV) {
-    MeshSetup setup;
-    setup.setupFullScreenQuad = true;
-    setup.FullScreenQuadFlipV = flipV;
-    setup.Layout.Add(VertexAttr::Position, VertexFormat::Float3);
-    setup.Layout.Add(VertexAttr::TexCoord0, VertexFormat::Float2);
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-bool MeshSetup::ShouldSetupFromFile() const {
-    return this->setupFromFile;
-}
-
-//------------------------------------------------------------------------------
-bool MeshSetup::ShouldSetupFromData() const {
-    return this->setupFromData;
-}
-
-//------------------------------------------------------------------------------
-bool MeshSetup::ShouldSetupEmpty() const {
-    return this->setupEmpty;
-}
-
-//------------------------------------------------------------------------------
-bool MeshSetup::ShouldSetupFullScreenQuad() const {
-    return this->setupFullScreenQuad;
-}
-
-//------------------------------------------------------------------------------
-void MeshSetup::AddPrimitiveGroup(const class PrimitiveGroup& primGroup) {
-    o_assert(this->setupEmpty || this->setupFromData);
-    o_assert(this->numPrimGroups < GfxConfig::MaxNumPrimGroups);
-    this->primGroups[this->numPrimGroups++] = primGroup;
-}
-
-//------------------------------------------------------------------------------
-int MeshSetup::NumPrimitiveGroups() const {
-    return this->numPrimGroups;
-}
-
-//------------------------------------------------------------------------------
-const class PrimitiveGroup& MeshSetup::PrimitiveGroup(int index) const {
-    o_assert_range(index, GfxConfig::MaxNumPrimGroups);
-    return this->primGroups[index];
 }
 
 //------------------------------------------------------------------------------
@@ -897,7 +765,7 @@ PipelineSetup PipelineSetup::FromShader(const Id& shd) {
 }
 
 //------------------------------------------------------------------------------
-PipelineSetup PipelineSetup::FromLayoutAndShader(const VertexLayout& layout, const Id& shd) {
+PipelineSetup PipelineSetup::FromShaderAndLayout(const Id& shd, const VertexLayout& layout) {
     o_assert_dbg(!layout.Empty() && shd.IsValid());
     PipelineSetup setup;
     setup.Layouts[0] = layout;
@@ -954,11 +822,6 @@ void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* 
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::SetInputLayout(const VertexLayout& vsInputLayout) {
-    this->program.vsInputLayout = vsInputLayout;
-}
-
-//------------------------------------------------------------------------------
 void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(type.IsValid());
     o_assert_dbg(bindSlot >= 0);
@@ -980,11 +843,6 @@ void ShaderSetup::AddTexture(const StringAtom& name, TextureType::Code type, Sha
     entry.type = type;
     entry.bindStage = bindStage;
     entry.bindSlot = bindSlot;
-}
-
-//------------------------------------------------------------------------------
-const VertexLayout& ShaderSetup::InputLayout() const {
-    return this->program.vsInputLayout;
 }
 
 //------------------------------------------------------------------------------
@@ -1011,13 +869,11 @@ void ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& ou
 
 //------------------------------------------------------------------------------
 const StringAtom& ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
-    o_assert_dbg(ShaderLang::Metal == slang);
     return this->program.vsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------
 const StringAtom& ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
-    o_assert_dbg(ShaderLang::Metal == slang);
     return this->program.fsFuncs[slang];
 }
 
@@ -1101,24 +957,6 @@ ShaderStage::Code ShaderSetup::TexBindStage(int index) const {
 //------------------------------------------------------------------------------
 int ShaderSetup::TexBindSlot(int index) const {
     return this->textures[index].bindSlot;
-}
-
-//------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromFile(const class Locator& loc, Id placeholder) {
-    TextureSetup setup;
-    setup.setupFromFile = true;
-    setup.Locator = loc;
-    setup.Placeholder = placeholder;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromFile(const class Locator& loc, const TextureSetup& blueprint, Id placeholder) {
-    TextureSetup setup(blueprint);
-    setup.setupFromFile = true;
-    setup.Locator = loc;
-    setup.Placeholder = placeholder;
-    return setup;
 }
 
 //------------------------------------------------------------------------------
@@ -1336,11 +1174,6 @@ TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, Textu
     setup.NativeHandle[0] = h0;
     setup.NativeHandle[1] = h1;
     return setup;
-}
-
-//------------------------------------------------------------------------------
-bool TextureSetup::ShouldSetupFromFile() const {
-    return this->setupFromFile;
 }
 
 //------------------------------------------------------------------------------

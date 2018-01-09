@@ -187,14 +187,6 @@ Gfx::PopResourceLabel() {
 
 //------------------------------------------------------------------------------
 Id
-Gfx::LoadResource(const Ptr<ResourceLoader>& loader) {
-    o_assert_dbg(IsValid());
-    // FIXME
-    return Id::InvalidId();
-}
-
-//------------------------------------------------------------------------------
-Id
 Gfx::LookupResource(const Locator& locator) {
     o_assert_dbg(IsValid());
     return state->backend.LookupResource(locator);

@@ -9,8 +9,6 @@ fips_begin_module(Gfx)
         Gfx.cc Gfx.h
         GfxTypes.cc GfxTypes.h
         GfxConfig.h
-        MeshLoaderBase.cc MeshLoaderBase.h
-        TextureLoaderBase.cc TextureLoaderBase.h
     )
     fips_dir(private)
     fips_files(

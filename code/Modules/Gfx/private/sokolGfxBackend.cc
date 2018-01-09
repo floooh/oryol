@@ -58,6 +58,64 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
+Id makeId(GfxResourceType::Code type, uint32_t sgId) {
+    // convert a Sokol resource id into a Oryol Id
+    Id::SlotIndexT slotIndex = sgId & 0xFFFF;
+    Id::UniqueStampT unique = (sgId >> 16) & 0xFFFF;
+    Id id(unique, slotIndex, type);
+    return id;
+}
+
+//------------------------------------------------------------------------------
+static void convertPassAction(const PassAction& src, sg_pass_action& dst) {
+    o_assert_dbg(GfxConfig::MaxNumColorAttachments <= SG_MAX_COLOR_ATTACHMENTS);
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        for (int c = 0; c < 4; c++) {
+            dst.colors[i].val[c] = src.Color[i][c];
+        }
+        if (src.Flags & (PassAction::ClearC0<<i)) {
+            dst.colors[i].action = SG_ACTION_CLEAR;
+        }
+        else if (src.Flags & (PassAction::LoadC0<<i)) {
+            dst.colors[i].action = SG_ACTION_LOAD;
+        }
+        else {
+            dst.colors[i].action = SG_ACTION_DONTCARE;
+        }
+    }
+    dst.depth.val = src.Depth;
+    dst.stencil.val = src.Stencil;
+    if (src.Flags & PassAction::ClearDS) {
+        dst.depth.action = SG_ACTION_CLEAR;
+    }
+    else if (src.Flags & PassAction::LoadDS) {
+        dst.depth.action = SG_ACTION_LOAD;
+    }
+    else {
+        dst.depth.action = SG_ACTION_DONTCARE;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_buffer_type convertBufferType(BufferType::Code t) {
+    switch (t) {
+        case BufferType::VertexBuffer:  return SG_BUFFERTYPE_VERTEXBUFFER;
+        case BufferType::IndexBuffer:   return SG_BUFFERTYPE_INDEXBUFFER;
+        default: return _SG_BUFFERTYPE_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_usage convertUsage(Usage::Code u) {
+    switch (u) {
+        case Usage::Immutable:  return SG_USAGE_IMMUTABLE;
+        case Usage::Dynamic:    return SG_USAGE_DYNAMIC;
+        case Usage::Stream:     return SG_USAGE_STREAM;
+        default: return _SG_USAGE_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
 sokolGfxBackend::~sokolGfxBackend() {
     o_assert(!this->isValid);
 }
@@ -67,6 +125,28 @@ void
 sokolGfxBackend::Setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     o_assert(!this->isValid);
     this->displayManager.SetupDisplay(setup, ptrs);
+
+    // setup sokol-gfx
+    sg_desc sgDesc = { };
+    sgDesc.buffer_pool_size = setup.ResourcePoolSize[GfxResourceType::Buffer];
+    sgDesc.image_pool_size = setup.ResourcePoolSize[GfxResourceType::Texture];
+    sgDesc.shader_pool_size = setup.ResourcePoolSize[GfxResourceType::Shader];
+    sgDesc.pipeline_pool_size = setup.ResourcePoolSize[GfxResourceType::Pipeline];
+    sgDesc.pass_pool_size = setup.ResourcePoolSize[GfxResourceType::RenderPass];
+    #if ORYOL_EMSCRIPTEN
+    sgDesc.gl_force_gles2 = this->displayManager.force_gles2;
+    #elif ORYOL_METAL
+    sgDesc.mtl_device = XXX; // FIXME;
+    sgDesc.mtl_renderpass_descriptor_cb = XXX; // FIXME
+    sgDesc.mtl_drawable_cb = XXX; // FIXME
+    #elif ORYOL_D3D11
+    sgDesc.d3d11_device = XXX; // FIXME
+    sgDesc.d3d11_device_context = XXX; // FIXME
+    sgDesc.d3d11_render_target_view_cb = XXX; // FIXME
+    sgDesc.d3d11_depth_stencil_view_cb = XXX; // FIXME
+    #endif
+    sg_setup(&sgDesc);
+
     this->registry.Setup(setup.ResourceRegistryCapacity);
     this->labelStack.Setup(setup.ResourceLabelStackCapacity);
     this->isValid = true;
@@ -78,6 +158,7 @@ sokolGfxBackend::Discard() {
     o_assert(this->isValid);
     this->registry.Discard();
     this->labelStack.Discard();
+    sg_shutdown();
     this->displayManager.DiscardDisplay();
     this->isValid = false;
 }
@@ -139,10 +220,27 @@ sokolGfxBackend::PopResourceLabel() {
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int size) {
+sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int dataSize) {
     o_assert_dbg(this->isValid);
-    // FIXME
-    return Id::InvalidId();
+    o_assert_dbg(setup.Size <= dataSize);
+    sg_buffer_desc sgDesc = { };
+    sgDesc.size = setup.Size;
+    sgDesc.type = convertBufferType(setup.Type);
+    sgDesc.usage = convertUsage(setup.Usage);
+    sgDesc.content = data;
+    o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
+    #if ORYOL_OPENGL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        sgDesc.gl_buffers[i] = (uint32_t) setup.NativeBuffers[i];
+    }
+    #elif ORYOL_METAL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        sgDesc.mtl_buffers[i] = (const void*) setup.NativeBuffers[i];
+    }
+    #elif ORYOL_D3D11
+    sgDesc.d3d11_buffer = (const void*) setup.NativeBuffers[0]
+    #endif
+    return makeId(GfxResourceType::Buffer, sg_make_buffer(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
@@ -157,8 +255,50 @@ sokolGfxBackend::CreateTexture(const TextureSetup& setup, const void* data, int 
 Id
 sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
     o_assert_dbg(this->isValid);
-    // FIXME
-    return Id::InvalidId();
+    sg_shader_desc sgDesc = { };
+
+    // select the shader language dialect
+    ShaderLang::Code slang = ShaderLang::InvalidShaderLang;
+    #if ORYOL_OPENGL_CORE_PROFILE
+    slang = ShaderLang::GLSL330;
+    #elif ORYOL_OPENGL_GLES2
+    slang = ShaderLang::GLSL100;
+    #elif ORYOL_OPENGL_GLES3
+    if (this->displayManager.force_gles2) {
+        slang = ShaderLang::GLSL100;
+    }
+    else {
+        slang = ShaderLang::GLSLES3;
+    }
+    #elif ORYOL_METAL
+    slang = ShaderLang::Metal;
+    #elif ORYOL_D3D11
+    slang = ShaderLang::HLSL5;
+    #else
+    #error("Unknown Platform")
+    #endif
+
+    // set source- or byte-code, and optional entry function
+    #if ORYOL_OPENGL
+    sgDesc.vs.source = setup.VertexShaderSource(slang).AsCStr();
+    sgDesc.fs.source = setup.FragmentShaderSource(slang).AsCStr();
+    #elif ORYOL_METAL || ORYOL_D3D11
+    const void* byteCodePtr; uint32_t byteCodeSize;
+    setup.VertexShaderByteCode(slang, byteCodePtr, byteCodeSize);
+    sgDesc.vs.byte_code = byteCodePtr;
+    sgDesc.vs.byte_code_size = byteCodeSize;
+    setup.FragmentShaderByteCode(slang, byteCodePtr, byteCodeSize);
+    sgDesc.fs.byte_code = byteCodePtr;
+    sgDesc.fs.byte_code_size = byteCodeSize;
+    #endif
+    if (setup.VertexShaderFunc(slang).IsValid()) {
+        sgDesc.vs.entry = setup.VertexShaderFunc(slang).AsCStr();
+    }
+    if (setup.FragmentShaderFunc(slang).IsValid()) {
+        sgDesc.fs.entry = setup.FragmentShaderFunc(slang).AsCStr();
+    }
+    // FIXME: uniform blocks and textures
+    return makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
@@ -209,14 +349,24 @@ sokolGfxBackend::UpdateTexture(const Id& id, const void* data, const ImageDataAt
 void
 sokolGfxBackend::BeginPass(Id passId, const PassAction* action) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    o_assert_dbg(action);
+    if (passId.IsValid()) {
+        // offscreen framebuffer
+    }
+    else {
+        // default framebuffer
+        sg_pass_action sgAction = { };
+        convertPassAction(*action, sgAction);
+        const DisplayAttrs& attrs = this->displayManager.GetDisplayAttrs();
+        sg_begin_default_pass(&sgAction, attrs.FramebufferWidth, attrs.FramebufferHeight);
+    }
 }
 
 //------------------------------------------------------------------------------
 void
 sokolGfxBackend::EndPass() {
     o_assert_dbg(this->isValid);
-    // FIXME
+    sg_end_pass();
 }
 
 //------------------------------------------------------------------------------

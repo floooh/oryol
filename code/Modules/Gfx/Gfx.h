@@ -11,7 +11,6 @@
 #include "Core/RunLoop.h"
 #include "Gfx/GfxTypes.h"
 #include "Resource/ResourceLabel.h"
-#include "Resource/ResourceLoader.h"
 #include "Resource/SetupAndData.h"
 #include "Resource/ResourceInfo.h"
 #include "Resource/ResourcePoolInfo.h"
@@ -65,8 +64,6 @@ public:
     template<class SETUP> static Id CreateResource(const SETUP& setup, const Buffer& data);
     /// create a resource object with raw pointer to associated data
     template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int size);
-    /// asynchronously load resource object
-    static Id LoadResource(const Ptr<ResourceLoader>& loader);
     /// lookup a resource Id by Locator
     static Id LookupResource(const Locator& locator);
     /// destroy one or several resources by matching label

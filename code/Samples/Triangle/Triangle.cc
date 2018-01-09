@@ -31,19 +31,16 @@ TriangleApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
         -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
     };
-    auto meshSetup = MeshSetup::FromData();
-    meshSetup.NumVertices = 3;
-    meshSetup.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    meshSetup.AddPrimitiveGroup({0, 3});
-    this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, vertices, sizeof(vertices));
+    auto bufSetup = BufferSetup::Make(sizeof(vertices));
+    this->drawState.VertexBuffers[0] = Gfx::CreateResource(bufSetup, vertices, sizeof(vertices));
 
     // create shader and pipeline-state-object
     Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, shd);
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    auto pipSetup = PipelineSetup::FromShaderAndLayout(shd, {
+        { "position", VertexFormat::Float3 },
+        { "color0", VertexFormat::Float4 }
+    });
+    this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
 
     return App::OnInit();
 }
@@ -54,7 +51,7 @@ TriangleApp::OnRunning() {
     
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Draw();
+    Gfx::Draw(0, 3, 1);
     Gfx::EndPass();
     Gfx::CommitFrame();
     

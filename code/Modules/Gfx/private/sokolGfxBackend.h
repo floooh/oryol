@@ -45,9 +45,9 @@ public:
     ResourceLabel PopResourceLabel();
     
     /// create (alloc+init) a buffer resource
-    Id CreateBuffer(const BufferSetup& setup, const void* data, int size);
+    Id CreateBuffer(const BufferSetup& setup, const void* data, int dataSize);
     /// create (alloc+init) an texture resource
-    Id CreateTexture(const TextureSetup& setup, const void* data, int size);
+    Id CreateTexture(const TextureSetup& setup, const void* data, int dataSize);
     /// create (alloc+init) a shader resource
     Id CreateShader(const ShaderSetup& setup);
     /// create (alloc+init) a pipeline resource

@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 49
+Version = 51
 
 import os, platform, json
 import genutil as util
@@ -40,11 +40,6 @@ def isHLSL(sl):
 def isMetal(sl):
     return sl == 'metal'
 
-validVsInNames = [
-    'position', 'normal', 'texcoord0', 'texcoord1', 'texcoord2', 'texcoord3',
-    'tangent', 'binormal', 'weights', 'indices', 'color0', 'color1',
-    'instance0', 'instance1', 'instance2', 'instance3'
-]
 validInOutTypes = [ 'float', 'vec2', 'vec3', 'vec4' ]
 validUniformTypes = [ 'mat4', 'mat2', 'vec4', 'vec3', 'vec2', 'float' ]
 
@@ -70,32 +65,6 @@ uniformCSize = {
     'mat2':  16,
     'mat3':  36,
     'mat4':  64,
-}
-
-attrOryolType = {
-    'float': 'Oryol::VertexFormat::Float',
-    'vec2':  'Oryol::VertexFormat::Float2',
-    'vec3':  'Oryol::VertexFormat::Float3',
-    'vec4':  'Oryol::VertexFormat::Float4'
-}
-
-attrOryolName = {
-    'position':  'Oryol::VertexAttr::Position',
-    'normal':    'Oryol::VertexAttr::Normal',
-    'texcoord0': 'Oryol::VertexAttr::TexCoord0',
-    'texcoord1': 'Oryol::VertexAttr::TexCoord1',
-    'texcoord2': 'Oryol::VertexAttr::TexCoord2',
-    'texcoord3': 'Oryol::VertexAttr::TexCoord3',
-    'tangent':   'Oryol::VertexAttr::Tangent',
-    'binormal':  'Oryol::VertexAttr::Binormal',
-    'weights':   'Oryol::VertexAttr::Weights',
-    'indices':   'Oryol::VertexAttr::Indices',
-    'color0':    'Oryol::VertexAttr::Color0',
-    'color1':    'Oryol::VertexAttr::Color1',
-    'instance0': 'Oryol::VertexAttr::Instance0',
-    'instance1': 'Oryol::VertexAttr::Instance1',
-    'instance2': 'Oryol::VertexAttr::Instance2',
-    'instance3': 'Oryol::VertexAttr::Instance3'
 }
 
 validTextureTypes = [
@@ -384,8 +353,6 @@ class ShaderLibrary :
                 util.setErrorLocation(vs.lines[0].path, vs.lines[0].lineNumber)
                 vs_inputs = refl['inputs']
                 for vs_input in vs_inputs:
-                    if vs_input['name'] not in validVsInNames:
-                        util.fmtError("invalid vertex shader input name '{}', must be ({})".format(vs_input['name'], ','.join(validVsInNames)))
                     if vs_input['type'] not in validInOutTypes:
                         util.fmtError("invalid vertex shader input type '{}', must be ({})".format(vs_input['type'], ','.join(validInOutTypes)))
                 for ub in refl['uniform_blocks']:
@@ -598,26 +565,12 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
         util.fmtError("Invalid shader language id")
 
 #-------------------------------------------------------------------------------
-def writeInputVertexLayout(f, vs, slang) :
-    # writes a C++ VertexLayout definition into the generated source
-    # code, this is used to match mesh vertex layouts with 
-    # vertex shader input signatures (e.g. required in D3D11),
-    # return the C++ name of the vertex layout
-    layoutName = '{}_input'.format(vs.name)
-    f.write('    Oryol::VertexLayout {};\n'.format(layoutName))
-    for inp in vs.slReflection[slang]['inputs'] :
-        f.write('    {}.Add({}, {});\n'.format(layoutName, attrOryolName[inp['name']], attrOryolType[inp['type']]))
-    return layoutName
-
-#-------------------------------------------------------------------------------
 def writeProgramSource(f, shdLib, prog, slangs) :
     # write the Setup() function
     f.write('Oryol::ShaderSetup ' + prog.name + '::Setup() {\n')
     f.write('    Oryol::ShaderSetup setup("' + prog.name + '");\n')
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
-    vsInputLayout = writeInputVertexLayout(f, vs, slangs[0])
-    f.write('    setup.SetInputLayout({});\n'.format(vsInputLayout))
     vsName = vs.name
     fsName = fs.name
     for slang in slangs:

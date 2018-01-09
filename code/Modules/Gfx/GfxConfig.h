@@ -18,16 +18,14 @@ public:
     static const int DefaultMaxDrawCallsPerFrame = (1<<16);
     /// default maximum number of Gfx::ApplyDrawState per frame (only relevant on some platforms)
     static const int DefaultMaxApplyDrawStatesPerFrame = 4096;
-    /// max number of input meshes
-    static const int MaxNumInputMeshes = 4;
-    /// maximum number of primitive groups for one mesh
-    static const int MaxNumPrimGroups = 8;
-    /// max number of uniform blocks per stage
-    static const int MaxNumUniformBlocksPerStage = 4;
+    /// max number of input vertex buffers
+    static const int MaxNumVertexBuffers = 4;
     /// maximum number of textures on vertex shader stage
     static const int MaxNumVertexTextures = 4;
     /// maximum number of textures on fragment shader stage
     static const int MaxNumFragmentTextures = 12;
+    /// max number of uniform blocks per stage
+    static const int MaxNumUniformBlocksPerStage = 4;
     /// max number of textures on any stage
     static const int MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
     /// max number of texture faces
