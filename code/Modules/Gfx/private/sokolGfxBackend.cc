@@ -58,12 +58,44 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-Id makeId(GfxResourceType::Code type, uint32_t sgId) {
+static Id makeId(GfxResourceType::Code type, uint32_t sgId) {
     // convert a Sokol resource id into a Oryol Id
     Id::SlotIndexT slotIndex = sgId & 0xFFFF;
     Id::UniqueStampT unique = (sgId >> 16) & 0xFFFF;
     Id id(unique, slotIndex, type);
     return id;
+}
+
+//------------------------------------------------------------------------------
+static sg_shader makeShaderId(const Id& id) {
+    // convert an Oryol Id into a sokol sg_shader
+    o_assert_dbg(id.Type == GfxResourceType::Shader);
+    uint32_t sgId = (id.UniqueStamp<<16)|id.SlotIndex;
+    return sg_shader{sgId};
+}
+
+//------------------------------------------------------------------------------
+static sg_pipeline makePipelineId(const Id& id) {
+    // convert an Oryol Id into a sokol sg_pipeline
+    o_assert_dbg(id.Type == GfxResourceType::Pipeline);
+    uint32_t sgId = (id.UniqueStamp<<16)|id.SlotIndex;
+    return sg_pipeline{sgId};
+}
+
+//------------------------------------------------------------------------------
+static sg_buffer makeBufferId(const Id& id) {
+    // convert an Oryol Id into a sokol sg_buffer
+    o_assert_dbg(id.Type == GfxResourceType::Buffer);
+    uint32_t sgId = (id.UniqueStamp<<16)|id.SlotIndex;
+    return sg_buffer{sgId};
+}
+
+//------------------------------------------------------------------------------
+static sg_image makeImageId(const Id& id) {
+    // convert an Oryol Id into a sokol sg_image
+    o_assert_dbg(id.Type == GfxResourceType::Texture);
+    uint32_t sgId = (id.UniqueStamp<<16)|id.SlotIndex;
+    return sg_image{sgId};
 }
 
 //------------------------------------------------------------------------------
@@ -112,6 +144,250 @@ static sg_usage convertUsage(Usage::Code u) {
         case Usage::Dynamic:    return SG_USAGE_DYNAMIC;
         case Usage::Stream:     return SG_USAGE_STREAM;
         default: return _SG_USAGE_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_primitive_type convertPrimitiveType(PrimitiveType::Code t) {
+    switch (t) {
+        case PrimitiveType::Points:         return SG_PRIMITIVETYPE_POINTS;
+        case PrimitiveType::Lines:          return SG_PRIMITIVETYPE_LINES;
+        case PrimitiveType::LineStrip:      return SG_PRIMITIVETYPE_LINE_STRIP;
+        case PrimitiveType::Triangles:      return SG_PRIMITIVETYPE_TRIANGLES;
+        case PrimitiveType::TriangleStrip:  return SG_PRIMITIVETYPE_TRIANGLE_STRIP;
+        default: return _SG_PRIMITIVETYPE_DEFAULT;
+    }{}
+}
+
+//------------------------------------------------------------------------------
+static sg_index_type convertIndexType(IndexType::Code t) {
+    switch (t) {
+        case IndexType::None:               return SG_INDEXTYPE_NONE;
+        case IndexType::UInt16:             return SG_INDEXTYPE_UINT16;
+        case IndexType::UInt32:             return SG_INDEXTYPE_UINT32;
+        default: return _SG_INDEXTYPE_DEFAULT;  
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_stencil_op convertStencilOp(StencilOp::Code op) {
+    switch (op) {
+        case StencilOp::Keep:       return SG_STENCILOP_KEEP;
+        case StencilOp::Zero:       return SG_STENCILOP_ZERO;
+        case StencilOp::Replace:    return SG_STENCILOP_REPLACE;
+        case StencilOp::IncrClamp:  return SG_STENCILOP_INCR_CLAMP;
+        case StencilOp::DecrClamp:  return SG_STENCILOP_DECR_CLAMP;
+        case StencilOp::Invert:     return SG_STENCILOP_INVERT;
+        case StencilOp::IncrWrap:   return SG_STENCILOP_INCR_WRAP;
+        case StencilOp::DecrWrap:   return SG_STENCILOP_DECR_WRAP;
+        default: return _SG_STENCILOP_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_compare_func convertCompareFunc(CompareFunc::Code f) {
+    switch (f) {
+        case CompareFunc::Never:        return SG_COMPAREFUNC_NEVER;
+        case CompareFunc::Less:         return SG_COMPAREFUNC_LESS;
+        case CompareFunc::Equal:        return SG_COMPAREFUNC_EQUAL;
+        case CompareFunc::LessEqual:    return SG_COMPAREFUNC_LESS_EQUAL;
+        case CompareFunc::Greater:      return SG_COMPAREFUNC_GREATER;
+        case CompareFunc::NotEqual:     return SG_COMPAREFUNC_NOT_EQUAL;
+        case CompareFunc::GreaterEqual: return SG_COMPAREFUNC_GREATER_EQUAL;
+        case CompareFunc::Always:       return SG_COMPAREFUNC_ALWAYS;
+        default: return _SG_COMPAREFUNC_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static void convertStencilState(const StencilState& src, sg_stencil_state& dst) {
+    dst.fail_op = convertStencilOp(src.FailOp);
+    dst.depth_fail_op = convertStencilOp(src.DepthFailOp);
+    dst.pass_op = convertStencilOp(src.PassOp);
+    dst.compare_func = convertCompareFunc(src.CmpFunc);
+}
+
+//------------------------------------------------------------------------------
+static void convertDepthStencilState(const PipelineSetup& src, sg_pipeline_desc& dst) {
+    convertStencilState(src.DepthStencilState.StencilFront, dst.depth_stencil.stencil_front);
+    convertStencilState(src.DepthStencilState.StencilBack, dst.depth_stencil.stencil_back);
+    dst.depth_stencil.depth_compare_func = convertCompareFunc(src.DepthStencilState.DepthCmpFunc);
+    dst.depth_stencil.depth_write_enabled = src.DepthStencilState.DepthWriteEnabled;
+    dst.depth_stencil.stencil_enabled = src.DepthStencilState.StencilEnabled;
+    dst.depth_stencil.stencil_read_mask = src.DepthStencilState.StencilReadMask;
+    dst.depth_stencil.stencil_write_mask = src.DepthStencilState.StencilWriteMask;
+    dst.depth_stencil.stencil_ref = src.DepthStencilState.StencilRef;
+}
+
+//------------------------------------------------------------------------------
+static sg_blend_factor convertBlendFactor(BlendFactor::Code f) {
+    switch (f) {
+        case BlendFactor::Zero:                 return SG_BLENDFACTOR_ZERO;
+        case BlendFactor::One:                  return SG_BLENDFACTOR_ONE;
+        case BlendFactor::SrcColor:             return SG_BLENDFACTOR_SRC_COLOR;
+        case BlendFactor::OneMinusSrcColor:     return SG_BLENDFACTOR_ONE_MINUS_SRC_COLOR;
+        case BlendFactor::SrcAlpha:             return SG_BLENDFACTOR_SRC_ALPHA;
+        case BlendFactor::OneMinusSrcAlpha:     return SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        case BlendFactor::DstColor:             return SG_BLENDFACTOR_DST_COLOR;
+        case BlendFactor::OneMinusDstColor:     return SG_BLENDFACTOR_ONE_MINUS_DST_COLOR;
+        case BlendFactor::DstAlpha:             return SG_BLENDFACTOR_DST_ALPHA;
+        case BlendFactor::OneMinusDstAlpha:     return SG_BLENDFACTOR_ONE_MINUS_DST_ALPHA;
+        case BlendFactor::SrcAlphaSaturated:    return SG_BLENDFACTOR_SRC_ALPHA_SATURATED;
+        case BlendFactor::BlendColor:           return SG_BLENDFACTOR_BLEND_COLOR;
+        case BlendFactor::OneMinusBlendColor:   return SG_BLENDFACTOR_ONE_MINUS_BLEND_COLOR;
+        case BlendFactor::BlendAlpha:           return SG_BLENDFACTOR_BLEND_ALPHA;
+        case BlendFactor::OneMinusBlendAlpha:   return SG_BLENDFACTOR_ONE_MINUS_BLEND_ALPHA;
+        default: return _SG_BLENDFACTOR_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_blend_op convertBlendOp(BlendOperation::Code op) {
+    switch (op) {
+        case BlendOperation::Add:               return SG_BLENDOP_ADD;
+        case BlendOperation::Subtract:          return SG_BLENDOP_SUBTRACT;
+        case BlendOperation::ReverseSubtract:   return SG_BLENDOP_REVERSE_SUBTRACT;
+        default: return _SG_BLENDOP_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static uint8_t convertColorMask(PixelChannel::Mask src) {
+    if (src == 0) {
+        return SG_COLORMASK_NONE;
+    }
+    else {
+        uint8_t dst = 0;
+        if (src & PixelChannel::Red)    { dst |= SG_COLORMASK_R; }
+        if (src & PixelChannel::Green)  { dst |= SG_COLORMASK_G; }
+        if (src & PixelChannel::Blue)   { dst |= SG_COLORMASK_B; }
+        if (src & PixelChannel::Alpha)  { dst |= SG_COLORMASK_A; }
+        return dst;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_pixel_format convertPixelFormat(PixelFormat::Code fmt) {
+    switch (fmt) {
+        case PixelFormat::RGBA8:        return SG_PIXELFORMAT_RGBA8;
+        case PixelFormat::RGB8:         return SG_PIXELFORMAT_RGB8;
+        case PixelFormat::RGBA4:        return SG_PIXELFORMAT_RGBA4;
+        case PixelFormat::R5G6B5:       return SG_PIXELFORMAT_R5G6B5;
+        case PixelFormat::R5G5B5A1:     return SG_PIXELFORMAT_R5G5B5A1;
+        case PixelFormat::R10G10B10A2:  return SG_PIXELFORMAT_R10G10B10A2;
+        case PixelFormat::RGBA32F:      return SG_PIXELFORMAT_RGBA32F;
+        case PixelFormat::RGBA16F:      return SG_PIXELFORMAT_RGBA16F;
+        case PixelFormat::R32F:         return SG_PIXELFORMAT_R32F;
+        case PixelFormat::L8:           return SG_PIXELFORMAT_L8;
+        case PixelFormat::DXT1:         return SG_PIXELFORMAT_DXT1;
+        case PixelFormat::DXT3:         return SG_PIXELFORMAT_DXT3;
+        case PixelFormat::DXT5:         return SG_PIXELFORMAT_DXT5;
+        case PixelFormat::DEPTH:        return SG_PIXELFORMAT_DEPTH;
+        case PixelFormat::DEPTHSTENCIL: return SG_PIXELFORMAT_DEPTHSTENCIL;
+        case PixelFormat::PVRTC2_RGB:   return SG_PIXELFORMAT_PVRTC2_RGB;
+        case PixelFormat::PVRTC4_RGB:   return SG_PIXELFORMAT_PVRTC4_RGB;
+        case PixelFormat::PVRTC2_RGBA:  return SG_PIXELFORMAT_PVRTC2_RGBA;
+        case PixelFormat::PVRTC4_RGBA:  return SG_PIXELFORMAT_PVRTC4_RGBA;
+        case PixelFormat::ETC2_RGB8:    return SG_PIXELFORMAT_ETC2_RGB8;
+        case PixelFormat::ETC2_SRGB8:   return SG_PIXELFORMAT_ETC2_SRGB8;
+        default: return _SG_PIXELFORMAT_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static void convertBlendState(const PipelineSetup& src, sg_pipeline_desc& dst) {
+    dst.blend.enabled = src.BlendState.BlendEnabled;
+    dst.blend.src_factor_rgb = convertBlendFactor(src.BlendState.SrcFactorRGB);
+    dst.blend.dst_factor_rgb = convertBlendFactor(src.BlendState.DstFactorRGB);
+    dst.blend.op_rgb = convertBlendOp(src.BlendState.OpRGB);
+    dst.blend.src_factor_alpha = convertBlendFactor(src.BlendState.SrcFactorAlpha);
+    dst.blend.dst_factor_alpha = convertBlendFactor(src.BlendState.DstFactorAlpha);
+    dst.blend.op_alpha = convertBlendOp(src.BlendState.OpAlpha);
+    dst.blend.color_write_mask = convertColorMask(src.BlendState.ColorWriteMask);
+    dst.blend.color_format = convertPixelFormat(src.BlendState.ColorFormat);
+    dst.blend.depth_format = convertPixelFormat(src.BlendState.DepthFormat);
+    dst.blend.blend_color[0] = src.BlendColor.r;
+    dst.blend.blend_color[1] = src.BlendColor.g;
+    dst.blend.blend_color[2] = src.BlendColor.b;
+    dst.blend.blend_color[3] = src.BlendColor.a;
+}
+
+//------------------------------------------------------------------------------
+static sg_cull_mode convertCullMode(bool enabled, Face::Code face) {
+    if (enabled) {
+        if (face == Face::Front) { 
+            return SG_CULLMODE_FRONT; 
+        }
+        else { 
+            return SG_CULLMODE_BACK;
+        }
+    }
+    else {
+        return SG_CULLMODE_NONE;
+    }
+}
+
+//------------------------------------------------------------------------------
+static void convertRasterizerState(const PipelineSetup& src, sg_pipeline_desc& dst) {
+    dst.rasterizer.alpha_to_coverage_enabled = src.RasterizerState.AlphaToCoverageEnabled;
+    dst.rasterizer.cull_mode = convertCullMode(src.RasterizerState.CullFaceEnabled, src.RasterizerState.CullFace);
+    dst.rasterizer.face_winding = _SG_FACEWINDING_DEFAULT;
+    dst.rasterizer.sample_count = src.RasterizerState.SampleCount;
+    dst.rasterizer.depth_bias = 0.0f;
+    dst.rasterizer.depth_bias_slope_scale = 0.0f;
+    dst.rasterizer.depth_bias_clamp = 0.0f;
+}
+
+//------------------------------------------------------------------------------
+static sg_vertex_step convertStepFunc(VertexStepFunction::Code f) {
+    switch (f) {
+        case VertexStepFunction::PerVertex:     return SG_VERTEXSTEP_PER_VERTEX;
+        case VertexStepFunction::PerInstance:   return SG_VERTEXSTEP_PER_INSTANCE;
+        default: return _SG_VERTEXSTEP_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_vertex_format convertVertexFormat(VertexFormat::Code fmt) {
+    switch (fmt) {
+        case VertexFormat::Float:       return SG_VERTEXFORMAT_FLOAT;
+        case VertexFormat::Float2:      return SG_VERTEXFORMAT_FLOAT2;
+        case VertexFormat::Float3:      return SG_VERTEXFORMAT_FLOAT3;
+        case VertexFormat::Float4:      return SG_VERTEXFORMAT_FLOAT4;
+        case VertexFormat::Byte4:       return SG_VERTEXFORMAT_BYTE4;
+        case VertexFormat::Byte4N:      return SG_VERTEXFORMAT_BYTE4N;
+        case VertexFormat::UByte4:      return SG_VERTEXFORMAT_UBYTE4;
+        case VertexFormat::UByte4N:     return SG_VERTEXFORMAT_UBYTE4N;
+        case VertexFormat::Short2:      return SG_VERTEXFORMAT_SHORT2;
+        case VertexFormat::Short2N:     return SG_VERTEXFORMAT_SHORT2N;
+        case VertexFormat::Short4:      return SG_VERTEXFORMAT_SHORT4;
+        case VertexFormat::Short4N:     return SG_VERTEXFORMAT_SHORT4N;
+        case VertexFormat::UInt10_2N:   return SG_VERTEXFORMAT_UINT10_N2;
+        default: return SG_VERTEXFORMAT_INVALID;
+    }
+}
+
+//------------------------------------------------------------------------------
+static void convertVertexLayouts(const PipelineSetup& src, sg_pipeline_desc& dst) {
+    o_assert_dbg(GfxConfig::MaxNumVertexBuffers <= SG_MAX_SHADERSTAGE_BUFFERS);
+    for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumVertexBuffers; layoutIndex++) {
+        const auto& srcLayout = src.Layouts[layoutIndex];
+        auto& dstLayout = dst.vertex_layouts[layoutIndex];
+        if (!srcLayout.Empty()) {
+            dstLayout.stride = srcLayout.ByteSize();
+            dstLayout.step_func = convertStepFunc(srcLayout.StepFunction);
+            dstLayout.step_rate = srcLayout.StepRate;
+            for (int compIndex = 0; compIndex < srcLayout.NumComponents(); compIndex++) {
+                const auto& srcComp = srcLayout.ComponentAt(compIndex);
+                auto& dstComp = dstLayout.attrs[compIndex];
+                if (srcComp.Name.IsValid()) {
+                    dstComp.name = srcComp.Name.AsCStr();
+                }
+                // FIXME: sem_name, sem_index (D3D11!)
+                dstComp.offset = srcComp.Offset;
+                dstComp.format = convertVertexFormat(srcComp.Format);
+            }
+        }
     }
 }
 
@@ -258,7 +534,7 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
     sg_shader_desc sgDesc = { };
 
     // select the shader language dialect
-    ShaderLang::Code slang = ShaderLang::InvalidShaderLang;
+    ShaderLang::Code slang = ShaderLang::Invalid;
     #if ORYOL_OPENGL_CORE_PROFILE
     slang = ShaderLang::GLSL330;
     #elif ORYOL_OPENGL_GLES2
@@ -305,8 +581,15 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
 Id
 sokolGfxBackend::CreatePipeline(const PipelineSetup& setup) {
     o_assert_dbg(this->isValid);
-    // FIXME
-    return Id::InvalidId();
+    sg_pipeline_desc sgDesc = { };
+    sgDesc.shader = makeShaderId(setup.Shader);
+    sgDesc.primitive_type = convertPrimitiveType(setup.PrimType);
+    sgDesc.index_type = convertIndexType(setup.IndexType);
+    convertVertexLayouts(setup, sgDesc);
+    convertDepthStencilState(setup, sgDesc);
+    convertBlendState(setup, sgDesc);
+    convertRasterizerState(setup, sgDesc);
+    return makeId(GfxResourceType::Pipeline, sg_make_pipeline(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
@@ -322,6 +605,13 @@ Id
 sokolGfxBackend::LookupResource(const Locator& loc) {
     o_assert_dbg(this->isValid);
     return this->registry.Lookup(loc);
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::AddResource(const Locator& loc, const Id& id) {
+    o_assert_dbg(this->isValid);
+    this->registry.Add(loc, id, this->labelStack.PeekLabel());
 }
 
 //------------------------------------------------------------------------------
@@ -386,7 +676,39 @@ sokolGfxBackend::ApplyScissorRect(int x, int y, int w, int h, bool originTopLeft
 //------------------------------------------------------------------------------
 void sokolGfxBackend::ApplyDrawState(const DrawState& drawState) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    o_assert_dbg(SG_MAX_SHADERSTAGE_BUFFERS >= GfxConfig::MaxNumVertexBuffers);
+    o_assert_dbg(SG_MAX_SHADERSTAGE_IMAGES >= GfxConfig::MaxNumVertexTextures);
+    o_assert_dbg(SG_MAX_SHADERSTAGE_IMAGES >= GfxConfig::MaxNumFragmentTextures);
+    sg_draw_state sgDrawState = { };
+    sgDrawState.pipeline = makePipelineId(drawState.Pipeline);
+    for (int i = 0; i < GfxConfig::MaxNumVertexBuffers; i++) {
+        if (drawState.VertexBuffers[i].IsValid()) {
+            sgDrawState.vertex_buffers[i] = makeBufferId(drawState.VertexBuffers[i]);
+        }
+        else {
+            break;
+        }
+    }
+    if (drawState.IndexBuffer.IsValid()) {
+        sgDrawState.index_buffer = makeBufferId(drawState.IndexBuffer);
+    }
+    for (int i = 0; i < GfxConfig::MaxNumVertexTextures; i++) {
+        if (drawState.VSTexture[i].IsValid()) {
+            sgDrawState.vs_images[i] = makeImageId(drawState.VSTexture[i]);
+        }
+        else {
+            break;
+        }
+    }
+    for (int i = 0; i < GfxConfig::MaxNumFragmentTextures; i++) {
+        if (drawState.FSTexture[i].IsValid()) {
+            sgDrawState.fs_images[i] = makeImageId(drawState.FSTexture[i]);
+        }
+        else {
+            break;
+        }
+    }
+    sg_apply_draw_state(&sgDrawState);
 }
 
 //------------------------------------------------------------------------------

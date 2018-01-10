@@ -67,18 +67,20 @@ public:
     Id AllocPass(const Locator& loc);
 
     /// initialize a buffer
-    void InitBuffer(Id id, const BufferSetup& setup);
+    void InitBuffer(const Id& id, const BufferSetup& setup);
     /// initialize a texture
-    void InitTexture(Id id, const TextureSetup& setup);
+    void InitTexture(const Id& id, const TextureSetup& setup);
     /// initialize a shader
-    void InitShader(Id id, const ShaderSetup& setup);
+    void InitShader(const Id& id, const ShaderSetup& setup);
     /// initialize a pipeline
-    void InitPipeline(Id id, const PipelineSetup& setup);
+    void InitPipeline(const Id& id, const PipelineSetup& setup);
     /// initialize a pass
-    void InitPass(Id id, const PassSetup& setup);
+    void InitPass(const Id& id, const PassSetup& setup);
 
     /// lookup a resource Id by locator
     Id LookupResource(const Locator& loc);
+    /// add a shared resource to the resource registry
+    void AddResource(const Locator& loc, const Id& id);
     /// destroy one or multiple resource(s) by matching label
     void DestroyResources(ResourceLabel label);
 

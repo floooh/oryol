@@ -20,14 +20,13 @@ namespace Oryol {
     @ingroup Gfx
     @brief whether a Buffer contains vertex- or index-data
 */
-class BufferType {
-public:
+struct BufferType {
     enum Code {
         VertexBuffer = 0,
         IndexBuffer,
 
-        NumBufferTypes,
-        InvalidBufferType = 0xFFFFFFFF
+        Num,
+        Invalid
     };
 };
 
@@ -37,15 +36,14 @@ public:
     @ingroup Gfx
     @brief selects 16- or 32-bit indices
 */
-class IndexType {
-public:
+struct IndexType {
     enum Code {
         None = 0,
-        Index16,
-        Index32,
+        UInt16,
+        UInt32,
 
-        NumIndexTypes,
-        InvalidIndexType = 0xFFFFFFFF
+        Num,
+        Invalid
     };
     /// get byte size of index type
     static int ByteSize(IndexType::Code c);
@@ -57,18 +55,17 @@ public:
     @ingroup Gfx
     @brief RGBA/Depth/Stencil channel bits and combinations
  */
-class PixelChannel {
-public:
-    typedef uint64_t Mask;
+struct PixelChannel {
+    typedef uint8_t Mask;
     enum Bits {
         None    = 0,
 
-        Stencil = (1<<5),
-        Depth   = (1<<4),
-        Red     = (1<<3),
-        Green   = (1<<2),
-        Blue    = (1<<1),
-        Alpha   = (1<<0),
+        Red     = (1<<0),
+        Green   = (1<<1),
+        Blue    = (1<<2),
+        Alpha   = (1<<3),
+        Stencil = (1<<4),
+        Depth   = (1<<5),
 
         DepthStencil = Depth|Stencil,
         DS = DepthStencil,
@@ -104,13 +101,8 @@ public:
     @ingroup Gfx
     @brief enum of pixel formats
 */
-class PixelFormat {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64_t {
-    #else
+struct PixelFormat {
     enum Code {
-    #endif
         RGBA8,          ///< 32-bit wide, 4 channels @ 8-bit
         RGB8,           ///< 24-bit wide, 3 channels @ 8-bit
         RGBA4,          ///< 16-bit wide, 4 channels @ 4-bit
@@ -135,9 +127,9 @@ public:
         ETC2_RGB8,      ///< ETC2 compressed format (RGB8)
         ETC2_SRGB8,     ///< ETC2 compressed format (SRGB8)
 
-        NumPixelFormats,            ///< number of pixel formats
-        InvalidPixelFormat,         ///< invalid pixel format value
-        None = InvalidPixelFormat,  ///< special "none" type
+        Num,            ///< number of pixel formats
+        Invalid,        ///< invalid pixel format value
+        None = Invalid,     ///< special "none" type
     };
 
     /// return true for valid render target color formats
@@ -178,8 +170,7 @@ public:
     @ingroup Gfx
     @brief primitive type enum (triangle strips, lists, etc...)
 */
-class PrimitiveType {
-public:
+struct PrimitiveType {
     /// primitive type enum (don't change order, append to end!)
     enum Code {
         Points = 0,
@@ -188,8 +179,8 @@ public:
         Triangles,
         TriangleStrip,
 
-        NumPrimitiveTypes,
-        InvalidPrimitiveType = 0xFFFFFFFF,
+        Num,
+        Invalid
     };
     /// convert primitive type to string
     static const char* ToString(PrimitiveType::Code c);
@@ -204,9 +195,7 @@ public:
     These types are used for the type in Id for Gfx module
     resources.
 */
-class GfxResourceType {
-public:
-    /// type enum
+struct GfxResourceType {
     enum Code {
         Texture,            ///< a texture
         Buffer,             ///< a vertex- or index-buffer
@@ -214,8 +203,8 @@ public:
         Pipeline,           ///< a pipeline state object
         RenderPass,         ///< a render-pass object
 
-        NumResourceTypes,
-        InvalidResourceType = 0xFFFF,
+        Num,
+        Invalid,
     };
 };
 
@@ -225,15 +214,13 @@ public:
     @ingroup Gfx
     @brief the shader stages (vertex shader, fragment shader)
 */
-class ShaderStage {
-public:
-    /// shader stages enum
+struct ShaderStage {
     enum Code {
         VS = 0,
         FS,
 
-        NumShaderStages,
-        InvalidShaderStage = 0xFFFFFFFF,
+        Num,
+        Invalid
     };
 };
 
@@ -243,20 +230,17 @@ public:
     @ingroup Gfx
     @brief texture sampling filter mode
 */
-class TextureFilterMode {
-public:
-    /// filtering modes
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct TextureFilterMode {
     enum Code {
-    #endif
-        Nearest,
+        Nearest = 0,
         Linear,
         NearestMipmapNearest,
         NearestMipmapLinear,
         LinearMipmapNearest,
         LinearMipmapLinear,
+
+        Num,
+        Invalid,
     };
 };
 
@@ -266,17 +250,15 @@ public:
     @ingroup Gfx
     @brief texture type (2D, 3D, Cube)
 */
-class TextureType {
-public:
-    /// texture type enum
+struct TextureType {
     enum Code {
         Texture2D = 0,
         TextureCube,
         Texture3D,
         TextureArray,
 
-        NumTextureTypes,
-        InvalidTextureType = 0xFFFFFFFF,
+        Num,
+        Invalid,
     };
 };
 
@@ -286,17 +268,14 @@ public:
     @ingroup Gfx
     @brief texture coordinate wrapping modes
 */
-class TextureWrapMode {
-public:
-    /// wrap modes
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct TextureWrapMode {
     enum Code {
-    #endif
         ClampToEdge,
         Repeat,
         MirroredRepeat,
+
+        Num,
+        Invalid,
     };
 };
 
@@ -310,16 +289,14 @@ public:
     - Dynamic:      update infrequently
     - Stream:       changed every frame
 */
-class Usage {
-public:
-    /// usage enum
+struct Usage {
     enum Code {
         Immutable = 0,
         Dynamic,
         Stream,
 
-        NumUsages,
-        InvalidUsage = 0xFFFFFFFF,
+        Num,
+        Invalid,
     };
 };
 
@@ -334,10 +311,9 @@ public:
     GLES2 and D3D11! GLES2 needs to read those as float vec, but D3D11 
     can only read them as int vec!
 */
-class VertexFormat {
-public:
+struct VertexFormat {
     /// format enum (don't change order, and append to end!)
-    enum Code : uint8_t {
+    enum Code {
         Float,          ///< single component float, expanded to (x, 0, 0, 1)
         Float2,         ///< 2-component float, expanded to (x, y, 0, 1)
         Float3,         ///< 3-component float, expanded to (x, y, z, 1)
@@ -352,8 +328,8 @@ public:
         Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
         UInt10_2N,      ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (0.0 .. 1.0)
 
-        NumVertexFormats,       ///< number of vertex formats
-        InvalidVertexFormat,    ///< the invalid vertex format value
+        Num,            ///< number of vertex formats
+        Invalid,        ///< the invalid vertex format value
     };
 
     /// get the byte size of a vertex format code
@@ -368,8 +344,7 @@ public:
     @ingroup Gfx
     @brief shader language syntax
 */
-class ShaderLang {
-public:
+struct ShaderLang {
     enum Code {
         GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
         GLSL330,        ///< OpenGL 3.3
@@ -377,8 +352,8 @@ public:
         HLSL5,          ///< D3D11 HLSL
         Metal,          ///< Metal shader language
 
-        NumShaderLangs,
-        InvalidShaderLang
+        Num,
+        Invalid
     };
 };
 
@@ -388,8 +363,7 @@ public:
     @ingroup Gfx
     @brief optional rendering features
 */
-class GfxFeature {
-public:
+struct GfxFeature {
     enum Code {
         TextureCompressionDXT = 0,  ///< GPU supports DXT compressed textures
         TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
@@ -407,8 +381,8 @@ public:
         TextureArray,               ///< support for array textures
         NativeTexture,              ///< can work with externally created texture objects
 
-        NumFeatures,
-        InvalidFeature
+        Num,
+        Invalid
     };
 };
 
@@ -418,20 +392,16 @@ public:
     @ingroup Gfx
     @brief polygon face side (front, back, both)
 */
-class Face {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct Face {
     enum Code {
-    #endif
         Front = 0,
         Back,
         Both,
+
+        Num,
+        Invalid,
     };
-    static const int NumFaceCodes = 3;
     static const int NumSides = 2;
-    static const int InvalidFace = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -440,13 +410,8 @@ public:
     @ingroup Gfx
     @brief comparison modes for depth and stencil state
 */
-class CompareFunc {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct CompareFunc {
     enum Code {
-    #endif
         Never = 0,
         Less,
         Equal,
@@ -454,10 +419,11 @@ public:
         Greater,
         NotEqual,
         GreaterEqual,
-        Always
+        Always,
+
+        Num,
+        Invalid
     };
-    static const int NumCompareFuncs = 8;
-    static const int InvalidCompareFunc = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -466,14 +432,9 @@ public:
     @ingroup Gfx
     @brief stencil operations
 */
-class StencilOp {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct StencilOp {
     enum Code {
-    #endif
-        Keep,
+        Keep = 0,
         Zero,
         Replace,
         IncrClamp,
@@ -481,9 +442,10 @@ public:
         Invert,
         IncrWrap,
         DecrWrap,
+
+        Num,
+        Invalid
     };
-    static const int NumStencilOperations = 8;
-    static const int InvalidStencilOperation = 0xff;
 };
 
 //------------------------------------------------------------------------------
@@ -492,13 +454,8 @@ public:
     @ingroup Gfx
     @brief blending factors
 */
-class BlendFactor {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64_t {
-    #else
+struct BlendFactor {
     enum Code {
-    #endif
         Zero = 0,
         One,
         SrcColor,
@@ -514,9 +471,10 @@ public:
         OneMinusBlendColor,
         BlendAlpha,
         OneMinusBlendAlpha,
+
+        Num,
+        Invalid
     };
-    static const int NumBlendFactors = 15;
-    static const int InvalidBlendFactor = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -525,19 +483,15 @@ public:
     @ingroup Gfx
     @brief blending operations
 */
-class BlendOperation {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64_t {
-    #else
+struct BlendOperation {
     enum Code {
-    #endif
         Add = 0,
         Subtract,
         ReverseSubtract,
+
+        Num,
+        Invalid
     };
-    static const int NumBlendOperations = 3;
-    static const int InvalidBlendOperation = 0xff;
 };
 
 //------------------------------------------------------------------------------
@@ -546,9 +500,8 @@ public:
     @ingroup Gfx
     @brief classify vertices in a buffer as per-vertex or per-instance data
 */
-class VertexStepFunction {
-public:
-    enum Code : uint8_t {
+struct VertexStepFunction {
+    enum Code {
         PerVertex = 0,
         PerInstance = 1,
     };
@@ -563,8 +516,7 @@ public:
     A PrimitiveGroup object describes a range of primitive elements in
     a mesh, where elements are either vertices or indices.
 */
-class PrimitiveGroup {
-public:
+struct PrimitiveGroup {
     int BaseElement = 0;
     int NumElements = 0;
 
@@ -582,38 +534,18 @@ public:
     @ingroup Gfx
     @brief describe alpha blending state
 */
-class BlendState {
-public:
-    union {
-        #pragma pack(push,1)
-        struct {
-            uint64_t BlendEnabled:1;
-            BlendFactor::Code SrcFactorRGB:5;
-            BlendFactor::Code DstFactorRGB:5;
-            BlendOperation::Code OpRGB:3;
-            BlendFactor::Code SrcFactorAlpha:5;
-            BlendFactor::Code DstFactorAlpha:5;
-            BlendOperation::Code OpAlpha:3;
-            PixelChannel::Mask ColorWriteMask:4;
-            PixelFormat::Code ColorFormat : 5;
-            PixelFormat::Code DepthFormat : 5;
-            uint64_t MRTCount : 3;
-        };
-        #pragma pack(pop)
-        /// hash code from merged state
-        uint64_t Hash;
-    };
-
-    /// constructor
-    BlendState();
-    /// equality
-    bool operator==(const BlendState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const BlendState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
+struct BlendState {
+    bool BlendEnabled = false;
+    BlendFactor::Code SrcFactorRGB = BlendFactor::One;
+    BlendFactor::Code DstFactorRGB = BlendFactor::Zero;
+    BlendOperation::Code OpRGB = BlendOperation::Add;
+    BlendFactor::Code SrcFactorAlpha = BlendFactor::One;
+    BlendFactor::Code DstFactorAlpha = BlendFactor::Zero;
+    BlendOperation::Code OpAlpha = BlendOperation::Add;
+    PixelChannel::Mask ColorWriteMask = PixelChannel::RGBA;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
+    int MRTCount = 1;
 };
 
 //------------------------------------------------------------------------------
@@ -622,29 +554,11 @@ public:
     @ingroup Gfx
     @brief holds stencil-buffer render state for one face side
 */
-class StencilState {
-public:
-    union {
-        #pragma pack(push, 1)
-        struct {
-            StencilOp::Code FailOp : 4;
-            StencilOp::Code DepthFailOp : 4;
-            StencilOp::Code PassOp : 4;
-            CompareFunc::Code CmpFunc : 4;
-        };
-        #pragma pack(pop)
-        uint16_t Hash;
-    };
-    /// constructor
-    StencilState();
-    /// equality
-    bool operator==(const StencilState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const StencilState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
+struct StencilState {
+    StencilOp::Code FailOp = StencilOp::Keep;
+    StencilOp::Code DepthFailOp = StencilOp::Keep;
+    StencilOp::Code PassOp = StencilOp::Keep;
+    CompareFunc::Code CmpFunc = CompareFunc::Always;
 };
 
 //------------------------------------------------------------------------------
@@ -653,36 +567,15 @@ public:
     @ingroup Gfx
     @brief holds the complete depth and stencil render state
 */
-class DepthStencilState {
-public:
-    /// front-side stencil state
+struct DepthStencilState {
     StencilState StencilFront;
-    /// back-side stencil state
     StencilState StencilBack;
-    /// common depth-stencil state
-    union {
-        struct {
-            /// depth compare-function
-            CompareFunc::Code DepthCmpFunc:5;
-            /// depth write enabled flag
-            uint16_t DepthWriteEnabled:1;
-            /// stencil-enabled flag
-            uint16_t StencilEnabled:1;
-            /// stencil read-mask
-            uint16_t StencilReadMask : 8;
-            /// stencil write-mask
-            uint16_t StencilWriteMask : 8;
-            /// stencil-ref value
-            uint16_t StencilRef : 8;
-        };
-        uint32_t Hash;
-    };
-    /// constructor
-    DepthStencilState();
-    /// equality
-    bool operator==(const DepthStencilState& rhs) const;
-    /// inequality
-    bool operator!=(const DepthStencilState& rhs) const;
+    CompareFunc::Code DepthCmpFunc = CompareFunc::Always;
+    bool DepthWriteEnabled = false;
+    bool StencilEnabled = false;
+    uint8_t StencilReadMask = 0xFF;
+    uint8_t StencilWriteMask = 0xFF;
+    uint8_t StencilRef = 0x00;
 };
 
 //------------------------------------------------------------------------------
@@ -691,31 +584,13 @@ public:
     @ingroup Gfx
     @brief rasterizer state flags
 */
-class RasterizerState {
-public:
-    union {
-        #pragma pack(push,1)
-        struct {
-            uint16_t CullFaceEnabled : 1;
-            uint16_t ScissorTestEnabled : 1;
-            uint16_t DitherEnabled : 1;
-            uint16_t AlphaToCoverageEnabled : 1;
-            Face::Code CullFace : 3;
-            uint16_t SampleCount : 4;
-        };
-        #pragma pack(pop)
-        uint16_t Hash;
-    };
-    /// constructor
-    RasterizerState();
-    /// equality
-    bool operator==(const RasterizerState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const RasterizerState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
+struct RasterizerState {
+    bool CullFaceEnabled = false;
+    bool ScissorTestEnabled = false;
+    bool DitherEnabled = true;
+    bool AlphaToCoverageEnabled = false;
+    Face::Code CullFace = Face::Back;
+    int SampleCount = 1;
 };
 
 //------------------------------------------------------------------------------
@@ -724,35 +599,12 @@ public:
     @ingroup Gfx
     @brief wrap texture sampler state
 */
-class SamplerState {
-public:
-    union {
-        #pragma pack(push, 1)
-        struct {
-            /// texture-wrap mode for u-axis
-            TextureWrapMode::Code WrapU : 2;
-            /// texture-wrap mode for v-axis
-            TextureWrapMode::Code WrapV : 2;
-            /// texture-wrap mode for w-axis
-            TextureWrapMode::Code WrapW : 2;
-            /// magnification filter
-            TextureFilterMode::Code MagFilter : 3;
-            /// minification filter
-            TextureFilterMode::Code MinFilter : 3;
-        };
-        #pragma pack(pop)
-        uint16_t Hash;
-    };
-    /// constructor
-    SamplerState();
-    /// equality
-    bool operator==(const SamplerState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const SamplerState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
+struct SamplerState {
+    TextureWrapMode::Code WrapU = TextureWrapMode::Repeat;
+    TextureWrapMode::Code WrapV = TextureWrapMode::Repeat;
+    TextureWrapMode::Code WrapW = TextureWrapMode::Repeat;
+    TextureFilterMode::Code MagFilter = TextureFilterMode::Nearest;
+    TextureFilterMode::Code MinFilter = TextureFilterMode::Nearest;
 };
 
 //------------------------------------------------------------------------------
@@ -878,7 +730,7 @@ public:
         Component(const StringAtom& name, VertexFormat::Code fmt): Name(name), Format(fmt) { }
         /// return true if valid (attr and format set)
         bool IsValid() const {
-            return this->Format != VertexFormat::InvalidVertexFormat;
+            return this->Format != VertexFormat::Invalid;
         }
         /// clear the component (unset attr and format)
         void Clear() {
@@ -890,7 +742,7 @@ public:
         }
 
         StringAtom Name;
-        VertexFormat::Code Format = VertexFormat::InvalidVertexFormat;
+        VertexFormat::Code Format = VertexFormat::Invalid;
         int Offset = 0;     // offset will be written in VertexLayout::Add
     };
 
@@ -947,15 +799,15 @@ struct TextureAttrs {
     /// texture locator (usually the URL of the texture file)
     class Locator Locator;
     /// the texture type (2D, 3D, cube...)
-    TextureType::Code Type = TextureType::InvalidTextureType;
+    TextureType::Code Type = TextureType::Invalid;
     /// the RGBA pixel format of texture data
-    PixelFormat::Code ColorFormat = PixelFormat::InvalidPixelFormat;
+    PixelFormat::Code ColorFormat = PixelFormat::Invalid;
     /// optional depth format (only used for render target textures)
-    PixelFormat::Code DepthFormat = PixelFormat::InvalidPixelFormat;
+    PixelFormat::Code DepthFormat = PixelFormat::Invalid;
     /// optional sample count (only used for MSAA render target textures)
     int SampleCount = 1;
     /// texture usage hint
-    Usage::Code TextureUsage = Usage::InvalidUsage;
+    Usage::Code TextureUsage = Usage::Invalid;
     /// width of top-level mipmap in pixels
     int Width = 0;
     /// height of top-level mipmap in pixels
@@ -1067,9 +919,9 @@ struct IndexBufferAttrs {
     /// number of indices in the index buffer
     int NumIndices = 0;
     /// type of indices (16-bit or 32-bit)
-    IndexType::Code Type = IndexType::InvalidIndexType;
+    IndexType::Code Type = IndexType::Invalid;
     /// buffer usage hint
-    Usage::Code BufferUsage = Usage::InvalidUsage;
+    Usage::Code BufferUsage = Usage::Invalid;
     /// computes the byte size of index buffer data
     int ByteSize() const;
 };
@@ -1086,7 +938,7 @@ struct VertexBufferAttrs {
     /// describes the vertex layout of a vertex in the buffer
     VertexLayout Layout;
     /// buffer usage hint
-    Usage::Code BufferUsage = Usage::InvalidUsage;
+    Usage::Code BufferUsage = Usage::Invalid;
     /// computes the byte size of the contained vertex buffer data
     int ByteSize() const;
 };
@@ -1139,9 +991,9 @@ public:
     /// name of the HTML element to track (default: #canvas)
     String HtmlElement = "#canvas";
     /// resource pool size by resource type
-    StaticArray<int,GfxResourceType::NumResourceTypes> ResourcePoolSize;
+    StaticArray<int,GfxResourceType::Num> ResourcePoolSize;
     /// resource creation throttling (max resources created async per frame)
-    StaticArray<int,GfxResourceType::NumResourceTypes> ResourceThrottling;
+    StaticArray<int,GfxResourceType::Num> ResourceThrottling;
     /// initial resource label stack capacity
     int ResourceLabelStackCapacity = 256;
     /// initial resource registry capacity
@@ -1168,6 +1020,8 @@ class BufferSetup {
 public:
     /// create initialized BufferSetup object
     static BufferSetup Make(int size, BufferType::Code type=BufferType::VertexBuffer, Usage::Code usage=Usage::Immutable);
+    /// resource locator
+    class Locator Locator = Locator::NonShared();
     /// the buffer type (vertex- or index-buffer)
     BufferType::Code Type = BufferType::VertexBuffer;
     /// the buffer usage
@@ -1194,20 +1048,22 @@ public:
     static PipelineSetup FromShaderAndLayout(const Id& shd, const VertexLayout& layout);
     /// resource locator
     class Locator Locator = Locator::NonShared();
+    /// shader 
+    Id Shader;
+    /// primitive type 
+    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
+    /// index type (none, 16-bit or 32-bit)
+    IndexType::Code IndexType = IndexType::None;
     /// blend state (GLES3.0 doesn't allow separate MRT blend state
-    class BlendState BlendState;
+    struct BlendState BlendState;
     /// blend color
     glm::vec4 BlendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     /// depth-stencil state
-    class DepthStencilState DepthStencilState;
+    struct DepthStencilState DepthStencilState;
     /// rasterizer state
-    class RasterizerState RasterizerState;
+    struct RasterizerState RasterizerState;
     /// input vertex layouts (one per mesh slot)
     StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> Layouts;
-    /// primitive type 
-    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
-    /// shader 
-    Id Shader;
 };
 
 //------------------------------------------------------------------------------
@@ -1301,32 +1157,32 @@ public:
     int TexBindSlot(int index) const;
 private:
     struct programEntry {
-        StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
-        StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
-        StaticArray<StringAtom, ShaderLang::NumShaderLangs> vsFuncs;
-        StaticArray<StringAtom, ShaderLang::NumShaderLangs> fsFuncs;
+        StaticArray<String, ShaderLang::Num> vsSources;
+        StaticArray<String, ShaderLang::Num> fsSources;
+        StaticArray<StringAtom, ShaderLang::Num> vsFuncs;
+        StaticArray<StringAtom, ShaderLang::Num> fsFuncs;
         struct byteCodeEntry {
             const void* ptr = nullptr;
             uint32_t size = 0;
         };
-        StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> vsByteCode;
-        StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> fsByteCode;
+        StaticArray<byteCodeEntry, ShaderLang::Num> vsByteCode;
+        StaticArray<byteCodeEntry, ShaderLang::Num> fsByteCode;
     };
     struct uniformBlockEntry {
         StringAtom type;
         StringAtom name;
         uint32_t typeHash = 0;
         uint32_t byteSize = 0;
-        ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+        ShaderStage::Code bindStage = ShaderStage::Invalid;
         int bindSlot = InvalidIndex;
     };
     struct textureEntry {
         StringAtom name;
-        TextureType::Code type = TextureType::InvalidTextureType;
-        ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
+        TextureType::Code type = TextureType::Invalid;
+        ShaderStage::Code bindStage = ShaderStage::Invalid;
         int bindSlot = InvalidIndex;
     };
-    static const int MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
+    static const int MaxNumUniformBlocks = ShaderStage::Num * GfxConfig::MaxNumUniformBlocksPerStage;
     static const int MaxNumTextures = GfxConfig::MaxNumVertexTextures + GfxConfig::MaxNumFragmentTextures;
     programEntry program;
     int numUniformBlocks = 0;

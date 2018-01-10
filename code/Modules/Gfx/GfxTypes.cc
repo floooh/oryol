@@ -11,8 +11,8 @@ namespace Oryol {
 int IndexType::ByteSize(IndexType::Code c) {
     switch (c) {
         case None:      return 0;
-        case Index16:   return 2;
-        case Index32:   return 4;
+        case UInt16:    return 2;
+        case UInt32:    return 4;
         default:
             o_error("IndexType::ByteSize() called with invalid type!\n");
             return 0;
@@ -381,82 +381,6 @@ const char* VertexFormat::ToString(Code c) {
 }
 
 //------------------------------------------------------------------------------
-BlendState::BlendState() {
-    static_assert(sizeof(BlendState) == 8, "sizeof(BlendState) is not 8, bitfield packing problem?");
-    this->Hash = 0;
-    this->BlendEnabled = false;
-    this->SrcFactorRGB = BlendFactor::One;
-    this->DstFactorRGB = BlendFactor::Zero;
-    this->OpRGB = BlendOperation::Add;
-    this->SrcFactorAlpha = BlendFactor::One;
-    this->DstFactorAlpha = BlendFactor::Zero;
-    this->OpAlpha = BlendOperation::Add;
-    this->ColorWriteMask = PixelChannel::RGBA;
-    this->ColorFormat = PixelFormat::RGBA8;
-    this->DepthFormat = PixelFormat::DEPTHSTENCIL;
-    this->MRTCount = 1;
-}
-
-//------------------------------------------------------------------------------
-StencilState::StencilState() {
-    static_assert(sizeof(StencilState) == 2, "sizeof(StencilState) is not 2, bitfield packing problem?");
-    this->Hash = 0;
-    this->FailOp = StencilOp::Keep;
-    this->DepthFailOp = StencilOp::Keep;
-    this->PassOp = StencilOp::Keep;
-    this->CmpFunc = CompareFunc::Always;
-}
-    
-//------------------------------------------------------------------------------
-DepthStencilState::DepthStencilState() {
-    static_assert(sizeof(DepthStencilState) == 8, "sizeof(DepthStencilState) is not 8, bitfield packing problem?");
-    this->Hash = 0;
-    this->DepthCmpFunc = CompareFunc::Always;
-    this->DepthWriteEnabled = false;
-    this->StencilEnabled = false;
-    this->StencilReadMask = 0xFF;
-    this->StencilWriteMask = 0xFF;
-    this->StencilRef = 0;
-}
-
-//------------------------------------------------------------------------------
-bool DepthStencilState::operator==(const DepthStencilState& rhs) const {
-    return (this->Hash == rhs.Hash) &&
-            (this->StencilFront == rhs.StencilFront) &&
-            (this->StencilBack == rhs.StencilBack);
-}
-
-//------------------------------------------------------------------------------
-bool DepthStencilState::operator!=(const DepthStencilState& rhs) const {
-    return (this->Hash != rhs.Hash) ||
-            (this->StencilFront != rhs.StencilFront) ||
-            (this->StencilBack != rhs.StencilBack);
-}
-
-//------------------------------------------------------------------------------
-RasterizerState::RasterizerState() {
-    static_assert(sizeof(RasterizerState) == 2, "sizeof(RasterizerState) is not 4, bitfield packing problem?");
-    this->Hash = 0;
-    this->CullFaceEnabled = false;
-    this->ScissorTestEnabled = false;
-    this->DitherEnabled = true;
-    this->AlphaToCoverageEnabled = false;
-    this->CullFace = Face::Back;
-    this->SampleCount = 1;
-}
-
-//------------------------------------------------------------------------------
-SamplerState::SamplerState() {
-    static_assert(sizeof(SamplerState) == 2, "sizeof(SamplerState) is not 2, bitfield packing problem?");
-    this->Hash = 0;
-    this->WrapU = TextureWrapMode::Repeat;
-    this->WrapV = TextureWrapMode::Repeat;
-    this->WrapW = TextureWrapMode::Repeat;
-    this->MagFilter = TextureFilterMode::Nearest;
-    this->MinFilter = TextureFilterMode::Nearest;
-}
-
-//------------------------------------------------------------------------------
 PassAction::PassAction() {
     for (auto& c : this->Color) {
         c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -734,7 +658,7 @@ DisplayAttrs GfxSetup::GetDisplayAttrs() const {
 
 //------------------------------------------------------------------------------
 GfxSetup::GfxSetup() {
-    for (int i = 0; i < GfxResourceType::NumResourceTypes; i++) {
+    for (int i = 0; i < GfxResourceType::Num; i++) {
         ResourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
         ResourceThrottling[i] = 0;    // unthrottled
     }
@@ -1193,7 +1117,7 @@ bool TextureSetup::ShouldSetupEmpty() const {
 
 //------------------------------------------------------------------------------
 bool TextureSetup::HasDepth() const {
-    return this->DepthFormat != PixelFormat::InvalidPixelFormat;
+    return this->DepthFormat != PixelFormat::Invalid;
 }
 
 //------------------------------------------------------------------------------

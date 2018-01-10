@@ -294,35 +294,60 @@ Gfx::Draw(int baseElement, int numElements, int numInstances) {
 template<> Id
 Gfx::CreateResource(const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(IsValid());
-    return state->backend.CreateTexture(setup, data, size);
+    Id resId = state->backend.LookupResource(setup.Locator);
+    if (!resId.IsValid()) {
+        resId = state->backend.CreateTexture(setup, data, size);
+        state->backend.AddResource(setup.Locator, resId);
+    }
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 Gfx::CreateResource(const BufferSetup& setup, const void* data, int size) {
     o_assert_dbg(IsValid());
-    return state->backend.CreateBuffer(setup, data, size);
+    Id resId = state->backend.LookupResource(setup.Locator);
+    if (!resId.IsValid()) {
+        resId = state->backend.CreateBuffer(setup, data, size);
+        state->backend.AddResource(setup.Locator, resId);
+    }
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 Gfx::CreateResource(const ShaderSetup& setup) {
     o_assert_dbg(IsValid());
-    return state->backend.CreateShader(setup);
+    Id resId = state->backend.LookupResource(setup.Locator);
+    if (!resId.IsValid()) {
+        resId = state->backend.CreateShader(setup);
+        state->backend.AddResource(setup.Locator, resId);
+    }
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 Gfx::CreateResource(const PipelineSetup& setup) {
     o_assert_dbg(IsValid());
-    return state->backend.CreatePipeline(setup);
+    Id resId = state->backend.LookupResource(setup.Locator);
+    if (!resId.IsValid()) {
+        resId = state->backend.CreatePipeline(setup);
+        state->backend.AddResource(setup.Locator, resId);
+    }
+    return resId;
 }
 
 //------------------------------------------------------------------------------
 template<> Id
 Gfx::CreateResource(const PassSetup& setup) {
     o_assert_dbg(IsValid());
-    return state->backend.CreatePass(setup);
+    Id resId = state->backend.LookupResource(setup.Locator);
+    if (!resId.IsValid()) {
+        resId = state->backend.CreatePass(setup);
+        state->backend.AddResource(setup.Locator, resId);
+    }
+    return resId;
 }
 
 //------------------------------------------------------------------------------
