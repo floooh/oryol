@@ -42,8 +42,7 @@ debugTextRenderer::setup(const DbgSetup& s) {
     this->curNumVertices = 0;
     this->vertexData = (Vertex*) Memory::Alloc(this->maxNumVertices * sizeof(Vertex));
     Gfx::PushResourceLabel();
-    this->setupMesh();
-    this->setupFontTexture();
+    this->setupResources(s);
     this->resourceLabel = Gfx::PopResourceLabel();
     this->valid = true;
 }
@@ -105,14 +104,6 @@ debugTextRenderer::textColor(float r, float g, float b, float a) {
 void
 debugTextRenderer::drawTextBuffer() {
     
-    // lazy-setup the pipeline-state-object (this is done deferred to 
-    // initialize the pipeline with the right render pass params
-    if (!this->drawState.Pipeline.IsValid()) {
-        Gfx::PushResourceLabel(this->resourceLabel);
-        this->setupPipeline();
-        Gfx::PopResourceLabel();
-    }
-    
     // get the currently accumulated string
     String str;
     {
@@ -130,21 +121,47 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
+        Gfx::UpdateBuffer(this->drawState.VertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);
         DbgTextShader::vsParams vsParams;
         const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
         const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
         vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::Draw(PrimitiveGroup(0, this->curNumVertices));
+        Gfx::Draw(0, this->curNumVertices);
         this->curNumVertices = 0;
     }
 }
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupFontTexture() {
+debugTextRenderer::setupResources(const DbgSetup& setup) {
+    o_assert_dbg(this->vertexLayout.Empty());
+    o_assert_dbg((this->maxNumVertices > 0) && (this->maxNumVertices == this->maxNumChars*6));
+    
+    // setup an empty mesh, only vertices
+    this->vertexLayout = {
+        { "position", VertexFormat::Float4 },
+        { "color0", VertexFormat::UByte4N }
+    };
+    const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
+    auto vbuf = BufferSetup::Make(vbufSize, BufferType::VertexBuffer, Usage::Stream);
+    this->drawState.VertexBuffers[0] = Gfx::CreateResource(vbuf);
+    o_assert_dbg(this->drawState.VertexBuffers[0].IsValid());
+
+    // create pipeline object
+    Id shd = Gfx::CreateResource(DbgTextShader::Setup());
+    auto ps = PipelineSetup::FromShaderAndLayout(shd, this->vertexLayout);
+    ps.DepthStencilState.DepthWriteEnabled = false;
+    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
+    ps.BlendState.BlendEnabled = true;
+    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
+    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
+    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
+    ps.BlendState.ColorFormat = setup.ColorFormat;
+    ps.BlendState.DepthFormat = setup.DepthFormat;
+    ps.RasterizerState.SampleCount = setup.SampleCount;
+    this->drawState.Pipeline = Gfx::CreateResource(ps);
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;
@@ -155,7 +172,7 @@ debugTextRenderer::setupFontTexture() {
     const int bytesPerChar = charWidth * charHeight;
     const int imgDataSize = numChars * bytesPerChar;
     o_assert_dbg((imgWidth * imgHeight) == imgDataSize);
-    
+
     // setup a memory buffer and write font image data to it
     Buffer data;
     uint8_t* dstPtr = data.Add(imgDataSize);
@@ -171,7 +188,7 @@ debugTextRenderer::setupFontTexture() {
             }
         }
     }
-    
+
     // setup texture, pixel format is 8bpp uncompressed
     auto texSetup = TextureSetup::FromPixelData2D(imgWidth, imgHeight, 1, PixelFormat::L8);
     texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
@@ -181,46 +198,7 @@ debugTextRenderer::setupFontTexture() {
     texSetup.ImageData.Sizes[0][0] = imgDataSize;
     Id tex = Gfx::CreateResource(texSetup, data);
     o_assert_dbg(tex.IsValid());
-    o_assert_dbg(Gfx::QueryResourceInfo(tex).State == ResourceState::Valid);
     this->drawState.FSTexture[DbgTextShader::tex] = tex;
-}
-
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setupMesh() {
-    o_assert_dbg(this->vertexLayout.Empty());
-    o_assert_dbg((this->maxNumVertices > 0) && (this->maxNumVertices == this->maxNumChars*6));
-    
-    // setup an empty mesh, only vertices
-    this->vertexLayout = {
-        { VertexAttr::Position, VertexFormat::Float4 },
-        { VertexAttr::Color0, VertexFormat::UByte4N }
-    };
-    MeshSetup setup = MeshSetup::Empty(this->maxNumVertices, Usage::Stream);
-    setup.Layout = this->vertexLayout;
-    this->drawState.Mesh[0] = Gfx::CreateResource(setup);
-    o_assert_dbg(this->drawState.Mesh[0].IsValid());
-}
-
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setupPipeline() {
-    // finally create pipeline object
-    Id shd = Gfx::CreateResource(DbgTextShader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = false;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    ps.BlendState.BlendEnabled = true;
-    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
-    // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
-    // for different render targets and quickly select them before
-    // text rendering
-    ps.BlendState.ColorFormat = Gfx::PassAttrs().ColorPixelFormat;
-    ps.BlendState.DepthFormat = Gfx::PassAttrs().DepthPixelFormat;
-    ps.RasterizerState.SampleCount = Gfx::PassAttrs().SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
 }
 
 //------------------------------------------------------------------------------

@@ -38,12 +38,8 @@ public:
     void textColor(float r, float g, float b, float a);
     /// draw the accumulated text
     void drawTextBuffer();
-    /// setup the font texture
-    void setupFontTexture();
     /// setup the text dynamic mesh
-    void setupMesh();
-    /// setup the text pipeline state object (happens deferred)
-    void  setupPipeline();
+    void setupResources(const DbgSetup& setup);
     /// convert the provides string object into vertices, and return number of vertices
     void convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index
