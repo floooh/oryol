@@ -392,6 +392,40 @@ static void convertVertexLayouts(const PipelineSetup& src, sg_pipeline_desc& dst
 }
 
 //------------------------------------------------------------------------------
+static sg_image_type convertTextureType(TextureType::Code t) {
+    switch (t) {
+        case TextureType::Texture2D:    return SG_IMAGETYPE_2D;
+        case TextureType::TextureCube:  return SG_IMAGETYPE_CUBE;
+        case TextureType::Texture3D:    return SG_IMAGETYPE_3D;
+        case TextureType::TextureArray: return SG_IMAGETYPE_ARRAY;
+        default: return _SG_IMAGETYPE_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_filter convertFilter(TextureFilterMode::Code f) {
+    switch (f) {
+        case TextureFilterMode::Nearest: return SG_FILTER_NEAREST;
+        case TextureFilterMode::Linear:  return SG_FILTER_LINEAR;
+        case TextureFilterMode::NearestMipmapNearest: return SG_FILTER_NEAREST_MIPMAP_NEAREST;
+        case TextureFilterMode::NearestMipmapLinear:  return SG_FILTER_NEAREST_MIPMAP_LINEAR;
+        case TextureFilterMode::LinearMipmapNearest:  return SG_FILTER_LINEAR_MIPMAP_NEAREST;
+        case TextureFilterMode::LinearMipmapLinear:   return SG_FILTER_LINEAR_MIPMAP_LINEAR;
+        default: return _SG_FILTER_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
+static sg_wrap convertWrap(TextureWrapMode::Code w) {
+    switch (w) {
+        case TextureWrapMode::ClampToEdge:      return SG_WRAP_CLAMP_TO_EDGE;
+        case TextureWrapMode::Repeat:           return SG_WRAP_REPEAT;
+        case TextureWrapMode::MirroredRepeat:   return SG_WRAP_MIRRORED_REPEAT;
+        default: return _SG_WRAP_DEFAULT;
+    }
+}
+
+//------------------------------------------------------------------------------
 sokolGfxBackend::~sokolGfxBackend() {
     o_assert(!this->isValid);
 }
@@ -456,6 +490,7 @@ bool
 sokolGfxBackend::QueryFeature(GfxFeature::Code feature) {
     o_assert_dbg(this->isValid);
     // FIXME
+    o_error("sokolGfxBackend::QueryFeature FIXME!\n");
     return false;
 }
 
@@ -498,7 +533,7 @@ sokolGfxBackend::PopResourceLabel() {
 Id
 sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int dataSize) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((setup.Size+setup.Offset) <= dataSize);
+    o_assert_dbg((data == nullptr) || (setup.Size+setup.Offset) <= dataSize);
     sg_buffer_desc sgDesc = { };
     sgDesc.size = setup.Size;
     sgDesc.type = convertBufferType(setup.Type);
@@ -523,8 +558,42 @@ sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int da
 Id
 sokolGfxBackend::CreateTexture(const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(this->isValid);
-    // FIXME
-    return Id::InvalidId();
+    sg_image_desc sgDesc = { };
+    sgDesc.type = convertTextureType(setup.Type);
+    sgDesc.render_target = setup.IsRenderTarget;
+    sgDesc.width = setup.Width;
+    sgDesc.height = setup.Height;
+    sgDesc.depth = setup.Depth;
+    sgDesc.num_mipmaps = setup.NumMipMaps;
+    sgDesc.usage = convertUsage(setup.TextureUsage);
+    sgDesc.pixel_format = convertPixelFormat(setup.ColorFormat);
+    sgDesc.sample_count = setup.SampleCount;
+    sgDesc.min_filter = convertFilter(setup.Sampler.MinFilter);
+    sgDesc.mag_filter = convertFilter(setup.Sampler.MagFilter);
+    sgDesc.wrap_u = convertWrap(setup.Sampler.WrapU);
+    sgDesc.wrap_v = convertWrap(setup.Sampler.WrapV);
+    sgDesc.wrap_w = convertWrap(setup.Sampler.WrapW);
+    o_assert_dbg(setup.ImageData.NumFaces <= SG_CUBEFACE_NUM);
+    o_assert_dbg(setup.ImageData.NumMipMaps <= SG_MAX_MIPMAPS);
+    for (int f = 0; f < setup.ImageData.NumFaces; f++) {
+        for (int m = 0; m < setup.ImageData.NumMipMaps; m++) {
+            sgDesc.content.subimage[f][m].ptr = (uint8_t*)data + setup.ImageData.Offsets[f][m];
+            sgDesc.content.subimage[f][m].size = setup.ImageData.Sizes[f][m];
+        }
+    }
+    o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
+    #if ORYOL_OPENGL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        sgDesc.gl_textures[i] = (uint32_t) setup.NativeTextures[i];
+    }
+    #elif ORYOL_METAL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        sgDesc.mtl_buffers[i] = (const void*) setup.NativeTextures[i];
+    }
+    #elif ORYOL_D3D11
+    sgDesc.d3d11_buffer = (const void*) setup.NativeTextures[0]
+    #endif
+    return makeId(GfxResourceType::Texture, sg_make_image(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
@@ -574,11 +643,11 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
         sgDesc.fs.entry = setup.FragmentShaderFunc(slang).AsCStr();
     }
 
-    // uniform blocks
+    // uniform block declarations
     int vsUbIndex = 0, fsUbIndex = 0;
     for (int i = 0; i < setup.NumUniformBlocks(); i++) {
         sg_shader_uniform_block_desc* ubDesc;
-        if (setup.UniformBlockBindSlot(i) == ShaderStage::VS) {
+        if (setup.UniformBlockBindStage(i) == ShaderStage::VS) {
             o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
             ubDesc = &sgDesc.vs.uniform_blocks[vsUbIndex++];
         }
@@ -592,6 +661,22 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
         ubDesc->uniforms[0].name = setup.UniformBlockType(i).AsCStr();
         ubDesc->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
         ubDesc->uniforms[0].array_count = ubDesc->size / 16;
+    }
+
+    // texture declarations
+    int vsImgIndex = 0, fsImgIndex = 0;
+    for (int i = 0; i < setup.NumTextures(); i++) {
+        sg_shader_image_desc* imgDesc;
+        if (setup.TexBindStage(i) == ShaderStage::VS) {
+            o_assert_dbg(vsImgIndex < SG_MAX_SHADERSTAGE_IMAGES);
+            imgDesc = &sgDesc.vs.images[vsImgIndex++];
+        }
+        else {
+            o_assert_dbg(fsImgIndex < SG_MAX_SHADERSTAGE_IMAGES);
+            imgDesc = &sgDesc.fs.images[fsImgIndex++];
+        }
+        imgDesc->type = convertTextureType(setup.TexType(i));
+        imgDesc->name = setup.TexName(i).AsCStr();
     }
 
     return makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
@@ -645,7 +730,7 @@ sokolGfxBackend::DestroyResources(ResourceLabel label) {
 void
 sokolGfxBackend::UpdateBuffer(const Id& id, const void* data, int numBytes) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    sg_update_buffer(makeBufferId(id), data, numBytes);
 }
 
 //------------------------------------------------------------------------------

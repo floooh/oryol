@@ -1258,9 +1258,8 @@ public:
     class Locator Locator = Locator::NonShared();
     /// resource placeholder
     Id Placeholder;
-    /// optional: native texture handle (only on platforms which support GfxFeature::NativeTextures)
-    static const int MaxNumNativeHandles = 2;
-    StaticArray<intptr_t, MaxNumNativeHandles> NativeHandle;
+    /// optional: native textures (only on platforms which support GfxFeature::NativeTextures)
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeTextures;
     /// optional image surface offsets and sizes
     ImageDataAttrs ImageData;
     /// default constructor 

@@ -1076,11 +1076,11 @@ TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelForm
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1) {
+TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t t0, intptr_t t1) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    o_assert_dbg(h0 != 0);
+    o_assert_dbg(t0 != 0);
     TextureSetup setup;
     setup.setupFromNativeHandle = true;
     setup.Type = type;
@@ -1089,8 +1089,8 @@ TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, Textu
     setup.NumMipMaps = numMipMaps;
     setup.ColorFormat = fmt;
     setup.TextureUsage = usage;
-    setup.NativeHandle[0] = h0;
-    setup.NativeHandle[1] = h1;
+    setup.NativeTextures[0] = t0;
+    setup.NativeTextures[1] = t1;
     return setup;
 }
 
@@ -1116,7 +1116,7 @@ bool TextureSetup::HasDepth() const {
 
 //------------------------------------------------------------------------------
 TextureSetup::TextureSetup() {
-    NativeHandle.Fill(0);
+    NativeTextures.Fill(0);
 }
 
 } // namespace Oryol
