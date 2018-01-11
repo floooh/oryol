@@ -1028,6 +1028,8 @@ public:
     Usage::Code Usage = Usage::Immutable;
     /// the buffer size in bytes
     int Size = 0;
+    /// optional byte-offset to data pointer
+    int Offset = 0;
     /// optional native 3D-API buffers
     StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
 
@@ -1112,7 +1114,7 @@ public:
     /// set shader program from precompiled shader byte code
     void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc=nullptr, const char* fsFunc=nullptr);
     /// add a uniform block
-    void AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot);
+    void AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot);
     /// add a texture declaration
     void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
     /// get program vertex shader source (only valid if setup from sources)
@@ -1135,8 +1137,6 @@ public:
     const StringAtom& UniformBlockType(int index) const;
     /// get uniform block name at index
     const StringAtom& UniformBlockName(int index) const;
-    /// get uniform block type hash
-    uint32_t UniformBlockTypeHash(int index) const;
     /// get uniform block byte size
     uint32_t UniformBlockByteSize(int index) const;
     /// get uniform block shader stage at index
@@ -1171,7 +1171,6 @@ private:
     struct uniformBlockEntry {
         StringAtom type;
         StringAtom name;
-        uint32_t typeHash = 0;
         uint32_t byteSize = 0;
         ShaderStage::Code bindStage = ShaderStage::Invalid;
         int bindSlot = InvalidIndex;

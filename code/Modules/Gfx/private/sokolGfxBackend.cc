@@ -498,12 +498,12 @@ sokolGfxBackend::PopResourceLabel() {
 Id
 sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int dataSize) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(setup.Size <= dataSize);
+    o_assert_dbg((setup.Size+setup.Offset) <= dataSize);
     sg_buffer_desc sgDesc = { };
     sgDesc.size = setup.Size;
     sgDesc.type = convertBufferType(setup.Type);
     sgDesc.usage = convertUsage(setup.Usage);
-    sgDesc.content = data;
+    sgDesc.content = (uint8_t*)data + setup.Offset;
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
     #if ORYOL_OPENGL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
@@ -573,7 +573,27 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
     if (setup.FragmentShaderFunc(slang).IsValid()) {
         sgDesc.fs.entry = setup.FragmentShaderFunc(slang).AsCStr();
     }
-    // FIXME: uniform blocks and textures
+
+    // uniform blocks
+    int vsUbIndex = 0, fsUbIndex = 0;
+    for (int i = 0; i < setup.NumUniformBlocks(); i++) {
+        sg_shader_uniform_block_desc* ubDesc;
+        if (setup.UniformBlockBindSlot(i) == ShaderStage::VS) {
+            o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
+            ubDesc = &sgDesc.vs.uniform_blocks[vsUbIndex++];
+        }
+        else {
+            o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
+            ubDesc = &sgDesc.fs.uniform_blocks[fsUbIndex++];
+        }
+        ubDesc->size = setup.UniformBlockByteSize(i);
+        // size must be a multiple of 16 (sizeof(vec4))
+        o_assert_dbg((ubDesc->size & 15) == 0);
+        ubDesc->uniforms[0].name = setup.UniformBlockType(i).AsCStr();
+        ubDesc->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
+        ubDesc->uniforms[0].array_count = ubDesc->size / 16;
+    }
+
     return makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
 }
 
@@ -713,9 +733,10 @@ void sokolGfxBackend::ApplyDrawState(const DrawState& drawState) {
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, uint32_t layoutHash, const void* data, int numBytes) {
+sokolGfxBackend::ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    sg_shader_stage sgStage = (stage==ShaderStage::VS) ? SG_SHADERSTAGE_VS : SG_SHADERSTAGE_FS;
+    sg_apply_uniform_block(sgStage, ubIndex, data, numBytes);
 }
 
 //------------------------------------------------------------------------------

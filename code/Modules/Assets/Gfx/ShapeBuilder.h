@@ -7,7 +7,9 @@
     @todo describe ShapeBuilder
 */
 #include "Assets/Gfx/MeshBuilder.h"
+#include "Core/String/StringAtom.h"
 #include "Core/Containers/Array.h"
+#include "Core/Containers/InlineArray.h"
 #include "glm/mat4x4.hpp"
 #include "glm/vec4.hpp"
 
@@ -15,14 +17,17 @@ namespace Oryol {
     
 class ShapeBuilder {
 public:
-    /// constructor
-    ShapeBuilder();
-    
-    /// read/write access to vertex layout
-    class VertexLayout Layout;
     /// random-vertex-colors flag
-    bool RandomColors;
-    
+    bool RandomColors = false;
+
+    /// add position component to vertex layout
+    ShapeBuilder& AddPositions(const StringAtom& name, VertexFormat::Code fmt);
+    /// add a normal component to vertex layout
+    ShapeBuilder& AddNormals(const StringAtom& name, VertexFormat::Code fmt);
+    /// add a texcoord component to vertex layout
+    ShapeBuilder& AddTexCoords(const StringAtom& name, VertexFormat::Code fmt);
+    /// add c color component to vertex layout
+    ShapeBuilder& AddColors(const StringAtom& name, VertexFormat::Code fmt);
     /// put new transform
     ShapeBuilder& Transform(const glm::mat4& t);
     /// put new color
@@ -37,9 +42,18 @@ public:
     ShapeBuilder& Torus(float ringRadius, float radius, int sides, int rings, bool builPrimGroup=true);
     /// add a plane
     ShapeBuilder& Plane(float w, float d, int tiles, bool buildPrimGroup=true);
-    
+
+    /// result struct
+    struct Result {
+        BufferSetup VertexBufferSetup;
+        BufferSetup IndexBufferSetup;
+        VertexLayout Layout;
+        IndexType::Code IndexType;
+        Buffer Data;
+        Array<PrimitiveGroup> PrimitiveGroups;
+    };
     /// build geometry and clear object state
-    SetupAndData<MeshSetup> Build();
+    Result Build();
     
 private:
     enum ShapeType {
@@ -80,11 +94,16 @@ private:
     /// build a primitive group
     void buildPrimitiveGroup();
     
-    int curPrimGroupBaseElement;
-    int curPrimGroupNumElements;
+    int curPrimGroupBaseElement = 0;
+    int curPrimGroupNumElements = 0;
+    int posIndex = InvalidIndex;
+    int normalIndex = InvalidIndex;
+    int texCoordIndex = InvalidIndex;
+    int colorIndex = InvalidIndex;
     glm::mat4 transform;
-    glm::vec4 color;
+    glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     Array<ShapeData> shapes;
+    Array<PrimitiveGroup> primGroups;
     MeshBuilder meshBuilder;
 };
     

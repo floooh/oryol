@@ -291,6 +291,16 @@ Gfx::Draw(int baseElement, int numElements, int numInstances) {
 }
 
 //------------------------------------------------------------------------------
+void
+Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
+    o_trace_scoped(Gfx_Draw);
+    o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
+    state->gfxFrameInfo.NumDraw++;
+    state->backend.Draw(primGroup.BaseElement, primGroup.NumElements, numInstances);
+}
+
+//------------------------------------------------------------------------------
 template<> Id
 Gfx::CreateResource(const TextureSetup& setup, const void* data, int size) {
     o_assert_dbg(IsValid());
@@ -352,10 +362,10 @@ Gfx::CreateResource(const PassSetup& setup) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize) {
+Gfx::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumApplyUniformBlock++;
-    state->backend.ApplyUniformBlock(bindStage, bindSlot, layoutHash, ptr, byteSize);
+    state->backend.ApplyUniformBlock(bindStage, bindSlot, ptr, byteSize);
 }
 
 } // namespace Oryol

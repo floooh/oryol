@@ -1,10 +1,10 @@
 @vs vs
-in vec4 position;
-in vec4 color0;
+in vec4 in_pos;
+in vec4 in_color;
 out vec4 color;
 void main() {
-    gl_Position = position;
-    color = color0;
+    gl_Position = in_pos;
+    color = in_color;
 }
 @end
 

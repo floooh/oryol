@@ -101,7 +101,7 @@ public:
     /// apply a draw state
     void ApplyDrawState(const DrawState& drawState);
     /// apply a uniform block
-    void ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, uint32_t layoutHash, const void* data, int numBytes);
+    void ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes);
 
     /// issue a draw call
     void Draw(int baseElement, int numElements, int numInstances);

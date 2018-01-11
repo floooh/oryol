@@ -102,7 +102,9 @@ public:
     static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
     
     /// submit a draw call
-    static void Draw(int baseElement, int numElements, int numInstances);
+    static void Draw(int baseElement, int numElements, int numInstances=1);
+    /// submit a draw call with baseElement and numElements taken from PrimitiveGroup
+    static void Draw(const PrimitiveGroup& primGroup, int numInstances=1);
 
     /// commit (and display) the current frame
     static void CommitFrame();
@@ -111,13 +113,13 @@ public:
 
 private:
     /// apply uniform block, non-template version
-    static void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, uint32_t layoutHash, const uint8_t* ptr, int byteSize);
+    static void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, const uint8_t* ptr, int byteSize);
 };
 
 //------------------------------------------------------------------------------
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
-    applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, T::_layoutHash, (const uint8_t*)&ub, sizeof(ub));
+    applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, (const uint8_t*)&ub, sizeof(ub));
 }
 
 //------------------------------------------------------------------------------

@@ -2,13 +2,12 @@
 Code generator for shader libraries.
 '''
 
-Version = 51
+Version = 52
 
 import os, platform, json
 import genutil as util
 from util import glslcompiler, shdc
 from mod import log
-import zlib # only for crc32
 
 if platform.system() == 'Windows' :
     from util import hlslcompiler
@@ -450,14 +449,6 @@ def writeHeaderBottom(f, shdLib) :
     f.write('\n')
 
 #-------------------------------------------------------------------------------
-def getUniformBlockTypeHash(ub_refl):
-    hashString = ''
-    for member in ub_refl['members']:
-        hashString += member['type']
-        hashString += str(member['num'])
-    return zlib.crc32(hashString.encode('ascii')) & 0xFFFFFFFF
-
-#-------------------------------------------------------------------------------
 def roundup(val, round_to):
     return (val + (round_to - 1)) & ~(round_to - 1)
 
@@ -473,7 +464,6 @@ def writeProgramHeader(f, shdLib, prog, slang) :
             f.write('    struct {} {{\n'.format(ub['type']))
             f.write('        static const int _bindSlotIndex = {};\n'.format(ub['slot']))
             f.write('        static const Oryol::ShaderStage::Code _bindShaderStage = Oryol::ShaderStage::{};\n'.format(stage))
-            f.write('        static const uint32_t _layoutHash = {};\n'.format(getUniformBlockTypeHash(ub)))
             for m in ub['members']:
                 next_offset = m['offset']
                 if next_offset > cur_offset:
@@ -600,8 +590,8 @@ def writeProgramSource(f, shdLib, prog, slangs) :
             ub_size = ub['size']
             if 'glsl' in slang:
                 ub_size = roundup(ub_size, 16)
-            f.write('    setup.AddUniformBlock("{}", "{}", {}, {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-                ub['type'], ub['name'], getUniformBlockTypeHash(ub), ub_size, ub['type'], ub['type']))
+            f.write('    setup.AddUniformBlock("{}", "{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+                ub['type'], ub['name'], ub_size, ub['type'], ub['type']))
         # add textures layouts to setup objects
         for tex in refl['textures']:
             f.write('    setup.AddTexture("{}", {}, Oryol::ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))

@@ -746,13 +746,12 @@ void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* 
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
+void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(type.IsValid());
     o_assert_dbg(bindSlot >= 0);
     uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
     entry.type = type;
     entry.name = name;
-    entry.typeHash = typeHash;
     entry.byteSize = byteSize;
     entry.bindStage = bindStage;
     entry.bindSlot = bindSlot;
@@ -825,11 +824,6 @@ const StringAtom& ShaderSetup::UniformBlockName(int index) const {
 //------------------------------------------------------------------------------
 const StringAtom& ShaderSetup::UniformBlockType(int index) const {
     return this->uniformBlocks[index].type;
-}
-
-//------------------------------------------------------------------------------
-uint32_t ShaderSetup::UniformBlockTypeHash(int index) const {
-    return this->uniformBlocks[index].typeHash;
 }
 
 //------------------------------------------------------------------------------

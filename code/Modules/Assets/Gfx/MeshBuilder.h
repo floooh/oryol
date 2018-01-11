@@ -50,16 +50,14 @@ public:
     /// number of indices (default 0 for non-indexed meshes)
     uint32_t NumIndices = 0;
     /// index type (default is 16-bit indices)
-    IndexType::Code IndicesType = IndexType::Index16;
+    IndexType::Code IndexType = IndexType::UInt16;
     /// read/write access to vertex layout
-    class VertexLayout Layout;
-    /// primitive groups (at least one must be defined)
-    Array<PrimitiveGroup> PrimitiveGroups;
+    VertexLayout Layout;
     /// vertex data usage
     Usage::Code VertexUsage = Usage::Immutable;
     /// index data usage
     Usage::Code IndexUsage = Usage::Immutable;
-    
+
     /// begin writing vertex and index data
     MeshBuilder& Begin();
     /// write 1D component vertex data
@@ -78,8 +76,16 @@ public:
     MeshBuilder& Triangle(uint32_t triangleIndex, uint16_t vertexIndex0, uint16_t vertexIndex1, uint16_t vertexIndex2);
     /// write 32-bit triangle indices
     MeshBuilder& Triangle32(uint32_t triangleIndex, uint32_t vertexIndex0, uint32_t vertexIndex1, uint32_t vertexIndex2);
+    /// mesh builder result
+    struct Result {
+        BufferSetup VertexBufferSetup;
+        BufferSetup IndexBufferSetup;
+        VertexLayout Layout;
+        IndexType::Code IndexType;
+        Buffer Data;
+    };
     /// end writing vertex and index data, return result, and reset MeshBuilfer
-    SetupAndData<MeshSetup> Build();
+    Result Build();
 
 private:
     /// clear/reset the object
@@ -87,7 +93,7 @@ private:
     /// compute byte offset into vertex buffer given vertex and component index
     uint32_t vertexByteOffset(uint32_t vertexIndex, int compIndex) const;
 
-    SetupAndData<MeshSetup> setupAndData;
+    Result result;
     bool inBegin = false;
     
     uint8_t* vertexPointer = nullptr;
@@ -98,7 +104,7 @@ private:
 //------------------------------------------------------------------------------
 inline MeshBuilder&
 MeshBuilder::Index(uint32_t index, uint16_t vertexIndex) {
-    o_assert_dbg(this->inBegin && (index < this->NumIndices) && (this->IndicesType == IndexType::Index16));
+    o_assert_dbg(this->inBegin && (index < this->NumIndices) && (this->IndexType == IndexType::UInt16));
     o_assert_dbg(vertexIndex < this->NumVertices);
     
     uint16_t* ptr = ((uint16_t*)this->indexPointer) + index;
@@ -110,7 +116,7 @@ MeshBuilder::Index(uint32_t index, uint16_t vertexIndex) {
 //------------------------------------------------------------------------------
 inline MeshBuilder&
 MeshBuilder::Index32(uint32_t index, uint32_t vertexIndex) {
-    o_assert_dbg(this->inBegin && (index < this->NumIndices) && (this->IndicesType == IndexType::Index32));
+    o_assert_dbg(this->inBegin && (index < this->NumIndices) && (this->IndexType == IndexType::UInt32));
     o_assert_dbg(vertexIndex < this->NumVertices);
     
     uint32_t* ptr = ((uint32_t*)this->indexPointer) + index;

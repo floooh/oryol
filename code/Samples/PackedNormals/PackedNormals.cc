@@ -16,9 +16,9 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnInit();
     AppState::Code OnCleanup();
-
     glm::mat4 computeMVP(const glm::vec3& pos);
 
+    ShapeBuilder::Result shapes;
     DrawState drawState;
     Shader::params params;
     glm::mat4 view;
@@ -34,18 +34,20 @@ PackedNormalsApp::OnInit() {
     Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
     ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
+    this->shapes = shapeBuilder
+        .AddPositions("position", VertexFormat::Float3)
+        .AddNormals("normal", VertexFormat::Byte4N)
+        .Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
-        .Plane(1.5f, 1.5f, 10);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+        .Plane(1.5f, 1.5f, 10)
+        .Build();
+    this->drawState.VertexBuffers[0] = Gfx::CreateResource(this->shapes.VertexBufferSetup, this->shapes.Data);
+    this->drawState.IndexBuffer = Gfx::CreateResource(this->shapes.IndexBufferSetup, this->shapes.Data);
     Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
+    auto ps = PipelineSetup::FromShaderAndLayout(shd, this->shapes.Layout);
+    ps.IndexType = this->shapes.IndexType;
     ps.DepthStencilState.DepthWriteEnabled = true;
     ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
     ps.RasterizerState.CullFaceEnabled = true;
@@ -80,7 +82,7 @@ PackedNormalsApp::OnRunning() {
     for (const auto& pos : positions) {
         this->params.mvp = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw(primGroupIndex++);
+        Gfx::Draw(this->shapes.PrimitiveGroups[primGroupIndex++]);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();

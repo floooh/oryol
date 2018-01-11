@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glfwInputMgr.h"
-#include "Gfx/private/glfw/glfwDisplayMgr.h"
+#include "Gfx/private/glfwDisplayMgr.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "GLFW/glfw3.h"

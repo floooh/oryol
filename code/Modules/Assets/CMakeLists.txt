@@ -5,9 +5,9 @@ fips_begin_module(Assets)
         MeshBuilder.cc MeshBuilder.h
         ShapeBuilder.cc ShapeBuilder.h
         VertexWriter.cc VertexWriter.h
-        TextureLoader.cc TextureLoader.h
-        OmshParser.cc OmshParser.h
-        MeshLoader.cc MeshLoader.h
+#        TextureLoader.cc TextureLoader.h
+#        OmshParser.cc OmshParser.h
+#        MeshLoader.cc MeshLoader.h
     )
 fips_end_module()
 

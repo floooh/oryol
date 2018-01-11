@@ -51,7 +51,7 @@ TriangleApp::OnRunning() {
     
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Draw(0, 3, 1);
+    Gfx::Draw(0, 3);
     Gfx::EndPass();
     Gfx::CommitFrame();
     
