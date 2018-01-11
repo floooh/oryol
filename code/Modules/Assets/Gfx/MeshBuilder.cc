@@ -30,9 +30,13 @@ MeshBuilder::Begin() {
     this->result.Layout = this->Layout;
     this->result.IndexType = this->IndexType;
     this->result.VertexBufferSetup = BufferSetup::Make(vbSize, BufferType::VertexBuffer, this->VertexUsage);
-    this->result.IndexBufferSetup = BufferSetup::Make(ibSize, BufferType::IndexBuffer, this->IndexUsage);
-    this->result.IndexBufferSetup.Offset = this->result.VertexBufferSetup.Size;
-
+    if (ibSize > 0) {
+        this->result.IndexBufferSetup = BufferSetup::Make(ibSize, BufferType::IndexBuffer, this->IndexUsage);
+        this->result.IndexBufferSetup.Offset = this->result.VertexBufferSetup.Size;
+    }
+    else {
+        this->result.IndexBufferSetup = BufferSetup();
+    }
     return *this;
 }
 
