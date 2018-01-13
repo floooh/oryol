@@ -566,7 +566,7 @@ sokolGfxBackend::CreateTexture(const TextureSetup& setup, const void* data, int 
     sgDesc.depth = setup.Depth;
     sgDesc.num_mipmaps = setup.NumMipMaps;
     sgDesc.usage = convertUsage(setup.TextureUsage);
-    sgDesc.pixel_format = convertPixelFormat(setup.ColorFormat);
+    sgDesc.pixel_format = convertPixelFormat(setup.Format);
     sgDesc.sample_count = setup.SampleCount;
     sgDesc.min_filter = convertFilter(setup.Sampler.MinFilter);
     sgDesc.mag_filter = convertFilter(setup.Sampler.MagFilter);

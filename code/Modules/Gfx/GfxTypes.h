@@ -800,10 +800,8 @@ struct TextureAttrs {
     class Locator Locator;
     /// the texture type (2D, 3D, cube...)
     TextureType::Code Type = TextureType::Invalid;
-    /// the RGBA pixel format of texture data
-    PixelFormat::Code ColorFormat = PixelFormat::Invalid;
-    /// optional depth format (only used for render target textures)
-    PixelFormat::Code DepthFormat = PixelFormat::Invalid;
+    /// the pixel format of texture data
+    PixelFormat::Code Format = PixelFormat::Invalid;
     /// optional sample count (only used for MSAA render target textures)
     int SampleCount = 1;
     /// texture usage hint
@@ -818,8 +816,6 @@ struct TextureAttrs {
     int NumMipMaps = 1;
     /// true if this is a render target texture
     bool IsRenderTarget = false;
-    /// true if this render target texture has an attached depth buffer
-    bool HasDepthBuffer = false;
 };
 
 //------------------------------------------------------------------------------
@@ -856,9 +852,6 @@ struct DisplayAttrs {
     int SwapInterval = 1;
     /// window title as UTF-8
     String WindowTitle;
-
-    /// init a DisplayAttrs object from a TextureAttrs object
-    static DisplayAttrs FromTextureAttrs(const TextureAttrs& texAttrs);
 };
 
 //------------------------------------------------------------------------------
@@ -1215,13 +1208,13 @@ public:
     /// setup empty array texture
     static TextureSetup EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
     /// setup as 2D render target
-    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup as cube render target
-    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup as 3D render target
-    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup as array render target
-    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
+    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
     static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
     /// return true if texture should be setup from raw pixel data
@@ -1246,10 +1239,8 @@ public:
     int Depth = 1;
     /// number of mipmaps (default is 1, only for FromPixelData)
     int NumMipMaps = 1;
-    /// the color pixel format
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
-    /// the depth pixel format (only if render target, PixelFormat::None if render target should not have depth buffer)
-    PixelFormat::Code DepthFormat = PixelFormat::None;
+    /// the pixel format
+    PixelFormat::Code Format = PixelFormat::RGBA8;
     /// MSAA samples (2, 4, 8... no MSAA: 1), check MSAARenderTargets feature availability!
     int SampleCount = 1;
     /// sampler state

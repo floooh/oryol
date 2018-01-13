@@ -566,23 +566,6 @@ int VertexLayout::ComponentByteOffset(int componentIndex) const {
 }
 
 //------------------------------------------------------------------------------
-DisplayAttrs DisplayAttrs::FromTextureAttrs(const TextureAttrs& texAttrs) {
-    DisplayAttrs dispAttrs;
-    dispAttrs.WindowWidth = texAttrs.Width;
-    dispAttrs.WindowHeight = texAttrs.Height;
-    dispAttrs.WindowPosX = 0;
-    dispAttrs.WindowPosY = 0;
-    dispAttrs.FramebufferWidth = texAttrs.Width;
-    dispAttrs.FramebufferHeight = texAttrs.Height;
-    dispAttrs.ColorPixelFormat = texAttrs.ColorFormat;
-    dispAttrs.DepthPixelFormat = texAttrs.DepthFormat;
-    dispAttrs.SampleCount = texAttrs.SampleCount;
-    dispAttrs.Windowed = false;
-    dispAttrs.SwapInterval = 1;
-    return dispAttrs;
-}
-
-//------------------------------------------------------------------------------
 ImageDataAttrs::ImageDataAttrs() {
     for (auto& offsets : this->Offsets) {
         offsets.Fill(0);
@@ -888,7 +871,7 @@ TextureSetup TextureSetup::FromPixelData2D(int w, int h, int numMipMaps, PixelFo
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.ImageData.NumFaces = 1;
     setup.ImageData.NumMipMaps = numMipMaps;
     return setup;
@@ -905,7 +888,7 @@ TextureSetup TextureSetup::FromPixelDataCube(int w, int h, int numMipMaps, Pixel
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.ImageData.NumFaces = 6;
     setup.ImageData.NumMipMaps = numMipMaps;
     return setup;
@@ -923,7 +906,7 @@ TextureSetup TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, 
     setup.Height = h;
     setup.Depth = d;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.ImageData.NumFaces = 1;
     setup.ImageData.NumMipMaps = numMipMaps;
     return setup;
@@ -941,7 +924,7 @@ TextureSetup TextureSetup::FromPixelDataArray(int w, int h, int layers, int numM
     setup.Height = h;
     setup.Depth = layers;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.ImageData.NumFaces = 1;
     setup.ImageData.NumMipMaps = numMipMaps;
     return setup;
@@ -958,7 +941,7 @@ TextureSetup TextureSetup::Empty2D(int w, int h, int numMipMaps, PixelFormat::Co
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.TextureUsage = usage;
     return setup;
 }
@@ -974,7 +957,7 @@ TextureSetup TextureSetup::EmptyCube(int w, int h, int numMipMaps, PixelFormat::
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.TextureUsage = usage;
     return setup;
 }
@@ -991,7 +974,7 @@ TextureSetup TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFor
     setup.Height = h;
     setup.Depth = d;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.TextureUsage = usage;
     return setup;
 }
@@ -1008,43 +991,41 @@ TextureSetup TextureSetup::EmptyArray(int w, int h, int layers, int numMipMaps, 
     setup.Height = h;
     setup.Depth = layers;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.TextureUsage = usage;
     return setup;
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTarget2D(int w, int h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup TextureSetup::RenderTarget2D(int w, int h, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::Texture2D;
     setup.IsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
-    setup.ColorFormat = colorFmt;
-    setup.DepthFormat = depthFmt;
+    setup.Format = fmt;
     setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTargetCube(int w, int h, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup TextureSetup::RenderTargetCube(int w, int h, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::TextureCube;
     setup.IsRenderTarget = true;
     setup.Width = w;
     setup.Height = h;
-    setup.ColorFormat = colorFmt;
-    setup.DepthFormat = depthFmt;
+    setup.Format = fmt;
     setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::Texture3D;
@@ -1052,15 +1033,14 @@ TextureSetup TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code
     setup.Width = w;
     setup.Height = h;
     setup.Depth = d;
-    setup.ColorFormat = colorFmt;
-    setup.DepthFormat = depthFmt;
+    setup.Format = fmt;
     setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt, PixelFormat::Code depthFmt) {
+TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
     TextureSetup setup;
     setup.Type = TextureType::TextureArray;
@@ -1068,8 +1048,7 @@ TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelForm
     setup.Width = w;
     setup.Height = h;
     setup.Depth = layers;
-    setup.ColorFormat = colorFmt;
-    setup.DepthFormat = depthFmt;
+    setup.Format = fmt;
     setup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
     setup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     return setup;
@@ -1087,7 +1066,7 @@ TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, Textu
     setup.Width = w;
     setup.Height = h;
     setup.NumMipMaps = numMipMaps;
-    setup.ColorFormat = fmt;
+    setup.Format = fmt;
     setup.TextureUsage = usage;
     setup.NativeTextures[0] = t0;
     setup.NativeTextures[1] = t1;
@@ -1107,11 +1086,6 @@ bool TextureSetup::ShouldSetupFromNativeTexture() const {
 //------------------------------------------------------------------------------
 bool TextureSetup::ShouldSetupEmpty() const {
     return this->setupEmpty;
-}
-
-//------------------------------------------------------------------------------
-bool TextureSetup::HasDepth() const {
-    return this->DepthFormat != PixelFormat::Invalid;
 }
 
 //------------------------------------------------------------------------------
