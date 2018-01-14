@@ -323,7 +323,7 @@ Gfx::CreateTexture(const TextureDesc& desc) {
 
 //------------------------------------------------------------------------------
 Id
-Gfx::CreateTexture(const TextureDesc& desc, const Buffer& data) {
+Gfx::CreateTexture(const TextureDesc& desc, const class Buffer& data) {
     return Gfx::CreateTexture(desc, data.Data(), data.Size());
 }
 
@@ -347,7 +347,7 @@ Gfx::CreateBuffer(const BufferDesc& desc) {
 
 //------------------------------------------------------------------------------
 Id
-Gfx::CreateBuffer(const BufferDesc& desc, const Buffer& data) {
+Gfx::CreateBuffer(const BufferDesc& desc, const class Buffer& data) {
     return Gfx::CreateBuffer(desc, data.Data(), data.Size());
 }
 

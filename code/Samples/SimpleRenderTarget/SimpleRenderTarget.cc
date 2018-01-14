@@ -44,19 +44,25 @@ SimpleRenderTargetApp::OnInit() {
     Gfx::Setup(gfxSetup);
 
     // create an offscreen render pass object with a color-attachment and depth-attachment
-    auto rtSetup = TextureSetup::RenderTarget2D(128, 128, PixelFormat::RGBA8);
-    rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
-    rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
-    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
-    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
+    auto colorDesc = MakeTextureDesc()
+        .Type(TextureType::Texture2D)
+        .RenderTarget(true)
+        .Width(128)
+        .Height(128)
+        .Format(PixelFormat::RGBA8)
+        .WrapU(TextureWrapMode::Repeat)
+        .WrapV(TextureWrapMode::Repeat)
+        .MagFilter(TextureFilterMode::Linear)
+        .MinFilter(TextureFilterMode::Linear);
     // if supported, use an anti-aliased offscreen render target
     if (Gfx::QueryFeature(GfxFeature::MSAARenderTargets)) {
-        rtSetup.SampleCount = 4;
+        colorDesc.SampleCount(4);
         Log::Info("Using MSAA4 render target\n");
     }
-    Id colorTexture = Gfx::CreateResource(rtSetup);
-    rtSetup.Format = PixelFormat::Depth;
-    Id depthTexture = Gfx::CreateResource(rtSetup);
+    Id colorTexture = Gfx::CreateTexture(colorDesc);
+    auto depthDesc = MakeTextureDesc(colorDesc).Format(PixelFormat::DEPTH);
+    Id depthTexture = Gfx::CreateTexture(depthDesc);
+
     auto rpSetup = PassSetup::From(colorTexture, depthTexture);
     rpSetup.DefaultAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
     this->renderPass = Gfx::CreateResource(rpSetup);
@@ -69,12 +75,23 @@ SimpleRenderTargetApp::OnInit() {
         .AddNormals("in_normal", VertexFormat::Byte4N)
         .Torus(0.3f, 0.5f, 20, 36)
         .Build();
-    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateResource(
-        this->donutShape.VertexBufferSetup, this->donutShape.Data);
-    this->offscreenDrawState.IndexBuffer = Gfx::CreateResource(
-        this->donutShape.IndexBufferSetup, this->donutShape.Data);
+    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(
+        this->donutShape.VertexBufferDesc, this->donutShape.Data);
+    this->offscreenDrawState.IndexBuffer = Gfx::CreateBuffer(
+        this->donutShape.IndexBufferDesc, this->donutShape.Data);
 
     // create shader and pipeline-state-object for offscreen rendering
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+        .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
+        .Layout(0, this->donutShape.Layout)
+        .IndexType(this->donutShape.IndexType)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .ColorFormat(colorDesc.Desc.Format)
+        .DepthFormat(depthDesc.Desc.Format)
+        .SampleCount(colorDesc.Desc.SampleCount)
+
+
     Id offScreenShader = Gfx::CreateResource(OffscreenShader::Setup());
     auto offpsSetup = PipelineSetup::FromShaderAndLayout(offScreenShader, this->donutShape.Layout);
     offpsSetup.IndexType = this->donutShape.IndexType;

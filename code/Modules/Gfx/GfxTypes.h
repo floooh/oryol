@@ -7,6 +7,7 @@
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "Core/Containers/StaticArray.h"
+#include "Core/Containers/Buffer.h"
 #include "Gfx/GfxConfig.h"
 #include "glm/vec4.hpp"
 #include <initializer_list>
@@ -950,6 +951,11 @@ struct BufferDesc {
     int Offset = 0;
     /// optional native 3D-API buffers
     StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
+
+    /// default constructor
+    BufferDesc() {
+        NativeBuffers.Fill(0);
+    }
 };
 
 //------------------------------------------------------------------------------
@@ -960,32 +966,41 @@ struct BufferDesc {
 */
 class BufferBuilder {
 public:
-    BufferDesc desc;
-    operator BufferDesc() {
-        return desc;
-    }
+    BufferDesc Desc;
+    const void* ContentPtr = nullptr;
+    int ContentSize = 0;
+    BufferBuilder() { };
+    BufferBuilder(const BufferBuilder& rhs): Desc(rhs.Desc) { };
     BufferBuilder& Locator(const class Locator& loc) {
-        desc.Locator = loc; return *this;
+        Desc.Locator = loc; return *this;
     }
     BufferBuilder& Type(BufferType::Code t) {
-        desc.Type = t; return *this;
+        Desc.Type = t; return *this;
     }
     BufferBuilder& Usage(Usage::Code u) {
-        desc.Usage = u; return *this;
+        Desc.Usage = u; return *this;
     }
     BufferBuilder& Size(int s) {
-        desc.Size = s; return *this;
+        Desc.Size = s; return *this;
     }
     BufferBuilder& Offset(int o) {
-        desc.Offset = o; return *this;
+        Desc.Offset = o; return *this;
     }
     BufferBuilder& NativeBuffer(int index, intptr_t buf) {
-        desc.NativeBuffers[index] = buf; return *this;
+        Desc.NativeBuffers[index] = buf; return *this;
     }
+    BufferBuilder& Content(const void* ptr) {
+        ContentPtr = ptr;
+        ContentSize = 0;
+        return *this;
+    }
+    BufferBuilder& Content(const Buffer& content) {
+        ContentPtr = content.Data();
+        ContentSize = content.Size();
+        return *this;
+    }
+    Id Create();
 };
-inline BufferBuilder MakeBufferDesc() {
-    return BufferBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**
@@ -1051,143 +1066,140 @@ struct PipelineDesc {
 */
 class PipelineBuilder {
 public:
-    PipelineDesc desc;
-    operator PipelineDesc() {
-        return desc;
-    }
+    PipelineDesc Desc;
+    PipelineBuilder() { };
+    PipelineBuilder(const PipelineBuilder& rhs): Desc(rhs.Desc) { };
     PipelineBuilder& Locator(const class Locator& loc) {
-        desc.Locator = loc; return *this;
+        Desc.Locator = loc; return *this;
     }
     PipelineBuilder& Shader(const Id& shd) {
-        desc.Shader = shd; return *this;
+        Desc.Shader = shd; return *this;
     }
     PipelineBuilder& Layout(int slotIndex, const VertexLayout& layout) {
-        desc.Layouts[slotIndex] = layout; return *this;
+        Desc.Layouts[slotIndex] = layout; return *this;
     }
     PipelineBuilder& PrimitiveType(PrimitiveType::Code t) {
-        desc.PrimType = t; return *this;
+        Desc.PrimType = t; return *this;
     }
     PipelineBuilder& IndexType(IndexType::Code t) {
-        desc.IndexType = t; return *this;
+        Desc.IndexType = t; return *this;
     }
     PipelineBuilder& DepthCmpFunc(CompareFunc::Code f) {
-        desc.DepthCmpFunc = f; return *this;
+        Desc.DepthCmpFunc = f; return *this;
     }
     PipelineBuilder& DepthWriteEnabled(bool b) {
-        desc.DepthWriteEnabled = b; return *this;
+        Desc.DepthWriteEnabled = b; return *this;
     }
     PipelineBuilder& StencilEnabled(bool b) {
-        desc.StencilEnabled = b; return *this;
+        Desc.StencilEnabled = b; return *this;
     }
     PipelineBuilder& StencilReadMask(uint8_t m) {
-        desc.StencilReadMask = m; return *this;
+        Desc.StencilReadMask = m; return *this;
     }
     PipelineBuilder& StencilWriteMask(uint8_t m) {
-        desc.StencilWriteMask = m; return *this;
+        Desc.StencilWriteMask = m; return *this;
     }
     PipelineBuilder& StencilRef(uint8_t r) {
-        desc.StencilRef = r; return *this;
+        Desc.StencilRef = r; return *this;
     }
     PipelineBuilder& StencilFailOp(Face::Code face, StencilOp::Code op) {
         if (Face::Front & face) {
-            desc.StencilFrontFailOp = op;
+            Desc.StencilFrontFailOp = op;
         }
         if (Face::Back & face) {
-            desc.StencilBackFailOp = op;
+            Desc.StencilBackFailOp = op;
         }
         return *this;
     }
     PipelineBuilder& StencilDepthFailOp(Face::Code face, StencilOp::Code op) {
         if (Face::Front & face) {
-            desc.StencilFrontDepthFailOp = op;
+            Desc.StencilFrontDepthFailOp = op;
         }
         if (Face::Back & face) {
-            desc.StencilBackDepthFailOp = op;
+            Desc.StencilBackDepthFailOp = op;
         }
         return *this;
     }
     PipelineBuilder& StencilPassOp(Face::Code face, StencilOp::Code op) {
         if (Face::Front & face) {
-            desc.StencilFrontPassOp = op;
+            Desc.StencilFrontPassOp = op;
         }
         if (Face::Back & face) {
-            desc.StencilBackPassOp = op;
+            Desc.StencilBackPassOp = op;
         }
         return *this;
     }
     PipelineBuilder& StencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
         if (Face::Front & face) {
-            desc.StencilFrontCmpFunc = fn;
+            Desc.StencilFrontCmpFunc = fn;
         }
         if (Face::Back & face) {
-            desc.StencilBackCmpFunc = fn;
+            Desc.StencilBackCmpFunc = fn;
         }
         return *this;
     }
     PipelineBuilder& BlendEnabled(bool b) {
-        desc.BlendEnabled = b; return *this;
+        Desc.BlendEnabled = b; return *this;
     }
     PipelineBuilder& BlendSrcFactor(BlendChannel::Code chn, BlendFactor::Code f) {
         if (BlendChannel::RGB & chn) {
-            desc.BlendSrcFactorRGB = f;
+            Desc.BlendSrcFactorRGB = f;
         }
         if (BlendChannel::Alpha & chn) {
-            desc.BlendSrcFactorAlpha = f;
+            Desc.BlendSrcFactorAlpha = f;
         }
         return *this;
     }
     PipelineBuilder& BlendDstFactor(BlendChannel::Code chn, BlendFactor::Code f) {
         if (BlendChannel::RGB & chn) {
-            desc.BlendDstFactorRGB = f;
+            Desc.BlendDstFactorRGB = f;
         }
         if (BlendChannel::Alpha & chn) {
-            desc.BlendDstFactorAlpha = f;
+            Desc.BlendDstFactorAlpha = f;
         }
         return *this;
     }
     PipelineBuilder& BlendOp(BlendChannel::Code chn, BlendOperation::Code op) {
         if (BlendChannel::RGB & chn) {
-            desc.BlendOpRGB = op;
+            Desc.BlendOpRGB = op;
         }
         if (BlendChannel::Alpha & chn) {
-            desc.BlendOpAlpha = op;
+            Desc.BlendOpAlpha = op;
         }
         return *this;
     }
     PipelineBuilder& ColorWriteMask(PixelChannel::Mask m) {
-        desc.ColorWriteMask = m; return *this;
+        Desc.ColorWriteMask = m; return *this;
     }
     PipelineBuilder& ColorFormat(PixelFormat::Code fmt) {
-        desc.ColorFormat = fmt; return *this;
+        Desc.ColorFormat = fmt; return *this;
     }
     PipelineBuilder& DepthFormat(PixelFormat::Code fmt) {
-        desc.DepthFormat = fmt; return *this;
+        Desc.DepthFormat = fmt; return *this;
     }
     PipelineBuilder& SampleCount(int c) {
-        desc.SampleCount = c; return *this;
+        Desc.SampleCount = c; return *this;
     }
     PipelineBuilder& MRTCount(int c) {
-        desc.MRTCount = c; return *this;
+        Desc.MRTCount = c; return *this;
     }
     PipelineBuilder& BlendColor(const glm::vec4& c) {
-        desc.BlendColor = c; return *this;
+        Desc.BlendColor = c; return *this;
     }
     PipelineBuilder& CullFaceEnabled(bool b) {
-        desc.CullFaceEnabled = b; return *this;
+        Desc.CullFaceEnabled = b; return *this;
     }
     PipelineBuilder& CullFace(Face::Code f) {
-        desc.CullFace = f; return *this;
+        Desc.CullFace = f; return *this;
     }
     PipelineBuilder& ScissorTestEnabled(bool b) {
-        desc.ScissorTestEnabled = b; return *this;
+        Desc.ScissorTestEnabled = b; return *this;
     }
     PipelineBuilder& AlphaToCoverageEnabled(bool b) {
-        desc.AlphaToCoverageEnabled = b; return *this;
+        Desc.AlphaToCoverageEnabled = b; return *this;
     }
+    Id Create();
 };
-inline PipelineBuilder MakePipelineDesc() {
-    return PipelineBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**
@@ -1368,69 +1380,78 @@ public:
 */
 class TextureBuilder {
 public:
-    TextureDesc desc;
-    operator TextureDesc() {
-        return desc;
-    }
+    TextureDesc Desc;
+    const void* ContentPtr = nullptr;
+    int ContentSize = 0;
+    TextureBuilder() { };
+    TextureBuilder(const TextureBuilder& rhs): Desc(rhs.Desc) { };
     TextureBuilder& Locator(const class Locator& loc) {
-        desc.Locator = loc; return *this;
+        Desc.Locator = loc; return *this;
     }
     TextureBuilder& Type(TextureType::Code t) {
-        desc.Type = t; return *this;
+        Desc.Type = t; return *this;
     }
     TextureBuilder& RenderTarget(bool b) {
-        desc.RenderTarget = b; return *this;
+        Desc.RenderTarget = b; return *this;
     }
     TextureBuilder& Width(int w) {
-        desc.Width = w; return *this;
+        Desc.Width = w; return *this;
     }
     TextureBuilder& Height(int h) {
-        desc.Height = h; return *this;
+        Desc.Height = h; return *this;
     }
     TextureBuilder& Depth(int d) {
-        desc.Depth = d; return *this;
+        Desc.Depth = d; return *this;
     }
     TextureBuilder& NumMipMaps(int n) {
-        desc.NumMipMaps = n; return *this;
+        Desc.NumMipMaps = n; return *this;
     }
     TextureBuilder& Usage(Usage::Code u) {
-        desc.Usage = u; return *this;
+        Desc.Usage = u; return *this;
     }
     TextureBuilder& Format(PixelFormat::Code fmt) {
-        desc.Format = fmt; return *this;
+        Desc.Format = fmt; return *this;
     }
     TextureBuilder& SampleCount(int c) {
-        desc.SampleCount = c; return *this;
+        Desc.SampleCount = c; return *this;
     }
     TextureBuilder& MagFilter(TextureFilterMode::Code f) {
-        desc.MagFilter = f; return *this;
+        Desc.MagFilter = f; return *this;
     }
     TextureBuilder& MinFilter(TextureFilterMode::Code f) {
-        desc.MinFilter = f; return *this;
+        Desc.MinFilter = f; return *this;
     }
     TextureBuilder& WrapU(TextureWrapMode::Code m) {
-        desc.WrapU = m; return *this;
+        Desc.WrapU = m; return *this;
     }
     TextureBuilder& WrapV(TextureWrapMode::Code m) {
-        desc.WrapV = m; return *this;
+        Desc.WrapV = m; return *this;
     }
     TextureBuilder& WrapW(TextureWrapMode::Code m) {
-        desc.WrapW = m; return *this;
+        Desc.WrapW = m; return *this;
     }
     TextureBuilder& NativeTexture(int index, intptr_t tex) {
-        desc.NativeTextures[index] = tex; return *this;
+        Desc.NativeTextures[index] = tex; return *this;
     }
-    TextureBuilder& ImageDataSize(int faceIndex, int mipIndex, int size) {
-        desc.ImageData.Sizes[faceIndex][mipIndex] = size;
+    TextureBuilder& Content(const void* ptr, int size) {
+        ContentPtr = ptr;
+        ContentSize = size;
         return *this;
     }
-    TextureBuilder& ImageDataOffset(int faceIndex, int mipIndex, int offset) {
-        desc.ImageData.Offsets[faceIndex][mipIndex] = offset;
+    TextureBuilder& Content(const Buffer& content) {
+        ContentPtr = content.Data();
+        ContentSize = content.Size();
         return *this;
     }
+    TextureBuilder& MipDataSize(int faceIndex, int mipIndex, int size) {
+        Desc.ImageData.Sizes[faceIndex][mipIndex] = size;
+        return *this;
+    }
+    TextureBuilder& MipDataOffset(int faceIndex, int mipIndex, int offset) {
+        Desc.ImageData.Offsets[faceIndex][mipIndex] = offset;
+        return *this;
+    }
+    Id Create();
 };
-inline TextureBuilder MakeTextureDesc() {
-    return TextureBuilder();
-}
 
 } // namespace Oryol

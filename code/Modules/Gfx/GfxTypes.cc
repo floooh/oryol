@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "GfxTypes.h"
+#include "Gfx.h"
 #include <cstring>
 
 namespace Oryol {
@@ -825,6 +826,24 @@ ShaderStage::Code ShaderDesc::TexBindStage(int index) const {
 //------------------------------------------------------------------------------
 int ShaderDesc::TexBindSlot(int index) const {
     return this->textures[index].bindSlot;
+}
+
+//------------------------------------------------------------------------------
+Id BufferBuilder::Create() {
+    if (this->ContentSize != 0) {
+        o_assert_dbg(this->ContentSize >= this->Desc.Size);
+    }
+    return Gfx::CreateBuffer(this->Desc, this->ContentPtr, this->Desc.Size);
+}
+
+//------------------------------------------------------------------------------
+Id PipelineBuilder::Create() {
+    return Gfx::CreatePipeline(this->Desc);
+}
+
+//------------------------------------------------------------------------------
+Id TextureBuilder::Create() {
+    return Gfx::CreateTexture(this->Desc, this->ContentPtr, this->ContentSize);
 }
 
 } // namespace Oryol

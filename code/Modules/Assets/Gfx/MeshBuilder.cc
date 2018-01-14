@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "MeshBuilder.h"
 #include "Core/Assertion.h"
+#include "Gfx/Gfx.h"
 #include <cstring>
 
 namespace Oryol {
@@ -29,16 +30,18 @@ MeshBuilder::Begin() {
     // setup Result object
     this->result.Layout = this->Layout;
     this->result.IndexType = this->IndexType;
-    this->result.VertexBufferDesc = MakeBufferDesc()
+    this->result.VertexBufferDesc = Gfx::Buffer()
         .Size(vbSize)
         .Type(BufferType::VertexBuffer)
-        .Usage(this->VertexUsage);
+        .Usage(this->VertexUsage)
+        .Desc;
     if (ibSize > 0) {
-        this->result.IndexBufferDesc = MakeBufferDesc()
+        this->result.IndexBufferDesc = Gfx::Buffer()
             .Size(ibSize)
             .Type(BufferType::IndexBuffer)
             .Usage(this->IndexUsage)
-            .Offset(this->result.VertexBufferDesc.Size);
+            .Offset(this->result.VertexBufferDesc.Size)
+            .Desc;
     }
     else {
         this->result.IndexBufferDesc = BufferDesc();

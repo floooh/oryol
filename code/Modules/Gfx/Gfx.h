@@ -50,6 +50,13 @@ public:
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
 
+    /// start creating a buffer through a BufferBuilder object
+    static class BufferBuilder Buffer();
+    /// start creating a texture through a texture builder object
+    static class TextureBuilder Texture();
+    /// start creating a pipeline through a pipeline builder object
+    static class PipelineBuilder Pipeline();
+
     /// generate new resource label and push on label stack
     static ResourceLabel PushResourceLabel();
     /// push explicit resource label on label stack
@@ -59,13 +66,13 @@ public:
     /// create a buffer object without associated data
     static Id CreateBuffer(const BufferDesc& desc);
     /// create a buffer object with associated data
-    static Id CreateBuffer(const BufferDesc& setup, const Buffer& data);
+    static Id CreateBuffer(const BufferDesc& setup, const class Buffer& data);
     /// create a buffer object with raw pointer to associated data
     static Id CreateBuffer(const BufferDesc& setup, const void* data, int size);
     /// create a texture object without associated data
     static Id CreateTexture(const TextureDesc& desc);
     /// create a texture object with associated data
-    static Id CreateTexture(const TextureDesc& setup, const Buffer& data);
+    static Id CreateTexture(const TextureDesc& setup, const class Buffer& data);
     /// create a texture object with raw pointer to associated data
     static Id CreateTexture(const TextureDesc& setup, const void* data, int size);
     /// create a shader object
@@ -130,6 +137,24 @@ private:
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
     applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, (const uint8_t*)&ub, sizeof(ub));
+}
+
+//------------------------------------------------------------------------------
+inline BufferBuilder
+Gfx::Buffer() {
+    return BufferBuilder();
+}
+
+//------------------------------------------------------------------------------
+inline TextureBuilder
+Gfx::Texture() {
+    return TextureBuilder();
+}
+
+//------------------------------------------------------------------------------
+inline PipelineBuilder
+Gfx::Pipeline() {
+    return PipelineBuilder();
 }
 
 } // namespace Oryol

@@ -50,13 +50,14 @@ ShapeApp::OnInit() {
     this->drawState.IndexBuffer = Gfx::CreateBuffer(this->shapes.IndexBufferDesc, this->shapes.Data);
 
     Id shd = Gfx::CreateShader(Shader::Desc());
-    this->drawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+    this->drawState.Pipeline = Gfx::Pipeline()
         .Shader(shd)
         .Layout(0, this->shapes.Layout)
         .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxSetup.SampleCount));
+        .SampleCount(gfxSetup.SampleCount)
+        .Create();
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;

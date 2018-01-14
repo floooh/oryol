@@ -45,14 +45,15 @@ PackedNormalsApp::OnInit() {
         .Build();
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(this->shapes.VertexBufferDesc, this->shapes.Data);
     this->drawState.IndexBuffer = Gfx::CreateBuffer(this->shapes.IndexBufferDesc, this->shapes.Data);
-    this->drawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+    this->drawState.Pipeline = Gfx::Pipeline()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, this->shapes.Layout)
         .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
-        .SampleCount(4));
+        .SampleCount(4)
+        .Create();
 
     float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
