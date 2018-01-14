@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 52
+Version = 53
 
 import os, platform, json
 import genutil as util
@@ -483,7 +483,7 @@ def writeProgramHeader(f, shdLib, prog, slang) :
             f.write('    #pragma pack(pop)\n')
         for tex in refl['textures']:
             f.write('    static const int {} = {};\n'.format(tex['name'], tex['slot']))
-    f.write('    extern Oryol::ShaderSetup Setup();\n')
+    f.write('    extern Oryol::ShaderDesc Desc();\n')
     f.write('}\n')
 
 #-------------------------------------------------------------------------------
@@ -556,9 +556,9 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
 
 #-------------------------------------------------------------------------------
 def writeProgramSource(f, shdLib, prog, slangs) :
-    # write the Setup() function
-    f.write('Oryol::ShaderSetup ' + prog.name + '::Setup() {\n')
-    f.write('    Oryol::ShaderSetup setup("' + prog.name + '");\n')
+    # write the Desc() function
+    f.write('Oryol::ShaderDesc ' + prog.name + '::Desc() {\n')
+    f.write('    Oryol::ShaderDesc desc("' + prog.name + '");\n')
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
     vsName = vs.name
@@ -568,20 +568,20 @@ def writeProgramSource(f, shdLib, prog, slangs) :
         vsSource = '{}_{}_src'.format(vsName, slang)
         fsSource = '{}_{}_src'.format(fsName, slang)
         if isGLSL(slang):
-            f.write('    setup.SetProgramFromSources({}, {}, {});\n'.format(
+            f.write('    desc.SetProgramFromSources({}, {}, {});\n'.format(
                 slangType, vsSource, fsSource));
         elif isHLSL(slang):
             vs_c_name = '{}_vs_hlsl5'.format(vs.name)
             fs_c_name = '{}_fs_hlsl5'.format(fs.name)
-            f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
+            f.write('    desc.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
                 slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
         elif isMetal(slang):
             vs_c_name = '{}_vs_metallib'.format(vs.name)
             fs_c_name = '{}_fs_metallib'.format(fs.name)
-            f.write('    setup.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}), "main0", "main0");\n'.format(
+            f.write('    desc.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}), "main0", "main0");\n'.format(
                 slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
 
-    # add uniform layouts to setup object
+    # add uniform layouts to desc object
     for stage in ['VS', 'FS']:
         shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
         refl = shd.slReflection[slang]
@@ -590,12 +590,12 @@ def writeProgramSource(f, shdLib, prog, slangs) :
             ub_size = ub['size']
             if 'glsl' in slang:
                 ub_size = roundup(ub_size, 16)
-            f.write('    setup.AddUniformBlock("{}", "{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
+            f.write('    desc.AddUniformBlock("{}", "{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
                 ub['type'], ub['name'], ub_size, ub['type'], ub['type']))
-        # add textures layouts to setup objects
+        # add textures layouts to desc objects
         for tex in refl['textures']:
-            f.write('    setup.AddTexture("{}", {}, Oryol::ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
-    f.write('    return setup;\n')
+            f.write('    desc.AddTexture("{}", {}, Oryol::ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
+    f.write('    return desc;\n')
     f.write('}\n')
 
 #-------------------------------------------------------------------------------

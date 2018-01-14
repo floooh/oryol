@@ -56,14 +56,24 @@ public:
     static void PushResourceLabel(ResourceLabel label);
     /// pop resource label from label stack
     static ResourceLabel PopResourceLabel();
-    /// create a resource object without associated data
-    template<class SETUP> static Id CreateResource(const SETUP& setup);
-    /// create a resource object with associated data
-    template<class SETUP> static Id CreateResource(const SetupAndData<SETUP>& setupAndData);
-    /// create a resource object with associated data
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const Buffer& data);
-    /// create a resource object with raw pointer to associated data
-    template<class SETUP> static Id CreateResource(const SETUP& setup, const void* data, int size);
+    /// create a buffer object without associated data
+    static Id CreateBuffer(const BufferDesc& desc);
+    /// create a buffer object with associated data
+    static Id CreateBuffer(const BufferDesc& setup, const Buffer& data);
+    /// create a buffer object with raw pointer to associated data
+    static Id CreateBuffer(const BufferDesc& setup, const void* data, int size);
+    /// create a texture object without associated data
+    static Id CreateTexture(const TextureDesc& desc);
+    /// create a texture object with associated data
+    static Id CreateTexture(const TextureDesc& setup, const Buffer& data);
+    /// create a texture object with raw pointer to associated data
+    static Id CreateTexture(const TextureDesc& setup, const void* data, int size);
+    /// create a shader object
+    static Id CreateShader(const ShaderDesc& desc);
+    /// create a pipeline object
+    static Id CreatePipeline(const PipelineDesc& desc);
+    /// create a render-pass object
+    static Id CreatePass(const PassDesc& desc);
     /// lookup a resource Id by Locator
     static Id LookupResource(const Locator& locator);
     /// destroy one or several resources by matching label
@@ -120,28 +130,6 @@ private:
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
     applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, (const uint8_t*)&ub, sizeof(ub));
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup) {
-    o_assert_dbg(IsValid());
-    return CreateResource(setup, nullptr, 0);
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SETUP& setup, const Buffer& data) {
-    o_assert_dbg(IsValid());
-    o_assert_dbg(!data.Empty());
-    return CreateResource(setup, data.Data(), data.Size());
-}
-
-//------------------------------------------------------------------------------
-template<class SETUP> inline Id
-Gfx::CreateResource(const SetupAndData<SETUP>& setupAndData) {
-    o_assert_dbg(IsValid());
-    return CreateResource(setupAndData.Setup, setupAndData.Data);
 }
 
 } // namespace Oryol

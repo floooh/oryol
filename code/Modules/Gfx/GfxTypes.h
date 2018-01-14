@@ -546,6 +546,7 @@ struct BlendState {
     PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
     PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
     int MRTCount = 1;
+    glm::vec4 Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 };
 
 //------------------------------------------------------------------------------
@@ -938,7 +939,7 @@ struct VertexBufferAttrs {
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::GfxSetup
+    @class Oryol::GfxDesc
     @ingroup Gfx
     @brief Gfx module setup parameters
     
@@ -1005,14 +1006,11 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::BufferSetup
+    @class Oryol::BufferDesc
     @ingroup Gfx
-    @brief setup attributes for vertex- and index-buffers
+    @brief creation attributes for vertex- and index-buffers
 */
-class BufferSetup {
-public:
-    /// create initialized BufferSetup object
-    static BufferSetup Make(int size, BufferType::Code type=BufferType::VertexBuffer, Usage::Code usage=Usage::Immutable);
+struct BufferDesc {
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// the buffer type (vertex- or index-buffer)
@@ -1021,58 +1019,125 @@ public:
     Usage::Code Usage = Usage::Immutable;
     /// the buffer size in bytes
     int Size = 0;
-    /// optional byte-offset to data pointer
+    /// optional byte-offset to init-data
     int Offset = 0;
     /// optional native 3D-API buffers
     StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
-
-    BufferSetup();
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::PipelineSetup
+    @class Oryol::BufferBuilder
     @ingroup Gfx
-    @brief setup object for pipeline resources
+    @brief builder for BufferDesc object
 */
-class PipelineSetup {
+class BufferBuilder {
 public:
-    /// construct from shader
-    static PipelineSetup FromShader(const Id& shd);
-    /// construct from vertex layout and shader
-    static PipelineSetup FromShaderAndLayout(const Id& shd, const VertexLayout& layout);
+    BufferDesc desc;
+    operator BufferDesc() {
+        return desc;
+    }
+    BufferBuilder& Locator(const class Locator& loc) {
+        desc.Locator = loc; return *this;
+    }
+    BufferBuilder& Type(BufferType::Code t) {
+        desc.Type = t; return *this;
+    }
+    BufferBuilder& Usage(Usage::Code u) {
+        desc.Usage = u; return *this;
+    }
+    BufferBuilder& Size(int s) {
+        desc.Size = s; return *this;
+    }
+    BufferBuilder& Offset(int o) {
+        desc.Offset = o; return *this;
+    }
+    BufferBuilder& NativeBuffer(int index, intptr_t buf) {
+        desc.NativeBuffers[index] = buf; return *this;
+    }
+};
+inline BufferBuilder MakeBufferDesc() {
+    return BufferBuilder();
+}
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::PipelineDesc
+    @ingroup Gfx
+    @brief creation attribute for pipeline state objects
+*/
+struct PipelineDesc {
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// shader 
     Id Shader;
+    /// input vertex layouts (one per vertex buffer slot)
+    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> Layouts;
     /// primitive type 
     PrimitiveType::Code PrimType = PrimitiveType::Triangles;
     /// index type (none, 16-bit or 32-bit)
     IndexType::Code IndexType = IndexType::None;
     /// blend state (GLES3.0 doesn't allow separate MRT blend state
     struct BlendState BlendState;
-    /// blend color
-    glm::vec4 BlendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     /// depth-stencil state
     struct DepthStencilState DepthStencilState;
     /// rasterizer state
     struct RasterizerState RasterizerState;
-    /// input vertex layouts (one per mesh slot)
-    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> Layouts;
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::PassSetup
+    @class Oryol::PipelineBuilder
     @ingroup Gfx
-    @brief setup attributes for render pass resource
+    @brief builder for PipelineDesc objects
 */
-class PassSetup {
+class PipelineBuilder {
+public:
+    PipelineDesc desc;
+    operator PipelineDesc() {
+        return desc;
+    }
+    PipelineBuilder& Locator(const class Locator& loc) {
+        desc.Locator = loc; return *this;
+    }
+    PipelineBuilder& Shader(const Id& shd) {
+        desc.Shader = shd; return *this;
+    }
+    PipelineBuilder& Layout(int slotIndex, const VertexLayout& layout) {
+        desc.Layouts[slotIndex] = layout; return *this;
+    }
+    PipelineBuilder& PrimitiveType(PrimitiveType::Code t) {
+        desc.PrimType = t; return *this;
+    }
+    PipelineBuilder& IndexType(IndexType::Code t) {
+        desc.IndexType = t; return *this;
+    }
+    PipelineBuilder& BlendState(const struct BlendState& bs) {
+        desc.BlendState = bs; return *this;
+    }
+    PipelineBuilder& DepthStencilState(const struct DepthStencilState& dss) {
+        desc.DepthStencilState = dss; return *this;
+    }
+    PipelineBuilder& RasterizerState(const struct RasterizerState& rs) {
+        desc.RasterizerState = rs; return *this;
+    }
+};
+inline PipelineBuilder MakePipelineDesc() {
+    return PipelineBuilder();
+}
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::PassDesc
+    @ingroup Gfx
+    @brief creation attributes for render pass resource
+*/
+class PassDesc {
 public:
     /// construct from single render target textures, and option depth-stencil texture
-    static PassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
+    static PassDesc From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
     /// construct from MRT render target textures, and option depth-stencil texture
-    static PassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
+    static PassDesc From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
     /// resource locator
     class Locator Locator = Locator::NonShared();
     /// 1..N color attachments
@@ -1090,16 +1155,16 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ShaderSetup
+    @class Oryol::ShaderDesc
     @ingroup Gfx
-    @brief setup class for shaders
+    @brief creation attributes for shaders
 */
-class ShaderSetup {
+class ShaderDesc {
 public:
     /// default constructor
-    ShaderSetup() { }
+    ShaderDesc() { }
     /// construct with resource locator
-    ShaderSetup(const Locator& loc) : Locator(loc) { }
+    ShaderDesc(const Locator& loc) : Locator(loc) { }
     /// the resource locator
     class Locator Locator = Locator::NonShared();
     /// set shader program from vertex- and fragment-shader sources
@@ -1185,38 +1250,38 @@ private:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::TextureSetup
+    @class Oryol::TextureDesc
     @ingroup Gfx
     @brief setup object for textures and render targets
 */
-class TextureSetup {
+class TextureDesc {
 public:
     /// setup 2D texture from raw pixel data
-    static TextureSetup FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
     /// setup cube texture from raw pixel data
-    static TextureSetup FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
     //// setup 3D texture from raw pixel data
-    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
     /// setup array texture from raw pixel data
-    static TextureSetup FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
     /// setup empty 2D texture
-    static TextureSetup Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
     /// setup empty cube texture
-    static TextureSetup EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
     /// setup empty 3D texture
-    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
     /// setup empty array texture
-    static TextureSetup EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
+    static TextureDesc EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
     /// setup as 2D render target
-    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
+    static TextureDesc RenderTarget2D(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup as cube render target
-    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
+    static TextureDesc RenderTargetCube(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup as 3D render target
-    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt=PixelFormat::RGBA8);
+    static TextureDesc RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup as array render target
-    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt=PixelFormat::RGBA8);
+    static TextureDesc RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt=PixelFormat::RGBA8);
     /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
-    static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
+    static TextureDesc FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
     /// return true if texture should be setup from raw pixel data
     bool ShouldSetupFromPixelData() const;
     /// return true if texture should be setup from native texture handles
@@ -1254,7 +1319,7 @@ public:
     /// optional image surface offsets and sizes
     ImageDataAttrs ImageData;
     /// default constructor 
-    TextureSetup();
+    TextureDesc();
 private:
     bool setupFromPixelData = false;
     bool setupFromNativeHandle = false;

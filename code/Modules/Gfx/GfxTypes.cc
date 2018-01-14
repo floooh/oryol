@@ -648,49 +648,16 @@ GfxSetup::GfxSetup() {
 }
 
 //------------------------------------------------------------------------------
-BufferSetup::BufferSetup() {
-    this->NativeBuffers.Fill(0);
-}
-
-//------------------------------------------------------------------------------
-BufferSetup
-BufferSetup::Make(int size, BufferType::Code type, Usage::Code usage) {
-    o_assert_dbg(size > 0);
-    BufferSetup setup;
-    setup.Size = size;
-    setup.Type = type;
-    setup.Usage = usage;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-PipelineSetup PipelineSetup::FromShader(const Id& shd) {
-    o_assert_dbg(shd.IsValid());
-    PipelineSetup setup;
-    setup.Shader = shd;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-PipelineSetup PipelineSetup::FromShaderAndLayout(const Id& shd, const VertexLayout& layout) {
-    o_assert_dbg(!layout.Empty() && shd.IsValid());
-    PipelineSetup setup;
-    setup.Layouts[0] = layout;
-    setup.Shader = shd;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-PassSetup PassSetup::From(Id colorTexture, Id depthStencilTexture) {
-    PassSetup setup;
+PassDesc PassDesc::From(Id colorTexture, Id depthStencilTexture) {
+    PassDesc setup;
     setup.ColorAttachments[0].Texture = colorTexture;
     setup.DepthStencilTexture = depthStencilTexture;
     return setup;
 }
 
 //------------------------------------------------------------------------------
-PassSetup PassSetup::From(std::initializer_list<Id> colorTextures, Id depthStencilTexture) {
-    PassSetup setup;
+PassDesc PassDesc::From(std::initializer_list<Id> colorTextures, Id depthStencilTexture) {
+    PassDesc setup;
     int i = 0;
     for (const auto& id : colorTextures) {
         setup.ColorAttachments[i++].Texture = id;
@@ -700,14 +667,14 @@ PassSetup PassSetup::From(std::initializer_list<Id> colorTextures, Id depthStenc
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
+void ShaderDesc::SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
     o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
     this->program.vsSources[slang] = vsSource;
     this->program.fsSources[slang] = fsSource;
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc, const char* fsFunc) {
+void ShaderDesc::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc, const char* fsFunc) {
     o_assert_dbg(vsByteCode && (vsNumBytes > 0));
     o_assert_dbg(fsByteCode && (fsNumBytes > 0));
     this->program.vsByteCode[slang].ptr = vsByteCode;
@@ -729,7 +696,7 @@ void ShaderSetup::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* 
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
+void ShaderDesc::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(type.IsValid());
     o_assert_dbg(bindSlot >= 0);
     uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
@@ -741,7 +708,7 @@ void ShaderSetup::AddUniformBlock(const StringAtom& type, const StringAtom& name
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot) {
+void ShaderDesc::AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot) {
     o_assert_dbg(name.IsValid());
     o_assert_dbg(bindSlot >= 0);
     textureEntry& entry = this->textures[this->numTextures++];
@@ -752,44 +719,44 @@ void ShaderSetup::AddTexture(const StringAtom& name, TextureType::Code type, Sha
 }
 
 //------------------------------------------------------------------------------
-const String& ShaderSetup::VertexShaderSource(ShaderLang::Code slang) const {
+const String& ShaderDesc::VertexShaderSource(ShaderLang::Code slang) const {
     return this->program.vsSources[slang];
 }
 
 //------------------------------------------------------------------------------
-const String& ShaderSetup::FragmentShaderSource(ShaderLang::Code slang) const {
+const String& ShaderDesc::FragmentShaderSource(ShaderLang::Code slang) const {
     return this->program.fsSources[slang];
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
+void ShaderDesc::VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
     outPtr = this->program.vsByteCode[slang].ptr;
     outSize = this->program.vsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------
-void ShaderSetup::FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
+void ShaderDesc::FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
     outPtr = this->program.fsByteCode[slang].ptr;
     outSize = this->program.fsByteCode[slang].size;
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::VertexShaderFunc(ShaderLang::Code slang) const {
+const StringAtom& ShaderDesc::VertexShaderFunc(ShaderLang::Code slang) const {
     return this->program.vsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::FragmentShaderFunc(ShaderLang::Code slang) const {
+const StringAtom& ShaderDesc::FragmentShaderFunc(ShaderLang::Code slang) const {
     return this->program.fsFuncs[slang];
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::NumUniformBlocks() const {
+int ShaderDesc::NumUniformBlocks() const {
     return this->numUniformBlocks;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
+int ShaderDesc::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
     for (int i = 0; i < this->numUniformBlocks; i++) {
         const auto& entry = this->uniformBlocks[i];
         if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
@@ -800,37 +767,37 @@ int ShaderSetup::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, in
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::UniformBlockName(int index) const {
+const StringAtom& ShaderDesc::UniformBlockName(int index) const {
     return this->uniformBlocks[index].name;
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::UniformBlockType(int index) const {
+const StringAtom& ShaderDesc::UniformBlockType(int index) const {
     return this->uniformBlocks[index].type;
 }
 
 //------------------------------------------------------------------------------
-uint32_t ShaderSetup::UniformBlockByteSize(int index) const {
+uint32_t ShaderDesc::UniformBlockByteSize(int index) const {
     return this->uniformBlocks[index].byteSize;
 }
 
 //------------------------------------------------------------------------------
-ShaderStage::Code ShaderSetup::UniformBlockBindStage(int index) const {
+ShaderStage::Code ShaderDesc::UniformBlockBindStage(int index) const {
     return this->uniformBlocks[index].bindStage;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::UniformBlockBindSlot(int index) const {
+int ShaderDesc::UniformBlockBindSlot(int index) const {
     return this->uniformBlocks[index].bindSlot;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::NumTextures() const {
+int ShaderDesc::NumTextures() const {
     return this->numTextures;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
+int ShaderDesc::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
     for (int i = 0; i < this->numTextures; i++) {
         const auto& entry = this->textures[i];
         if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
@@ -841,31 +808,31 @@ int ShaderSetup::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bin
 }
 
 //------------------------------------------------------------------------------
-const StringAtom& ShaderSetup::TexName(int index) const {
+const StringAtom& ShaderDesc::TexName(int index) const {
     return this->textures[index].name;
 }
 
 //------------------------------------------------------------------------------
-TextureType::Code ShaderSetup::TexType(int index) const {
+TextureType::Code ShaderDesc::TexType(int index) const {
     return this->textures[index].type;
 }
 
 //------------------------------------------------------------------------------
-ShaderStage::Code ShaderSetup::TexBindStage(int index) const {
+ShaderStage::Code ShaderDesc::TexBindStage(int index) const {
     return this->textures[index].bindStage;
 }
 
 //------------------------------------------------------------------------------
-int ShaderSetup::TexBindSlot(int index) const {
+int ShaderDesc::TexBindSlot(int index) const {
     return this->textures[index].bindSlot;
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = TextureType::Texture2D;
     setup.Width = w;
@@ -878,11 +845,11 @@ TextureSetup TextureSetup::FromPixelData2D(int w, int h, int numMipMaps, PixelFo
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = TextureType::TextureCube;
     setup.Width = w;
@@ -895,11 +862,11 @@ TextureSetup TextureSetup::FromPixelDataCube(int w, int h, int numMipMaps, Pixel
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (d > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = TextureType::Texture3D;
     setup.Width = w;
@@ -913,11 +880,11 @@ TextureSetup TextureSetup::FromPixelData3D(int w, int h, int d, int numMipMaps, 
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (layers > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupFromPixelData = true;
     setup.Type = TextureType::TextureArray;
     setup.Width = w;
@@ -931,11 +898,11 @@ TextureSetup TextureSetup::FromPixelDataArray(int w, int h, int layers, int numM
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupEmpty = true;
     setup.Type = TextureType::Texture2D;
     setup.Width = w;
@@ -947,11 +914,11 @@ TextureSetup TextureSetup::Empty2D(int w, int h, int numMipMaps, PixelFormat::Co
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupEmpty = true;
     setup.Type = TextureType::TextureCube;
     setup.Width = w;
@@ -963,11 +930,11 @@ TextureSetup TextureSetup::EmptyCube(int w, int h, int numMipMaps, PixelFormat::
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (d > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupEmpty = true;
     setup.Type = TextureType::Texture3D;
     setup.Width = w;
@@ -980,11 +947,11 @@ TextureSetup TextureSetup::Empty3D(int w, int h, int d, int numMipMaps, PixelFor
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint) {
+TextureDesc TextureDesc::EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint) {
     o_assert_dbg((w > 0) && (h > 0) && (layers > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert_dbg((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
-    TextureSetup setup(blueprint);
+    TextureDesc setup(blueprint);
     setup.setupEmpty = true;
     setup.Type = TextureType::TextureArray;
     setup.Width = w;
@@ -997,9 +964,9 @@ TextureSetup TextureSetup::EmptyArray(int w, int h, int layers, int numMipMaps, 
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTarget2D(int w, int h, PixelFormat::Code fmt) {
+TextureDesc TextureDesc::RenderTarget2D(int w, int h, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
-    TextureSetup setup;
+    TextureDesc setup;
     setup.Type = TextureType::Texture2D;
     setup.IsRenderTarget = true;
     setup.Width = w;
@@ -1011,9 +978,9 @@ TextureSetup TextureSetup::RenderTarget2D(int w, int h, PixelFormat::Code fmt) {
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTargetCube(int w, int h, PixelFormat::Code fmt) {
+TextureDesc TextureDesc::RenderTargetCube(int w, int h, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
-    TextureSetup setup;
+    TextureDesc setup;
     setup.Type = TextureType::TextureCube;
     setup.IsRenderTarget = true;
     setup.Width = w;
@@ -1025,9 +992,9 @@ TextureSetup TextureSetup::RenderTargetCube(int w, int h, PixelFormat::Code fmt)
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt) {
+TextureDesc TextureDesc::RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
-    TextureSetup setup;
+    TextureDesc setup;
     setup.Type = TextureType::Texture3D;
     setup.IsRenderTarget = true;
     setup.Width = w;
@@ -1040,9 +1007,9 @@ TextureSetup TextureSetup::RenderTarget3D(int w, int h, int d, PixelFormat::Code
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt) {
+TextureDesc TextureDesc::RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt) {
     o_assert_dbg((w > 0) && (h > 0));
-    TextureSetup setup;
+    TextureDesc setup;
     setup.Type = TextureType::TextureArray;
     setup.IsRenderTarget = true;
     setup.Width = w;
@@ -1055,12 +1022,12 @@ TextureSetup TextureSetup::RenderTargetArray(int w, int h, int layers, PixelForm
 }
 
 //------------------------------------------------------------------------------
-TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t t0, intptr_t t1) {
+TextureDesc TextureDesc::FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t t0, intptr_t t1) {
     o_assert_dbg((w > 0) && (h > 0));
     o_assert_dbg(PixelFormat::IsValidTextureColorFormat(fmt));
     o_assert((numMipMaps > 0) && (numMipMaps < GfxConfig::MaxNumTextureMipMaps));
     o_assert_dbg(t0 != 0);
-    TextureSetup setup;
+    TextureDesc setup;
     setup.setupFromNativeHandle = true;
     setup.Type = type;
     setup.Width = w;
@@ -1074,22 +1041,22 @@ TextureSetup TextureSetup::FromNativeTexture(int w, int h, int numMipMaps, Textu
 }
 
 //------------------------------------------------------------------------------
-bool TextureSetup::ShouldSetupFromPixelData() const {
+bool TextureDesc::ShouldSetupFromPixelData() const {
     return this->setupFromPixelData;
 }
 
 //------------------------------------------------------------------------------
-bool TextureSetup::ShouldSetupFromNativeTexture() const {
+bool TextureDesc::ShouldSetupFromNativeTexture() const {
     return this->setupFromNativeHandle;
 }
 
 //------------------------------------------------------------------------------
-bool TextureSetup::ShouldSetupEmpty() const {
+bool TextureDesc::ShouldSetupEmpty() const {
     return this->setupEmpty;
 }
 
 //------------------------------------------------------------------------------
-TextureSetup::TextureSetup() {
+TextureDesc::TextureDesc() {
     NativeTextures.Fill(0);
 }
 

@@ -31,16 +31,19 @@ TriangleApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
         -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
     };
-    auto bufSetup = BufferSetup::Make(sizeof(vertices));
-    this->drawState.VertexBuffers[0] = Gfx::CreateResource(bufSetup, vertices, sizeof(vertices));
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(
+        MakeBufferDesc().Size(sizeof(vertices)),
+        vertices, sizeof(vertices));
 
     // create shader and pipeline-state-object
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto pipSetup = PipelineSetup::FromShaderAndLayout(shd, {
-        { "position", VertexFormat::Float3 },
-        { "color0", VertexFormat::Float4 }
-    });
-    this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
+    Id shd = Gfx::CreateShader(Shader::Desc());
+    this->drawState.Pipeline = Gfx::CreatePipeline(
+        MakePipelineDesc()
+            .Shader(shd)
+            .Layout(0, {
+                { "position", VertexFormat::Float3 },
+                { "color0", VertexFormat::Float4 }
+            }));
 
     return App::OnInit();
 }

@@ -208,7 +208,7 @@ static void convertStencilState(const StencilState& src, sg_stencil_state& dst) 
 }
 
 //------------------------------------------------------------------------------
-static void convertDepthStencilState(const PipelineSetup& src, sg_pipeline_desc& dst) {
+static void convertDepthStencilState(const PipelineDesc& src, sg_pipeline_desc& dst) {
     convertStencilState(src.DepthStencilState.StencilFront, dst.depth_stencil.stencil_front);
     convertStencilState(src.DepthStencilState.StencilBack, dst.depth_stencil.stencil_back);
     dst.depth_stencil.depth_compare_func = convertCompareFunc(src.DepthStencilState.DepthCmpFunc);
@@ -295,7 +295,7 @@ static sg_pixel_format convertPixelFormat(PixelFormat::Code fmt) {
 }
 
 //------------------------------------------------------------------------------
-static void convertBlendState(const PipelineSetup& src, sg_pipeline_desc& dst) {
+static void convertBlendState(const PipelineDesc& src, sg_pipeline_desc& dst) {
     dst.blend.enabled = src.BlendState.BlendEnabled;
     dst.blend.src_factor_rgb = convertBlendFactor(src.BlendState.SrcFactorRGB);
     dst.blend.dst_factor_rgb = convertBlendFactor(src.BlendState.DstFactorRGB);
@@ -306,10 +306,10 @@ static void convertBlendState(const PipelineSetup& src, sg_pipeline_desc& dst) {
     dst.blend.color_write_mask = convertColorMask(src.BlendState.ColorWriteMask);
     dst.blend.color_format = convertPixelFormat(src.BlendState.ColorFormat);
     dst.blend.depth_format = convertPixelFormat(src.BlendState.DepthFormat);
-    dst.blend.blend_color[0] = src.BlendColor.r;
-    dst.blend.blend_color[1] = src.BlendColor.g;
-    dst.blend.blend_color[2] = src.BlendColor.b;
-    dst.blend.blend_color[3] = src.BlendColor.a;
+    dst.blend.blend_color[0] = src.BlendState.Color.r;
+    dst.blend.blend_color[1] = src.BlendState.Color.g;
+    dst.blend.blend_color[2] = src.BlendState.Color.b;
+    dst.blend.blend_color[3] = src.BlendState.Color.a;
 }
 
 //------------------------------------------------------------------------------
@@ -328,7 +328,7 @@ static sg_cull_mode convertCullMode(bool enabled, Face::Code face) {
 }
 
 //------------------------------------------------------------------------------
-static void convertRasterizerState(const PipelineSetup& src, sg_pipeline_desc& dst) {
+static void convertRasterizerState(const PipelineDesc& src, sg_pipeline_desc& dst) {
     dst.rasterizer.alpha_to_coverage_enabled = src.RasterizerState.AlphaToCoverageEnabled;
     dst.rasterizer.cull_mode = convertCullMode(src.RasterizerState.CullFaceEnabled, src.RasterizerState.CullFace);
     dst.rasterizer.face_winding = _SG_FACEWINDING_DEFAULT;
@@ -368,7 +368,7 @@ static sg_vertex_format convertVertexFormat(VertexFormat::Code fmt) {
 }
 
 //------------------------------------------------------------------------------
-static void convertVertexLayouts(const PipelineSetup& src, sg_pipeline_desc& dst) {
+static void convertVertexLayouts(const PipelineDesc& src, sg_pipeline_desc& dst) {
     o_assert_dbg(GfxConfig::MaxNumVertexBuffers <= SG_MAX_SHADERSTAGE_BUFFERS);
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumVertexBuffers; layoutIndex++) {
         const auto& srcLayout = src.Layouts[layoutIndex];
@@ -531,74 +531,74 @@ sokolGfxBackend::PopResourceLabel() {
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreateBuffer(const BufferSetup& setup, const void* data, int dataSize) {
+sokolGfxBackend::CreateBuffer(const BufferDesc& desc, const void* data, int dataSize) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((data == nullptr) || (setup.Size+setup.Offset) <= dataSize);
+    o_assert_dbg((data == nullptr) || (desc.Size+desc.Offset) <= dataSize);
     sg_buffer_desc sgDesc = { };
-    sgDesc.size = setup.Size;
-    sgDesc.type = convertBufferType(setup.Type);
-    sgDesc.usage = convertUsage(setup.Usage);
-    sgDesc.content = (uint8_t*)data + setup.Offset;
+    sgDesc.size = desc.Size;
+    sgDesc.type = convertBufferType(desc.Type);
+    sgDesc.usage = convertUsage(desc.Usage);
+    sgDesc.content = (uint8_t*)data + desc.Offset;
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
     #if ORYOL_OPENGL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.gl_buffers[i] = (uint32_t) setup.NativeBuffers[i];
+        sgDesc.gl_buffers[i] = (uint32_t) desc.NativeBuffers[i];
     }
     #elif ORYOL_METAL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.mtl_buffers[i] = (const void*) setup.NativeBuffers[i];
+        sgDesc.mtl_buffers[i] = (const void*) desc.NativeBuffers[i];
     }
     #elif ORYOL_D3D11
-    sgDesc.d3d11_buffer = (const void*) setup.NativeBuffers[0]
+    sgDesc.d3d11_buffer = (const void*) desc.NativeBuffers[0]
     #endif
     return makeId(GfxResourceType::Buffer, sg_make_buffer(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreateTexture(const TextureSetup& setup, const void* data, int size) {
+sokolGfxBackend::CreateTexture(const TextureDesc& desc, const void* data, int size) {
     o_assert_dbg(this->isValid);
     sg_image_desc sgDesc = { };
-    sgDesc.type = convertTextureType(setup.Type);
-    sgDesc.render_target = setup.IsRenderTarget;
-    sgDesc.width = setup.Width;
-    sgDesc.height = setup.Height;
-    sgDesc.depth = setup.Depth;
-    sgDesc.num_mipmaps = setup.NumMipMaps;
-    sgDesc.usage = convertUsage(setup.TextureUsage);
-    sgDesc.pixel_format = convertPixelFormat(setup.Format);
-    sgDesc.sample_count = setup.SampleCount;
-    sgDesc.min_filter = convertFilter(setup.Sampler.MinFilter);
-    sgDesc.mag_filter = convertFilter(setup.Sampler.MagFilter);
-    sgDesc.wrap_u = convertWrap(setup.Sampler.WrapU);
-    sgDesc.wrap_v = convertWrap(setup.Sampler.WrapV);
-    sgDesc.wrap_w = convertWrap(setup.Sampler.WrapW);
-    o_assert_dbg(setup.ImageData.NumFaces <= SG_CUBEFACE_NUM);
-    o_assert_dbg(setup.ImageData.NumMipMaps <= SG_MAX_MIPMAPS);
-    for (int f = 0; f < setup.ImageData.NumFaces; f++) {
-        for (int m = 0; m < setup.ImageData.NumMipMaps; m++) {
-            sgDesc.content.subimage[f][m].ptr = (uint8_t*)data + setup.ImageData.Offsets[f][m];
-            sgDesc.content.subimage[f][m].size = setup.ImageData.Sizes[f][m];
+    sgDesc.type = convertTextureType(desc.Type);
+    sgDesc.render_target = desc.IsRenderTarget;
+    sgDesc.width = desc.Width;
+    sgDesc.height = desc.Height;
+    sgDesc.depth = desc.Depth;
+    sgDesc.num_mipmaps = desc.NumMipMaps;
+    sgDesc.usage = convertUsage(desc.TextureUsage);
+    sgDesc.pixel_format = convertPixelFormat(desc.Format);
+    sgDesc.sample_count = desc.SampleCount;
+    sgDesc.min_filter = convertFilter(desc.Sampler.MinFilter);
+    sgDesc.mag_filter = convertFilter(desc.Sampler.MagFilter);
+    sgDesc.wrap_u = convertWrap(desc.Sampler.WrapU);
+    sgDesc.wrap_v = convertWrap(desc.Sampler.WrapV);
+    sgDesc.wrap_w = convertWrap(desc.Sampler.WrapW);
+    o_assert_dbg(desc.ImageData.NumFaces <= SG_CUBEFACE_NUM);
+    o_assert_dbg(desc.ImageData.NumMipMaps <= SG_MAX_MIPMAPS);
+    for (int f = 0; f < desc.ImageData.NumFaces; f++) {
+        for (int m = 0; m < desc.ImageData.NumMipMaps; m++) {
+            sgDesc.content.subimage[f][m].ptr = (uint8_t*)data + desc.ImageData.Offsets[f][m];
+            sgDesc.content.subimage[f][m].size = desc.ImageData.Sizes[f][m];
         }
     }
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
     #if ORYOL_OPENGL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.gl_textures[i] = (uint32_t) setup.NativeTextures[i];
+        sgDesc.gl_textures[i] = (uint32_t) desc.NativeTextures[i];
     }
     #elif ORYOL_METAL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.mtl_buffers[i] = (const void*) setup.NativeTextures[i];
+        sgDesc.mtl_buffers[i] = (const void*) desc.NativeTextures[i];
     }
     #elif ORYOL_D3D11
-    sgDesc.d3d11_buffer = (const void*) setup.NativeTextures[0]
+    sgDesc.d3d11_buffer = (const void*) desc.NativeTextures[0]
     #endif
     return makeId(GfxResourceType::Texture, sg_make_image(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
+sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     o_assert_dbg(this->isValid);
     sg_shader_desc sgDesc = { };
 
@@ -625,29 +625,29 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
 
     // set source- or byte-code, and optional entry function
     #if ORYOL_OPENGL
-    sgDesc.vs.source = setup.VertexShaderSource(slang).AsCStr();
-    sgDesc.fs.source = setup.FragmentShaderSource(slang).AsCStr();
+    sgDesc.vs.source = desc.VertexShaderSource(slang).AsCStr();
+    sgDesc.fs.source = desc.FragmentShaderSource(slang).AsCStr();
     #elif ORYOL_METAL || ORYOL_D3D11
     const void* byteCodePtr; uint32_t byteCodeSize;
-    setup.VertexShaderByteCode(slang, byteCodePtr, byteCodeSize);
+    desc.VertexShaderByteCode(slang, byteCodePtr, byteCodeSize);
     sgDesc.vs.byte_code = byteCodePtr;
     sgDesc.vs.byte_code_size = byteCodeSize;
-    setup.FragmentShaderByteCode(slang, byteCodePtr, byteCodeSize);
+    desc.FragmentShaderByteCode(slang, byteCodePtr, byteCodeSize);
     sgDesc.fs.byte_code = byteCodePtr;
     sgDesc.fs.byte_code_size = byteCodeSize;
     #endif
-    if (setup.VertexShaderFunc(slang).IsValid()) {
-        sgDesc.vs.entry = setup.VertexShaderFunc(slang).AsCStr();
+    if (desc.VertexShaderFunc(slang).IsValid()) {
+        sgDesc.vs.entry = desc.VertexShaderFunc(slang).AsCStr();
     }
-    if (setup.FragmentShaderFunc(slang).IsValid()) {
-        sgDesc.fs.entry = setup.FragmentShaderFunc(slang).AsCStr();
+    if (desc.FragmentShaderFunc(slang).IsValid()) {
+        sgDesc.fs.entry = desc.FragmentShaderFunc(slang).AsCStr();
     }
 
     // uniform block declarations
     int vsUbIndex = 0, fsUbIndex = 0;
-    for (int i = 0; i < setup.NumUniformBlocks(); i++) {
+    for (int i = 0; i < desc.NumUniformBlocks(); i++) {
         sg_shader_uniform_block_desc* ubDesc;
-        if (setup.UniformBlockBindStage(i) == ShaderStage::VS) {
+        if (desc.UniformBlockBindStage(i) == ShaderStage::VS) {
             o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
             ubDesc = &sgDesc.vs.uniform_blocks[vsUbIndex++];
         }
@@ -655,19 +655,19 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
             o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
             ubDesc = &sgDesc.fs.uniform_blocks[fsUbIndex++];
         }
-        ubDesc->size = setup.UniformBlockByteSize(i);
+        ubDesc->size = desc.UniformBlockByteSize(i);
         // size must be a multiple of 16 (sizeof(vec4))
         o_assert_dbg((ubDesc->size & 15) == 0);
-        ubDesc->uniforms[0].name = setup.UniformBlockType(i).AsCStr();
+        ubDesc->uniforms[0].name = desc.UniformBlockType(i).AsCStr();
         ubDesc->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
         ubDesc->uniforms[0].array_count = ubDesc->size / 16;
     }
 
     // texture declarations
     int vsImgIndex = 0, fsImgIndex = 0;
-    for (int i = 0; i < setup.NumTextures(); i++) {
+    for (int i = 0; i < desc.NumTextures(); i++) {
         sg_shader_image_desc* imgDesc;
-        if (setup.TexBindStage(i) == ShaderStage::VS) {
+        if (desc.TexBindStage(i) == ShaderStage::VS) {
             o_assert_dbg(vsImgIndex < SG_MAX_SHADERSTAGE_IMAGES);
             imgDesc = &sgDesc.vs.images[vsImgIndex++];
         }
@@ -675,8 +675,8 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
             o_assert_dbg(fsImgIndex < SG_MAX_SHADERSTAGE_IMAGES);
             imgDesc = &sgDesc.fs.images[fsImgIndex++];
         }
-        imgDesc->type = convertTextureType(setup.TexType(i));
-        imgDesc->name = setup.TexName(i).AsCStr();
+        imgDesc->type = convertTextureType(desc.TexType(i));
+        imgDesc->name = desc.TexName(i).AsCStr();
     }
 
     return makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
@@ -684,22 +684,22 @@ sokolGfxBackend::CreateShader(const ShaderSetup& setup) {
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreatePipeline(const PipelineSetup& setup) {
+sokolGfxBackend::CreatePipeline(const PipelineDesc& desc) {
     o_assert_dbg(this->isValid);
     sg_pipeline_desc sgDesc = { };
-    sgDesc.shader = makeShaderId(setup.Shader);
-    sgDesc.primitive_type = convertPrimitiveType(setup.PrimType);
-    sgDesc.index_type = convertIndexType(setup.IndexType);
-    convertVertexLayouts(setup, sgDesc);
-    convertDepthStencilState(setup, sgDesc);
-    convertBlendState(setup, sgDesc);
-    convertRasterizerState(setup, sgDesc);
+    sgDesc.shader = makeShaderId(desc.Shader);
+    sgDesc.primitive_type = convertPrimitiveType(desc.PrimType);
+    sgDesc.index_type = convertIndexType(desc.IndexType);
+    convertVertexLayouts(desc, sgDesc);
+    convertDepthStencilState(desc, sgDesc);
+    convertBlendState(desc, sgDesc);
+    convertRasterizerState(desc, sgDesc);
     return makeId(GfxResourceType::Pipeline, sg_make_pipeline(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreatePass(const PassSetup& setup) {
+sokolGfxBackend::CreatePass(const PassDesc& desc) {
     o_assert_dbg(this->isValid);
     // FIXME
     return Id::InvalidId();

@@ -304,61 +304,61 @@ Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
 }
 
 //------------------------------------------------------------------------------
-template<> Id
-Gfx::CreateResource(const TextureSetup& setup, const void* data, int size) {
+Id
+Gfx::CreateTexture(const TextureDesc& desc, const void* data, int size) {
     o_assert_dbg(IsValid());
-    Id resId = state->backend.LookupResource(setup.Locator);
+    Id resId = state->backend.LookupResource(desc.Locator);
     if (!resId.IsValid()) {
-        resId = state->backend.CreateTexture(setup, data, size);
-        state->backend.AddResource(setup.Locator, resId);
+        resId = state->backend.CreateTexture(desc, data, size);
+        state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
 }
 
 //------------------------------------------------------------------------------
-template<> Id
-Gfx::CreateResource(const BufferSetup& setup, const void* data, int size) {
+Id
+Gfx::CreateBuffer(const BufferDesc& desc, const void* data, int size) {
     o_assert_dbg(IsValid());
-    Id resId = state->backend.LookupResource(setup.Locator);
+    Id resId = state->backend.LookupResource(desc.Locator);
     if (!resId.IsValid()) {
-        resId = state->backend.CreateBuffer(setup, data, size);
-        state->backend.AddResource(setup.Locator, resId);
+        resId = state->backend.CreateBuffer(desc, data, size);
+        state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
 }
 
 //------------------------------------------------------------------------------
-template<> Id
-Gfx::CreateResource(const ShaderSetup& setup) {
+Id
+Gfx::CreateShader(const ShaderDesc& desc) {
     o_assert_dbg(IsValid());
-    Id resId = state->backend.LookupResource(setup.Locator);
+    Id resId = state->backend.LookupResource(desc.Locator);
     if (!resId.IsValid()) {
-        resId = state->backend.CreateShader(setup);
-        state->backend.AddResource(setup.Locator, resId);
+        resId = state->backend.CreateShader(desc);
+        state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
 }
 
 //------------------------------------------------------------------------------
-template<> Id
-Gfx::CreateResource(const PipelineSetup& setup) {
+Id
+Gfx::CreatePipeline(const PipelineDesc& desc) {
     o_assert_dbg(IsValid());
-    Id resId = state->backend.LookupResource(setup.Locator);
+    Id resId = state->backend.LookupResource(desc.Locator);
     if (!resId.IsValid()) {
-        resId = state->backend.CreatePipeline(setup);
-        state->backend.AddResource(setup.Locator, resId);
+        resId = state->backend.CreatePipeline(desc);
+        state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
 }
 
 //------------------------------------------------------------------------------
-template<> Id
-Gfx::CreateResource(const PassSetup& setup) {
+Id
+Gfx::CreatePass(const PassDesc& desc) {
     o_assert_dbg(IsValid());
-    Id resId = state->backend.LookupResource(setup.Locator);
+    Id resId = state->backend.LookupResource(desc.Locator);
     if (!resId.IsValid()) {
-        resId = state->backend.CreatePass(setup);
-        state->backend.AddResource(setup.Locator, resId);
+        resId = state->backend.CreatePass(desc);
+        state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
 }

@@ -45,15 +45,15 @@ public:
     ResourceLabel PopResourceLabel();
     
     /// create (alloc+init) a buffer resource
-    Id CreateBuffer(const BufferSetup& setup, const void* data, int dataSize);
+    Id CreateBuffer(const BufferDesc& desc, const void* data, int dataSize);
     /// create (alloc+init) an texture resource
-    Id CreateTexture(const TextureSetup& setup, const void* data, int dataSize);
+    Id CreateTexture(const TextureDesc& desc, const void* data, int dataSize);
     /// create (alloc+init) a shader resource
-    Id CreateShader(const ShaderSetup& setup);
+    Id CreateShader(const ShaderDesc& desc);
     /// create (alloc+init) a pipeline resource
-    Id CreatePipeline(const PipelineSetup& setup);
+    Id CreatePipeline(const PipelineDesc& desc);
     /// create (alloc+init) a pass resource
-    Id CreatePass(const PassSetup& setup);
+    Id CreatePass(const PassDesc& desc);
 
     /// allocate a new buffer id
     Id AllocBuffer(const Locator& loc);
@@ -67,15 +67,15 @@ public:
     Id AllocPass(const Locator& loc);
 
     /// initialize a buffer
-    void InitBuffer(const Id& id, const BufferSetup& setup);
+    void InitBuffer(const Id& id, const BufferDesc& desc);
     /// initialize a texture
-    void InitTexture(const Id& id, const TextureSetup& setup);
+    void InitTexture(const Id& id, const TextureDesc& desc);
     /// initialize a shader
-    void InitShader(const Id& id, const ShaderSetup& setup);
+    void InitShader(const Id& id, const ShaderDesc& desc);
     /// initialize a pipeline
-    void InitPipeline(const Id& id, const PipelineSetup& setup);
+    void InitPipeline(const Id& id, const PipelineDesc& desc);
     /// initialize a pass
-    void InitPass(const Id& id, const PassSetup& setup);
+    void InitPass(const Id& id, const PassDesc& desc);
 
     /// lookup a resource Id by locator
     Id LookupResource(const Locator& loc);
