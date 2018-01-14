@@ -53,32 +53,32 @@ SeparateBuffersApp::OnInit() {
         .AddPositions("in_pos", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateResource(this->cubeShape.VertexBufferSetup, this->cubeShape.Data);
-    this->drawState.IndexBuffer = Gfx::CreateResource(this->cubeShape.IndexBufferSetup, this->cubeShape.Data);
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(this->cubeShape.VertexBufferDesc, this->cubeShape.Data);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(this->cubeShape.IndexBufferDesc, this->cubeShape.Data);
 
     // create 3 meshes with only color data
     static const int NumVertices = 24;
     static const int NumColorChannels = 3;
     float colorVertices[NumVertices][NumColorChannels]= { };
-    auto colorSetup = BufferSetup::Make(sizeof(colorVertices));
     for (int i = 0; i < NumColorChannels; i++) {
         for (int vi = 0; vi < NumVertices; vi++) {
             colorVertices[vi][i] = glm::linearRand(0.5f, 1.0f);
         }
-        this->colorBuffers[i] = Gfx::CreateResource(colorSetup, colorVertices, sizeof(colorVertices));
+        this->colorBuffers[i] = Gfx::CreateBuffer(MakeBufferDesc()
+            .Size(sizeof(colorVertices)),
+            colorVertices, sizeof(colorVertices));
     }
 
     // create shader and pipeline, the position data vertex Layout
     // goes into the first slot, and the color data vertex layout into the second slot
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromShader(shd);
-    ps.Layouts[0] = this->cubeShape.Layout;
-    ps.Layouts[1] = { { "in_color", VertexFormat::Float3 } };
-    ps.IndexType = this->cubeShape.IndexType;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .Layout(0, this->cubeShape.Layout)
+        .Layout(1, { { "in_color", VertexFormat::Float3 } })
+        .IndexType(this->cubeShape.IndexType)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(gfxSetup.SampleCount));
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
