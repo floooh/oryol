@@ -200,23 +200,21 @@ static sg_compare_func convertCompareFunc(CompareFunc::Code f) {
 }
 
 //------------------------------------------------------------------------------
-static void convertStencilState(const StencilState& src, sg_stencil_state& dst) {
-    dst.fail_op = convertStencilOp(src.FailOp);
-    dst.depth_fail_op = convertStencilOp(src.DepthFailOp);
-    dst.pass_op = convertStencilOp(src.PassOp);
-    dst.compare_func = convertCompareFunc(src.CmpFunc);
-}
-
-//------------------------------------------------------------------------------
 static void convertDepthStencilState(const PipelineDesc& src, sg_pipeline_desc& dst) {
-    convertStencilState(src.DepthStencilState.StencilFront, dst.depth_stencil.stencil_front);
-    convertStencilState(src.DepthStencilState.StencilBack, dst.depth_stencil.stencil_back);
-    dst.depth_stencil.depth_compare_func = convertCompareFunc(src.DepthStencilState.DepthCmpFunc);
-    dst.depth_stencil.depth_write_enabled = src.DepthStencilState.DepthWriteEnabled;
-    dst.depth_stencil.stencil_enabled = src.DepthStencilState.StencilEnabled;
-    dst.depth_stencil.stencil_read_mask = src.DepthStencilState.StencilReadMask;
-    dst.depth_stencil.stencil_write_mask = src.DepthStencilState.StencilWriteMask;
-    dst.depth_stencil.stencil_ref = src.DepthStencilState.StencilRef;
+    dst.depth_stencil.stencil_front.fail_op = convertStencilOp(src.StencilFrontFailOp);
+    dst.depth_stencil.stencil_front.depth_fail_op = convertStencilOp(src.StencilFrontDepthFailOp);
+    dst.depth_stencil.stencil_front.pass_op = convertStencilOp(src.StencilFrontPassOp);
+    dst.depth_stencil.stencil_front.compare_func = convertCompareFunc(src.StencilFrontCmpFunc);
+    dst.depth_stencil.stencil_back.fail_op = convertStencilOp(src.StencilBackFailOp);
+    dst.depth_stencil.stencil_back.depth_fail_op = convertStencilOp(src.StencilBackDepthFailOp);
+    dst.depth_stencil.stencil_back.pass_op = convertStencilOp(src.StencilBackPassOp);
+    dst.depth_stencil.stencil_back.compare_func = convertCompareFunc(src.StencilBackCmpFunc);
+    dst.depth_stencil.depth_compare_func = convertCompareFunc(src.DepthCmpFunc);
+    dst.depth_stencil.depth_write_enabled = src.DepthWriteEnabled;
+    dst.depth_stencil.stencil_enabled = src.StencilEnabled;
+    dst.depth_stencil.stencil_read_mask = src.StencilReadMask;
+    dst.depth_stencil.stencil_write_mask = src.StencilWriteMask;
+    dst.depth_stencil.stencil_ref = src.StencilRef;
 }
 
 //------------------------------------------------------------------------------
@@ -296,20 +294,21 @@ static sg_pixel_format convertPixelFormat(PixelFormat::Code fmt) {
 
 //------------------------------------------------------------------------------
 static void convertBlendState(const PipelineDesc& src, sg_pipeline_desc& dst) {
-    dst.blend.enabled = src.BlendState.BlendEnabled;
-    dst.blend.src_factor_rgb = convertBlendFactor(src.BlendState.SrcFactorRGB);
-    dst.blend.dst_factor_rgb = convertBlendFactor(src.BlendState.DstFactorRGB);
-    dst.blend.op_rgb = convertBlendOp(src.BlendState.OpRGB);
-    dst.blend.src_factor_alpha = convertBlendFactor(src.BlendState.SrcFactorAlpha);
-    dst.blend.dst_factor_alpha = convertBlendFactor(src.BlendState.DstFactorAlpha);
-    dst.blend.op_alpha = convertBlendOp(src.BlendState.OpAlpha);
-    dst.blend.color_write_mask = convertColorMask(src.BlendState.ColorWriteMask);
-    dst.blend.color_format = convertPixelFormat(src.BlendState.ColorFormat);
-    dst.blend.depth_format = convertPixelFormat(src.BlendState.DepthFormat);
-    dst.blend.blend_color[0] = src.BlendState.Color.r;
-    dst.blend.blend_color[1] = src.BlendState.Color.g;
-    dst.blend.blend_color[2] = src.BlendState.Color.b;
-    dst.blend.blend_color[3] = src.BlendState.Color.a;
+    dst.blend.enabled = src.BlendEnabled;
+    dst.blend.src_factor_rgb = convertBlendFactor(src.BlendSrcFactorRGB);
+    dst.blend.dst_factor_rgb = convertBlendFactor(src.BlendDstFactorRGB);
+    dst.blend.op_rgb = convertBlendOp(src.BlendOpRGB);
+    dst.blend.src_factor_alpha = convertBlendFactor(src.BlendSrcFactorAlpha);
+    dst.blend.dst_factor_alpha = convertBlendFactor(src.BlendDstFactorAlpha);
+    dst.blend.op_alpha = convertBlendOp(src.BlendOpAlpha);
+    dst.blend.color_write_mask = convertColorMask(src.ColorWriteMask);
+    dst.blend.color_attachment_count = src.MRTCount;
+    dst.blend.color_format = convertPixelFormat(src.ColorFormat);
+    dst.blend.depth_format = convertPixelFormat(src.DepthFormat);
+    dst.blend.blend_color[0] = src.BlendColor.r;
+    dst.blend.blend_color[1] = src.BlendColor.g;
+    dst.blend.blend_color[2] = src.BlendColor.b;
+    dst.blend.blend_color[3] = src.BlendColor.a;
 }
 
 //------------------------------------------------------------------------------
@@ -329,10 +328,10 @@ static sg_cull_mode convertCullMode(bool enabled, Face::Code face) {
 
 //------------------------------------------------------------------------------
 static void convertRasterizerState(const PipelineDesc& src, sg_pipeline_desc& dst) {
-    dst.rasterizer.alpha_to_coverage_enabled = src.RasterizerState.AlphaToCoverageEnabled;
-    dst.rasterizer.cull_mode = convertCullMode(src.RasterizerState.CullFaceEnabled, src.RasterizerState.CullFace);
+    dst.rasterizer.alpha_to_coverage_enabled = src.AlphaToCoverageEnabled;
+    dst.rasterizer.cull_mode = convertCullMode(src.CullFaceEnabled, src.CullFace);
     dst.rasterizer.face_winding = _SG_FACEWINDING_DEFAULT;
-    dst.rasterizer.sample_count = src.RasterizerState.SampleCount;
+    dst.rasterizer.sample_count = src.SampleCount;
     dst.rasterizer.depth_bias = 0.0f;
     dst.rasterizer.depth_bias_slope_scale = 0.0f;
     dst.rasterizer.depth_bias_clamp = 0.0f;
@@ -560,25 +559,27 @@ sokolGfxBackend::CreateTexture(const TextureDesc& desc, const void* data, int si
     o_assert_dbg(this->isValid);
     sg_image_desc sgDesc = { };
     sgDesc.type = convertTextureType(desc.Type);
-    sgDesc.render_target = desc.IsRenderTarget;
+    sgDesc.render_target = desc.RenderTarget;
     sgDesc.width = desc.Width;
     sgDesc.height = desc.Height;
     sgDesc.depth = desc.Depth;
     sgDesc.num_mipmaps = desc.NumMipMaps;
-    sgDesc.usage = convertUsage(desc.TextureUsage);
+    sgDesc.usage = convertUsage(desc.Usage);
     sgDesc.pixel_format = convertPixelFormat(desc.Format);
     sgDesc.sample_count = desc.SampleCount;
-    sgDesc.min_filter = convertFilter(desc.Sampler.MinFilter);
-    sgDesc.mag_filter = convertFilter(desc.Sampler.MagFilter);
-    sgDesc.wrap_u = convertWrap(desc.Sampler.WrapU);
-    sgDesc.wrap_v = convertWrap(desc.Sampler.WrapV);
-    sgDesc.wrap_w = convertWrap(desc.Sampler.WrapW);
-    o_assert_dbg(desc.ImageData.NumFaces <= SG_CUBEFACE_NUM);
-    o_assert_dbg(desc.ImageData.NumMipMaps <= SG_MAX_MIPMAPS);
-    for (int f = 0; f < desc.ImageData.NumFaces; f++) {
-        for (int m = 0; m < desc.ImageData.NumMipMaps; m++) {
-            sgDesc.content.subimage[f][m].ptr = (uint8_t*)data + desc.ImageData.Offsets[f][m];
-            sgDesc.content.subimage[f][m].size = desc.ImageData.Sizes[f][m];
+    sgDesc.min_filter = convertFilter(desc.MinFilter);
+    sgDesc.mag_filter = convertFilter(desc.MagFilter);
+    sgDesc.wrap_u = convertWrap(desc.WrapU);
+    sgDesc.wrap_v = convertWrap(desc.WrapV);
+    sgDesc.wrap_w = convertWrap(desc.WrapW);
+    o_assert_dbg(GfxConfig::MaxNumTextureMipMaps <= SG_MAX_MIPMAPS);
+    o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
+    for (int f = 0; f < GfxConfig::MaxNumTextureFaces; f++) {
+        for (int m = 0; m < GfxConfig::MaxNumTextureMipMaps; m++) {
+            if (desc.ImageData.Sizes[f][m] > 0) {
+                sgDesc.content.subimage[f][m].ptr = (uint8_t*)data + desc.ImageData.Offsets[f][m];
+                sgDesc.content.subimage[f][m].size = desc.ImageData.Sizes[f][m];
+            }
         }
     }
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);

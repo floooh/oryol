@@ -29,13 +29,19 @@ MeshBuilder::Begin() {
     // setup Result object
     this->result.Layout = this->Layout;
     this->result.IndexType = this->IndexType;
-    this->result.VertexBufferSetup = BufferSetup::Make(vbSize, BufferType::VertexBuffer, this->VertexUsage);
+    this->result.VertexBufferDesc = MakeBufferDesc()
+        .Size(vbSize)
+        .Type(BufferType::VertexBuffer)
+        .Usage(this->VertexUsage);
     if (ibSize > 0) {
-        this->result.IndexBufferSetup = BufferSetup::Make(ibSize, BufferType::IndexBuffer, this->IndexUsage);
-        this->result.IndexBufferSetup.Offset = this->result.VertexBufferSetup.Size;
+        this->result.IndexBufferDesc = MakeBufferDesc()
+            .Size(ibSize)
+            .Type(BufferType::IndexBuffer)
+            .Usage(this->IndexUsage)
+            .Offset(this->result.VertexBufferDesc.Size);
     }
     else {
-        this->result.IndexBufferSetup = BufferSetup();
+        this->result.IndexBufferDesc = BufferDesc();
     }
     return *this;
 }
@@ -54,8 +60,8 @@ MeshBuilder::Build() {
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
-    this->result.VertexBufferSetup = BufferSetup();
-    this->result.IndexBufferSetup = BufferSetup();
+    this->result.VertexBufferDesc = BufferDesc();
+    this->result.IndexBufferDesc = BufferDesc();
     this->result.Layout = VertexLayout();
     this->result.IndexType = IndexType::Invalid;
     this->result.Data.Clear();

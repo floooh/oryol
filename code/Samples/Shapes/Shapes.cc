@@ -46,16 +46,17 @@ ShapeApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateResource(shapes.VertexBufferSetup, shapes.Data);
-    this->drawState.IndexBuffer = Gfx::CreateResource(shapes.IndexBufferSetup, shapes.Data);
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    
-    auto ps = PipelineSetup::FromShaderAndLayout(shd, shapes.Layout);
-    ps.IndexType = shapes.IndexType;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(this->shapes.VertexBufferDesc, this->shapes.Data);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(this->shapes.IndexBufferDesc, this->shapes.Data);
+
+    Id shd = Gfx::CreateShader(Shader::Desc());
+    this->drawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+        .Shader(shd)
+        .Layout(0, this->shapes.Layout)
+        .IndexType(this->shapes.IndexType)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(gfxSetup.SampleCount));
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;

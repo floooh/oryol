@@ -317,6 +317,18 @@ Gfx::CreateTexture(const TextureDesc& desc, const void* data, int size) {
 
 //------------------------------------------------------------------------------
 Id
+Gfx::CreateTexture(const TextureDesc& desc) {
+    return Gfx::CreateTexture(desc, nullptr, 0);
+}
+
+//------------------------------------------------------------------------------
+Id
+Gfx::CreateTexture(const TextureDesc& desc, const Buffer& data) {
+    return Gfx::CreateTexture(desc, data.Data(), data.Size());
+}
+
+//------------------------------------------------------------------------------
+Id
 Gfx::CreateBuffer(const BufferDesc& desc, const void* data, int size) {
     o_assert_dbg(IsValid());
     Id resId = state->backend.LookupResource(desc.Locator);
@@ -325,6 +337,18 @@ Gfx::CreateBuffer(const BufferDesc& desc, const void* data, int size) {
         state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
+}
+
+//------------------------------------------------------------------------------
+Id
+Gfx::CreateBuffer(const BufferDesc& desc) {
+    return Gfx::CreateBuffer(desc, nullptr, 0);
+}
+
+//------------------------------------------------------------------------------
+Id
+Gfx::CreateBuffer(const BufferDesc& desc, const Buffer& data) {
+    return Gfx::CreateBuffer(desc, data.Data(), data.Size());
 }
 
 //------------------------------------------------------------------------------

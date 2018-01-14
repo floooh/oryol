@@ -40,20 +40,24 @@ OryolMain(PrimitiveTypesApp);
 //------------------------------------------------------------------------------
 Id
 createIndexBuffer(const uint16_t* data, int dataSize) {
-    auto setup = BufferSetup::Make(dataSize, BufferType::IndexBuffer, Usage::Immutable);
-    return Gfx::CreateResource(setup, data, dataSize);
+    return Gfx::CreateBuffer(MakeBufferDesc()
+        .Size(dataSize)
+        .Type(BufferType::IndexBuffer)
+        .Usage(Usage::Immutable),
+        data, dataSize);
 }
 
 //------------------------------------------------------------------------------
 Id
 createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const VertexLayout& layout, Id shd, int sampleCount) {
-    auto pipSetup = PipelineSetup::FromShaderAndLayout(shd, layout);
-    pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    pipSetup.RasterizerState.SampleCount = sampleCount;
-    pipSetup.IndexType = indexType;
-    pipSetup.PrimType = primType;
-    return Gfx::CreateResource(pipSetup);
+    return Gfx::CreatePipeline(MakePipelineDesc()
+        .Shader(shd)
+        .Layout(0, layout)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(sampleCount)
+        .IndexType(indexType)
+        .PrimitiveType(primType));
 }
 
 //------------------------------------------------------------------------------
@@ -89,10 +93,10 @@ PrimitiveTypesApp::OnInit() {
         }
     }
     auto meshResult = meshBuilder.Build();
-    Id vbuf = Gfx::CreateResource(meshResult.VertexBufferSetup, meshResult.Data);
+    Id vbuf = Gfx::CreateBuffer(meshResult.VertexBufferDesc, meshResult.Data);
 
     // a single shader used by all pipeline objects
-    Id shd = Gfx::CreateResource(Shader::Setup());
+    Id shd = Gfx::CreateShader(Shader::Desc());
 
     // now setup a complete draw state (pipeline + index mesh + shared vertex mesh) for
     // each primitive type (points, lines, linestrip, triangles, trianglestrip)

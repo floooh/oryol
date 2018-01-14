@@ -78,8 +78,8 @@ public:
     MeshBuilder& Triangle32(uint32_t triangleIndex, uint32_t vertexIndex0, uint32_t vertexIndex1, uint32_t vertexIndex2);
     /// mesh builder result
     struct Result {
-        BufferSetup VertexBufferSetup;
-        BufferSetup IndexBufferSetup;
+        BufferDesc VertexBufferDesc;
+        BufferDesc IndexBufferDesc;
         VertexLayout Layout;
         IndexType::Code IndexType;
         Buffer Data;

@@ -394,12 +394,9 @@ struct GfxFeature {
 */
 struct Face {
     enum Code {
-        Front = 0,
-        Back,
-        Both,
-
-        Num,
-        Invalid,
+        Front = (1<<0),
+        Back  = (1<<1),
+        Both  = Front|Back
     };
     static const int NumSides = 2;
 };
@@ -496,6 +493,20 @@ struct BlendOperation {
 
 //------------------------------------------------------------------------------
 /**
+    @class Oryol::BlendChannel
+    @ingroup Gfx
+    @brief channels which are affected by blend operation (RGB or Alpha)
+*/
+struct BlendChannel {
+    enum Code {
+        RGB = (1<<0),
+        Alpha = (1<<1),
+        All = RGB|Alpha
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
     @class Oryol::VertexStepFunction
     @ingroup Gfx
     @brief classify vertices in a buffer as per-vertex or per-instance data
@@ -526,86 +537,6 @@ struct PrimitiveGroup {
     PrimitiveGroup(int baseElement, int numElements) :
         BaseElement(baseElement),
         NumElements(numElements) { }
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::BlendState
-    @ingroup Gfx
-    @brief describe alpha blending state
-*/
-struct BlendState {
-    bool BlendEnabled = false;
-    BlendFactor::Code SrcFactorRGB = BlendFactor::One;
-    BlendFactor::Code DstFactorRGB = BlendFactor::Zero;
-    BlendOperation::Code OpRGB = BlendOperation::Add;
-    BlendFactor::Code SrcFactorAlpha = BlendFactor::One;
-    BlendFactor::Code DstFactorAlpha = BlendFactor::Zero;
-    BlendOperation::Code OpAlpha = BlendOperation::Add;
-    PixelChannel::Mask ColorWriteMask = PixelChannel::RGBA;
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
-    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
-    int MRTCount = 1;
-    glm::vec4 Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::StencilState
-    @ingroup Gfx
-    @brief holds stencil-buffer render state for one face side
-*/
-struct StencilState {
-    StencilOp::Code FailOp = StencilOp::Keep;
-    StencilOp::Code DepthFailOp = StencilOp::Keep;
-    StencilOp::Code PassOp = StencilOp::Keep;
-    CompareFunc::Code CmpFunc = CompareFunc::Always;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::DepthStencilState
-    @ingroup Gfx
-    @brief holds the complete depth and stencil render state
-*/
-struct DepthStencilState {
-    StencilState StencilFront;
-    StencilState StencilBack;
-    CompareFunc::Code DepthCmpFunc = CompareFunc::Always;
-    bool DepthWriteEnabled = false;
-    bool StencilEnabled = false;
-    uint8_t StencilReadMask = 0xFF;
-    uint8_t StencilWriteMask = 0xFF;
-    uint8_t StencilRef = 0x00;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::RasterizerState
-    @ingroup Gfx
-    @brief rasterizer state flags
-*/
-struct RasterizerState {
-    bool CullFaceEnabled = false;
-    bool ScissorTestEnabled = false;
-    bool DitherEnabled = true;
-    bool AlphaToCoverageEnabled = false;
-    Face::Code CullFace = Face::Back;
-    int SampleCount = 1;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::SamplerState
-    @ingroup Gfx
-    @brief wrap texture sampler state
-*/
-struct SamplerState {
-    TextureWrapMode::Code WrapU = TextureWrapMode::Repeat;
-    TextureWrapMode::Code WrapV = TextureWrapMode::Repeat;
-    TextureWrapMode::Code WrapW = TextureWrapMode::Repeat;
-    TextureFilterMode::Code MagFilter = TextureFilterMode::Nearest;
-    TextureFilterMode::Code MinFilter = TextureFilterMode::Nearest;
 };
 
 //------------------------------------------------------------------------------
@@ -893,10 +824,6 @@ class ImageDataAttrs {
 public:
     /// constructor
     ImageDataAttrs();
-    /// number of faces
-    int NumFaces = 0;
-    /// number of mipmaps
-    int NumMipMaps = 0;
     /// pixel data mipmap image offsets
     StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Offsets;
     /// pixel data mipmap image sizes
@@ -1077,12 +1004,43 @@ struct PipelineDesc {
     PrimitiveType::Code PrimType = PrimitiveType::Triangles;
     /// index type (none, 16-bit or 32-bit)
     IndexType::Code IndexType = IndexType::None;
-    /// blend state (GLES3.0 doesn't allow separate MRT blend state
-    struct BlendState BlendState;
-    /// depth-stencil state
-    struct DepthStencilState DepthStencilState;
+
+    /// depth-stencil-state
+    CompareFunc::Code DepthCmpFunc = CompareFunc::Always;
+    bool DepthWriteEnabled = false;
+    bool StencilEnabled = false;
+    uint8_t StencilReadMask = 0xFF;
+    uint8_t StencilWriteMask = 0xFF;
+    uint8_t StencilRef = 0x00;
+    StencilOp::Code StencilFrontFailOp = StencilOp::Keep;
+    StencilOp::Code StencilFrontDepthFailOp = StencilOp::Keep;
+    StencilOp::Code StencilFrontPassOp = StencilOp::Keep;
+    CompareFunc::Code StencilFrontCmpFunc = CompareFunc::Always;
+    StencilOp::Code StencilBackFailOp = StencilOp::Keep;
+    StencilOp::Code StencilBackDepthFailOp = StencilOp::Keep;
+    StencilOp::Code StencilBackPassOp = StencilOp::Keep;
+    CompareFunc::Code StencilBackCmpFunc = CompareFunc::Always;
+
+    /// blend state
+    bool BlendEnabled = false;
+    BlendFactor::Code BlendSrcFactorRGB = BlendFactor::One;
+    BlendFactor::Code BlendDstFactorRGB = BlendFactor::Zero;
+    BlendOperation::Code BlendOpRGB = BlendOperation::Add;
+    BlendFactor::Code BlendSrcFactorAlpha = BlendFactor::One;
+    BlendFactor::Code BlendDstFactorAlpha = BlendFactor::Zero;
+    BlendOperation::Code BlendOpAlpha = BlendOperation::Add;
+    PixelChannel::Mask ColorWriteMask = PixelChannel::RGBA;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
+    int MRTCount = 1;
+    glm::vec4 BlendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     /// rasterizer state
-    struct RasterizerState RasterizerState;
+    bool CullFaceEnabled = false;
+    bool ScissorTestEnabled = false;
+    bool AlphaToCoverageEnabled = false;
+    Face::Code CullFace = Face::Back;
+    int SampleCount = 1;
 };
 
 //------------------------------------------------------------------------------
@@ -1112,14 +1070,119 @@ public:
     PipelineBuilder& IndexType(IndexType::Code t) {
         desc.IndexType = t; return *this;
     }
-    PipelineBuilder& BlendState(const struct BlendState& bs) {
-        desc.BlendState = bs; return *this;
+    PipelineBuilder& DepthCmpFunc(CompareFunc::Code f) {
+        desc.DepthCmpFunc = f; return *this;
     }
-    PipelineBuilder& DepthStencilState(const struct DepthStencilState& dss) {
-        desc.DepthStencilState = dss; return *this;
+    PipelineBuilder& DepthWriteEnabled(bool b) {
+        desc.DepthWriteEnabled = b; return *this;
     }
-    PipelineBuilder& RasterizerState(const struct RasterizerState& rs) {
-        desc.RasterizerState = rs; return *this;
+    PipelineBuilder& StencilEnabled(bool b) {
+        desc.StencilEnabled = b; return *this;
+    }
+    PipelineBuilder& StencilReadMask(uint8_t m) {
+        desc.StencilReadMask = m; return *this;
+    }
+    PipelineBuilder& StencilWriteMask(uint8_t m) {
+        desc.StencilWriteMask = m; return *this;
+    }
+    PipelineBuilder& StencilRef(uint8_t r) {
+        desc.StencilRef = r; return *this;
+    }
+    PipelineBuilder& StencilFailOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            desc.StencilFrontFailOp = op;
+        }
+        if (Face::Back & face) {
+            desc.StencilBackFailOp = op;
+        }
+        return *this;
+    }
+    PipelineBuilder& StencilDepthFailOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            desc.StencilFrontDepthFailOp = op;
+        }
+        if (Face::Back & face) {
+            desc.StencilBackDepthFailOp = op;
+        }
+        return *this;
+    }
+    PipelineBuilder& StencilPassOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            desc.StencilFrontPassOp = op;
+        }
+        if (Face::Back & face) {
+            desc.StencilBackPassOp = op;
+        }
+        return *this;
+    }
+    PipelineBuilder& StencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
+        if (Face::Front & face) {
+            desc.StencilFrontCmpFunc = fn;
+        }
+        if (Face::Back & face) {
+            desc.StencilBackCmpFunc = fn;
+        }
+        return *this;
+    }
+    PipelineBuilder& BlendEnabled(bool b) {
+        desc.BlendEnabled = b; return *this;
+    }
+    PipelineBuilder& BlendSrcFactor(BlendChannel::Code chn, BlendFactor::Code f) {
+        if (BlendChannel::RGB & chn) {
+            desc.BlendSrcFactorRGB = f;
+        }
+        if (BlendChannel::Alpha & chn) {
+            desc.BlendSrcFactorAlpha = f;
+        }
+        return *this;
+    }
+    PipelineBuilder& BlendDstFactor(BlendChannel::Code chn, BlendFactor::Code f) {
+        if (BlendChannel::RGB & chn) {
+            desc.BlendDstFactorRGB = f;
+        }
+        if (BlendChannel::Alpha & chn) {
+            desc.BlendDstFactorAlpha = f;
+        }
+        return *this;
+    }
+    PipelineBuilder& BlendOp(BlendChannel::Code chn, BlendOperation::Code op) {
+        if (BlendChannel::RGB & chn) {
+            desc.BlendOpRGB = op;
+        }
+        if (BlendChannel::Alpha & chn) {
+            desc.BlendOpAlpha = op;
+        }
+        return *this;
+    }
+    PipelineBuilder& ColorWriteMask(PixelChannel::Mask m) {
+        desc.ColorWriteMask = m; return *this;
+    }
+    PipelineBuilder& ColorFormat(PixelFormat::Code fmt) {
+        desc.ColorFormat = fmt; return *this;
+    }
+    PipelineBuilder& DepthFormat(PixelFormat::Code fmt) {
+        desc.DepthFormat = fmt; return *this;
+    }
+    PipelineBuilder& SampleCount(int c) {
+        desc.SampleCount = c; return *this;
+    }
+    PipelineBuilder& MRTCount(int c) {
+        desc.MRTCount = c; return *this;
+    }
+    PipelineBuilder& BlendColor(const glm::vec4& c) {
+        desc.BlendColor = c; return *this;
+    }
+    PipelineBuilder& CullFaceEnabled(bool b) {
+        desc.CullFaceEnabled = b; return *this;
+    }
+    PipelineBuilder& CullFace(Face::Code f) {
+        desc.CullFace = f; return *this;
+    }
+    PipelineBuilder& ScissorTestEnabled(bool b) {
+        desc.ScissorTestEnabled = b; return *this;
+    }
+    PipelineBuilder& AlphaToCoverageEnabled(bool b) {
+        desc.AlphaToCoverageEnabled = b; return *this;
     }
 };
 inline PipelineBuilder MakePipelineDesc() {
@@ -1256,75 +1319,118 @@ private:
 */
 class TextureDesc {
 public:
-    /// setup 2D texture from raw pixel data
-    static TextureDesc FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
-    /// setup cube texture from raw pixel data
-    static TextureDesc FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
-    //// setup 3D texture from raw pixel data
-    static TextureDesc FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
-    /// setup array texture from raw pixel data
-    static TextureDesc FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureDesc& blueprint=TextureDesc());
-    /// setup empty 2D texture
-    static TextureDesc Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
-    /// setup empty cube texture
-    static TextureDesc EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
-    /// setup empty 3D texture
-    static TextureDesc Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
-    /// setup empty array texture
-    static TextureDesc EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureDesc& blueprint=TextureDesc());
-    /// setup as 2D render target
-    static TextureDesc RenderTarget2D(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
-    /// setup as cube render target
-    static TextureDesc RenderTargetCube(int w, int h, PixelFormat::Code fmt=PixelFormat::RGBA8);
-    /// setup as 3D render target
-    static TextureDesc RenderTarget3D(int w, int h, int d, PixelFormat::Code fmt=PixelFormat::RGBA8);
-    /// setup as array render target
-    static TextureDesc RenderTargetArray(int w, int h, int layers, PixelFormat::Code fmt=PixelFormat::RGBA8);
-    /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
-    static TextureDesc FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
-    /// return true if texture should be setup from raw pixel data
-    bool ShouldSetupFromPixelData() const;
-    /// return true if texture should be setup from native texture handles
-    bool ShouldSetupFromNativeTexture() const;
-    /// return true if texture should be created empty
-    bool ShouldSetupEmpty() const;
-    /// return true if render target has depth
-    bool HasDepth() const;
-    /// intended usage
-    Usage::Code TextureUsage = Usage::Immutable;
-    /// texture type
-    TextureType::Code Type = TextureType::Texture2D;
-    /// use as render target?
-    bool IsRenderTarget = false;
-    /// width in pixels
-    int Width = 1;
-    /// height in pixels
-    int Height = 1;
-    /// depth/layers in pixels (for 3D and Array textures)
-    int Depth = 1;
-    /// number of mipmaps (default is 1, only for FromPixelData)
-    int NumMipMaps = 1;
-    /// the pixel format
-    PixelFormat::Code Format = PixelFormat::RGBA8;
-    /// MSAA samples (2, 4, 8... no MSAA: 1), check MSAARenderTargets feature availability!
-    int SampleCount = 1;
-    /// sampler state
-    SamplerState Sampler;
     /// resource locator
     class Locator Locator = Locator::NonShared();
-    /// resource placeholder
-    Id Placeholder;
-    /// optional: native textures (only on platforms which support GfxFeature::NativeTextures)
+    /// the texture type
+    TextureType::Code Type = TextureType::Texture2D;
+    /// whether the texture will be used as a render target
+    bool RenderTarget = false;
+    /// the texture width
+    int Width = 1;
+    /// the texture height
+    int Height = 1;
+    /// the texture depth or number of layers
+    int Depth = 1;
+    /// number of mipmaps in the texture
+    int NumMipMaps = 1;
+    /// the usage-hint of the texture
+    Usage::Code Usage = Usage::Immutable;
+    /// the pixel format (can be one of the depth formats if this is a depth-render-target)
+    PixelFormat::Code Format = PixelFormat::RGBA8;
+    /// the sample count, for MSAA render targets
+    int SampleCount = 1;
+    /// magnification texture filter mode
+    TextureFilterMode::Code MagFilter = TextureFilterMode::Nearest;
+    /// minification texture filter mode
+    TextureFilterMode::Code MinFilter = TextureFilterMode::Nearest;
+    /// texture coordinate wrapping mode along U
+    TextureWrapMode::Code WrapU = TextureWrapMode::Repeat;
+    /// texture coordinate wrapping mode along V
+    TextureWrapMode::Code WrapV = TextureWrapMode::Repeat;
+    /// texture coordinate wrapping mode along W
+    TextureWrapMode::Code WrapW = TextureWrapMode::Repeat;
+    /// optional native textures (only on platforms which support GfxFeature::NativeTextures)
     StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeTextures;
     /// optional image surface offsets and sizes
     ImageDataAttrs ImageData;
-    /// default constructor 
-    TextureDesc();
-private:
-    bool setupFromPixelData = false;
-    bool setupFromNativeHandle = false;
-    bool setupEmpty = false;
-    bool hasMipMaps = false;
+
+    /// default constructor
+    TextureDesc() {
+        NativeTextures.Fill(0);
+    }
 };
-    
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::TextureBuilder
+    @ingroup Gfx
+    @brief builder for TextureDesc objects
+*/
+class TextureBuilder {
+public:
+    TextureDesc desc;
+    operator TextureDesc() {
+        return desc;
+    }
+    TextureBuilder& Locator(const class Locator& loc) {
+        desc.Locator = loc; return *this;
+    }
+    TextureBuilder& Type(TextureType::Code t) {
+        desc.Type = t; return *this;
+    }
+    TextureBuilder& RenderTarget(bool b) {
+        desc.RenderTarget = b; return *this;
+    }
+    TextureBuilder& Width(int w) {
+        desc.Width = w; return *this;
+    }
+    TextureBuilder& Height(int h) {
+        desc.Height = h; return *this;
+    }
+    TextureBuilder& Depth(int d) {
+        desc.Depth = d; return *this;
+    }
+    TextureBuilder& NumMipMaps(int n) {
+        desc.NumMipMaps = n; return *this;
+    }
+    TextureBuilder& Usage(Usage::Code u) {
+        desc.Usage = u; return *this;
+    }
+    TextureBuilder& Format(PixelFormat::Code fmt) {
+        desc.Format = fmt; return *this;
+    }
+    TextureBuilder& SampleCount(int c) {
+        desc.SampleCount = c; return *this;
+    }
+    TextureBuilder& MagFilter(TextureFilterMode::Code f) {
+        desc.MagFilter = f; return *this;
+    }
+    TextureBuilder& MinFilter(TextureFilterMode::Code f) {
+        desc.MinFilter = f; return *this;
+    }
+    TextureBuilder& WrapU(TextureWrapMode::Code m) {
+        desc.WrapU = m; return *this;
+    }
+    TextureBuilder& WrapV(TextureWrapMode::Code m) {
+        desc.WrapV = m; return *this;
+    }
+    TextureBuilder& WrapW(TextureWrapMode::Code m) {
+        desc.WrapW = m; return *this;
+    }
+    TextureBuilder& NativeTexture(int index, intptr_t tex) {
+        desc.NativeTextures[index] = tex; return *this;
+    }
+    TextureBuilder& ImageDataSize(int faceIndex, int mipIndex, int size) {
+        desc.ImageData.Sizes[faceIndex][mipIndex] = size;
+        return *this;
+    }
+    TextureBuilder& ImageDataOffset(int faceIndex, int mipIndex, int offset) {
+        desc.ImageData.Offsets[faceIndex][mipIndex] = offset;
+        return *this;
+    }
+};
+inline TextureBuilder MakeTextureDesc() {
+    return TextureBuilder();
+}
+
 } // namespace Oryol

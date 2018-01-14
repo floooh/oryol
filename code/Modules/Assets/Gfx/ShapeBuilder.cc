@@ -281,8 +281,8 @@ ShapeBuilder::Build() {
     }
     MeshBuilder::Result meshResult = this->meshBuilder.Build();
     ShapeBuilder::Result shapeResult;
-    shapeResult.VertexBufferSetup = std::move(meshResult.VertexBufferSetup);
-    shapeResult.IndexBufferSetup = std::move(meshResult.IndexBufferSetup);
+    shapeResult.VertexBufferDesc = std::move(meshResult.VertexBufferDesc);
+    shapeResult.IndexBufferDesc = std::move(meshResult.IndexBufferDesc);
     shapeResult.Layout = std::move(meshResult.Layout);
     shapeResult.IndexType = meshResult.IndexType;
     shapeResult.Data = std::move(meshResult.Data);

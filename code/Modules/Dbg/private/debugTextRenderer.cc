@@ -145,23 +145,25 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         { "color0", VertexFormat::UByte4N }
     };
     const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
-    auto vbuf = BufferSetup::Make(vbufSize, BufferType::VertexBuffer, Usage::Stream);
-    this->drawState.VertexBuffers[0] = Gfx::CreateResource(vbuf);
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(MakeBufferDesc()
+        .Size(vbufSize)
+        .Type(BufferType::VertexBuffer)
+        .Usage(Usage::Stream));
     o_assert_dbg(this->drawState.VertexBuffers[0].IsValid());
 
     // create pipeline object
-    Id shd = Gfx::CreateResource(DbgTextShader::Setup());
-    auto ps = PipelineSetup::FromShaderAndLayout(shd, this->vertexLayout);
-    ps.DepthStencilState.DepthWriteEnabled = false;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    ps.BlendState.BlendEnabled = true;
-    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
-    ps.BlendState.ColorFormat = setup.ColorFormat;
-    ps.BlendState.DepthFormat = setup.DepthFormat;
-    ps.RasterizerState.SampleCount = setup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+        .Shader(Gfx::CreateShader(DbgTextShader::Desc()))
+        .Layout(0, this->vertexLayout)
+        .DepthWriteEnabled(false)
+        .DepthCmpFunc(CompareFunc::Always)
+        .BlendEnabled(true)
+        .BlendSrcFactor(BlendChannel::RGB, BlendFactor::SrcAlpha)
+        .BlendDstFactor(BlendChannel::RGB, BlendFactor::OneMinusSrcAlpha)
+        .ColorWriteMask(PixelChannel::RGB)
+        .ColorFormat(setup.ColorFormat)
+        .DepthFormat(setup.DepthFormat)
+        .SampleCount(setup.SampleCount));
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;
@@ -190,15 +192,17 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
     }
 
     // setup texture, pixel format is 8bpp uncompressed
-    auto texSetup = TextureSetup::FromPixelData2D(imgWidth, imgHeight, 1, PixelFormat::L8);
-    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
-    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-    texSetup.ImageData.Sizes[0][0] = imgDataSize;
-    Id tex = Gfx::CreateResource(texSetup, data);
-    o_assert_dbg(tex.IsValid());
-    this->drawState.FSTexture[DbgTextShader::tex] = tex;
+    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::CreateTexture(MakeTextureDesc()
+        .Type(TextureType::Texture2D)
+        .Width(imgWidth)
+        .Height(imgHeight)
+        .Format(PixelFormat::L8)
+        .MinFilter(TextureFilterMode::Nearest)
+        .MagFilter(TextureFilterMode::Nearest)
+        .WrapU(TextureWrapMode::ClampToEdge)
+        .WrapV(TextureWrapMode::ClampToEdge)
+        .ImageDataSize(0, 0, imgDataSize),
+        data);
 }
 
 //------------------------------------------------------------------------------

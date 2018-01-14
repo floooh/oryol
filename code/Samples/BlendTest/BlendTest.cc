@@ -32,14 +32,15 @@ BlendTestApp::OnInit() {
 
     // create pipeline object for a patterned background
     float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    auto bgBuf = BufferSetup::Make(sizeof(bgVertices));
-    this->bgDrawState.VertexBuffers[0] = Gfx::CreateResource(bgBuf, bgVertices, sizeof(bgVertices));
-    Id bgShd = Gfx::CreateResource(BGShader::Setup());
-    auto ps = PipelineSetup::FromShaderAndLayout(bgShd, {
-        { "in_pos", VertexFormat::Float2 }
-    });
-    ps.PrimType = PrimitiveType::TriangleStrip;
-    this->bgDrawState.Pipeline = Gfx::CreateResource(ps);
+    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(MakeBufferDesc()
+        .Size(sizeof(bgVertices)),
+        bgVertices, sizeof(bgVertices));
+    this->bgDrawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+        .Shader(Gfx::CreateShader(BGShader::Desc()))
+        .Layout(0, {
+            { "in_pos", VertexFormat::Float2 }
+        })
+        .PrimitiveType(PrimitiveType::TriangleStrip));
 
     // setup a triangle mesh and shader
     float triVertices[] = {
@@ -48,22 +49,25 @@ BlendTestApp::OnInit() {
           0.05f, -0.05f, 0.5f,  0.0f, 0.75f, 0.0f, 0.75f,
           -0.05f, -0.05f, 0.5f, 0.0f, 0.0f, 0.75f, 0.75f
     };
-    this->triVBuf = Gfx::CreateResource(BufferSetup::Make(sizeof(triVertices)), triVertices, sizeof(triVertices));
+    this->triVBuf = Gfx::CreateBuffer(MakeBufferDesc()
+        .Size(sizeof(triVertices)),
+        triVertices, sizeof(triVertices));
 
     // setup one draw state for each blend factor combination
-    Id shd = Gfx::CreateResource(TriShader::Setup());
-    ps = PipelineSetup::FromShaderAndLayout(shd, {
-        { "in_pos", VertexFormat::Float3 },
-        { "in_color", VertexFormat::Float4 }
-    });
-    ps.BlendState.BlendEnabled = true;
-    ps.BlendColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
+    auto ps = MakePipelineDesc()
+        .Shader(Gfx::CreateShader(TriShader::Desc()))
+        .Layout(0, {
+            { "in_pos", VertexFormat::Float3 },
+            { "in_color", VertexFormat::Float4 }
+        })
+        .BlendEnabled(true)
+        .BlendColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
+        .ColorWriteMask(PixelChannel::RGB);
     for (uint32_t y = 0; y < BlendFactor::Num; y++) {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
-            ps.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
-            ps.BlendState.DstFactorRGB = (BlendFactor::Code) y;
-            this->pipelines[y][x] = Gfx::CreateResource(ps);
+            ps.BlendSrcFactor(BlendChannel::RGB, (BlendFactor::Code)x);
+            ps.BlendDstFactor(BlendChannel::RGB, (BlendFactor::Code)y);
+            this->pipelines[y][x] = Gfx::CreatePipeline(ps);
         }
     }
     return App::OnInit();

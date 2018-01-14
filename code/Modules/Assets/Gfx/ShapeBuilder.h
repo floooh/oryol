@@ -45,8 +45,8 @@ public:
 
     /// result struct
     struct Result {
-        BufferSetup VertexBufferSetup;
-        BufferSetup IndexBufferSetup;
+        BufferDesc VertexBufferDesc;
+        BufferDesc IndexBufferDesc;
         VertexLayout Layout;
         IndexType::Code IndexType;
         Buffer Data;
