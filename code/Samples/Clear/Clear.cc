@@ -21,7 +21,7 @@ OryolMain(ClearApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ClearApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(400, 300, "Oryol Clear Sample"));
+    Gfx::Setup(GfxDesc::Window(400, 300, "Oryol Clear Sample"));
     return App::OnInit();
 }
 

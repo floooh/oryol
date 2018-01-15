@@ -30,7 +30,7 @@ OryolMain(DebugTextApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 600, "Oryol DebugText Sample");
+    auto gfxSetup = GfxDesc::Window(800, 600, "Oryol DebugText Sample");
     gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
     Gfx::Setup(gfxSetup);
     DbgSetup dbgSetup;

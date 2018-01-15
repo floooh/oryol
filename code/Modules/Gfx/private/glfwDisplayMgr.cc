@@ -41,10 +41,10 @@ glfwDisplayMgr::getGlfwWindow() {
 
 //------------------------------------------------------------------------------
 void
-glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
+glfwDisplayMgr::SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
     
-    displayMgrBase::SetupDisplay(setup, ptrs);
+    displayMgrBase::SetupDisplay(desc, ptrs);
     
     // setup GLFW
     if (!glfwInit()) {
@@ -53,11 +53,11 @@ glfwDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
     glfwSetErrorCallback(glfwErrorCallback);
     
     // setup the GLFW main window
-    this->createMainWindow(setup);
+    this->createMainWindow(desc);
     
     // and make the window's GL context current
     glfwMakeContextCurrent(glfwWindow);
-    glfwSwapInterval(setup.SwapInterval);
+    glfwSwapInterval(desc.SwapInterval);
 
     // setup extensions and platform-dependent constants
     flextInit(glfwWindow);
@@ -140,7 +140,7 @@ glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int heigh
 
 //------------------------------------------------------------------------------
 void
-glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
+glfwDisplayMgr::createMainWindow(const GfxDesc& desc) {
     o_assert_dbg(nullptr == glfwDisplayMgr::glfwWindow);
 
     #if ORYOL_MACOS
@@ -157,9 +157,9 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
     glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Blue));
     glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Alpha));
     #endif
-    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Depth));
-    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(setup.DepthFormat, PixelChannel::Stencil));
-    glfwWindowHint(GLFW_SAMPLES, setup.SampleCount > 1 ? setup.SampleCount : 0);
+    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Depth));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Stencil));
+    glfwWindowHint(GLFW_SAMPLES, desc.SampleCount > 1 ? desc.SampleCount : 0);
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif
@@ -170,14 +170,14 @@ glfwDisplayMgr::createMainWindow(const GfxSetup& setup) {
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
-    if (!setup.Windowed) {
+    if (!desc.Windowed) {
         glfwMonitor = glfwGetPrimaryMonitor();
     }
     
     // now actually create the window
-    StringBuilder strBuilder(setup.Title);
+    StringBuilder strBuilder(desc.Title);
     strBuilder.Append(" (GL)");
-    glfwDisplayMgr::glfwWindow = glfwCreateWindow(setup.Width, setup.Height, strBuilder.AsCStr(), glfwMonitor, 0);
+    glfwDisplayMgr::glfwWindow = glfwCreateWindow(desc.Width, desc.Height, strBuilder.AsCStr(), glfwMonitor, 0);
     o_assert(nullptr != glfwDisplayMgr::glfwWindow);
 }
 

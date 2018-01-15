@@ -27,7 +27,7 @@ class mesh;
 class Gfx {
 public:
     /// setup Gfx module
-    static void Setup(const GfxSetup& setup);
+    static void Setup(const GfxDesc& desc);
     /// discard Gfx module
     static void Discard();
     /// check if Gfx module is setup
@@ -42,7 +42,7 @@ public:
     static void Unsubscribe(GfxEvent::HandlerId id);
     
     /// get the original render setup object
-    static const class GfxSetup& GfxSetup();
+    static const class GfxDesc& Desc();
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
     /// get the current render pass attributes (default or offscreen)
@@ -51,11 +51,13 @@ public:
     static const GfxFrameInfo& FrameInfo();
 
     /// start creating a buffer through a BufferBuilder object
-    static class BufferBuilder Buffer();
+    static BufferBuilder Buffer();
     /// start creating a texture through a texture builder object
-    static class TextureBuilder Texture();
+    static TextureBuilder Texture();
+    /// start creating a shader through a shader builder object
+    static ShaderBuilder Shader();
     /// start creating a pipeline through a pipeline builder object
-    static class PipelineBuilder Pipeline();
+    static PipelineBuilder Pipeline();
 
     /// generate new resource label and push on label stack
     static ResourceLabel PushResourceLabel();
@@ -88,6 +90,8 @@ public:
 
     /// test if an optional feature is supported
     static bool QueryFeature(GfxFeature::Code feat);
+    /// get the supported shader language
+    static ShaderLang::Code QueryShaderLang();
     /// query number of free slots for resource type
     static int QueryFreeResourceSlots(GfxResourceType::Code resourceType);
     /// query resource info (fast)
@@ -149,6 +153,12 @@ Gfx::Buffer() {
 inline TextureBuilder
 Gfx::Texture() {
     return TextureBuilder();
+}
+
+//------------------------------------------------------------------------------
+inline ShaderBuilder
+Gfx::Shader() {
+    return ShaderBuilder();
 }
 
 //------------------------------------------------------------------------------

@@ -26,21 +26,23 @@ OryolMain(BlendTestApp);
 AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(1024, 768, "Oryol Blend Sample");
-    gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] =  512;
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::Window(1024, 768, "Oryol Blend Sample");
+    gfxDesc.ResourcePoolSize[GfxResourceType::Pipeline] =  512;
+    Gfx::Setup(gfxDesc);
 
     // create pipeline object for a patterned background
     float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(MakeBufferDesc()
-        .Size(sizeof(bgVertices)),
-        bgVertices, sizeof(bgVertices));
-    this->bgDrawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+    this->bgDrawState.VertexBuffers[0] = Gfx::Buffer()
+        .Size(sizeof(bgVertices))
+        .Content(bgVertices)
+        .Create();
+    this->bgDrawState.Pipeline = Gfx::Pipeline()
         .Shader(Gfx::CreateShader(BGShader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float2 }
         })
-        .PrimitiveType(PrimitiveType::TriangleStrip));
+        .PrimitiveType(PrimitiveType::TriangleStrip)
+        .Create();
 
     // setup a triangle mesh and shader
     float triVertices[] = {
@@ -49,12 +51,13 @@ BlendTestApp::OnInit() {
           0.05f, -0.05f, 0.5f,  0.0f, 0.75f, 0.0f, 0.75f,
           -0.05f, -0.05f, 0.5f, 0.0f, 0.0f, 0.75f, 0.75f
     };
-    this->triVBuf = Gfx::CreateBuffer(MakeBufferDesc()
-        .Size(sizeof(triVertices)),
-        triVertices, sizeof(triVertices));
+    this->triVBuf = Gfx::Buffer()
+        .Size(sizeof(triVertices))
+        .Content(triVertices)
+        .Create();
 
     // setup one draw state for each blend factor combination
-    auto ps = MakePipelineDesc()
+    auto ps = Gfx::Pipeline()
         .Shader(Gfx::CreateShader(TriShader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float3 },
@@ -65,9 +68,9 @@ BlendTestApp::OnInit() {
         .ColorWriteMask(PixelChannel::RGB);
     for (uint32_t y = 0; y < BlendFactor::Num; y++) {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
-            ps.BlendSrcFactor(BlendChannel::RGB, (BlendFactor::Code)x);
-            ps.BlendDstFactor(BlendChannel::RGB, (BlendFactor::Code)y);
-            this->pipelines[y][x] = Gfx::CreatePipeline(ps);
+            ps.BlendSrcFactorRGB((BlendFactor::Code)x);
+            ps.BlendDstFactorRGB((BlendFactor::Code)y);
+            this->pipelines[y][x] = ps.Create();
         }
     }
     return App::OnInit();

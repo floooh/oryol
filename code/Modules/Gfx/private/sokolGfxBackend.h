@@ -22,7 +22,7 @@ public:
     ~sokolGfxBackend();
 
     /// setup the Gfx backend
-    void Setup(const GfxSetup& setup, const gfxPointers& ptrs);
+    void Setup(const GfxDesc& desc, const gfxPointers& ptrs);
     /// shutdown the Gfx backend
     void Discard();
     /// check if Gfx backend has been setup
@@ -31,6 +31,8 @@ public:
     bool QuitRequested();
     /// check if optional feature is supported
     bool QueryFeature(GfxFeature::Code feature);
+    /// query the supported shader language
+    ShaderLang::Code QueryShaderLang();
 
     /// subscribe to display events
     GfxEvent::HandlerId Subscribe(GfxEvent::Handler handler);

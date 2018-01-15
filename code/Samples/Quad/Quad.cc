@@ -21,7 +21,7 @@ OryolMain(QuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 QuadApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(400, 400, "Oryol Quad Sample"));
+    Gfx::Setup(GfxDesc::Window(400, 400, "Oryol Quad Sample"));
     
     // create vertex buffer
     const float vertices[4 * 7] = {

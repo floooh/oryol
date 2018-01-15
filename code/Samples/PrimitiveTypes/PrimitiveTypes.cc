@@ -40,31 +40,33 @@ OryolMain(PrimitiveTypesApp);
 //------------------------------------------------------------------------------
 Id
 createIndexBuffer(const uint16_t* data, int dataSize) {
-    return Gfx::CreateBuffer(MakeBufferDesc()
+    return Gfx::Buffer()
         .Size(dataSize)
+        .Content(data)
         .Type(BufferType::IndexBuffer)
-        .Usage(Usage::Immutable),
-        data, dataSize);
+        .Usage(Usage::Immutable)
+        .Create();
 }
 
 //------------------------------------------------------------------------------
 Id
 createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const VertexLayout& layout, Id shd, int sampleCount) {
-    return Gfx::CreatePipeline(MakePipelineDesc()
+    return Gfx::Pipeline()
         .Shader(shd)
         .Layout(0, layout)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(sampleCount)
         .IndexType(indexType)
-        .PrimitiveType(primType));
+        .PrimitiveType(primType)
+        .Create();
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 PrimitiveTypesApp::OnInit() {
-    auto gfxSetup = GfxSetup::WindowMSAA4(640, 480, "Oryol PrimitiveTypes Test");
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::WindowMSAA4(640, 480, "Oryol PrimitiveTypes Test");
+    Gfx::Setup(gfxDesc);
     Dbg::Setup();
     Input::Setup();
 
@@ -104,7 +106,7 @@ PrimitiveTypesApp::OnInit() {
     // point list (only need a pipeline object, no index buffer)
     {
         auto& ds = this->drawStates[PrimitiveType::Points];
-        ds.Pipeline = createPipeline(PrimitiveType::Points, IndexType::None, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::Points, IndexType::None, meshBuilder.Layout, shd, gfxDesc.SampleCount);
         ds.VertexBuffers[0] = vbuf;
     }
 
@@ -124,7 +126,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::Lines];
-        ds.Pipeline = createPipeline(PrimitiveType::Lines, IndexType::UInt16, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::Lines, IndexType::UInt16, meshBuilder.Layout, shd, gfxDesc.SampleCount);
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -143,7 +145,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::LineStrip];
-        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, IndexType::UInt16, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, IndexType::UInt16, meshBuilder.Layout, shd, gfxDesc.SampleCount);
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -166,7 +168,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::Triangles];
-        ds.Pipeline = createPipeline(PrimitiveType::Triangles, IndexType::UInt16, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::Triangles, IndexType::UInt16, meshBuilder.Layout, shd, gfxDesc.SampleCount);
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -191,7 +193,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::TriangleStrip];
-        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, IndexType::UInt16, meshBuilder.Layout, shd, gfxSetup.SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, IndexType::UInt16, meshBuilder.Layout, shd, gfxDesc.SampleCount);
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }

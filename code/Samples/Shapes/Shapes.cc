@@ -32,8 +32,8 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnInit() {
 
-    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol Shapes Sample");
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Oryol Shapes Sample");
+    Gfx::Setup(gfxDesc);
 
     ShapeBuilder shapeBuilder;
     shapeBuilder.RandomColors = true;
@@ -56,7 +56,7 @@ ShapeApp::OnInit() {
         .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxSetup.SampleCount)
+        .SampleCount(gfxDesc.SampleCount)
         .Create();
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;

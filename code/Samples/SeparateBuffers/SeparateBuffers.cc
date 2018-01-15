@@ -43,8 +43,8 @@ OryolMain(SeparateBuffersApp);
 AppState::Code
 SeparateBuffersApp::OnInit() {
 
-    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Separate Buffers");
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Separate Buffers");
+    Gfx::Setup(gfxDesc);
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
@@ -64,21 +64,23 @@ SeparateBuffersApp::OnInit() {
         for (int vi = 0; vi < NumVertices; vi++) {
             colorVertices[vi][i] = glm::linearRand(0.5f, 1.0f);
         }
-        this->colorBuffers[i] = Gfx::CreateBuffer(MakeBufferDesc()
-            .Size(sizeof(colorVertices)),
-            colorVertices, sizeof(colorVertices));
+        this->colorBuffers[i] = Gfx::Buffer()
+            .Size(sizeof(colorVertices))
+            .Content(colorVertices)
+            .Create();
     }
 
     // create shader and pipeline, the position data vertex Layout
-    // goes into the first slot, and the color data vertex layout into the second slot
-    this->drawState.Pipeline = Gfx::CreatePipeline(MakePipelineDesc()
+    // goes into the first layout slot, and the color data vertex layout into the second slot
+    this->drawState.Pipeline = Gfx::Pipeline()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, this->cubeShape.Layout)
         .Layout(1, { { "in_color", VertexFormat::Float3 } })
         .IndexType(this->cubeShape.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxSetup.SampleCount));
+        .SampleCount(gfxDesc.SampleCount)
+        .Create();
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;

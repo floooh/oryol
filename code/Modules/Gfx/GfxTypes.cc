@@ -577,53 +577,43 @@ ImageDataAttrs::ImageDataAttrs() {
 }
 
 //------------------------------------------------------------------------------
-int IndexBufferAttrs::ByteSize() const {
-    return NumIndices * IndexType::ByteSize(Type);
-}
-
-//------------------------------------------------------------------------------
-int VertexBufferAttrs::ByteSize() const {
-    return NumVertices * Layout.ByteSize();
-}
-
-//------------------------------------------------------------------------------
-GfxSetup GfxSetup::Window(int width, int height, String windowTitle) {
+GfxDesc GfxDesc::Window(int width, int height, String windowTitle) {
     o_assert_dbg((width > 0) && (height > 0));
-    GfxSetup setup;
-    setup.Width    = width;
-    setup.Height   = height;
-    setup.Windowed = true;
-    setup.Title    = windowTitle;
-    return setup;
+    GfxDesc desc;
+    desc.Width    = width;
+    desc.Height   = height;
+    desc.Windowed = true;
+    desc.Title    = windowTitle;
+    return desc;
 }
 
 //------------------------------------------------------------------------------
-GfxSetup GfxSetup::Fullscreen(int width, int height, String windowTitle) {
+GfxDesc GfxDesc::Fullscreen(int width, int height, String windowTitle) {
     o_assert_dbg((width > 0) && (height > 0));
-    GfxSetup setup;
-    setup.Width    = width;
-    setup.Height   = height;
-    setup.Windowed = false;
-    setup.Title    = windowTitle;
-    return setup;
+    GfxDesc desc;
+    desc.Width    = width;
+    desc.Height   = height;
+    desc.Windowed = false;
+    desc.Title    = windowTitle;
+    return desc;
 }
 
 //------------------------------------------------------------------------------
-GfxSetup GfxSetup::WindowMSAA4(int width, int height, String windowTitle) {
-    GfxSetup setup = Window(width, height, windowTitle);
-    setup.SampleCount = 4;
-    return setup;
+GfxDesc GfxDesc::WindowMSAA4(int width, int height, String windowTitle) {
+    GfxDesc desc = Window(width, height, windowTitle);
+    desc.SampleCount = 4;
+    return desc;
 }
 
 //------------------------------------------------------------------------------
-GfxSetup GfxSetup::FullscreenMSAA4(int width, int height, String windowTitle) {
-    GfxSetup setup = Fullscreen(width, height, windowTitle);
-    setup.SampleCount = 4;
-    return setup;
+GfxDesc GfxDesc::FullscreenMSAA4(int width, int height, String windowTitle) {
+    GfxDesc desc = Fullscreen(width, height, windowTitle);
+    desc.SampleCount = 4;
+    return desc;
 }
 
 //------------------------------------------------------------------------------
-DisplayAttrs GfxSetup::GetDisplayAttrs() const {
+DisplayAttrs GfxDesc::GetDisplayAttrs() const {
     DisplayAttrs attrs;
     attrs.WindowWidth       = this->Width;
     attrs.WindowHeight      = this->Height;
@@ -641,7 +631,7 @@ DisplayAttrs GfxSetup::GetDisplayAttrs() const {
 }
 
 //------------------------------------------------------------------------------
-GfxSetup::GfxSetup() {
+GfxDesc::GfxDesc() {
     for (int i = 0; i < GfxResourceType::Num; i++) {
         ResourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
         ResourceThrottling[i] = 0;    // unthrottled
@@ -665,167 +655,6 @@ PassDesc PassDesc::From(std::initializer_list<Id> colorTextures, Id depthStencil
     }
     setup.DepthStencilTexture = depthStencilTexture;
     return setup;
-}
-
-//------------------------------------------------------------------------------
-void ShaderDesc::SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource) {
-    o_assert_dbg(vsSource.IsValid() && fsSource.IsValid());
-    this->program.vsSources[slang] = vsSource;
-    this->program.fsSources[slang] = fsSource;
-}
-
-//------------------------------------------------------------------------------
-void ShaderDesc::SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc, const char* fsFunc) {
-    o_assert_dbg(vsByteCode && (vsNumBytes > 0));
-    o_assert_dbg(fsByteCode && (fsNumBytes > 0));
-    this->program.vsByteCode[slang].ptr = vsByteCode;
-    this->program.vsByteCode[slang].size = vsNumBytes;
-    this->program.fsByteCode[slang].ptr = fsByteCode;
-    this->program.fsByteCode[slang].size = fsNumBytes;
-    if (vsFunc) {
-        this->program.vsFuncs[slang] = vsFunc;
-    }
-    else {
-        this->program.vsFuncs[slang].Clear();
-    }
-    if (fsFunc) {
-        this->program.fsFuncs[slang] = fsFunc;
-    }
-    else {
-        this->program.fsFuncs[slang].Clear();
-    }
-}
-
-//------------------------------------------------------------------------------
-void ShaderDesc::AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot) {
-    o_assert_dbg(type.IsValid());
-    o_assert_dbg(bindSlot >= 0);
-    uniformBlockEntry& entry = this->uniformBlocks[this->numUniformBlocks++];
-    entry.type = type;
-    entry.name = name;
-    entry.byteSize = byteSize;
-    entry.bindStage = bindStage;
-    entry.bindSlot = bindSlot;
-}
-
-//------------------------------------------------------------------------------
-void ShaderDesc::AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot) {
-    o_assert_dbg(name.IsValid());
-    o_assert_dbg(bindSlot >= 0);
-    textureEntry& entry = this->textures[this->numTextures++];
-    entry.name = name;
-    entry.type = type;
-    entry.bindStage = bindStage;
-    entry.bindSlot = bindSlot;
-}
-
-//------------------------------------------------------------------------------
-const String& ShaderDesc::VertexShaderSource(ShaderLang::Code slang) const {
-    return this->program.vsSources[slang];
-}
-
-//------------------------------------------------------------------------------
-const String& ShaderDesc::FragmentShaderSource(ShaderLang::Code slang) const {
-    return this->program.fsSources[slang];
-}
-
-//------------------------------------------------------------------------------
-void ShaderDesc::VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-    outPtr = this->program.vsByteCode[slang].ptr;
-    outSize = this->program.vsByteCode[slang].size;
-}
-
-//------------------------------------------------------------------------------
-void ShaderDesc::FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const {
-    outPtr = this->program.fsByteCode[slang].ptr;
-    outSize = this->program.fsByteCode[slang].size;
-}
-
-//------------------------------------------------------------------------------
-const StringAtom& ShaderDesc::VertexShaderFunc(ShaderLang::Code slang) const {
-    return this->program.vsFuncs[slang];
-}
-
-//------------------------------------------------------------------------------
-const StringAtom& ShaderDesc::FragmentShaderFunc(ShaderLang::Code slang) const {
-    return this->program.fsFuncs[slang];
-}
-
-//------------------------------------------------------------------------------
-int ShaderDesc::NumUniformBlocks() const {
-    return this->numUniformBlocks;
-}
-
-//------------------------------------------------------------------------------
-int ShaderDesc::UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
-    for (int i = 0; i < this->numUniformBlocks; i++) {
-        const auto& entry = this->uniformBlocks[i];
-        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
-            return i;
-        }
-    }
-    return InvalidIndex;
-}
-
-//------------------------------------------------------------------------------
-const StringAtom& ShaderDesc::UniformBlockName(int index) const {
-    return this->uniformBlocks[index].name;
-}
-
-//------------------------------------------------------------------------------
-const StringAtom& ShaderDesc::UniformBlockType(int index) const {
-    return this->uniformBlocks[index].type;
-}
-
-//------------------------------------------------------------------------------
-uint32_t ShaderDesc::UniformBlockByteSize(int index) const {
-    return this->uniformBlocks[index].byteSize;
-}
-
-//------------------------------------------------------------------------------
-ShaderStage::Code ShaderDesc::UniformBlockBindStage(int index) const {
-    return this->uniformBlocks[index].bindStage;
-}
-
-//------------------------------------------------------------------------------
-int ShaderDesc::UniformBlockBindSlot(int index) const {
-    return this->uniformBlocks[index].bindSlot;
-}
-
-//------------------------------------------------------------------------------
-int ShaderDesc::NumTextures() const {
-    return this->numTextures;
-}
-
-//------------------------------------------------------------------------------
-int ShaderDesc::TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const {
-    for (int i = 0; i < this->numTextures; i++) {
-        const auto& entry = this->textures[i];
-        if ((entry.bindStage == bindStage) && (entry.bindSlot == bindSlot)) {
-            return i;
-        }
-    }
-    return InvalidIndex;
-}
-
-//------------------------------------------------------------------------------
-const StringAtom& ShaderDesc::TexName(int index) const {
-    return this->textures[index].name;
-}
-
-//------------------------------------------------------------------------------
-TextureType::Code ShaderDesc::TexType(int index) const {
-    return this->textures[index].type;
-}
-
-//------------------------------------------------------------------------------
-ShaderStage::Code ShaderDesc::TexBindStage(int index) const {
-    return this->textures[index].bindStage;
-}
-
-//------------------------------------------------------------------------------
-int ShaderDesc::TexBindSlot(int index) const {
-    return this->textures[index].bindSlot;
 }
 
 //------------------------------------------------------------------------------

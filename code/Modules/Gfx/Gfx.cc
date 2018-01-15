@@ -14,7 +14,7 @@ using namespace _priv;
 
 namespace {
     struct _state {
-        class GfxSetup gfxSetup;
+        class GfxDesc gfxDesc;
         GfxFrameInfo gfxFrameInfo;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::gfxBackend backend;
@@ -25,15 +25,15 @@ namespace {
 
 //------------------------------------------------------------------------------
 void
-Gfx::Setup(const class GfxSetup& setup) {
+Gfx::Setup(const class GfxDesc& desc) {
     o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
-    state->gfxSetup = setup;
+    state->gfxDesc = desc;
 
     gfxPointers pointers;
     pointers.displayMgr = &state->backend.displayManager;
     
-    state->backend.Setup(setup, pointers);
+    state->backend.Setup(desc, pointers);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->backend.ProcessSystemEvents();
     });
@@ -79,10 +79,10 @@ Gfx::Unsubscribe(GfxEvent::HandlerId id) {
 }
 
 //------------------------------------------------------------------------------
-const GfxSetup&
-Gfx::GfxSetup() {
+const GfxDesc&
+Gfx::Desc() {
     o_assert_dbg(IsValid());
-    return state->gfxSetup;
+    return state->gfxDesc;
 }
 
 //------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ Gfx::BeginPass() {
     o_assert_dbg(!state->inPass);
     state->inPass = true;
     state->gfxFrameInfo.NumPasses++;
-    state->backend.BeginPass(Id::InvalidId(), &state->gfxSetup.DefaultPassAction);
+    state->backend.BeginPass(Id::InvalidId(), &state->gfxDesc.DefaultPassAction);
 }
 
 //------------------------------------------------------------------------------
@@ -162,6 +162,13 @@ bool
 Gfx::QueryFeature(GfxFeature::Code feat) {
     o_assert_dbg(IsValid());
     return state->backend.QueryFeature(feat);
+}
+
+//------------------------------------------------------------------------------
+ShaderLang::Code
+Gfx::QueryShaderLang() {
+    o_assert_dbg(IsValid());
+    return state->backend.QueryShaderLang();
 }
 
 //------------------------------------------------------------------------------

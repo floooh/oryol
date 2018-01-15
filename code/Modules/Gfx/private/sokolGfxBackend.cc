@@ -332,9 +332,9 @@ static void convertRasterizerState(const PipelineDesc& src, sg_pipeline_desc& ds
     dst.rasterizer.cull_mode = convertCullMode(src.CullFaceEnabled, src.CullFace);
     dst.rasterizer.face_winding = _SG_FACEWINDING_DEFAULT;
     dst.rasterizer.sample_count = src.SampleCount;
-    dst.rasterizer.depth_bias = 0.0f;
-    dst.rasterizer.depth_bias_slope_scale = 0.0f;
-    dst.rasterizer.depth_bias_clamp = 0.0f;
+    dst.rasterizer.depth_bias = src.DepthBias;
+    dst.rasterizer.depth_bias_slope_scale = src.DepthBiasSlopeScale;
+    dst.rasterizer.depth_bias_clamp = src.DepthBiasClamp;
 }
 
 //------------------------------------------------------------------------------
@@ -431,17 +431,17 @@ sokolGfxBackend::~sokolGfxBackend() {
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::Setup(const GfxSetup& setup, const gfxPointers& ptrs) {
+sokolGfxBackend::Setup(const GfxDesc& desc, const gfxPointers& ptrs) {
     o_assert(!this->isValid);
-    this->displayManager.SetupDisplay(setup, ptrs);
+    this->displayManager.SetupDisplay(desc, ptrs);
 
     // setup sokol-gfx
     sg_desc sgDesc = { };
-    sgDesc.buffer_pool_size = setup.ResourcePoolSize[GfxResourceType::Buffer];
-    sgDesc.image_pool_size = setup.ResourcePoolSize[GfxResourceType::Texture];
-    sgDesc.shader_pool_size = setup.ResourcePoolSize[GfxResourceType::Shader];
-    sgDesc.pipeline_pool_size = setup.ResourcePoolSize[GfxResourceType::Pipeline];
-    sgDesc.pass_pool_size = setup.ResourcePoolSize[GfxResourceType::RenderPass];
+    sgDesc.buffer_pool_size = desc.ResourcePoolSize[GfxResourceType::Buffer];
+    sgDesc.image_pool_size = desc.ResourcePoolSize[GfxResourceType::Texture];
+    sgDesc.shader_pool_size = desc.ResourcePoolSize[GfxResourceType::Shader];
+    sgDesc.pipeline_pool_size = desc.ResourcePoolSize[GfxResourceType::Pipeline];
+    sgDesc.pass_pool_size = desc.ResourcePoolSize[GfxResourceType::Pass];
     #if ORYOL_EMSCRIPTEN
     sgDesc.gl_force_gles2 = this->displayManager.force_gles2;
     #elif ORYOL_METAL
@@ -456,8 +456,8 @@ sokolGfxBackend::Setup(const GfxSetup& setup, const gfxPointers& ptrs) {
     #endif
     sg_setup(&sgDesc);
 
-    this->registry.Setup(setup.ResourceRegistryCapacity);
-    this->labelStack.Setup(setup.ResourceLabelStackCapacity);
+    this->registry.Setup(desc.ResourceRegistryCapacity);
+    this->labelStack.Setup(desc.ResourceLabelStackCapacity);
     this->isValid = true;
 }
 
@@ -491,6 +491,32 @@ sokolGfxBackend::QueryFeature(GfxFeature::Code feature) {
     // FIXME
     o_error("sokolGfxBackend::QueryFeature FIXME!\n");
     return false;
+}
+
+//------------------------------------------------------------------------------
+ShaderLang::Code
+sokolGfxBackend::QueryShaderLang() {
+    o_assert_dbg(this->isValid);
+    ShaderLang::Code slang = ShaderLang::Invalid;
+    #if ORYOL_OPENGL_CORE_PROFILE
+    slang = ShaderLang::GLSL330;
+    #elif ORYOL_OPENGL_GLES2
+    slang = ShaderLang::GLSL100;
+    #elif ORYOL_OPENGL_GLES3
+    if (this->displayManager.force_gles2) {
+        slang = ShaderLang::GLSL100;
+    }
+    else {
+        slang = ShaderLang::GLSLES3;
+    }
+    #elif ORYOL_METAL
+    slang = ShaderLang::Metal;
+    #elif ORYOL_D3D11
+    slang = ShaderLang::HLSL5;
+    #else
+    #error("Unknown Platform")
+    #endif
+    return slang;
 }
 
 //------------------------------------------------------------------------------
@@ -603,83 +629,68 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     o_assert_dbg(this->isValid);
     sg_shader_desc sgDesc = { };
 
-    // select the shader language dialect
-    ShaderLang::Code slang = ShaderLang::Invalid;
-    #if ORYOL_OPENGL_CORE_PROFILE
-    slang = ShaderLang::GLSL330;
-    #elif ORYOL_OPENGL_GLES2
-    slang = ShaderLang::GLSL100;
-    #elif ORYOL_OPENGL_GLES3
-    if (this->displayManager.force_gles2) {
-        slang = ShaderLang::GLSL100;
-    }
-    else {
-        slang = ShaderLang::GLSLES3;
-    }
-    #elif ORYOL_METAL
-    slang = ShaderLang::Metal;
-    #elif ORYOL_D3D11
-    slang = ShaderLang::HLSL5;
-    #else
-    #error("Unknown Platform")
-    #endif
-
     // set source- or byte-code, and optional entry function
     #if ORYOL_OPENGL
-    sgDesc.vs.source = desc.VertexShaderSource(slang).AsCStr();
-    sgDesc.fs.source = desc.FragmentShaderSource(slang).AsCStr();
+    sgDesc.vs.source = desc.Stage[ShaderStage::VS].Source;
+    sgDesc.fs.source = desc.Stage[ShaderStage::FS].Source;
     #elif ORYOL_METAL || ORYOL_D3D11
-    const void* byteCodePtr; uint32_t byteCodeSize;
-    desc.VertexShaderByteCode(slang, byteCodePtr, byteCodeSize);
-    sgDesc.vs.byte_code = byteCodePtr;
-    sgDesc.vs.byte_code_size = byteCodeSize;
-    desc.FragmentShaderByteCode(slang, byteCodePtr, byteCodeSize);
-    sgDesc.fs.byte_code = byteCodePtr;
-    sgDesc.fs.byte_code_size = byteCodeSize;
+    sgDesc.vs.byte_code = desc.Stage[ShaderStage::VS].ByteCode;
+    sgDesc.vs.byte_code_size = desc.Stage[ShaderStage::VS].ByteCodeSize;
+    sgDesc.fs.byte_code = desc.Stage[ShaderStage::FS].ByteCode;
+    sgDesc.fs.byte_code_size = desc.Stage[ShaderStage::FS].ByteCodeSize;
     #endif
-    if (desc.VertexShaderFunc(slang).IsValid()) {
-        sgDesc.vs.entry = desc.VertexShaderFunc(slang).AsCStr();
+    if (desc.Stage[ShaderStage::VS].Entry) {
+        sgDesc.vs.entry = desc.Stage[ShaderStage::VS].Entry;
     }
-    if (desc.FragmentShaderFunc(slang).IsValid()) {
-        sgDesc.fs.entry = desc.FragmentShaderFunc(slang).AsCStr();
+    if (desc.Stage[ShaderStage::FS].Entry) {
+        sgDesc.fs.entry = desc.Stage[ShaderStage::FS].Entry;
     }
 
     // uniform block declarations
-    int vsUbIndex = 0, fsUbIndex = 0;
-    for (int i = 0; i < desc.NumUniformBlocks(); i++) {
-        sg_shader_uniform_block_desc* ubDesc;
-        if (desc.UniformBlockBindStage(i) == ShaderStage::VS) {
-            o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
-            ubDesc = &sgDesc.vs.uniform_blocks[vsUbIndex++];
+    o_assert_dbg(GfxConfig::MaxNumUniformBlocksPerStage <= SG_MAX_SHADERSTAGE_UBS);
+    int vsUbIndex = 0;
+    int fsUbIndex = 0;
+    for (int stageIndex = 0; stageIndex < ShaderStage::Num; stageIndex++) {
+        for (int ubIndex = 0; ubIndex < GfxConfig::MaxNumUniformBlocksPerStage; ubIndex++) {
+            auto& src = desc.Stage[stageIndex].UniformBlocks[ubIndex];
+            if (src.Size > 0) {
+                sg_shader_uniform_block_desc* dst = nullptr;
+                if (stageIndex == ShaderStage::VS) {
+                    dst = &sgDesc.vs.uniform_blocks[vsUbIndex++];
+                }
+                else {
+                    dst = &sgDesc.fs.uniform_blocks[fsUbIndex++];
+                }
+                // size must be a multiple of 16 (sizeof(vec4))
+                o_assert_dbg((src.Size & 15) == 0);
+                dst->size = src.Size;
+                dst->uniforms[0].name = src.Type;
+                dst->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
+                dst->uniforms[0].array_count = src.Size / 16;
+            }
         }
-        else {
-            o_assert_dbg(vsUbIndex < SG_MAX_SHADERSTAGE_UBS);
-            ubDesc = &sgDesc.fs.uniform_blocks[fsUbIndex++];
-        }
-        ubDesc->size = desc.UniformBlockByteSize(i);
-        // size must be a multiple of 16 (sizeof(vec4))
-        o_assert_dbg((ubDesc->size & 15) == 0);
-        ubDesc->uniforms[0].name = desc.UniformBlockType(i).AsCStr();
-        ubDesc->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-        ubDesc->uniforms[0].array_count = ubDesc->size / 16;
     }
 
     // texture declarations
-    int vsImgIndex = 0, fsImgIndex = 0;
-    for (int i = 0; i < desc.NumTextures(); i++) {
-        sg_shader_image_desc* imgDesc;
-        if (desc.TexBindStage(i) == ShaderStage::VS) {
-            o_assert_dbg(vsImgIndex < SG_MAX_SHADERSTAGE_IMAGES);
-            imgDesc = &sgDesc.vs.images[vsImgIndex++];
+    o_assert_dbg(GfxConfig::MaxNumShaderTextures <= SG_MAX_SHADERSTAGE_IMAGES);
+    int vsImgIndex = 0;
+    int fsImgIndex = 0;
+    for (int stageIndex = 0; stageIndex < ShaderStage::Num; stageIndex++) {
+        for (int texIndex = 0; texIndex < GfxConfig::MaxNumShaderTextures; texIndex++) {
+            auto& src = desc.Stage[stageIndex].Textures[texIndex];
+            if (src.Type != TextureType::Invalid) {
+                sg_shader_image_desc* dst = nullptr;
+                if (stageIndex == ShaderStage::VS) {
+                    dst = &sgDesc.vs.images[vsImgIndex++];
+                }
+                else {
+                    dst = &sgDesc.fs.images[fsImgIndex++];
+                }
+                dst->type = convertTextureType(src.Type);
+                dst->name = src.Name;
+            }
         }
-        else {
-            o_assert_dbg(fsImgIndex < SG_MAX_SHADERSTAGE_IMAGES);
-            imgDesc = &sgDesc.fs.images[fsImgIndex++];
-        }
-        imgDesc->type = convertTextureType(desc.TexType(i));
-        imgDesc->name = desc.TexName(i).AsCStr();
     }
-
     return makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
 }
 

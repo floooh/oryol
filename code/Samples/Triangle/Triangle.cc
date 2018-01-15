@@ -22,7 +22,7 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(400, 400, "Oryol Triangle Sample"));
+    Gfx::Setup(GfxDesc::Window(400, 400, "Oryol Triangle Sample"));
     
     // create a mesh with vertex data from memory
     const float vertices[] = {

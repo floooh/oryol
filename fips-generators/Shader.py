@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 53
+Version = 56
 
 import os, platform, json
 import genutil as util
@@ -503,6 +503,7 @@ def writeSourceTop(f, absSourcePath, shdLib, slang) :
     f.write('// #version:{}# machine generated, do not edit!\n'.format(Version))
     f.write('//-----------------------------------------------------------------------------\n')
     f.write('#include "Pre.h"\n')
+    f.write('#include "Gfx/Gfx.h"\n')
     f.write('#include "' + hdrFile + '.h"\n')
     f.write('\n')
     if slang == 'hlsl':
@@ -558,7 +559,8 @@ def writeShaderSource(f, absPath, shdLib, shd, slVersion) :
 def writeProgramSource(f, shdLib, prog, slangs) :
     # write the Desc() function
     f.write('Oryol::ShaderDesc ' + prog.name + '::Desc() {\n')
-    f.write('    Oryol::ShaderDesc desc("' + prog.name + '");\n')
+    f.write('    Oryol::ShaderBuilder bld;\n')
+    f.write('    bld.Locator("' + prog.name + '");\n')
     vs = shdLib.vertexShaders[prog.vs]
     fs = shdLib.fragmentShaders[prog.fs]
     vsName = vs.name
@@ -568,20 +570,24 @@ def writeProgramSource(f, shdLib, prog, slangs) :
         vsSource = '{}_{}_src'.format(vsName, slang)
         fsSource = '{}_{}_src'.format(fsName, slang)
         if isGLSL(slang):
-            f.write('    desc.SetProgramFromSources({}, {}, {});\n'.format(
-                slangType, vsSource, fsSource));
+            f.write('    if (Oryol::Gfx::QueryShaderLang() == {}) {{\n'.format(slangType))
+            f.write('        bld.Source(Oryol::ShaderStage::VS, {});\n'.format(vsSource))
+            f.write('        bld.Source(Oryol::ShaderStage::FS, {});\n'.format(fsSource))
+            f.write('    }\n')
         elif isHLSL(slang):
             vs_c_name = '{}_vs_hlsl5'.format(vs.name)
             fs_c_name = '{}_fs_hlsl5'.format(fs.name)
-            f.write('    desc.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}));\n'.format(
-                slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::VS, {}, sizeof({}))\n'.format(vs_c_name, vs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}))\n'.format(fs_c_name, fs_c_name))
         elif isMetal(slang):
             vs_c_name = '{}_vs_metallib'.format(vs.name)
             fs_c_name = '{}_fs_metallib'.format(fs.name)
-            f.write('    desc.SetProgramFromByteCode({}, {}, sizeof({}), {}, sizeof({}), "main0", "main0");\n'.format(
-                slangType, vs_c_name, vs_c_name, fs_c_name, fs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::VS, {}, sizeof({}))\n'.format(vs_c_name, vs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}))\n'.format(fs_c_name, fs_c_name))
+            f.write('    bld.Entry(Oryol::ShaderStage::VS, "main0");\n')
+            f.write('    bld.Entry(Oryol::ShaderStage::FS, "main0");\n')
 
-    # add uniform layouts to desc object
+    # add uniform block layouts to desc object
     for stage in ['VS', 'FS']:
         shd = shdLib.vertexShaders[prog.vs] if stage == 'VS' else shdLib.fragmentShaders[prog.fs]
         refl = shd.slReflection[slang]
@@ -590,12 +596,13 @@ def writeProgramSource(f, shdLib, prog, slangs) :
             ub_size = ub['size']
             if 'glsl' in slang:
                 ub_size = roundup(ub_size, 16)
-            f.write('    desc.AddUniformBlock("{}", "{}", {}, {}::_bindShaderStage, {}::_bindSlotIndex);\n'.format(
-                ub['type'], ub['name'], ub_size, ub['type'], ub['type']))
+            f.write('    bld.UniformBlock(Oryol::ShaderStage::{}, {}, "{}", "{}", {});\n'.format(
+                stage, ub['slot'], ub['name'], ub['type'], ub_size))
         # add textures layouts to desc objects
         for tex in refl['textures']:
-            f.write('    desc.AddTexture("{}", {}, Oryol::ShaderStage::{}, {});\n'.format(tex['name'], texOryolType[tex['type']], stage, tex['slot']))
-    f.write('    return desc;\n')
+            f.write('    bld.Texture(Oryol::ShaderStage::{}, {}, "{}", {});\n'.format(
+                stage, tex['slot'], tex['name'], texOryolType[tex['type']]))
+    f.write('    return bld.Desc;\n')
     f.write('}\n')
 
 #-------------------------------------------------------------------------------

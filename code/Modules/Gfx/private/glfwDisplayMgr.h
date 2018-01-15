@@ -24,7 +24,7 @@ public:
     ~glfwDisplayMgr();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& gfxDesc, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// process window system events (call near start of frame)
@@ -42,7 +42,7 @@ public:
     /// framebuffer size changed callback for GLFW
     static void glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height);
     /// create the main window
-    void createMainWindow(const GfxSetup& setup);
+    void createMainWindow(const GfxDesc& desc);
     /// destroy the main window
     void destroyMainWindow();
 

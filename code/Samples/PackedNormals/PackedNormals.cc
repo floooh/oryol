@@ -31,7 +31,7 @@ OryolMain(PackedNormalsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnInit() {
-    Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
+    Gfx::Setup(GfxDesc::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
     ShapeBuilder shapeBuilder;
     this->shapes = shapeBuilder
