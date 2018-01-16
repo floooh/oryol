@@ -291,6 +291,10 @@ ShapeBuilder::Build() {
     // clear private data (but not config params)
     this->curPrimGroupBaseElement = 0;
     this->curPrimGroupNumElements = 0;
+    this->posIndex = InvalidIndex;
+    this->normalIndex = InvalidIndex;
+    this->texCoordIndex = InvalidIndex;
+    this->colorIndex = InvalidIndex;
     this->transform = glm::mat4();
     this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     this->shapes.Clear();
