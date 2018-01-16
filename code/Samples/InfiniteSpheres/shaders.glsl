@@ -7,15 +7,15 @@ uniform vsParams {
     mat4 mvp;
 };
 
-in vec4 position;
-in vec4 normal;
-in vec2 texcoord0;
+in vec4 in_pos;
+in vec4 in_normal;
+in vec2 in_uv;
 out vec4 nrm;
 out vec2 uv;
 void main() {
-    gl_Position = mvp * position;
-    nrm = normal;
-    uv = texcoord0;
+    gl_Position = mvp * in_pos;
+    nrm = in_normal;
+    uv = in_uv;
 }
 @end
 

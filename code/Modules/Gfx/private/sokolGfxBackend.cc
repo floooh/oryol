@@ -275,6 +275,7 @@ static uint8_t convertColorMask(PixelChannel::Mask src) {
 //------------------------------------------------------------------------------
 static sg_pixel_format convertPixelFormat(PixelFormat::Code fmt) {
     switch (fmt) {
+        case PixelFormat::None:         return SG_PIXELFORMAT_NONE;
         case PixelFormat::RGBA8:        return SG_PIXELFORMAT_RGBA8;
         case PixelFormat::RGB8:         return SG_PIXELFORMAT_RGB8;
         case PixelFormat::RGBA4:        return SG_PIXELFORMAT_RGBA4;
