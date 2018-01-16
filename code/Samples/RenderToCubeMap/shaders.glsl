@@ -40,8 +40,8 @@ uniform vsParams {
     vec3 eyePos;
 };
 
-in vec4 position;
-in vec3 normal;
+in vec4 in_pos;
+in vec3 in_normal;
 out vec3 worldPosition;
 out vec3 worldNormal;
 out vec3 worldEyePos;
@@ -49,9 +49,9 @@ out vec3 worldLightDir;
 out vec4 color;
 
 void main() {
-    gl_Position = mvp * position;
-    worldPosition = vec4(model * position).xyz;
-    worldNormal = vec4(model * vec4(normal, 0.0)).xyz;
+    gl_Position = mvp * in_pos;
+    worldPosition = vec4(model * in_pos).xyz;
+    worldNormal = vec4(model * vec4(in_normal, 0.0)).xyz;
     worldEyePos = eyePos;
     worldLightDir = lightDir;
     color = shapeColor;
@@ -105,17 +105,17 @@ uniform vsParams {
     vec3 eyePos;
 };
 
-in vec4 position;
-in vec3 normal;
+in vec4 in_pos;
+in vec3 in_normal;
 out vec3 worldPosition;
 out vec3 worldNormal;
 out vec3 worldEyePos;
 out vec3 worldLightDir;
 
 void main() {
-    gl_Position = mvp * position;
-    worldPosition = vec4(model * position).xyz;
-    worldNormal = vec4(model * vec4(normal, 0.0)).xyz;
+    gl_Position = mvp * in_pos;
+    worldPosition = vec4(model * in_pos).xyz;
+    worldNormal = vec4(model * vec4(in_normal, 0.0)).xyz;
     worldEyePos = eyePos;
     worldLightDir = lightDir;
 }

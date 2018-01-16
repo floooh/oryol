@@ -37,7 +37,6 @@ struct GfxFeature {
         MultipleRenderTarget,       ///< support for MRT offscreen rendering
         Texture3D,                  ///< support for 3D textures
         TextureArray,               ///< support for array textures
-        NativeTexture,              ///< can work with externally created texture objects
 
         Num,
         Invalid
@@ -810,8 +809,6 @@ public:
     String Title = "Oryol";
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
-    /// default clear values (or dont care)
-    PassAction DefaultPassAction;
     /// if true, ignore own size and instead track size of an HTML element (emscripten only)
     bool HtmlTrackElementSize = false;
     /// name of the HTML element to track (default: #canvas)
@@ -873,8 +870,9 @@ public:
     BufferDesc Desc;
     const void* ContentPtr = nullptr;
     int ContentSize = 0;
-    BufferBuilder() { };
-    BufferBuilder(const BufferBuilder& rhs): Desc(rhs.Desc) { };
+    BufferBuilder& From(const BufferDesc& desc) {
+        Desc = desc; return *this;
+    }
     BufferBuilder& Locator(const class Locator& loc) {
         Desc.Locator = loc; return *this;
     }
@@ -974,8 +972,9 @@ struct PipelineDesc {
 class PipelineBuilder {
 public:
     PipelineDesc Desc;
-    PipelineBuilder() { };
-    PipelineBuilder(const PipelineBuilder& rhs): Desc(rhs.Desc) { };
+    PipelineBuilder& From(const PipelineDesc& desc) {
+        Desc = desc; return *this;
+    }
     PipelineBuilder& Locator(const class Locator& loc) {
         Desc.Locator = loc; return *this;
     }
@@ -1163,8 +1162,9 @@ struct ShaderDesc {
 class ShaderBuilder {
 public:
     ShaderDesc Desc;
-    ShaderBuilder() { };
-    ShaderBuilder(const ShaderBuilder& rhs): Desc(rhs.Desc) { };
+    ShaderBuilder& From(const ShaderDesc& desc) {
+        Desc = desc; return *this;
+    }
     ShaderBuilder& Locator(const class Locator& loc) {
         Desc.Locator = loc; return *this;
     }
@@ -1254,8 +1254,9 @@ public:
     TextureDesc Desc;
     const void* ContentPtr = nullptr;
     int ContentSize = 0;
-    TextureBuilder() { };
-    TextureBuilder(const TextureBuilder& rhs): Desc(rhs.Desc) { };
+    TextureBuilder& From(const TextureDesc& desc) {
+        Desc = desc; return *this;
+    }
     TextureBuilder& Locator(const class Locator& loc) {
         Desc.Locator = loc; return *this;
     }
@@ -1331,25 +1332,55 @@ public:
     @ingroup Gfx
     @brief creation attributes for render pass resource
 */
-class PassDesc {
-public:
-    /// construct from single render target textures, and option depth-stencil texture
-    static PassDesc From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
-    /// construct from MRT render target textures, and option depth-stencil texture
-    static PassDesc From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
+struct PassDesc {
     /// resource locator
     class Locator Locator = Locator::NonShared();
-    /// 1..N color attachments
-    struct ColorAttachment {
+    /// a color- or depth-stencil attachment description
+    struct Attachment {
         Id Texture;
-        uint16_t MipLevel = 0;  ///< mipmap-level
-        uint16_t Slice = 0;     ///< 2D-array-slice, 3D-depth-slice or cubemap face
+        int MipLevel = 0;
+        union {
+            int Face = 0;
+            int Layer;
+            int Slice;
+        };
     };
-    StaticArray<ColorAttachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
+    /// color attachments (at least the first must be valid)
+    StaticArray<Attachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
     /// optional depth-stencil attachment
-    Id DepthStencilTexture;
-    /// default pass action, if no PassAction provided in BeginPass
-    PassAction DefaultAction;
+    Attachment DepthStencilAttachment;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::PassBuilder
+    @ingroup Gfx
+    @brief builder class for render pass creation
+*/
+class PassBuilder {
+public:
+    PassDesc Desc;
+    PassBuilder& From(const PassDesc& desc) {
+        Desc = desc; return *this;
+    }
+    PassBuilder& Locator(const class Locator& loc) {
+        Desc.Locator = loc; return *this;
+    }
+    PassBuilder& ColorAttachment(int slotIndex, const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
+        auto& att = this->Desc.ColorAttachments[slotIndex];
+        att.Texture = tex;
+        att.MipLevel = mipLevel;
+        att.Face = faceLayerSlice;
+        return *this;
+    }
+    PassBuilder& DepthStencilAttachment(const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
+        auto& att = this->Desc.DepthStencilAttachment;
+        att.Texture = tex;
+        att.MipLevel = mipLevel;
+        att.Face = faceLayerSlice;
+        return *this;
+    }
+    Id Create();
 };
 
 //------------------------------------------------------------------------------

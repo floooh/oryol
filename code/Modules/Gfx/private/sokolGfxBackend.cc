@@ -99,6 +99,14 @@ static sg_image makeImageId(const Id& id) {
 }
 
 //------------------------------------------------------------------------------
+static sg_pass makePassId(const Id& id) {
+    // convert an Oryol Id into a sokol sg_pass
+    o_assert_dbg(id.Type == GfxResourceType::Pass);
+    uint32_t sgId = (id.UniqueStamp<<16)|id.SlotIndex;
+    return sg_pass{sgId};
+}
+
+//------------------------------------------------------------------------------
 static void convertPassAction(const PassAction& src, sg_pass_action& dst) {
     o_assert_dbg(GfxConfig::MaxNumColorAttachments <= SG_MAX_COLOR_ATTACHMENTS);
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
@@ -425,6 +433,27 @@ static sg_wrap convertWrap(TextureWrapMode::Code w) {
 }
 
 //------------------------------------------------------------------------------
+static sg_feature convertFeature(GfxFeature::Code f) {
+    switch (f) {
+        case GfxFeature::TextureCompressionDXT:     return SG_FEATURE_TEXTURE_COMPRESSION_DXT;
+        case GfxFeature::TextureCompressionPVRTC:   return SG_FEATURE_TEXTURE_COMPRESSION_PVRTC;
+        case GfxFeature::TextureCompressionATC:     return SG_FEATURE_TEXTURE_COMPRESSION_ATC;
+        case GfxFeature::TextureCompressionETC2:    return SG_FEATURE_TEXTURE_COMPRESSION_ETC2;
+        case GfxFeature::TextureFloat:              return SG_FEATURE_TEXTURE_FLOAT;
+        case GfxFeature::TextureHalfFloat:          return SG_FEATURE_TEXTURE_HALF_FLOAT;
+        case GfxFeature::Instancing:                return SG_FEATURE_INSTANCING;
+        case GfxFeature::OriginBottomLeft:          return SG_FEATURE_ORIGIN_BOTTOM_LEFT;
+        case GfxFeature::OriginTopLeft:             return SG_FEATURE_ORIGIN_TOP_LEFT;
+        case GfxFeature::MSAARenderTargets:         return SG_FEATURE_MSAA_RENDER_TARGETS;
+        case GfxFeature::PackedVertexFormat_10_2:   return SG_FEATURE_PACKED_VERTEX_FORMAT_10_2;
+        case GfxFeature::MultipleRenderTarget:      return SG_FEATURE_MULTIPLE_RENDER_TARGET;
+        case GfxFeature::Texture3D:                 return SG_FEATURE_IMAGETYPE_3D;
+        case GfxFeature::TextureArray:              return SG_FEATURE_IMAGETYPE_ARRAY;
+        default: o_assert_dbg(false); return (sg_feature)0;
+    }
+}
+
+//------------------------------------------------------------------------------
 sokolGfxBackend::~sokolGfxBackend() {
     o_assert(!this->isValid);
 }
@@ -488,9 +517,7 @@ sokolGfxBackend::QuitRequested() {
 bool
 sokolGfxBackend::QueryFeature(GfxFeature::Code feature) {
     o_assert_dbg(this->isValid);
-    // FIXME
-    o_error("sokolGfxBackend::QueryFeature FIXME!\n");
-    return false;
+    return sg_query_feature(convertFeature(feature));
 }
 
 //------------------------------------------------------------------------------
@@ -713,8 +740,25 @@ sokolGfxBackend::CreatePipeline(const PipelineDesc& desc) {
 Id
 sokolGfxBackend::CreatePass(const PassDesc& desc) {
     o_assert_dbg(this->isValid);
-    // FIXME
-    return Id::InvalidId();
+    o_assert_dbg(GfxConfig::MaxNumColorAttachments <= SG_MAX_COLOR_ATTACHMENTS);
+    sg_pass_desc sgDesc = { };
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        const auto& src = desc.ColorAttachments[i];
+        if (src.Texture.IsValid()) {
+            auto& dst = sgDesc.color_attachments[i];
+            dst.image = makeImageId(src.Texture);
+            dst.mip_level = src.MipLevel;
+            dst.layer = src.Layer;
+        }
+    }
+    const auto& src = desc.DepthStencilAttachment;
+    if (src.Texture.IsValid()) {
+        auto& dst = sgDesc.depth_stencil_attachment;
+        dst.image = makeImageId(src.Texture);
+        dst.mip_level = src.MipLevel;
+        dst.layer = src.Layer;
+    }
+    return makeId(GfxResourceType::Pass, sg_make_pass(&sgDesc).id);
 }
 
 //------------------------------------------------------------------------------
@@ -754,16 +798,17 @@ sokolGfxBackend::UpdateTexture(const Id& id, const void* data, const ImageDataAt
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::BeginPass(Id passId, const PassAction* action) {
+sokolGfxBackend::BeginPass(const Id& passId, const PassAction* action) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(action);
+    sg_pass_action sgAction = { };
+    convertPassAction(*action, sgAction);
     if (passId.IsValid()) {
         // offscreen framebuffer
+        sg_begin_pass(makePassId(passId), &sgAction);
     }
     else {
         // default framebuffer
-        sg_pass_action sgAction = { };
-        convertPassAction(*action, sgAction);
         const DisplayAttrs& attrs = this->displayManager.GetDisplayAttrs();
         sg_begin_default_pass(&sgAction, attrs.FramebufferWidth, attrs.FramebufferHeight);
     }

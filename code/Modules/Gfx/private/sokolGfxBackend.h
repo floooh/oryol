@@ -92,7 +92,7 @@ public:
     void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs);
 
     /// begin rendering pass
-    void BeginPass(Id passId, const PassAction* action);
+    void BeginPass(const Id& passId, const PassAction* action);
     /// finish rendering pass
     void EndPass();
 

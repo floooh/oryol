@@ -31,7 +31,7 @@ BlendTestApp::OnInit() {
     Gfx::Setup(gfxDesc);
 
     // create pipeline object for a patterned background
-    float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
+    const float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
     this->bgDrawState.VertexBuffers[0] = Gfx::Buffer()
         .Size(sizeof(bgVertices))
         .Content(bgVertices)

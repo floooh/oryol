@@ -639,30 +639,15 @@ GfxDesc::GfxDesc() {
 }
 
 //------------------------------------------------------------------------------
-PassDesc PassDesc::From(Id colorTexture, Id depthStencilTexture) {
-    PassDesc setup;
-    setup.ColorAttachments[0].Texture = colorTexture;
-    setup.DepthStencilTexture = depthStencilTexture;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
-PassDesc PassDesc::From(std::initializer_list<Id> colorTextures, Id depthStencilTexture) {
-    PassDesc setup;
-    int i = 0;
-    for (const auto& id : colorTextures) {
-        setup.ColorAttachments[i++].Texture = id;
-    }
-    setup.DepthStencilTexture = depthStencilTexture;
-    return setup;
-}
-
-//------------------------------------------------------------------------------
 Id BufferBuilder::Create() {
+    // FIXME: hmm this ContentSize vs Desc.Size thing is weird
     if (this->ContentSize != 0) {
-        o_assert_dbg(this->ContentSize >= this->Desc.Size);
+        o_assert_dbg(this->ContentSize >= (this->Desc.Offset+this->Desc.Size));
+        return Gfx::CreateBuffer(this->Desc, this->ContentPtr, this->ContentSize);
     }
-    return Gfx::CreateBuffer(this->Desc, this->ContentPtr, this->Desc.Size);
+    else {
+        return Gfx::CreateBuffer(this->Desc, this->ContentPtr, this->Desc.Size);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -673,6 +658,11 @@ Id PipelineBuilder::Create() {
 //------------------------------------------------------------------------------
 Id TextureBuilder::Create() {
     return Gfx::CreateTexture(this->Desc, this->ContentPtr, this->ContentSize);
+}
+
+//------------------------------------------------------------------------------
+Id PassBuilder::Create() {
+    return Gfx::CreatePass(this->Desc);
 }
 
 } // namespace Oryol

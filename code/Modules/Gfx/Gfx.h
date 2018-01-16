@@ -58,6 +58,8 @@ public:
     static ShaderBuilder Shader();
     /// start creating a pipeline through a pipeline builder object
     static PipelineBuilder Pipeline();
+    /// start creating a render pass through a pass builder object
+    static PassBuilder Pass();
 
     /// generate new resource label and push on label stack
     static ResourceLabel PushResourceLabel();
@@ -99,12 +101,10 @@ public:
     /// query resource pool info (slow)
     static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
 
-    /// begin rendering to default render pass
-    static void BeginPass();
     /// begin rendering to default render pass with override clear values
-    static void BeginPass(const PassAction& action);
+    static void BeginPass(const PassAction& action=PassAction());
     /// begin offscreen rendering with override clear colors
-    static void BeginPass(const Id& passId, const PassAction& action);
+    static void BeginPass(const Id& passId, const PassAction& action=PassAction());
     /// finish rendering to current pass
     static void EndPass();
 
@@ -165,6 +165,12 @@ Gfx::Shader() {
 inline PipelineBuilder
 Gfx::Pipeline() {
     return PipelineBuilder();
+}
+
+//------------------------------------------------------------------------------
+inline PassBuilder
+Gfx::Pass() {
+    return PassBuilder();
 }
 
 } // namespace Oryol

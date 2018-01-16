@@ -110,16 +110,6 @@ Gfx::FrameInfo() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::BeginPass() {
-    o_assert_dbg(IsValid());
-    o_assert_dbg(!state->inPass);
-    state->inPass = true;
-    state->gfxFrameInfo.NumPasses++;
-    state->backend.BeginPass(Id::InvalidId(), &state->gfxDesc.DefaultPassAction);
-}
-
-//------------------------------------------------------------------------------
-void
 Gfx::BeginPass(const PassAction& action) {
     o_assert_dbg(IsValid());
     o_assert_dbg(!state->inPass);
