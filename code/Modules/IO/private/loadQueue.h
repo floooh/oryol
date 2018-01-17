@@ -10,7 +10,7 @@
 #include "Core/Types.h"
 #include "Core/String/StringAtom.h"
 #include "Core/Containers/Array.h"
-#include "Core/Containers/Buffer.h"
+#include "Core/Containers/MemoryBuffer.h"
 #include "IO/IOTypes.h"
 #include "IO/private/ioRequests.h"
 #include <functional>
@@ -21,7 +21,7 @@ class loadQueue {
 public:
     /// loading result (iff successful)
     struct result {
-        result(const URL& url, Buffer&& data) : Url(url), Data(std::move(data)) { };
+        result(const URL& url, MemoryBuffer&& data) : Url(url), Data(std::move(data)) { };
         result(result&& rhs) {
             this->Url = std::move(rhs.Url);
             this->Data = std::move(rhs.Data);
@@ -31,7 +31,7 @@ public:
             this->Data = std::move(rhs.Data);            
         };
         URL Url;
-        Buffer Data;
+        MemoryBuffer Data;
     };
 
     /// callback function signature for success

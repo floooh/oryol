@@ -10,7 +10,7 @@
 */
 #include "Core/Config.h"
 #include "Core/RefCounted.h"
-#include "Core/Containers/Buffer.h"
+#include "Core/Containers/MemoryBuffer.h"
 #include "IO/IOTypes.h"
 
 namespace Oryol {
@@ -39,7 +39,7 @@ public:
     URL Url;
     int StartOffset = 0;
     int EndOffset = EndOfFile;
-    Buffer Data;
+    MemoryBuffer Data;
     IOStatus::Code Status = IOStatus::InvalidIOStatus;
     String ErrorDesc;
 };

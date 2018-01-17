@@ -30,7 +30,7 @@ fips_begin_module(Core)
         Array.h
         ArrayMap.h
         Slice.h
-        Buffer.h
+        MemoryBuffer.h
         HashSet.h
         KeyValuePair.h
         Map.h

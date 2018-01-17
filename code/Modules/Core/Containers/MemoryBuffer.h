@@ -1,7 +1,7 @@
 #pragma once
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::Buffer
+    @class Oryol::MemoryBuffer
     @ingroup Core
     @brief growable memory buffer for raw data
 */
@@ -11,22 +11,22 @@
 
 namespace Oryol {
 
-class Buffer {
+class MemoryBuffer {
 public:
     /// default constructor
-    Buffer();
+    MemoryBuffer() { };
     /// move constructor
-    Buffer(Buffer&& rhs);
+    MemoryBuffer(MemoryBuffer&& rhs);
     /// destructor
-    ~Buffer();
+    ~MemoryBuffer();
 
     /// always force move-construct
-    Buffer(const Buffer& rhs) = delete;
+    MemoryBuffer(const MemoryBuffer& rhs) = delete;
     /// always force move-assign
-    void operator=(const Buffer& rhs) = delete;
+    void operator=(const MemoryBuffer& rhs) = delete;
 
     /// move-assignment
-    void operator=(Buffer&& rhs);
+    void operator=(MemoryBuffer&& rhs);
 
     /// get number of bytes in buffer
     int Size() const;
@@ -60,23 +60,14 @@ private:
     /// append-copy content into currently allocated buffer, bump size
     void copy(const uint8_t* ptr, int numBytes);
 
-    int size;
-    int capacity;
-    uint8_t* data;
+    int size = 0;
+    int capacity = 0;
+    uint8_t* data = nullptr;
 };
 
 //------------------------------------------------------------------------------
 inline
-Buffer::Buffer() :
-size(0),
-capacity(0),
-data(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
-inline
-Buffer::Buffer(Buffer&& rhs) :
+MemoryBuffer::MemoryBuffer(MemoryBuffer&& rhs) :
 size(rhs.size),
 capacity(rhs.capacity),
 data(rhs.data) {
@@ -87,13 +78,13 @@ data(rhs.data) {
 
 //------------------------------------------------------------------------------
 inline
-Buffer::~Buffer() {
+MemoryBuffer::~MemoryBuffer() {
     this->destroy();
 }
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::alloc(int newCapacity) {
+MemoryBuffer::alloc(int newCapacity) {
     o_assert_dbg(newCapacity > this->capacity);
     o_assert_dbg(newCapacity > this->size);
 
@@ -111,7 +102,7 @@ Buffer::alloc(int newCapacity) {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::destroy() {
+MemoryBuffer::destroy() {
     if (this->data) {
         Memory::Free(this->data);
     }
@@ -122,7 +113,7 @@ Buffer::destroy() {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::copy(const uint8_t* ptr, int numBytes) {
+MemoryBuffer::copy(const uint8_t* ptr, int numBytes) {
     // NOTE: it is valid to call copy with numBytes==0
     o_assert_dbg(this->data);
     o_assert_dbg((this->size + numBytes) <= this->capacity);
@@ -132,7 +123,7 @@ Buffer::copy(const uint8_t* ptr, int numBytes) {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::operator=(Buffer&& rhs) {
+MemoryBuffer::operator=(MemoryBuffer&& rhs) {
     this->destroy();
     this->size = rhs.size;
     this->capacity = rhs.capacity;
@@ -144,31 +135,31 @@ Buffer::operator=(Buffer&& rhs) {
 
 //------------------------------------------------------------------------------
 inline int
-Buffer::Size() const {
+MemoryBuffer::Size() const {
     return this->size;
 }
 
 //------------------------------------------------------------------------------
 inline bool
-Buffer::Empty() const {
+MemoryBuffer::Empty() const {
     return 0 == this->size;
 }
 
 //------------------------------------------------------------------------------
 inline int
-Buffer::Capacity() const {
+MemoryBuffer::Capacity() const {
     return this->capacity;
 }
 
 //------------------------------------------------------------------------------
 inline int
-Buffer::Spare() const {
+MemoryBuffer::Spare() const {
     return this->capacity - this->size;
 }
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::Reserve(int numBytes) {
+MemoryBuffer::Reserve(int numBytes) {
     // need to grow?
     if ((this->size + numBytes) > this->capacity) {
         const int newCapacity = this->size + numBytes;
@@ -178,14 +169,14 @@ Buffer::Reserve(int numBytes) {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::Add(const uint8_t* data, int numBytes) {
+MemoryBuffer::Add(const uint8_t* data, int numBytes) {
     this->Reserve(numBytes);
     this->copy(data, numBytes);
 }
 
 //------------------------------------------------------------------------------
 inline uint8_t*
-Buffer::Add(int numBytes) {
+MemoryBuffer::Add(int numBytes) {
     this->Reserve(numBytes);
     uint8_t* ptr = this->data + this->size;
     this->size += numBytes;
@@ -194,13 +185,13 @@ Buffer::Add(int numBytes) {
 
 //------------------------------------------------------------------------------
 inline void
-Buffer::Clear() {
+MemoryBuffer::Clear() {
     this->size = 0;
 }
 
 //------------------------------------------------------------------------------
 inline int
-Buffer::Remove(int offset, int numBytes) {
+MemoryBuffer::Remove(int offset, int numBytes) {
     o_assert_dbg(offset >= 0);
     o_assert_dbg(numBytes >= 0);
     if (offset >= this->size) {
@@ -224,14 +215,14 @@ Buffer::Remove(int offset, int numBytes) {
 
 //------------------------------------------------------------------------------
 inline const uint8_t*
-Buffer::Data() const {
+MemoryBuffer::Data() const {
     o_assert(this->data);
     return this->data;
 }
 
 //------------------------------------------------------------------------------
 inline uint8_t*
-Buffer::Data() {
+MemoryBuffer::Data() {
     o_assert(this->data);
     return this->data;
 }

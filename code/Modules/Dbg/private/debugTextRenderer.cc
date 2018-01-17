@@ -178,7 +178,7 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
     o_assert_dbg((imgWidth * imgHeight) == imgDataSize);
 
     // setup a memory buffer and write font image data to it
-    Buffer data;
+    MemoryBuffer data;
     uint8_t* dstPtr = data.Add(imgDataSize);
     const char* srcPtr = kc85_4_Font;
     for (int charIndex = 0; charIndex < numChars; charIndex++) {

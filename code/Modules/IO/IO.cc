@@ -171,7 +171,7 @@ IO::LoadFile(const URL& url) {
 
 //------------------------------------------------------------------------------
 Ptr<IOWrite>
-IO::WriteFile(const URL& url, const Buffer& data) {
+IO::WriteFile(const URL& url, const MemoryBuffer& data) {
     o_assert_dbg(IsValid());
     Ptr<IOWrite> ioReq = IOWrite::Create();
     ioReq->Url = url;

@@ -59,7 +59,7 @@ public:
     /// low-level: start async loading of file from URL, return message for polling result
     static Ptr<IORead> LoadFile(const URL& url);
     /// low-level: start async writing of file via URL, return message for polling result
-    static Ptr<IOWrite> WriteFile(const URL& url, const Buffer& data);
+    static Ptr<IOWrite> WriteFile(const URL& url, const MemoryBuffer& data);
     /// low-level: push a generic asynchronous IO request
     static void Put(const Ptr<IORequest>& ioReq);
     
