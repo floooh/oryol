@@ -482,6 +482,11 @@ VertexLayout::VertexLayout(std::initializer_list<Component> l) {
 }
 
 //------------------------------------------------------------------------------
+VertexLayout VertexLayout::New() {
+    return VertexLayout();
+}
+
+//------------------------------------------------------------------------------
 VertexLayout& VertexLayout::Clear() {
     this->StepFunction = VertexStepFunction::PerVertex;
     this->StepRate = 1;

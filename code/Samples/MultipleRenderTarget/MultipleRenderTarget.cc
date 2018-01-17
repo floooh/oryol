@@ -26,8 +26,8 @@ public:
     const int OffscreenWidth = 200;
     const int OffscreenHeight = 200;
 
-    ShapeBuilder::Result shapes;
-
+    PrimitiveGroup cubePrimGroup;
+    PrimitiveGroup planePrimGroup;
     Id mrtPass;
     PassAction mrtPassAction;
     DrawState rt0DrawState;
@@ -94,29 +94,29 @@ MultipleRenderTargetApp::OnInit() {
         .ClearColor(2, glm::vec4(0.0f, 0.0f, 0.25f, 1.0f));
 
     // create a mesh with 2 shapes, a box and a plane
-    ShapeBuilder shapeBuilder;
-    this->shapes = shapeBuilder
-        .AddPositions("in_pos", VertexFormat::Float3)
-        .AddNormals("in_normal", VertexFormat::UByte4N)
-        .AddTexCoords("in_uv", VertexFormat::Float2)
+    auto shapes = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::UByte4N)
+        .TexCoords("in_uv", VertexFormat::Float2)
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Plane(1.0f, 1.0f, 1)
         .Build();
+    this->cubePrimGroup = shapes.PrimitiveGroups[0];
+    this->planePrimGroup = shapes.PrimitiveGroups[1];
     Id shapesVertexBuffer = Gfx::Buffer()
-        .From(this->shapes.VertexBufferDesc)
-        .Content(this->shapes.Data)
+        .From(shapes.VertexBufferDesc)
+        .Content(shapes.Data)
         .Create();
     Id shapesIndexBuffer = Gfx::Buffer()
-        .From(this->shapes.IndexBufferDesc)
-        .Content(this->shapes.Data)
+        .From(shapes.IndexBufferDesc)
+        .Content(shapes.Data)
         .Create();
 
     // create a draw state to render a cube into the
     // offscreen render targets (this is where the MRT rendering happens)
     this->cubeDrawState.Pipeline = Gfx::Pipeline()
+        .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
@@ -156,9 +156,8 @@ MultipleRenderTargetApp::OnInit() {
     // and finally create a draw state to render a plane to the
     // main display which samples the 3 offscreen render targets
     this->displayDrawState.Pipeline = Gfx::Pipeline()
+        .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(false)
@@ -196,7 +195,7 @@ MultipleRenderTargetApp::OnRunning() {
     Gfx::BeginPass(this->mrtPass, this->mrtPassAction);
     Gfx::ApplyDrawState(this->cubeDrawState);
     Gfx::ApplyUniformBlock(this->cubeParams);
-    Gfx::Draw(this->shapes.PrimitiveGroups[0]);
+    Gfx::Draw(this->cubePrimGroup);
     Gfx::EndPass();
 
     // debug-visualize the 3 offscreen render targets at the bottom of the screen
@@ -216,7 +215,7 @@ MultipleRenderTargetApp::OnRunning() {
     Gfx::ApplyViewPort(0, 0, rpAttrs.FramebufferWidth, rpAttrs.FramebufferHeight);
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->displayParams);
-    Gfx::Draw(this->shapes.PrimitiveGroups[1]);
+    Gfx::Draw(this->planePrimGroup);
 
     Gfx::EndPass();
     Gfx::CommitFrame();

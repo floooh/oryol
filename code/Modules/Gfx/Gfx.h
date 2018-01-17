@@ -11,7 +11,6 @@
 #include "Core/RunLoop.h"
 #include "Gfx/GfxTypes.h"
 #include "Resource/ResourceLabel.h"
-#include "Resource/SetupAndData.h"
 #include "Resource/ResourceInfo.h"
 #include "Resource/ResourcePoolInfo.h"
 
@@ -70,13 +69,13 @@ public:
     /// create a buffer object without associated data
     static Id CreateBuffer(const BufferDesc& desc);
     /// create a buffer object with associated data
-    static Id CreateBuffer(const BufferDesc& setup, const class Buffer& data);
+    static Id CreateBuffer(const BufferDesc& setup, const MemoryBuffer& data);
     /// create a buffer object with raw pointer to associated data
     static Id CreateBuffer(const BufferDesc& setup, const void* data, int size);
     /// create a texture object without associated data
     static Id CreateTexture(const TextureDesc& desc);
     /// create a texture object with associated data
-    static Id CreateTexture(const TextureDesc& setup, const class Buffer& data);
+    static Id CreateTexture(const TextureDesc& setup, const MemoryBuffer& data);
     /// create a texture object with raw pointer to associated data
     static Id CreateTexture(const TextureDesc& setup, const void* data, int size);
     /// create a shader object

@@ -47,6 +47,7 @@ public:
     float minDist;
     float maxDist;
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     glm::vec2 startPolar;
     glm::vec2 polar;
@@ -66,9 +67,9 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 400, "Oryol Input Test Sample");
-    gfxSetup.HighDPI = true;
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::Window(800, 400, "Oryol Input Test Sample");
+    gfxDesc.HighDPI = true;
+    Gfx::Setup(gfxDesc);
     Dbg::Setup();
     if (Gfx::DisplayAttrs().WindowWidth > 800) {
         Dbg::TextScale(2.0f, 2.0f);
@@ -90,19 +91,27 @@ TestInputApp::OnInit() {
     });
     
     // create a 3D cube
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.CullFaceEnabled = true;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    auto shape = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .Box(1.0f, 1.0f, 1.0f, 1)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .CullFaceEnabled(true)
+        .Create();
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -472,7 +481,7 @@ TestInputApp::drawCube() {
     vsParams.mvp = this->proj * this->view;
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
 }
 
 //------------------------------------------------------------------------------

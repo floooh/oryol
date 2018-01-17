@@ -22,6 +22,7 @@ public:
     AppState::Code notSupported();    // render a warning if 3D textures not supported by platform
     void computeShaderParams();
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     Shader::vsParams vsParams;
     int frameIndex = 0;
@@ -32,9 +33,8 @@ OryolMain(VolumeTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 VolumeTextureApp::OnInit() {
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "3D Texture Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::WindowMSAA4(800, 600, "3D Texture Sample");
+    Gfx::Setup(gfxDesc);
     Dbg::Setup();
 
     // if 3D textures not supported show a warning later during rendering
@@ -61,25 +61,39 @@ VolumeTextureApp::OnInit() {
         }
         p.z += 1.0f / dim;
     }
-    auto texSetup = TextureSetup::FromPixelData3D(dim, dim, dim, 1, PixelFormat::RGBA8);
-    texSetup.Sampler.MinFilter = TextureFilterMode::Linear;
-    texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
-    texSetup.ImageData.Sizes[0][0] = sizeof(data);
-    this->drawState.FSTexture[Shader::tex] = Gfx::CreateResource(texSetup, data, sizeof(data));
+    this->drawState.FSTexture[Shader::tex] = Gfx::Texture()
+        .Type(TextureType::Texture3D)
+        .Width(dim)
+        .Height(dim)
+        .Depth(dim)
+        .Format(PixelFormat::RGBA8)
+        .MinFilter(TextureFilterMode::Linear)
+        .MagFilter(TextureFilterMode::Linear)
+        .MipDataSize(0, 0, sizeof(data))
+        .Content(data, sizeof(data))
+        .Create();
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = { { VertexAttr::Position, VertexFormat::Float3 } };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-
-    // pipeline state for rendering the 3D-textures cube
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto pipSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
+    auto shape = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Box(1.0f, 1.0f, 1.0f, 1)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(gfxDesc.SampleCount)
+        .Create();
 
     // setup a projection matrix with the right aspect ratio
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -101,10 +115,10 @@ VolumeTextureApp::OnRunning() {
     this->computeShaderParams();
 
     // render the rotating cube
-    Gfx::BeginPass();
+    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f)));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     this->frameIndex++;

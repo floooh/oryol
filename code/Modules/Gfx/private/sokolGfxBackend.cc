@@ -726,6 +726,7 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
 Id
 sokolGfxBackend::CreatePipeline(const PipelineDesc& desc) {
     o_assert_dbg(this->isValid);
+    o_assert_dbg(desc.Shader.IsValid());
     sg_pipeline_desc sgDesc = { };
     sgDesc.shader = makeShaderId(desc.Shader);
     sgDesc.primitive_type = convertPrimitiveType(desc.PrimType);
@@ -794,7 +795,23 @@ sokolGfxBackend::UpdateBuffer(const Id& id, const void* data, int numBytes) {
 void
 sokolGfxBackend::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    o_assert_dbg(data);
+    o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
+    o_assert_dbg(GfxConfig::MaxNumTextureMipMaps <= SG_MAX_MIPMAPS);
+    sg_image_content content = { };
+    for (int faceIndex = 0; faceIndex < GfxConfig::MaxNumTextureFaces; faceIndex++) {
+        for (int mipIndex = 0; mipIndex < GfxConfig::MaxNumTextureMipMaps; mipIndex++) {
+            if (attrs.Sizes[faceIndex][mipIndex] > 0) {
+                auto& dst = content.subimage[faceIndex][mipIndex];
+                dst.size = attrs.Sizes[faceIndex][mipIndex];
+                dst.ptr = ((uint8_t*)data)+attrs.Offsets[faceIndex][mipIndex];
+            }
+            else {
+                break;
+            }
+        }
+    }
+    sg_update_image(makeImageId(id), &content);
 }
 
 //------------------------------------------------------------------------------

@@ -20,8 +20,8 @@ public:
 
     glm::mat4 computeMVP(const glm::mat4& proj, float rotX, float rotY, const glm::vec3& pos);
 
-    ShapeBuilder::Result donutShape;
-    ShapeBuilder::Result sphereShape;
+    PrimitiveGroup donutPrimGroup;
+    PrimitiveGroup spherePrimGroup;
     Id renderPass;
     DrawState offscreenDrawState;
     DrawState displayDrawState;
@@ -67,26 +67,23 @@ SimpleRenderTargetApp::OnInit() {
 
     // create a donut mesh, shader and pipeline object
     // (this will be rendered into the offscreen render target)
-    ShapeBuilder shapeBuilder;
-    this->donutShape = shapeBuilder
-        .AddPositions("in_pos", VertexFormat::Float3)
-        .AddNormals("in_normal", VertexFormat::Byte4N)
+    auto donut = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
         .Torus(0.3f, 0.5f, 20, 36)
         .Build();
+    this->donutPrimGroup = donut.PrimitiveGroups[0];
     this->offscreenDrawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(this->donutShape.VertexBufferDesc)
-        .Content(this->donutShape.Data)
+        .From(donut.VertexBufferDesc)
+        .Content(donut.Data)
         .Create();
     this->offscreenDrawState.IndexBuffer = Gfx::Buffer()
-        .From(this->donutShape.IndexBufferDesc)
-        .Content(this->donutShape.Data)
+        .From(donut.IndexBufferDesc)
+        .Content(donut.Data)
         .Create();
-
-    // create shader and pipeline-state-object for offscreen rendering
     this->offscreenDrawState.Pipeline = Gfx::Pipeline()
+        .From(donut.PipelineDesc)
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
-        .Layout(0, this->donutShape.Layout)
-        .IndexType(this->donutShape.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
@@ -95,24 +92,24 @@ SimpleRenderTargetApp::OnInit() {
         .Create();
 
     // create a sphere mesh, shader and pipeline object for rendering to display
-    this->sphereShape = shapeBuilder
-        .AddPositions("in_pos", VertexFormat::Float3)
-        .AddNormals("in_normal", VertexFormat::Byte4N)
-        .AddTexCoords("in_uv", VertexFormat::Float2)
+    auto sphere = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .TexCoords("in_uv", VertexFormat::Float2)
         .Sphere(0.5f, 72, 40)
         .Build();
+    this->spherePrimGroup = sphere.PrimitiveGroups[0];
     this->displayDrawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(this->sphereShape.VertexBufferDesc)
-        .Content(this->sphereShape.Data)
+        .From(sphere.VertexBufferDesc)
+        .Content(sphere.Data)
         .Create();
     this->displayDrawState.IndexBuffer = Gfx::Buffer()
-        .From(this->sphereShape.IndexBufferDesc)
-        .Content(this->sphereShape.Data)
+        .From(sphere.IndexBufferDesc)
+        .Content(sphere.Data)
         .Create();
     this->displayDrawState.Pipeline = Gfx::Pipeline()
+        .From(sphere.PipelineDesc)
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
-        .Layout(0, this->sphereShape.Layout)
-        .IndexType(this->sphereShape.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(gfxDesc.SampleCount)
@@ -142,7 +139,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.mvp = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
-    Gfx::Draw(this->donutShape.PrimitiveGroups[0]);
+    Gfx::Draw(this->donutPrimGroup);
     Gfx::EndPass();
     
     // render sphere to display, with offscreen render target as texture
@@ -150,7 +147,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.mvp = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::Draw(this->sphereShape.PrimitiveGroups[0]);
+    Gfx::Draw(this->spherePrimGroup);
     Gfx::EndPass();
     
     Gfx::CommitFrame();

@@ -21,7 +21,7 @@ public:
     glm::mat4 computeModel(float rotX, float rotY, const glm::vec3& pos);
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
-    ShapeBuilder::Result sphere;
+    PrimitiveGroup primGroup;
     DrawState offscreenDrawState;
     DrawState displayDrawState;
     struct {
@@ -75,15 +75,15 @@ InfiniteSpheresApp::OnInit() {
     }
 
     // create a sphere shape mesh
-    ShapeBuilder shapeBuilder;
-    this->sphere = shapeBuilder
-        .AddPositions("in_pos", VertexFormat::Float3)
-        .AddNormals("in_normal", VertexFormat::Byte4N)
-        .AddTexCoords("in_uv", VertexFormat::Float2)
+    auto sphere = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .TexCoords("in_uv", VertexFormat::Float2)
         .Sphere(0.75f, 72, 40)
         .Build();
-    Id vbuf = Gfx::Buffer().From(this->sphere.VertexBufferDesc).Content(this->sphere.Data).Create();
-    Id ibuf = Gfx::Buffer().From(this->sphere.IndexBufferDesc).Content(this->sphere.Data).Create();
+    this->primGroup = sphere.PrimitiveGroups[0];
+    Id vbuf = Gfx::Buffer().From(sphere.VertexBufferDesc).Content(sphere.Data).Create();
+    Id ibuf = Gfx::Buffer().From(sphere.IndexBufferDesc).Content(sphere.Data).Create();
     this->offscreenDrawState.VertexBuffers[0] = vbuf;
     this->offscreenDrawState.IndexBuffer = ibuf;
     this->displayDrawState.VertexBuffers[0] = vbuf;
@@ -94,17 +94,15 @@ InfiniteSpheresApp::OnInit() {
 
     // create draw state for rendering into default render target
     this->displayDrawState.Pipeline = Gfx::Pipeline()
+        .From(sphere.PipelineDesc)
         .Shader(shd)
-        .Layout(0, this->sphere.Layout)
-        .IndexType(this->sphere.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(gfxDesc.SampleCount)
         .Create();
     this->offscreenDrawState.Pipeline = Gfx::Pipeline()
+        .From(sphere.PipelineDesc)
         .Shader(shd)
-        .Layout(0, this->sphere.Layout)
-        .IndexType(this->sphere.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
@@ -140,7 +138,7 @@ InfiniteSpheresApp::OnRunning() {
     this->offscreenDrawState.FSTexture[Shader::tex] = this->passInfo[index1].texture;
     Gfx::ApplyDrawState(this->offscreenDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw(this->sphere.PrimitiveGroups[0]);
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     
     // ...and again to display
@@ -150,7 +148,7 @@ InfiniteSpheresApp::OnRunning() {
     this->displayDrawState.FSTexture[Shader::tex] = this->passInfo[index0].texture;
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw(this->sphere.PrimitiveGroups[0]);
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     
     Gfx::CommitFrame();

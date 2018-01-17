@@ -39,7 +39,6 @@
 #include "Core/Types.h"
 #include "Gfx/GfxTypes.h"
 #include "Assets/Gfx/VertexWriter.h"
-#include "Resource/SetupAndData.h"
 
 namespace Oryol {
 
@@ -82,7 +81,7 @@ public:
         BufferDesc IndexBufferDesc;
         VertexLayout Layout;
         IndexType::Code IndexType;
-        Buffer Data;
+        MemoryBuffer Data;
     };
     /// end writing vertex and index data, return result, and reset MeshBuilfer
     Result Build();

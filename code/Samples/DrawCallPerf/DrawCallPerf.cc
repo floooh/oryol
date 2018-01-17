@@ -25,6 +25,7 @@ public:
     void emitParticles();
     void updateParticles();
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -48,29 +49,38 @@ OryolMain(DrawCallPerfApp);
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
-    gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
-    Gfx::Setup(gfxSetup);
+    GfxDesc gfxDesc = GfxDesc::Window(800, 500, "Oryol DrawCallPerf Sample");
+    gfxDesc.GlobalUniformBufferSize = 1024 * 1024 * 32;
+    Gfx::Setup(gfxDesc);
     Dbg::Setup();
     Input::Setup();
 
     // create resources
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
-    
+    auto shape = ShapeBuilder::New()
+        .RandomColors(true)
+        .Positions("in_pos", VertexFormat::Float3)
+        .Colors("in_color", VertexFormat::Float4)
+        .Transform(rot90)
+        .Sphere(0.05f, 3, 2)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .CullFaceEnabled(true)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .Create();
+
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -107,7 +117,7 @@ DrawCallPerfApp::OnRunning() {
     for (int i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
-        Gfx::Draw();
+        Gfx::Draw(this->primGroup);
     }
     drawTime = Clock::Since(drawStart);
     

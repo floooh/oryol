@@ -18,7 +18,7 @@ public:
     AppState::Code OnCleanup();
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    ShapeBuilder::Result shapes;
+    Array<PrimitiveGroup> primGroups;
     DrawState drawState;
     Shader::params params;
     glm::mat4 view;
@@ -33,27 +33,32 @@ AppState::Code
 PackedNormalsApp::OnInit() {
     Gfx::Setup(GfxDesc::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
 
-    ShapeBuilder shapeBuilder;
-    this->shapes = shapeBuilder
-        .AddPositions("position", VertexFormat::Float3)
-        .AddNormals("normal", VertexFormat::Byte4N)
+    auto shapes = ShapeBuilder::New()
+        .Positions("position", VertexFormat::Float3)
+        .Normals("normal", VertexFormat::Byte4N)
         .Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(this->shapes.VertexBufferDesc, this->shapes.Data);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(this->shapes.IndexBufferDesc, this->shapes.Data);
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shapes.VertexBufferDesc)
+        .Content(shapes.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shapes.IndexBufferDesc)
+        .Content(shapes.Data)
+        .Create();
     this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
         .SampleCount(4)
         .Create();
+    this->primGroups = std::move(shapes.PrimitiveGroups);
 
     float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -83,7 +88,7 @@ PackedNormalsApp::OnRunning() {
     for (const auto& pos : positions) {
         this->params.mvp = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw(this->shapes.PrimitiveGroups[primGroupIndex++]);
+        Gfx::Draw(this->primGroups[primGroupIndex++]);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();

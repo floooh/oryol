@@ -128,9 +128,9 @@ float snoise(vec2 v)
 //  A generic fullscreen-quad vertex shader.
 //
 @vs fsqVS
-in vec4 position;
+in vec2 in_pos;
 void main() {
-    gl_Position = position;
+    gl_Position = vec4(in_pos * 2.0 - 1.0, 0.5, 1.0);
 }
 @end
 
@@ -237,17 +237,15 @@ uniform vsParams {
 };
 uniform sampler2D particleTex;
 
-in vec4 position;
-in vec4 color0;
-in float instance0;
+in vec4 in_pos;
+in vec4 in_color;
+in float in_particleId;
 out vec4 color;
 void main() {
-    float particleId = instance0;
-    vec2 posUv = posUvFromParticleId(particleId, bufDims);
+    vec2 posUv = posUvFromParticleId(in_particleId, bufDims);
     vec4 particlePos = vec4(texture(particleTex, posUv).xyz, 0.0);
-
-    gl_Position = mvp * (position + particlePos);
-    color = color0;
+    gl_Position = mvp * (in_pos + particlePos);
+    color = in_color;
 }
 @end
 

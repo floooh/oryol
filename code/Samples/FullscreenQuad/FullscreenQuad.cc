@@ -22,12 +22,17 @@ OryolMain(FullscreenQuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(600, 600, "Oryol Fullscreen Quad Sample"));
-    auto quadSetup = MeshSetup::FullScreenQuad();
-    this->drawState.Mesh[0] = Gfx::CreateResource(quadSetup);
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, shd);
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    Gfx::Setup(GfxDesc::Window(600, 600, "Oryol Fullscreen Quad Sample"));
+    const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .Size(sizeof(quadVertices))
+        .Content(quadVertices)
+        .Create();
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .Layout(0, { { "in_pos", VertexFormat::Float2 } })
+        .PrimitiveType(PrimitiveType::TriangleStrip)
+        .Create();
     this->params.time = 0.0f;
     return App::OnInit();
 }
@@ -40,7 +45,7 @@ FullscreenQuadApp::OnRunning() {
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->params);
-    Gfx::Draw();
+    Gfx::Draw(0, 4);
     Gfx::EndPass();
     Gfx::CommitFrame();
     

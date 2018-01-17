@@ -25,10 +25,7 @@ public:
     void emitParticles();
     void updateParticles();
 
-    // the static geometry is at mesh slot 0, and the instance data at slot 1
-    static const int geomMeshSlot = 0;
-    static const int instMeshSlot = 1;
-
+    PrimitiveGroup primGroup;
     DrawState drawState;
     glm::mat4 view;
     glm::mat4 proj;
@@ -49,7 +46,7 @@ OryolMain(InstancingApp);
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol Instancing Sample"));
+    Gfx::Setup(GfxDesc::Window(800, 500, "Oryol Instancing Sample"));
     Dbg::Setup();
     Input::Setup();
     
@@ -60,32 +57,40 @@ InstancingApp::OnInit() {
 
     // create static mesh at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    auto shapeBuilderResult = shapeBuilder.Build();
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilderResult);
+    auto shape = ShapeBuilder::New()
+        .RandomColors(true)
+        .Positions("in_pos", VertexFormat::Float3)
+        .Colors("in_color", VertexFormat::Float4)
+        .Transform(rot90)
+        .Sphere(0.05f, 3, 2)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
 
-    // create dynamic instance data mesh at mesh slot 1
-    auto instMeshSetup = MeshSetup::Empty(MaxNumParticles, Usage::Stream);
-    instMeshSetup.Layout
-        .EnableInstancing()
-        .Add(VertexAttr::Instance0, VertexFormat::Float4);
-    this->drawState.Mesh[1] = Gfx::CreateResource(instMeshSetup);
+    // create dynamic instance data vertex buffer on slot 1
+    this->drawState.VertexBuffers[1] = Gfx::Buffer()
+        .Size(MaxNumParticles * VertexFormat::ByteSize(VertexFormat::Float4))
+        .Usage(Usage::Stream)
+        .Create();
 
-    // setup draw state for instanced rendering
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromShader(shd);
-    ps.Layouts[0] = shapeBuilder.Layout;
-    ps.Layouts[1] = instMeshSetup.Layout;
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    // setup pipeline state for instanced rendering
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .Layout(1, VertexLayout::New()
+            .EnableInstancing()
+            .Add("in_instpos", VertexFormat::Float4))
+        .CullFaceEnabled(true)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .Create();
     
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -111,7 +116,7 @@ InstancingApp::OnRunning() {
         updTime = Clock::Since(updStart);
 
         TimePoint bufStart = Clock::Now();
-        Gfx::UpdateVertices(this->drawState.Mesh[instMeshSlot], this->positions, this->curNumParticles * sizeof(glm::vec4));
+        Gfx::UpdateBuffer(this->drawState.VertexBuffers[1], this->positions, this->curNumParticles * sizeof(glm::vec4));
         bufTime = Clock::Since(bufStart);
     }
     
@@ -120,7 +125,7 @@ InstancingApp::OnRunning() {
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw(0, this->curNumParticles);
+    Gfx::Draw(this->primGroup, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
     
     Dbg::DrawTextBuffer();

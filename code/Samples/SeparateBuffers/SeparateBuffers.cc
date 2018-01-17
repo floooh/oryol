@@ -28,7 +28,7 @@ public:
 
     glm::mat4 computeMVP(const glm::vec3& pos);
     static const int NumColorBuffer = 3;
-    ShapeBuilder::Result cubeShape;
+    PrimitiveGroup cubePrimGroup;
     StaticArray<Id, NumColorBuffer> colorBuffers;
     DrawState drawState;
     Shader::params params;
@@ -48,13 +48,19 @@ SeparateBuffersApp::OnInit() {
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
-    ShapeBuilder shapeBuilder;
-    this->cubeShape = shapeBuilder
-        .AddPositions("in_pos", VertexFormat::Float3)
+    auto shape = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(this->cubeShape.VertexBufferDesc, this->cubeShape.Data);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(this->cubeShape.IndexBufferDesc, this->cubeShape.Data);
+    this->cubePrimGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
 
     // create 3 meshes with only color data
     static const int NumVertices = 24;
@@ -73,10 +79,9 @@ SeparateBuffersApp::OnInit() {
     // create shader and pipeline, the position data vertex Layout
     // goes into the first layout slot, and the color data vertex layout into the second slot
     this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
-        .Layout(0, this->cubeShape.Layout)
         .Layout(1, { { "in_color", VertexFormat::Float3 } })
-        .IndexType(this->cubeShape.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(gfxDesc.SampleCount)
@@ -110,7 +115,7 @@ SeparateBuffersApp::OnRunning() {
         Gfx::ApplyDrawState(this->drawState);
         this->params.mvp = this->computeMVP(positions[i]);
         Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw(this->cubeShape.PrimitiveGroups[0]);
+        Gfx::Draw(this->cubePrimGroup);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();

@@ -7,7 +7,7 @@
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "Core/Containers/StaticArray.h"
-#include "Core/Containers/Buffer.h"
+#include "Core/Containers/MemoryBuffer.h"
 #include "Gfx/GfxConfig.h"
 #include "glm/vec4.hpp"
 #include <initializer_list>
@@ -656,6 +656,8 @@ public:
     VertexLayout();
     /// initializer list constructor
     VertexLayout(std::initializer_list<Component> l);
+    /// return a new vertex layout object to start building via chained methods
+    static VertexLayout New();
     /// clear the vertex layout, chainable
     VertexLayout& Clear();
     /// return true if layout is empty
@@ -896,7 +898,7 @@ public:
         ContentSize = 0;
         return *this;
     }
-    BufferBuilder& Content(const Buffer& content) {
+    BufferBuilder& Content(const MemoryBuffer& content) {
         ContentPtr = content.Data();
         ContentSize = content.Size();
         return *this;
@@ -954,7 +956,6 @@ struct PipelineDesc {
 
     /// rasterizer state
     bool CullFaceEnabled = false;
-    bool ScissorTestEnabled = false;
     bool AlphaToCoverageEnabled = false;
     Face::Code CullFace = Face::Back;
     int SampleCount = 1;
@@ -1103,9 +1104,6 @@ public:
     }
     PipelineBuilder& CullFace(Face::Code f) {
         Desc.CullFace = f; return *this;
-    }
-    PipelineBuilder& ScissorTestEnabled(bool b) {
-        Desc.ScissorTestEnabled = b; return *this;
     }
     PipelineBuilder& AlphaToCoverageEnabled(bool b) {
         Desc.AlphaToCoverageEnabled = b; return *this;
@@ -1275,6 +1273,9 @@ public:
     TextureBuilder& Depth(int d) {
         Desc.Depth = d; return *this;
     }
+    TextureBuilder& Layers(int l) {
+        Desc.Depth = l; return *this;
+    }
     TextureBuilder& NumMipMaps(int n) {
         Desc.NumMipMaps = n; return *this;
     }
@@ -1310,7 +1311,7 @@ public:
         ContentSize = size;
         return *this;
     }
-    TextureBuilder& Content(const Buffer& content) {
+    TextureBuilder& Content(const MemoryBuffer& content) {
         ContentPtr = content.Data();
         ContentSize = content.Size();
         return *this;

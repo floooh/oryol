@@ -76,12 +76,11 @@ float snoise(vec2 v)
 
 //------------------------------------------------------------------------------
 @vs plasmaVS
-in vec4 position;
-in vec2 texcoord0;
+in vec2 in_pos;
 out vec2 uv;
 void main() {
-    gl_Position = position;
-    uv = texcoord0;
+    gl_Position = vec4(in_pos * 2.0 - 1.0, 0.5, 1.0);
+    uv = in_pos;
 }
 @end
 
@@ -130,13 +129,13 @@ uniform vsParams {
     mat4 mvp;
 };
 uniform sampler2D tex;
-in vec4 position;
-in vec2 texcoord0;
+in vec4 in_pos;
+in vec2 in_uv;
 out vec4 color;
 
 void main() {
-    color = texture(tex, texcoord0);
-    vec4 pos = position;
+    color = texture(tex, in_uv);
+    vec4 pos = in_pos;
     pos.y = color.w;
     color.w = 1.0;
     gl_Position = mvp * pos;

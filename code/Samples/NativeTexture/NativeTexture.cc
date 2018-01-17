@@ -13,7 +13,7 @@
 
 // need to access GL API directly
 #if ORYOL_OPENGL
-#include "Gfx/private/gl/gl_impl.h"
+#include "Gfx/private/flextGL.h"
 #endif
 
 using namespace Oryol;
@@ -27,6 +27,7 @@ public:
     AppState::Code notSupported();      // render a 'not supported' message
 
     glm::mat4 computeMVP(const glm::vec3& pos);
+    PrimitiveGroup primGroup;
     DrawState drawState;
     ResourceLabel texLabel;
     Shader::vsParams params;
@@ -48,25 +49,30 @@ OryolMain(NativeTextureApp);
 AppState::Code
 NativeTextureApp::OnInit() {
 
-    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol NativeTexture Sample");
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Oryol NativeTexture Sample");
+    Gfx::Setup(gfxDesc);
     Dbg::Setup();
 
-    // native texture handles are currently only supported on GL, on
-    // other APIs, just display a warning
-    if (!Gfx::QueryFeature(GfxFeature::NativeTexture)) {
-        return App::OnInit();
-    }
+    // FIXME: D3D and Metal
+    #if !ORYOL_OPENGL
+    return App::OnInit();
+    #endif
 
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::TexCoord0, VertexFormat::Float2 }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
+    auto shape = ShapeBuilder::New()
+        .RandomColors(true)
+        .Positions("in_pos", VertexFormat::Float3)
+        .TexCoords("in_uv", VertexFormat::Float2)
+        .Box(1.0f, 1.0f, 1.0f, 4)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
 
     #if ORYOL_OPENGL
     // the interesting part, create 2 GL textures and hand them to the
@@ -88,24 +94,29 @@ NativeTextureApp::OnInit() {
 
     // make sure that the texture creation parameters here match the OpenGL
     // creation parameters (size, texture type, pixel format etc...),
-    auto texSetup = TextureSetup::FromNativeTexture(TexWidth, TexHeight, 1,
-        TextureType::Texture2D,
-        PixelFormat::RGBA8,
-        Usage::Stream,
-        this->glTextures[0],
-        this->glTextures[1]);
     // push a new resource label and keep it for later since we'll have
     // to cleanup the resource ourselves
     Gfx::PushResourceLabel();
-    this->drawState.FSTexture[0] = Gfx::CreateResource(texSetup);
+    this->drawState.FSTexture[0] = Gfx::Texture()
+        .Type(TextureType::Texture2D)
+        .Width(TexWidth)
+        .Height(TexHeight)
+        .Format(PixelFormat::RGBA8)
+        .Usage(Usage::Stream)
+        .NativeTexture(0, this->glTextures[0])
+        .NativeTexture(1, this->glTextures[1])
+        .Create();
     this->texLabel = Gfx::PopResourceLabel();
     #endif
-    
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+
+    // ...and finally the pipeline object
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(gfxDesc.SampleCount)
+        .Create();
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -119,9 +130,9 @@ NativeTextureApp::OnInit() {
 AppState::Code
 NativeTextureApp::OnRunning() {
 
-    if (!Gfx::QueryFeature(GfxFeature::NativeTexture)) {
-        return notSupported();
-    }
+    #if !ORYOL_OPENGL
+    return notSupported();
+    #endif
     this->angleY += 0.01f;
     this->angleX += 0.02f;
 
@@ -138,8 +149,6 @@ NativeTextureApp::OnRunning() {
     }
     this->counter++;
     ImageDataAttrs updAttrs;
-    updAttrs.NumFaces = 1;
-    updAttrs.NumMipMaps = 1;
     updAttrs.Offsets[0][0] = 0;
     updAttrs.Sizes[0][0] = sizeof(this->Buffer);
     Gfx::UpdateTexture(this->drawState.FSTexture[0], this->Buffer, updAttrs);
@@ -148,7 +157,7 @@ NativeTextureApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     this->params.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->params);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     

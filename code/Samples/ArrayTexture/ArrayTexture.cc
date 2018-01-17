@@ -24,6 +24,7 @@ public:
     AppState::Code notSupported();
     Shader::vsParams computeShaderParams();
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     int frameIndex = 0;
     glm::mat4 proj;
@@ -33,9 +34,8 @@ OryolMain(ArrayTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ArrayTextureApp::OnInit() {
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 512, "Array Texture Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.2f, 0.2f, 0.3f, 1.0f));
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::WindowMSAA4(800, 512, "Array Texture Sample");
+    Gfx::Setup(gfxDesc);
     Dbg::Setup();
 
     // if array textures are not supported, only show a warning
@@ -64,28 +64,42 @@ ArrayTextureApp::OnInit() {
             }
         }
     }
-    auto texSetup = TextureSetup::FromPixelDataArray(16, 16, numLayers, 1, PixelFormat::RGBA8);
-    texSetup.Sampler.MinFilter = TextureFilterMode::Linear;
-    texSetup.Sampler.MagFilter = TextureFilterMode::Linear;
-    texSetup.ImageData.Sizes[0][0] = sizeof(data);
-    this->drawState.FSTexture[Shader::tex] = Gfx::CreateResource(texSetup, data, sizeof(data));
+    this->drawState.FSTexture[Shader::tex] = Gfx::Texture()
+        .Type(TextureType::TextureArray)
+        .Width(width)
+        .Height(height)
+        .Layers(numLayers)
+        .Format(PixelFormat::RGBA8)
+        .MinFilter(TextureFilterMode::Linear)
+        .MagFilter(TextureFilterMode::Linear)
+        .MipDataSize(0, 0, sizeof(data))
+        .Content(data, sizeof(data))
+        .Create();
 
     // build a cube mesh
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::TexCoord0, VertexFormat::Float2 }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    auto shape = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .TexCoords("in_uv", VertexFormat::Float2)
+        .Box(1.0f, 1.0f, 1.0f, 1)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
 
     // ...and a pipeline object to complete the DrawState
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto pipSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(pipSetup);
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(gfxDesc.SampleCount)
+        .Create();
 
     // setup a projection matrix with the right aspect ratio
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -108,10 +122,10 @@ ArrayTextureApp::OnRunning() {
     auto vsParams = this->computeShaderParams();
 
     // render texture cube
-    Gfx::BeginPass();
+    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.2f, 0.2f, 0.3f, 1.0f)));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     this->frameIndex++;

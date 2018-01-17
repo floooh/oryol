@@ -18,8 +18,8 @@ public:
     AppState::Code OnCleanup();
     glm::mat4 computeMVP(const glm::vec3& pos);
 
-    ShapeBuilder::Result shapes;
     DrawState drawState;
+    Array<PrimitiveGroup> primGroups;
     Shader::params params;
     glm::mat4 view;
     glm::mat4 proj;
@@ -35,29 +35,32 @@ ShapeApp::OnInit() {
     auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Oryol Shapes Sample");
     Gfx::Setup(gfxDesc);
 
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    this->shapes = shapeBuilder
-        .AddPositions("position", VertexFormat::Float3)
-        .AddColors("color0", VertexFormat::UByte4N)
+    auto shapes = ShapeBuilder::New()
+        .RandomColors(true)
+        .Positions("position", VertexFormat::Float3)
+        .Colors("color0", VertexFormat::UByte4N)
         .Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(this->shapes.VertexBufferDesc, this->shapes.Data);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(this->shapes.IndexBufferDesc, this->shapes.Data);
-
-    Id shd = Gfx::CreateShader(Shader::Desc());
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shapes.VertexBufferDesc)
+        .Content(shapes.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shapes.IndexBufferDesc)
+        .Content(shapes.Data)
+        .Create();
     this->drawState.Pipeline = Gfx::Pipeline()
-        .Shader(shd)
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
+        .From(shapes.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(gfxDesc.SampleCount)
         .Create();
+    this->primGroups = std::move(shapes.PrimitiveGroups);
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -87,7 +90,7 @@ ShapeApp::OnRunning() {
     for (const auto& pos : positions) {
         this->params.mvp = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw(this->shapes.PrimitiveGroups[primGroupIndex++]);
+        Gfx::Draw(this->primGroups[primGroupIndex++]);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();

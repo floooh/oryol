@@ -34,8 +34,7 @@ public:
     const glm::vec4 ClearColor = glm::vec4(0.5f, 0.5f, 0.7f, 1.0f);
     const glm::vec3 LightDir = glm::normalize(glm::vec3(-0.75, 1.0, 0.0));
 
-    ShapeBuilder::Result shapes;
-
+    Array<PrimitiveGroup> primGroups;
     Id cubeMap;
     Id passes[NumFaces];
 
@@ -102,36 +101,34 @@ RenderToCubeMapApp::OnInit() {
     }
 
     // mesh, shaders and pipelines to render color shapes
-    ShapeBuilder shapeBuilder;
-    this->shapes = shapeBuilder
-        .AddPositions("in_pos", VertexFormat::Float3)
-        .AddNormals("in_normal", VertexFormat::Float3)
+    auto shapes = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1, true)
         .Cylinder(0.5f, 1.0f, 36, 1, true)
         .Torus(0.25f, 0.5f, 8, 36, true)
         .Sphere(0.5f, 18, 12, true)
         .Sphere(3.5f, 72, 48, true) // this is the big center sphere
         .Build();
+    this->primGroups = std::move(shapes.PrimitiveGroups);
     this->shapesVertexBuffer = Gfx::Buffer()
-        .From(this->shapes.VertexBufferDesc)
-        .Content(this->shapes.Data)
+        .From(shapes.VertexBufferDesc)
+        .Content(shapes.Data)
         .Create();
     this->shapesIndexBuffer = Gfx::Buffer()
-        .From(this->shapes.IndexBufferDesc)
-        .Content(this->shapes.Data)
+        .From(shapes.IndexBufferDesc)
+        .Content(shapes.Data)
         .Create();
     this->displayShapesPipeline = Gfx::Pipeline()
+        .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(ShapeShader::Desc()))
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(gfxDesc.SampleCount)
         .Create();
     this->offscreenShapesPipeline = Gfx::Pipeline()
+        .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(ShapeShaderWithGamma::Desc()))
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
@@ -143,9 +140,8 @@ RenderToCubeMapApp::OnInit() {
     this->sphereDrawState.IndexBuffer = this->shapesIndexBuffer;
     this->sphereDrawState.FSTexture[SphereShader::tex] = this->cubeMap;
     this->sphereDrawState.Pipeline = Gfx::Pipeline()
+        .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(SphereShader::Desc()))
-        .Layout(0, this->shapes.Layout)
-        .IndexType(this->shapes.IndexType)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(gfxDesc.SampleCount)
@@ -217,7 +213,7 @@ RenderToCubeMapApp::OnRunning() {
     vsParams.lightDir = LightDir;
     vsParams.eyePos = eyePos;
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::Draw(this->shapes.PrimitiveGroups[4]);
+    Gfx::Draw(this->primGroups[4]);
 
     Gfx::EndPass();
     Gfx::CommitFrame();
@@ -277,7 +273,7 @@ RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::vec3& eyePos, const gl
         vsParams.lightDir = LightDir;
         vsParams.eyePos = eyePos;
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::Draw(this->shapes.PrimitiveGroups[shape.shapeIndex]);
+        Gfx::Draw(this->primGroups[shape.shapeIndex]);
     }
 }
 

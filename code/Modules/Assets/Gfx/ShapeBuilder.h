@@ -17,21 +17,22 @@ namespace Oryol {
     
 class ShapeBuilder {
 public:
-    /// random-vertex-colors flag
-    bool RandomColors = false;
-
-    /// add position component to vertex layout
-    ShapeBuilder& AddPositions(const StringAtom& name, VertexFormat::Code fmt);
-    /// add a normal component to vertex layout
-    ShapeBuilder& AddNormals(const StringAtom& name, VertexFormat::Code fmt);
-    /// add a texcoord component to vertex layout
-    ShapeBuilder& AddTexCoords(const StringAtom& name, VertexFormat::Code fmt);
-    /// add c color component to vertex layout
-    ShapeBuilder& AddColors(const StringAtom& name, VertexFormat::Code fmt);
+    /// return a new ShapeBuilder object
+    static ShapeBuilder New();
+    /// declare position vertex components
+    ShapeBuilder& Positions(const StringAtom& name, VertexFormat::Code fmt);
+    /// declare normal vertex components
+    ShapeBuilder& Normals(const StringAtom& name, VertexFormat::Code fmt);
+    /// declare texture coords vertex components
+    ShapeBuilder& TexCoords(const StringAtom& name, VertexFormat::Code fmt);
+    /// declare color 
+    ShapeBuilder& Colors(const StringAtom& name, VertexFormat::Code fmt);
+    /// enable random vertex colors
+    ShapeBuilder& RandomColors(bool b);
     /// put new transform
     ShapeBuilder& Transform(const glm::mat4& t);
-    /// put new color
-    ShapeBuilder& Color(const glm::vec4& c);
+    /// put a new vertex color
+    ShapeBuilder& VertexColor(const glm::vec4& c);
     /// add a box shape
     ShapeBuilder& Box(float w, float h, float d, int tiles, bool buildPrimGroup=true);
     /// add a sphere shape
@@ -47,9 +48,8 @@ public:
     struct Result {
         BufferDesc VertexBufferDesc;
         BufferDesc IndexBufferDesc;
-        VertexLayout Layout;
-        IndexType::Code IndexType;
-        Buffer Data;
+        struct PipelineDesc PipelineDesc;
+        MemoryBuffer Data;
         Array<PrimitiveGroup> PrimitiveGroups;
     };
     /// build geometry and clear object state
@@ -77,23 +77,16 @@ private:
         int numTris;
     };
 
-    /// update number of vertices and triangles in shape
     void UpdateNumElements(ShapeData& shapeData);
-    /// helper method: build vertex colors
     void BuildVertexColors(const ShapeData& shape, int startVertexIndex);
-    /// build box vertices and indices
     void BuildBox(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build sphere vertices and indices
     void BuildSphere(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build cylinder vertices and indices
     void BuildCylinder(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build torus vertices and indices
     void BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build plane vertices and indices
     void BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build a primitive group
     void buildPrimitiveGroup();
-    
+
+    bool randomColors = false;
     int curPrimGroupBaseElement = 0;
     int curPrimGroupNumElements = 0;
     int posIndex = InvalidIndex;
@@ -106,5 +99,11 @@ private:
     Array<PrimitiveGroup> primGroups;
     MeshBuilder meshBuilder;
 };
-    
+
+//------------------------------------------------------------------------------
+inline ShapeBuilder
+ShapeBuilder::New() {
+    return ShapeBuilder();
+}
+
 } // namespace Oryol

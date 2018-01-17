@@ -12,36 +12,16 @@ namespace Oryol {
 
 //------------------------------------------------------------------------------
 ShapeBuilder&
-ShapeBuilder::AddPositions(const StringAtom& name, VertexFormat::Code fmt) {
+ShapeBuilder::RandomColors(bool b) {
+    this->randomColors = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShapeBuilder&
+ShapeBuilder::Positions(const StringAtom& name, VertexFormat::Code fmt) {
     o_assert_dbg(this->posIndex == InvalidIndex);
     this->posIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-ShapeBuilder&
-ShapeBuilder::AddNormals(const StringAtom& name, VertexFormat::Code fmt) {
-    o_assert_dbg(this->normalIndex == InvalidIndex);
-    this->normalIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-ShapeBuilder&
-ShapeBuilder::AddTexCoords(const StringAtom& name, VertexFormat::Code fmt) {
-    o_assert_dbg(this->texCoordIndex == InvalidIndex);
-    this->texCoordIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-ShapeBuilder&
-ShapeBuilder::AddColors(const Oryol::StringAtom &name, VertexFormat::Code fmt) {
-    o_assert_dbg(this->colorIndex == InvalidIndex);
-    this->colorIndex = this->meshBuilder.Layout.NumComponents();
     this->meshBuilder.Layout.Add(name, fmt);
     return *this;
 }
@@ -55,8 +35,35 @@ ShapeBuilder::Transform(const glm::mat4& m) {
 
 //------------------------------------------------------------------------------
 ShapeBuilder&
-ShapeBuilder::Color(const glm::vec4& c) {
+ShapeBuilder::VertexColor(const glm::vec4& c) {
     this->color = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShapeBuilder&
+ShapeBuilder::Normals(const StringAtom& name, VertexFormat::Code fmt) {
+    o_assert_dbg(this->normalIndex == InvalidIndex);
+    this->normalIndex = this->meshBuilder.Layout.NumComponents();
+    this->meshBuilder.Layout.Add(name, fmt);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShapeBuilder&
+ShapeBuilder::TexCoords(const StringAtom& name, VertexFormat::Code fmt) {
+    o_assert_dbg(this->texCoordIndex == InvalidIndex);
+    this->texCoordIndex = this->meshBuilder.Layout.NumComponents();
+    this->meshBuilder.Layout.Add(name, fmt);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShapeBuilder&
+ShapeBuilder::Colors(const Oryol::StringAtom &name, VertexFormat::Code fmt) {
+    o_assert_dbg(this->colorIndex == InvalidIndex);
+    this->colorIndex = this->meshBuilder.Layout.NumComponents();
+    this->meshBuilder.Layout.Add(name, fmt);
     return *this;
 }
 
@@ -283,8 +290,8 @@ ShapeBuilder::Build() {
     ShapeBuilder::Result shapeResult;
     shapeResult.VertexBufferDesc = std::move(meshResult.VertexBufferDesc);
     shapeResult.IndexBufferDesc = std::move(meshResult.IndexBufferDesc);
-    shapeResult.Layout = std::move(meshResult.Layout);
-    shapeResult.IndexType = meshResult.IndexType;
+    shapeResult.PipelineDesc.Layouts[0] = std::move(meshResult.Layout);
+    shapeResult.PipelineDesc.IndexType = meshResult.IndexType;
     shapeResult.Data = std::move(meshResult.Data);
     shapeResult.PrimitiveGroups = std::move(this->primGroups);
 
@@ -308,7 +315,7 @@ ShapeBuilder::Build() {
 void
 ShapeBuilder::BuildVertexColors(const ShapeData& shape, int startVertexIndex) {
     o_assert(InvalidIndex != this->colorIndex);
-    if (this->RandomColors) {
+    if (this->randomColors) {
         const glm::vec3 minRand(0.0f, 0.0f, 0.0f);
         const glm::vec3 maxRand(1.0f, 1.0f, 1.0f);
         for (int i = 0; i < shape.numVertices; i++) {
