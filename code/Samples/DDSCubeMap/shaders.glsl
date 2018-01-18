@@ -5,13 +5,13 @@
 uniform vsParams {
     mat4 mvp;
 };
-in vec4 position;
-in vec3 normal;
+in vec4 in_pos;
+in vec3 in_normal;
 out vec3 nrm;
 
 void main() {
-    gl_Position = mvp * position;
-    nrm = normal;
+    gl_Position = mvp * in_pos;
+    nrm = in_normal;
 }
 @end
 

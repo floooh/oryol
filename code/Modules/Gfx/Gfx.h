@@ -66,28 +66,47 @@ public:
     static void PushResourceLabel(ResourceLabel label);
     /// pop resource label from label stack
     static ResourceLabel PopResourceLabel();
+
     /// create a buffer object without associated data
     static Id CreateBuffer(const BufferDesc& desc);
     /// create a buffer object with associated data
-    static Id CreateBuffer(const BufferDesc& setup, const MemoryBuffer& data);
+    static Id CreateBuffer(const BufferDesc& desc, const MemoryBuffer& data);
     /// create a buffer object with raw pointer to associated data
-    static Id CreateBuffer(const BufferDesc& setup, const void* data, int size);
+    static Id CreateBuffer(const BufferDesc& desc, const void* data, int size);
     /// create a texture object without associated data
     static Id CreateTexture(const TextureDesc& desc);
     /// create a texture object with associated data
-    static Id CreateTexture(const TextureDesc& setup, const MemoryBuffer& data);
+    static Id CreateTexture(const TextureDesc& desc, const MemoryBuffer& data);
     /// create a texture object with raw pointer to associated data
-    static Id CreateTexture(const TextureDesc& setup, const void* data, int size);
+    static Id CreateTexture(const TextureDesc& desc, const void* data, int size);
     /// create a shader object
     static Id CreateShader(const ShaderDesc& desc);
     /// create a pipeline object
     static Id CreatePipeline(const PipelineDesc& desc);
     /// create a render-pass object
     static Id CreatePass(const PassDesc& desc);
+
     /// lookup a resource Id by Locator
     static Id LookupResource(const Locator& locator);
     /// destroy one or several resources by matching label
     static void DestroyResources(ResourceLabel label);
+
+    /// allocate a buffer resource id (async resource creation)
+    static Id AllocBuffer(const Locator& loc);
+    /// initialize a buffer (async resource creation)
+    static void InitBuffer(const Id& id, const BufferDesc& desc, const MemoryBuffer& data);
+    /// initialize a buffer (async resource creation)
+    static void InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int size);
+    /// set allocated buffer to failed resource state (async resource creation)
+    static void FailBuffer(const Id& id);
+    /// allocate a texture resource id (async resource creation)
+    static Id AllocTexture(const Locator& loc);
+    /// initialize a texture (async resource creation)
+    static void InitTexture(const Id& id, const TextureDesc& desc, const MemoryBuffer& data);
+    /// initialize a texture (async resource creation)
+    static void InitTexture(const Id& id, const TextureDesc& desc, const void* data, int size);
+    /// set allocated texture to failed resource state (async resource creation)
+    static void FailTexture(const Id& id);
 
     /// test if an optional feature is supported
     static bool QueryFeature(GfxFeature::Code feat);

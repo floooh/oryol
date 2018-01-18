@@ -22,6 +22,7 @@ public:
     
     glm::mat4 computeMVP(const glm::vec3& pos);
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     Shader::vsParams vsParams;
     glm::mat4 view;
@@ -42,18 +43,9 @@ DDSCubeMapApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DXT Cube Map Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc::Window(600, 400, "Oryol DXT Cube Map Sample"));
 
     // create resources
-    Id shd = Gfx::CreateResource(Shader::Setup());
-
-    TextureSetup texBluePrint;
-    texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    texBluePrint.Sampler.MagFilter = TextureFilterMode::Linear;
-    texBluePrint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    texBluePrint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     StringAtom texPath;
     if (Gfx::QueryFeature(GfxFeature::TextureCompressionPVRTC)) {
         texPath = "tex:romechurch_bpp2.pvr";
@@ -61,21 +53,35 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->drawState.FSTexture[Shader::tex] = Gfx::LoadResource(
-        TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint))
-    );
-    glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Float3 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.FSTexture[Shader::tex] = TextureLoader::Load(Gfx::Texture()
+        .Locator(texPath)
+        .MinFilter(TextureFilterMode::LinearMipmapLinear)
+        .MagFilter(TextureFilterMode::Linear)
+        .WrapU(TextureWrapMode::ClampToEdge)
+        .WrapV(TextureWrapMode::ClampToEdge)
+        .Desc);
+
+    auto shape = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Float3)
+        .Transform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)))
+        .Sphere(1.0f, 36, 20)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .Create();
 
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
@@ -94,14 +100,11 @@ DDSCubeMapApp::OnRunning() {
     this->angleY += 0.02f;
     this->angleX += 0.01f;
     
-    Gfx::BeginPass();
-    const Id& tex = this->drawState.FSTexture[Shader::tex];
-    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
-        this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::Draw();
-    }
+    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)));
+    this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     

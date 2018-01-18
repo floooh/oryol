@@ -385,6 +385,72 @@ Gfx::CreatePass(const PassDesc& desc) {
 }
 
 //------------------------------------------------------------------------------
+Id
+Gfx::AllocBuffer(const Locator& loc) {
+    o_assert_dbg(IsValid());
+    Id resId = state->backend.LookupResource(loc);
+    if (!resId.IsValid()) {
+        resId = state->backend.AllocBuffer();
+        state->backend.AddResource(loc, resId);
+    }
+    return resId;
+}
+
+//------------------------------------------------------------------------------
+Id
+Gfx::AllocTexture(const Locator& loc) {
+    o_assert_dbg(IsValid());
+    Id resId = state->backend.LookupResource(loc);
+    if (!resId.IsValid()) {
+        resId = state->backend.AllocTexture();
+        state->backend.AddResource(loc, resId);
+    }
+    return resId;
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    state->backend.InitBuffer(id, desc, data, size);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::InitBuffer(const Id& id, const BufferDesc& desc, const MemoryBuffer& data) {
+    o_assert_dbg(IsValid());
+    state->backend.InitBuffer(id, desc, data.Data(), data.Size());
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::InitTexture(const Id& id, const TextureDesc& desc, const void* data, int size) {
+    o_assert_dbg(IsValid());
+    state->backend.InitTexture(id, desc, data, size);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::InitTexture(const Id& id, const TextureDesc& desc, const MemoryBuffer& data) {
+    o_assert_dbg(IsValid());
+    state->backend.InitTexture(id, desc, data.Data(), data.Size());
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::FailBuffer(const Id& id) {
+    o_assert_dbg(IsValid());
+    state->backend.FailBuffer(id);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::FailTexture(const Id& id) {
+    o_assert_dbg(IsValid());
+    state->backend.FailTexture(id);
+}
+
+//------------------------------------------------------------------------------
 void
 Gfx::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, const uint8_t* ptr, int byteSize) {
     o_assert_dbg(IsValid());

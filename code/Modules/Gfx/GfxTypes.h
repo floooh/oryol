@@ -1252,6 +1252,9 @@ public:
     TextureDesc Desc;
     const void* ContentPtr = nullptr;
     int ContentSize = 0;
+    static TextureBuilder New() {
+        return TextureBuilder();
+    }
     TextureBuilder& From(const TextureDesc& desc) {
         Desc = desc; return *this;
     }

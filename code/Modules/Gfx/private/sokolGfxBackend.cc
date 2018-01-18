@@ -455,6 +455,66 @@ static sg_feature convertFeature(GfxFeature::Code f) {
 }
 
 //------------------------------------------------------------------------------
+static void convertBufferDesc(const BufferDesc& src, sg_buffer_desc& dst, const void* data) {
+    dst.size = src.Size;
+    dst.type = convertBufferType(src.Type);
+    dst.usage = convertUsage(src.Usage);
+    dst.content = (uint8_t*)data + src.Offset;
+    o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
+    #if ORYOL_OPENGL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        dst.gl_buffers[i] = (uint32_t) src.NativeBuffers[i];
+    }
+    #elif ORYOL_METAL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        dst.mtl_buffers[i] = (const void*) src.NativeBuffers[i];
+    }
+    #elif ORYOL_D3D11
+    dst.d3d11_buffer = (const void*) src.NativeBuffers[0]
+    #endif
+}
+
+//------------------------------------------------------------------------------
+static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst, const void* data) {
+    dst.type = convertTextureType(src.Type);
+    dst.render_target = src.RenderTarget;
+    dst.width = src.Width;
+    dst.height = src.Height;
+    dst.depth = src.Depth;
+    dst.num_mipmaps = src.NumMipMaps;
+    dst.usage = convertUsage(src.Usage);
+    dst.pixel_format = convertPixelFormat(src.Format);
+    dst.sample_count = src.SampleCount;
+    dst.min_filter = convertFilter(src.MinFilter);
+    dst.mag_filter = convertFilter(src.MagFilter);
+    dst.wrap_u = convertWrap(src.WrapU);
+    dst.wrap_v = convertWrap(src.WrapV);
+    dst.wrap_w = convertWrap(src.WrapW);
+    o_assert_dbg(GfxConfig::MaxNumTextureMipMaps <= SG_MAX_MIPMAPS);
+    o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
+    for (int f = 0; f < GfxConfig::MaxNumTextureFaces; f++) {
+        for (int m = 0; m < GfxConfig::MaxNumTextureMipMaps; m++) {
+            if (src.ImageData.Sizes[f][m] > 0) {
+                dst.content.subimage[f][m].ptr = (uint8_t*)data + src.ImageData.Offsets[f][m];
+                dst.content.subimage[f][m].size = src.ImageData.Sizes[f][m];
+            }
+        }
+    }
+    o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
+    #if ORYOL_OPENGL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        dst.gl_textures[i] = (uint32_t) src.NativeTextures[i];
+    }
+    #elif ORYOL_METAL
+    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
+        dst.mtl_buffers[i] = (const void*) src.NativeTextures[i];
+    }
+    #elif ORYOL_D3D11
+    dst.d3d11_buffer = (const void*) src.NativeTextures[0]
+    #endif
+}
+
+//------------------------------------------------------------------------------
 sokolGfxBackend::~sokolGfxBackend() {
     o_assert(!this->isValid);
 }
@@ -588,23 +648,32 @@ sokolGfxBackend::CreateBuffer(const BufferDesc& desc, const void* data, int data
     o_assert_dbg(this->isValid);
     o_assert_dbg((data == nullptr) || (desc.Size+desc.Offset) <= dataSize);
     sg_buffer_desc sgDesc = { };
-    sgDesc.size = desc.Size;
-    sgDesc.type = convertBufferType(desc.Type);
-    sgDesc.usage = convertUsage(desc.Usage);
-    sgDesc.content = (uint8_t*)data + desc.Offset;
-    o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
-    #if ORYOL_OPENGL
-    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.gl_buffers[i] = (uint32_t) desc.NativeBuffers[i];
-    }
-    #elif ORYOL_METAL
-    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.mtl_buffers[i] = (const void*) desc.NativeBuffers[i];
-    }
-    #elif ORYOL_D3D11
-    sgDesc.d3d11_buffer = (const void*) desc.NativeBuffers[0]
-    #endif
+    convertBufferDesc(desc, sgDesc, data);
     return makeId(GfxResourceType::Buffer, sg_make_buffer(&sgDesc).id);
+}
+
+//------------------------------------------------------------------------------
+Id
+sokolGfxBackend::AllocBuffer() {
+    o_assert_dbg(this->isValid);
+    return makeId(GfxResourceType::Buffer, sg_alloc_buffer().id);
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int dataSize) {
+    o_assert_dbg(this->isValid);
+    o_assert_dbg((data == nullptr) || (desc.Size+desc.Offset) <= dataSize);
+    sg_buffer_desc sgDesc = { };
+    convertBufferDesc(desc, sgDesc, data);
+    sg_init_buffer(makeBufferId(id), &sgDesc);
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::FailBuffer(const Id& id) {
+    o_assert_dbg(this->isValid);
+    sg_fail_buffer(makeBufferId(id));
 }
 
 //------------------------------------------------------------------------------
@@ -612,43 +681,31 @@ Id
 sokolGfxBackend::CreateTexture(const TextureDesc& desc, const void* data, int size) {
     o_assert_dbg(this->isValid);
     sg_image_desc sgDesc = { };
-    sgDesc.type = convertTextureType(desc.Type);
-    sgDesc.render_target = desc.RenderTarget;
-    sgDesc.width = desc.Width;
-    sgDesc.height = desc.Height;
-    sgDesc.depth = desc.Depth;
-    sgDesc.num_mipmaps = desc.NumMipMaps;
-    sgDesc.usage = convertUsage(desc.Usage);
-    sgDesc.pixel_format = convertPixelFormat(desc.Format);
-    sgDesc.sample_count = desc.SampleCount;
-    sgDesc.min_filter = convertFilter(desc.MinFilter);
-    sgDesc.mag_filter = convertFilter(desc.MagFilter);
-    sgDesc.wrap_u = convertWrap(desc.WrapU);
-    sgDesc.wrap_v = convertWrap(desc.WrapV);
-    sgDesc.wrap_w = convertWrap(desc.WrapW);
-    o_assert_dbg(GfxConfig::MaxNumTextureMipMaps <= SG_MAX_MIPMAPS);
-    o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
-    for (int f = 0; f < GfxConfig::MaxNumTextureFaces; f++) {
-        for (int m = 0; m < GfxConfig::MaxNumTextureMipMaps; m++) {
-            if (desc.ImageData.Sizes[f][m] > 0) {
-                sgDesc.content.subimage[f][m].ptr = (uint8_t*)data + desc.ImageData.Offsets[f][m];
-                sgDesc.content.subimage[f][m].size = desc.ImageData.Sizes[f][m];
-            }
-        }
-    }
-    o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
-    #if ORYOL_OPENGL
-    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.gl_textures[i] = (uint32_t) desc.NativeTextures[i];
-    }
-    #elif ORYOL_METAL
-    for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        sgDesc.mtl_buffers[i] = (const void*) desc.NativeTextures[i];
-    }
-    #elif ORYOL_D3D11
-    sgDesc.d3d11_buffer = (const void*) desc.NativeTextures[0]
-    #endif
+    convertTextureDesc(desc, sgDesc, data);
     return makeId(GfxResourceType::Texture, sg_make_image(&sgDesc).id);
+}
+
+//------------------------------------------------------------------------------
+Id
+sokolGfxBackend::AllocTexture() {
+    o_assert_dbg(this->isValid);
+    return makeId(GfxResourceType::Texture, sg_alloc_image().id);
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::InitTexture(const Id& id, const TextureDesc& desc, const void* data, int size) {
+    o_assert_dbg(this->isValid);
+    sg_image_desc sgDesc = { };
+    convertTextureDesc(desc, sgDesc, data);
+    sg_init_image(makeImageId(id), &sgDesc);
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::FailTexture(const Id& id) {
+    o_assert_dbg(this->isValid);
+    sg_fail_image(makeImageId(id));
 }
 
 //------------------------------------------------------------------------------

@@ -58,26 +58,17 @@ public:
     Id CreatePass(const PassDesc& desc);
 
     /// allocate a new buffer id
-    Id AllocBuffer(const Locator& loc);
+    Id AllocBuffer();
     /// allocate a new texture id
-    Id AllocTexture(const Locator& loc);
-    /// allocate a new shader id
-    Id AllocShader(const Locator& loc);
-    /// allocate a new pipeline id
-    Id AllocPipeline(const Locator& loc);
-    /// allocate a new pass id
-    Id AllocPass(const Locator& loc);
-
+    Id AllocTexture();
     /// initialize a buffer
-    void InitBuffer(const Id& id, const BufferDesc& desc);
+    void InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int dataSize);
     /// initialize a texture
-    void InitTexture(const Id& id, const TextureDesc& desc);
-    /// initialize a shader
-    void InitShader(const Id& id, const ShaderDesc& desc);
-    /// initialize a pipeline
-    void InitPipeline(const Id& id, const PipelineDesc& desc);
-    /// initialize a pass
-    void InitPass(const Id& id, const PassDesc& desc);
+    void InitTexture(const Id& id, const TextureDesc& desc, const void* data, int dataSize);
+    /// set allocated, non-initialized buffer to failed resource state
+    void FailBuffer(const Id& id);
+    /// set allocated, non-initialized texture to failed resource state
+    void FailTexture(const Id& id);
 
     /// lookup a resource Id by locator
     Id LookupResource(const Locator& loc);
