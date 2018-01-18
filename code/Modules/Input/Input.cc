@@ -307,9 +307,30 @@ Input::TouchpadAttached() {
 
 //------------------------------------------------------------------------------
 bool
-Input::TouchTouched() {
+Input::TouchStarted() {
     o_assert_dbg(state);
-    return state->inputManager.touchpad.touched;
+    return state->inputManager.touchpad.touchStarted;
+}
+
+//------------------------------------------------------------------------------
+bool
+Input::TouchMoved() {
+    o_assert_dbg(state);
+    return state->inputManager.touchpad.touchMoved;
+}
+
+//------------------------------------------------------------------------------
+bool
+Input::TouchEnded() {
+    o_assert_dbg(state);
+    return state->inputManager.touchpad.touchEnded;
+}
+
+//------------------------------------------------------------------------------
+bool
+Input::TouchCancelled() {
+    o_assert_dbg(state);
+    return state->inputManager.touchpad.touchCancelled;
 }
 
 //------------------------------------------------------------------------------

@@ -230,6 +230,10 @@ mouseDevice::buttonUp(MouseButton::Code btn) const {
 //------------------------------------------------------------------------------
 void
 touchpadDevice::reset() {
+    this->touchStarted = false;
+    this->touchMoved = false;
+    this->touchEnded = false;
+    this->touchCancelled = false;
     this->tapped = false;
     this->doubleTapped = false;
     this->panningStarted = false;
@@ -243,11 +247,25 @@ touchpadDevice::reset() {
 
 //------------------------------------------------------------------------------
 void
-touchpadDevice::onTouch(bool active, const glm::vec2& p) {
+touchpadDevice::onTouchEvent(touchEvent::touchType type, const glm::vec2& p) {
     o_assert_dbg(this->dispatcher);
-    this->touched = active;
+    switch (type) {
+        case touchEvent::began:
+            this->touchStarted = true;
+            break;
+        case touchEvent::moved:
+            this->touchMoved = true;
+            break;
+        case touchEvent::ended:
+            this->touchEnded = true;
+            break;
+        case touchEvent::cancelled:
+            this->touchCancelled = true;
+            break;
+        default:
+            break;
+    }
     this->position[0] = p;
-    // no associated input event!
 }
 
 //------------------------------------------------------------------------------
@@ -304,11 +322,12 @@ void
 touchpadDevice::onPanning(const glm::vec2& p, const glm::vec2& start) {
     o_assert_dbg(this->dispatcher);
 
+    // FIXME: hmm on iOS movement is always 0 because touch events
+    // fire with the same value :/
     this->panning = true;
     this->movement[0] = p - this->position[0];
     this->position[0] = p;
     this->startPosition[0] = start;
-
     InputEvent ie;
     ie.Type = InputEvent::TouchPanning;
     ie.TouchPosition[0] = this->position[0];
