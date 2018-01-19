@@ -11,6 +11,7 @@
 #include "Resource/ResourceLabel.h"
 #include "Resource/ResourceRegistry.h"
 #include "Resource/ResourceLabelStack.h"
+#include "Resource/ResourceState.h"
 #include "sokol_gfx.h"
 
 namespace Oryol {
@@ -33,6 +34,8 @@ public:
     bool QueryFeature(GfxFeature::Code feature);
     /// query the supported shader language
     ShaderLang::Code QueryShaderLang();
+    /// query resource state of a resource
+    ResourceState::Code QueryResourceState(const Id& id);
 
     /// subscribe to display events
     GfxEvent::HandlerId Subscribe(GfxEvent::Handler handler);

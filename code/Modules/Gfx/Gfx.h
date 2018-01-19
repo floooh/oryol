@@ -112,12 +112,8 @@ public:
     static bool QueryFeature(GfxFeature::Code feat);
     /// get the supported shader language
     static ShaderLang::Code QueryShaderLang();
-    /// query number of free slots for resource type
-    static int QueryFreeResourceSlots(GfxResourceType::Code resourceType);
-    /// query resource info (fast)
-    static ResourceInfo QueryResourceInfo(const Id& id);
-    /// query resource pool info (slow)
-    static ResourcePoolInfo QueryResourcePoolInfo(GfxResourceType::Code resType);
+    /// query the resource state of a resource
+    static ResourceState::Code QueryResourceState(const Id& id);
 
     /// begin rendering to default render pass with override clear values
     static void BeginPass(const PassAction& action=PassAction());

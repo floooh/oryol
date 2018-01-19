@@ -608,6 +608,39 @@ sokolGfxBackend::QueryShaderLang() {
 }
 
 //------------------------------------------------------------------------------
+ResourceState::Code
+sokolGfxBackend::QueryResourceState(const Id& id) {
+    o_assert_dbg(this->isValid);
+    sg_resource_state sgState = SG_RESOURCESTATE_INVALID;
+    switch (id.Type) {
+        case GfxResourceType::Texture:
+            sgState = sg_query_image_state(makeImageId(id));
+            break;
+        case GfxResourceType::Buffer:
+            sgState = sg_query_buffer_state(makeBufferId(id));
+            break;
+        case GfxResourceType::Shader:
+            sgState = sg_query_shader_state(makeShaderId(id));
+            break;
+        case GfxResourceType::Pipeline:
+            sgState = sg_query_pipeline_state(makePipelineId(id));
+            break;
+        case GfxResourceType::Pass:
+            sgState = sg_query_pass_state(makePassId(id));
+            break;
+        default:
+            break;
+    }
+    switch (sgState) {
+        case SG_RESOURCESTATE_INITIAL:  return ResourceState::Initial;
+        case SG_RESOURCESTATE_ALLOC:    return ResourceState::Alloc;
+        case SG_RESOURCESTATE_VALID:    return ResourceState::Valid;
+        case SG_RESOURCESTATE_FAILED:   return ResourceState::Failed;
+        default:    return ResourceState::InvalidState;
+    }
+}
+
+//------------------------------------------------------------------------------
 GfxEvent::HandlerId
 sokolGfxBackend::Subscribe(GfxEvent::Handler handler) {
     o_assert_dbg(this->isValid);

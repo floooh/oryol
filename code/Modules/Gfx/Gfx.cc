@@ -162,6 +162,13 @@ Gfx::QueryShaderLang() {
 }
 
 //------------------------------------------------------------------------------
+ResourceState::Code
+Gfx::QueryResourceState(const Id& id) {
+    o_assert_dbg(IsValid());
+    return state->backend.QueryResourceState(id);
+}
+
+//------------------------------------------------------------------------------
 ResourceLabel
 Gfx::PushResourceLabel() {
     o_assert_dbg(IsValid());
@@ -187,36 +194,6 @@ Id
 Gfx::LookupResource(const Locator& locator) {
     o_assert_dbg(IsValid());
     return state->backend.LookupResource(locator);
-}
-
-//------------------------------------------------------------------------------
-int
-Gfx::QueryFreeResourceSlots(GfxResourceType::Code resourceType) {
-    o_assert_dbg(IsValid());
-    // FIXME
-    o_error("Gfx::QueryFreeResourceSlots FIXME!\n");
-    return 0;
-    //return state->backend.resourceContainer.QueryFreeSlots(resourceType);
-}
-
-//------------------------------------------------------------------------------
-ResourceInfo
-Gfx::QueryResourceInfo(const Id& id) {
-    o_assert_dbg(IsValid());
-    // FIXME
-    o_error("Gfx::QueryResourceInfo FIXME!\n");
-    return ResourceInfo();
-    //return state->backend.resourceContainer.QueryResourceInfo(id);
-}
-
-//------------------------------------------------------------------------------
-ResourcePoolInfo
-Gfx::QueryResourcePoolInfo(GfxResourceType::Code resType) {
-    o_assert_dbg(IsValid());
-    // FIXME
-    o_error("Gfx::QueryResourcePoolInfo FIXME!\n");
-    return ResourcePoolInfo();
-    //return state->backend.resourceContainer.QueryPoolInfo(resType);
 }
 
 //------------------------------------------------------------------------------
