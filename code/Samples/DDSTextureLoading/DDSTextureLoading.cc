@@ -24,6 +24,7 @@ public:
     glm::mat4 computeMVP(const glm::vec3& pos);
     
     float distVal = 0.0f;
+    PrimitiveGroup primGroup;
     DrawState drawState;
     static const int NumTextures = 16;
     StaticArray<Id, NumTextures> textures;
@@ -44,18 +45,10 @@ DDSTextureLoadingApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DDS Loading Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    Gfx::Setup(gfxSetup);
+    auto gfxDesc = GfxDesc::Window(600, 400, "Oryol DDS Loading Sample");
+    Gfx::Setup(gfxDesc);
 
     // setup resources
-    Id shd = Gfx::CreateResource(Shader::Setup());
-
-    TextureSetup texBluePrint;
-    texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    texBluePrint.Sampler.MagFilter = TextureFilterMode::Linear;
-    texBluePrint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    texBluePrint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     static const char *paths[NumTextures] = {
         "tex:lok_dxt1.dds",
         "tex:lok_dxt3.dds",
@@ -75,21 +68,36 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int i = 0; i < NumTextures; i++) {
-        this->textures[i] = Gfx::LoadResource(TextureLoader::Create(TextureSetup::FromFile(paths[i], texBluePrint)));
+        this->textures[i] = TextureLoader::Load(Gfx::Texture()
+            .Locator(paths[i])
+            .MinFilter(TextureFilterMode::LinearMipmapLinear)
+            .MagFilter(TextureFilterMode::Linear)
+            .WrapU(TextureWrapMode::ClampToEdge)
+            .WrapV(TextureWrapMode::ClampToEdge)
+            .Desc);
     }
 
-    const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::TexCoord0, VertexFormat::Float2 }
-    };
-    shapeBuilder.Transform(rot90).Plane(1.0f, 1.0f, 4);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    auto shape = ShapeBuilder::New()
+        .Positions("in_pos", VertexFormat::Float3)
+        .TexCoords("in_uv", VertexFormat::Float2)
+        .Transform(glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)))
+        .Plane(1.0f, 1.0f, 4)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+        .From(shape.VertexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.IndexBuffer = Gfx::Buffer()
+        .From(shape.IndexBufferDesc)
+        .Content(shape.Data)
+        .Create();
+    this->drawState.Pipeline = Gfx::Pipeline()
+        .From(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .Create();
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
     const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
@@ -105,7 +113,7 @@ DDSTextureLoadingApp::OnRunning() {
     
     this->distVal += 0.01f;
     
-    Gfx::BeginPass();
+    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)));
 
     // only render when texture is loaded (until texture placeholder are implemented)
     static const glm::vec3 pos[NumTextures] = {
@@ -132,15 +140,12 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+2.75f, -1.1f, 0.0f)
     };
     for (int i = 0; i < NumTextures; i++) {
-        const auto resState = Gfx::QueryResourceInfo(this->textures[i]).State;
-        if (resState == ResourceState::Valid) {
-            glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
-            this->vsParams.mvp = this->computeMVP(p);
-            this->drawState.FSTexture[Shader::tex] = this->textures[i];
-            Gfx::ApplyDrawState(this->drawState);
-            Gfx::ApplyUniformBlock(this->vsParams);
-            Gfx::Draw();
-        }
+        glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
+        this->vsParams.mvp = this->computeMVP(p);
+        this->drawState.FSTexture[Shader::tex] = this->textures[i];
+        Gfx::ApplyDrawState(this->drawState);
+        Gfx::ApplyUniformBlock(this->vsParams);
+        Gfx::Draw(this->primGroup);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();
