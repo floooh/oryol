@@ -548,6 +548,7 @@ sokolGfxBackend::Setup(const GfxDesc& desc, const gfxPointers& ptrs) {
 
     this->registry.Setup(desc.ResourceRegistryCapacity);
     this->labelStack.Setup(desc.ResourceLabelStackCapacity);
+    this->toDestroy.Reserve(64);
     this->isValid = true;
 }
 
@@ -871,7 +872,28 @@ sokolGfxBackend::AddResource(const Locator& loc, const Id& id) {
 void
 sokolGfxBackend::DestroyResources(ResourceLabel label) {
     o_assert_dbg(this->isValid);
-    // FIXME
+    this->toDestroy = this->registry.Remove(label);
+    for (const Id& id : this->toDestroy) {
+        switch (id.Type) {
+            case GfxResourceType::Buffer:
+                sg_destroy_buffer(makeBufferId(id));
+                break;
+            case GfxResourceType::Texture:
+                sg_destroy_image(makeImageId(id));
+                break;
+            case GfxResourceType::Shader:
+                sg_destroy_shader(makeShaderId(id));
+                break;
+            case GfxResourceType::Pipeline:
+                sg_destroy_pipeline(makePipelineId(id));
+                break;
+            case GfxResourceType::Pass:
+                sg_destroy_pass(makePassId(id));
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 //------------------------------------------------------------------------------

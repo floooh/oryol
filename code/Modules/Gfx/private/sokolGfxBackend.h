@@ -115,6 +115,7 @@ public:
     displayMgr displayManager;
     ResourceRegistry registry;
     ResourceLabelStack labelStack;
+    Array<Id> toDestroy;                // keeping the array here prevents frequent allocs/frees
 };
 
 } // namespace _priv
