@@ -67,7 +67,7 @@ AppState::Code
 PrimitiveTypesApp::OnInit() {
     auto gfxDesc = GfxDesc::WindowMSAA4(640, 480, "Oryol PrimitiveTypes Test");
     Gfx::Setup(gfxDesc);
-    Dbg::Setup();
+    Dbg::Setup(DbgSetup::MSAA4());
     Input::Setup();
 
     // create a 2D vertex grid mesh, the same vertex data is combined

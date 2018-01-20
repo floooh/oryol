@@ -16,6 +16,11 @@ fips_begin_module(Gfx)
         displayMgrBase.cc displayMgrBase.h
         displayMgr.h
     )
+    if (ORYOL_METAL)
+        fips_files(sokolImpl.mm)
+    else()
+        fips_files(sokolImpl.cc)
+    endif()
     if (ORYOL_D3D11)
         fips_files(winDisplayMgr.cc winDisplayMgr.h)
         fips_files(d3d11DisplayMgr.cc d3d11DisplayMgr.h)

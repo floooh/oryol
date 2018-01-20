@@ -39,7 +39,7 @@ AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxDesc::WindowMSAA4(800, 600, "Oryol Vertex Texture Sample"));
-    Dbg::Setup();
+    Dbg::Setup(DbgSetup::MSAA4());
     
     // FIXME: need a way to check number of vertex texture units
     

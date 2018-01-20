@@ -25,6 +25,13 @@ public:
     PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
     /// multi-sample count of render pass to render text to
     int SampleCount = 1;
+
+    /// return a DbgSetup object with MSAA4 sample count
+    static DbgSetup MSAA4() {
+        DbgSetup setup;
+        setup.SampleCount = 4;
+        return setup;
+    }
 };
 
 } // namespace Oryol

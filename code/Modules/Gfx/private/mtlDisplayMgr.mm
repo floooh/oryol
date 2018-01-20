@@ -3,11 +3,21 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "mtlDisplayMgr.h"
-#include "mtlTypes.h"
 #include "Core/String/StringBuilder.h"
+#if ORYOL_MACOS
+#include "Core/private/osx/osxBridge.h"
+#else
+#include "Core/private/ios/iosBridge.h"
+#endif
 
 namespace Oryol {
 namespace _priv {
+
+#if ORYOL_MACOS
+typedef osxBridge osBridge;
+#else
+typedef iosBridge osBridge;
+#endif
 
 mtlDisplayMgr* mtlDisplayMgr::self = nullptr;
 
@@ -28,12 +38,12 @@ mtlDisplayMgr::~mtlDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-mtlDisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
+mtlDisplayMgr::SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs) {
     o_assert(!this->IsDisplayValid());
 
-    displayMgrBase::SetupDisplay(setup, ptrs);
+    displayMgrBase::SetupDisplay(desc, ptrs);
 
-    this->configureWindow(setup);
+    this->configureWindow(desc);
     #if ORYOL_MACOS
     osBridge::ptr()->showWindow();
     osBridge::ptr()->callbacks.fbsize = mtlDisplayMgr::onFramebufferSize;
@@ -59,24 +69,24 @@ mtlDisplayMgr::QuitRequested() const {
 
 //------------------------------------------------------------------------------
 void
-mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
+mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
 
     #if ORYOL_MACOS
-    StringBuilder strBuilder(setup.Title);
+    StringBuilder strBuilder(desc.Title);
     strBuilder.Append(" (Metal)");
 
     NSWindow* window = osxBridge::ptr()->appWindow;
     [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
-    [window setContentSize:NSMakeSize(setup.Width, setup.Height)];
+    [window setContentSize:NSMakeSize(desc.Width, desc.Height)];
     [window center];
     osBridge* bridge = osBridge::ptr();
-    if (!setup.HighDPI) {
-        CGSize drawableSize = { (CGFloat) setup.Width, (CGFloat) setup.Height };
+    if (!desc.HighDPI) {
+        CGSize drawableSize = { (CGFloat) desc.Width, (CGFloat) desc.Height };
         [bridge->mtkView setDrawableSize:drawableSize];
     }
     #elif ORYOL_IOS
     osBridge* bridge = osBridge::ptr();
-    if (gfxSetup.HighDPI) {
+    if (desc.HighDPI) {
         [bridge->mtkView setContentScaleFactor:2.0f];
         bridge->mouseScale = 2.0f;
     }
@@ -98,7 +108,7 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     int fbWidth = (int) fbSize.width;
     int fbHeight = (int) fbSize.height;
     #if ORYOL_OSX
-    if (fbWidth == setup.Width * 2) {
+    if (fbWidth == desc.Width * 2) {
         // we're on a Retina display
         bridge->mouseScale = 2.0;
     }
@@ -108,7 +118,7 @@ mtlDisplayMgr::configureWindow(const GfxSetup& setup) {
     this->displayAttrs.FramebufferHeight = fbHeight;
     this->displayAttrs.WindowWidth = winContentRect.size.width;
     this->displayAttrs.WindowHeight = winContentRect.size.height;
-    [osBridge::ptr()->mtkView setSampleCount:setup.SampleCount];
+    [osBridge::ptr()->mtkView setSampleCount:desc.SampleCount];
 }
 
 //------------------------------------------------------------------------------
@@ -126,6 +136,24 @@ mtlDisplayMgr::onFramebufferSize(int w, int h) {
     }
 }
 #endif
+
+//------------------------------------------------------------------------------
+const void*
+mtlDisplayMgr::mtlDevice() {
+    return (__bridge const void*) osBridge::ptr()->mtlDevice;
+}
+
+//------------------------------------------------------------------------------
+const void*
+mtlDisplayMgr::mtlRenderPassDescriptor() {
+    return (__bridge const void*) [osBridge::ptr()->mtkView currentRenderPassDescriptor];
+}
+
+//------------------------------------------------------------------------------
+const void*
+mtlDisplayMgr::mtlDrawable() {
+    return (__bridge const void*) [osBridge::ptr()->mtkView currentDrawable];
+}
 
 } // namespace _priv
 } // namespace Oryol

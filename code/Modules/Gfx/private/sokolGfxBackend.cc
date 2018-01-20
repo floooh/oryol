@@ -5,53 +5,6 @@
 #include "Core/Core.h"
 #include "Core/Assertion.h"
 #include "Core/Memory/Memory.h"
-#define SOKOL_IMPL
-#define SOKOL_ASSERT(c) o_assert_dbg(c)
-#define SOKOL_MALLOC(s) Oryol::Memory::Alloc(s)
-#define SOKOL_FREE(p) Oryol::Memory::Free(p)
-#define SOKOL_LOG(m) Oryol::Log::Info("%s\n",m)
-#define SOKOL_UNREACHABLE o_assert_dbg(false)
-#if ORYOL_OPENGL
-    #if ORYOL_RASPBERRYPI
-    #define GL_GLEXT_PROTOTYPES
-    #include "GLES2/gl2.h"
-    #include "GLES2/gl2ext.h"
-    #elif ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
-    #include "Gfx/private/flextGL.h"
-    #elif ORYOL_IOS
-    #include <OpenGLES/ES3/gl.h>
-    #include <OpenGLES/ES3/glext.h>
-    #elif ORYOL_EMSCRIPTEN
-        #if ORYOL_OPENGLES2
-        #define GL_GLEXT_PROTOTYPES
-        #include <GL/gl.h>
-        #include <GL/glext.h>
-        #else
-        #include <GLES3/gl3.h>
-        #endif
-    #elif ORYOL_ANDROID
-    #define GL_GLEXT_PROTOTYPES
-    #include <GLES3/gl3.h>
-    #include <GLES3/gl3ext.h>
-    #else
-    #error "Missing platform for GL header include!"
-    #endif
-#endif
-#if ORYOL_OPENGLES2
-#define SOKKOL_GLES2
-#elif ORYOL_OPENGL3
-#define SOKOL_GLES3
-#elif ORYOL_OPENGL_CORE_PROFILE
-#define SOKOL_GLCORE33
-#elif ORYOL_D3D11
-#define SOKOL_D3D11
-#elif ORYOL_METAL
-#if ORYOL_MACOS
-#define SOKOL_METAL_MACOS
-#else
-#define SOKOL_METAL_IOS
-#endif
-#endif
 #include "sokolGfxBackend.h"
 
 namespace Oryol {
@@ -507,7 +460,7 @@ static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst, const
     }
     #elif ORYOL_METAL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        dst.mtl_buffers[i] = (const void*) src.NativeTextures[i];
+        dst.mtl_textures[i] = (const void*) src.NativeTextures[i];
     }
     #elif ORYOL_D3D11
     dst.d3d11_buffer = (const void*) src.NativeTextures[0]
@@ -535,9 +488,9 @@ sokolGfxBackend::Setup(const GfxDesc& desc, const gfxPointers& ptrs) {
     #if ORYOL_EMSCRIPTEN
     sgDesc.gl_force_gles2 = this->displayManager.force_gles2;
     #elif ORYOL_METAL
-    sgDesc.mtl_device = XXX; // FIXME;
-    sgDesc.mtl_renderpass_descriptor_cb = XXX; // FIXME
-    sgDesc.mtl_drawable_cb = XXX; // FIXME
+    sgDesc.mtl_device = mtlDisplayMgr::mtlDevice();
+    sgDesc.mtl_renderpass_descriptor_cb = mtlDisplayMgr::mtlRenderPassDescriptor;
+    sgDesc.mtl_drawable_cb = mtlDisplayMgr::mtlDrawable;
     #elif ORYOL_D3D11
     sgDesc.d3d11_device = XXX; // FIXME
     sgDesc.d3d11_device_context = XXX; // FIXME
@@ -780,12 +733,15 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
                 else {
                     dst = &sgDesc.fs.uniform_blocks[fsUbIndex++];
                 }
-                // size must be a multiple of 16 (sizeof(vec4))
-                o_assert_dbg((src.Size & 15) == 0);
                 dst->size = src.Size;
-                dst->uniforms[0].name = src.Type;
-                dst->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-                dst->uniforms[0].array_count = src.Size / 16;
+                // uniform block members are only defined on OpenGL, Metal
+                #if ORYOL_OPENGL
+                    // size must be a multiple of 16 (sizeof(vec4))
+                    o_assert_dbg((src.Size & 15) == 0);
+                    dst->uniforms[0].name = src.Type;
+                    dst->uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
+                    dst->uniforms[0].array_count = src.Size / 16;
+                #endif
             }
         }
     }

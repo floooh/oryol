@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 56
+Version = 57
 
 import os, platform, json
 import genutil as util
@@ -577,13 +577,13 @@ def writeProgramSource(f, shdLib, prog, slangs) :
         elif isHLSL(slang):
             vs_c_name = '{}_vs_hlsl5'.format(vs.name)
             fs_c_name = '{}_fs_hlsl5'.format(fs.name)
-            f.write('    bld.ByteCode(Oryol::ShaderStage::VS, {}, sizeof({}))\n'.format(vs_c_name, vs_c_name))
-            f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}))\n'.format(fs_c_name, fs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::VS, {}, sizeof({}));\n'.format(vs_c_name, vs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}));\n'.format(fs_c_name, fs_c_name))
         elif isMetal(slang):
             vs_c_name = '{}_vs_metallib'.format(vs.name)
             fs_c_name = '{}_fs_metallib'.format(fs.name)
-            f.write('    bld.ByteCode(Oryol::ShaderStage::VS, {}, sizeof({}))\n'.format(vs_c_name, vs_c_name))
-            f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}))\n'.format(fs_c_name, fs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::VS, {}, sizeof({}));\n'.format(vs_c_name, vs_c_name))
+            f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}));\n'.format(fs_c_name, fs_c_name))
             f.write('    bld.Entry(Oryol::ShaderStage::VS, "main0");\n')
             f.write('    bld.Entry(Oryol::ShaderStage::FS, "main0");\n')
 

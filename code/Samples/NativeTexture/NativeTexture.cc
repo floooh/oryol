@@ -51,7 +51,7 @@ NativeTextureApp::OnInit() {
 
     auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Oryol NativeTexture Sample");
     Gfx::Setup(gfxDesc);
-    Dbg::Setup();
+    Dbg::Setup(DbgSetup::MSAA4());
 
     // FIXME: D3D and Metal
     #if !ORYOL_OPENGL
