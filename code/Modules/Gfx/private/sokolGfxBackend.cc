@@ -329,7 +329,7 @@ static sg_vertex_format convertVertexFormat(VertexFormat::Code fmt) {
 }
 
 //------------------------------------------------------------------------------
-static void convertVertexLayouts(const PipelineDesc& src, sg_pipeline_desc& dst) {
+static void convertVertexLayouts(const PipelineDesc& src, sg_pipeline_desc& dst, const VertexLayout& vsInput) {
     o_assert_dbg(GfxConfig::MaxNumVertexBuffers <= SG_MAX_SHADERSTAGE_BUFFERS);
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumVertexBuffers; layoutIndex++) {
         const auto& srcLayout = src.Layouts[layoutIndex];
@@ -502,6 +502,10 @@ sokolGfxBackend::Setup(const GfxDesc& desc, const gfxPointers& ptrs) {
     this->registry.Setup(desc.ResourceRegistryCapacity);
     this->labelStack.Setup(desc.ResourceLabelStackCapacity);
     this->toDestroy.Reserve(64);
+    this->vsInputs.Reserve(desc.ResourcePoolSize[GfxResourceType::Shader]);
+    for (int i = 0; i < this->vsInputs.Capacity(); i++) {
+        this->vsInputs.Add(VertexLayout());
+    }
     this->isValid = true;
 }
 
@@ -766,7 +770,14 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
             }
         }
     }
-    return makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
+    Id shd = makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
+
+    // keep track of the shader's vertex layout
+    o_assert_dbg(!desc.Layout.Empty());
+    o_assert_dbg(this->vsInputs[shd.SlotIndex].Empty());
+    this->vsInputs[shd.SlotIndex] = desc.Layout;
+
+    return shd;
 }
 
 //------------------------------------------------------------------------------
@@ -774,11 +785,16 @@ Id
 sokolGfxBackend::CreatePipeline(const PipelineDesc& desc) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(desc.Shader.IsValid());
+
+    // lookup the shader vertex shader input layout
+    const VertexLayout& vsLayout = this->vsInputs[desc.Shader.SlotIndex];
+    o_assert_dbg(!vsLayout.Empty());
+
     sg_pipeline_desc sgDesc = { };
     sgDesc.shader = makeShaderId(desc.Shader);
     sgDesc.primitive_type = convertPrimitiveType(desc.PrimType);
     sgDesc.index_type = convertIndexType(desc.IndexType);
-    convertVertexLayouts(desc, sgDesc);
+    convertVertexLayouts(desc, sgDesc, vsLayout);
     convertDepthStencilState(desc, sgDesc);
     convertBlendState(desc, sgDesc);
     convertRasterizerState(desc, sgDesc);
@@ -839,6 +855,7 @@ sokolGfxBackend::DestroyResources(ResourceLabel label) {
                 break;
             case GfxResourceType::Shader:
                 sg_destroy_shader(makeShaderId(id));
+                this->vsInputs[id.SlotIndex].Clear();
                 break;
             case GfxResourceType::Pipeline:
                 sg_destroy_pipeline(makePipelineId(id));

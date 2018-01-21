@@ -2,7 +2,7 @@
 Code generator for shader libraries.
 '''
 
-Version = 57
+Version = 61
 
 import os, platform, json
 import genutil as util
@@ -64,6 +64,13 @@ uniformCSize = {
     'mat2':  16,
     'mat3':  36,
     'mat4':  64,
+}
+
+attrOryolType = {
+    'float': 'VertexFormat::Float',
+    'vec2': 'VertexFormat::Float2',
+    'vec3': 'VertexFormat::Float3',
+    'vec4': 'VertexFormat::Float4',
 }
 
 validTextureTypes = [
@@ -586,6 +593,17 @@ def writeProgramSource(f, shdLib, prog, slangs) :
             f.write('    bld.ByteCode(Oryol::ShaderStage::FS, {}, sizeof({}));\n'.format(fs_c_name, fs_c_name))
             f.write('    bld.Entry(Oryol::ShaderStage::VS, "main0");\n')
             f.write('    bld.Entry(Oryol::ShaderStage::FS, "main0");\n')
+    slang = slangs[0]
+
+    # add vertex shader input layout
+    vs_inputs = shdLib.vertexShaders[prog.vs].slReflection[slang]['inputs']
+    # get an order inputs array by slot
+    ord_vs_inputs = [None]*len(vs_inputs)
+    for attr in vs_inputs:
+        ord_vs_inputs[attr['slot']] = attr
+    vs_inputs = ord_vs_inputs
+    for attr in vs_inputs:
+        f.write('    bld.Attr("{}", Oryol::{});\n'.format(attr['name'], attrOryolType[attr['type']]))
 
     # add uniform block layouts to desc object
     for stage in ['VS', 'FS']:

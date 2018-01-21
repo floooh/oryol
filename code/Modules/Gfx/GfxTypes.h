@@ -1129,6 +1129,8 @@ public:
 struct ShaderDesc {
     /// the resource locator
     class Locator Locator = Locator::NonShared();
+    /// vertex shader input descriptions
+    VertexLayout Layout;
 
     /// shader stage descriptions
     struct UniformBlockDesc {
@@ -1176,6 +1178,9 @@ public:
     }
     ShaderBuilder& Entry(ShaderStage::Code stage, const char* entry) {
         Desc.Stage[stage].Entry = entry; return *this;
+    }
+    ShaderBuilder& Attr(const StringAtom& name, VertexFormat::Code fmt) {
+        Desc.Layout.Add(name, fmt); return *this;
     }
     ShaderBuilder& UniformBlock(ShaderStage::Code stage, int slot, const char* name, const char* type, int size) {
         auto& ubSlot = Desc.Stage[stage].UniformBlocks[slot];

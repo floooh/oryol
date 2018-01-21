@@ -116,6 +116,7 @@ public:
     ResourceRegistry registry;
     ResourceLabelStack labelStack;
     Array<Id> toDestroy;                // keeping the array here prevents frequent allocs/frees
+    Array<VertexLayout> vsInputs;       // to keep track of vertex shader inputs
 };
 
 } // namespace _priv
