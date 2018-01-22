@@ -91,12 +91,35 @@ BlendTestApp::OnRunning() {
     float d = 1.0f / BlendFactor::Num;
     for (uint32_t y = 0; y < BlendFactor::Num; y++) {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
-            this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
-            this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-            triDrawState.Pipeline = this->pipelines[y][x];
-            Gfx::ApplyDrawState(triDrawState);
-            Gfx::ApplyUniformBlock(this->params);
-            Gfx::Draw(0, 3);
+            bool valid = true;
+            /* WebGL exceptions: 
+                - "GL_SRC_ALPHA_SATURATE as a destination blend function is disallowed in WebGL 1"
+                - "constant color and constant alpha cannot be used together as source and 
+                    destination factors in the blend function"
+            */
+            const BlendFactor::Code src = (BlendFactor::Code) x;
+            const BlendFactor::Code dst = (BlendFactor::Code) y;
+            if (dst == BlendFactor::SrcAlphaSaturated) {
+                valid = false;
+            }
+            else if (((src == BlendFactor::BlendColor) || (src == BlendFactor::OneMinusBlendColor)) &&
+                     ((dst == BlendFactor::BlendAlpha) || (dst == BlendFactor::OneMinusBlendAlpha)))
+            {
+                valid = false;
+            }
+            else if (((src == BlendFactor::BlendAlpha) || (src == BlendFactor::OneMinusBlendAlpha)) &&
+                     ((dst == BlendFactor::BlendColor) || (dst == BlendFactor::OneMinusBlendColor)))
+            {
+                valid = false;
+            }
+            if (valid) {
+                this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
+                this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
+                triDrawState.Pipeline = this->pipelines[y][x];
+                Gfx::ApplyDrawState(triDrawState);
+                Gfx::ApplyUniformBlock(this->params);
+                Gfx::Draw(0, 3);
+            }
         }
     }
     Gfx::EndPass();

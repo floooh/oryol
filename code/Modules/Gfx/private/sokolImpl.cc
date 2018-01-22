@@ -11,34 +11,11 @@
 #define SOKOL_LOG(m) Oryol::Log::Info("%s\n",m)
 #define SOKOL_UNREACHABLE o_assert_dbg(false)
 #if ORYOL_OPENGL
-    #if ORYOL_RASPBERRYPI
-    #define GL_GLEXT_PROTOTYPES
-    #include "GLES2/gl2.h"
-    #include "GLES2/gl2ext.h"
-    #elif ORYOL_WINDOWS || ORYOL_LINUX || ORYOL_MACOS
-    #include "Gfx/private/flextGL.h"
-    #elif ORYOL_IOS
-    #include <OpenGLES/ES3/gl.h>
-    #include <OpenGLES/ES3/glext.h>
-    #elif ORYOL_EMSCRIPTEN
-        #if ORYOL_OPENGLES2
-        #define GL_GLEXT_PROTOTYPES
-        #include <GL/gl.h>
-        #include <GL/glext.h>
-        #else
-        #include <GLES3/gl3.h>
-        #endif
-    #elif ORYOL_ANDROID
-    #define GL_GLEXT_PROTOTYPES
-    #include <GLES3/gl3.h>
-    #include <GLES3/gl3ext.h>
-    #else
-    #error "Missing platform for GL header include!"
-    #endif
+#include "Gfx/private/gl.h"
 #endif
 #if ORYOL_OPENGLES2
-#define SOKKOL_GLES2
-#elif ORYOL_OPENGL3
+#define SOKOL_GLES2
+#elif ORYOL_OPENGLES3
 #define SOKOL_GLES3
 #elif ORYOL_OPENGL_CORE_PROFILE
 #define SOKOL_GLCORE33

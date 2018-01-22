@@ -26,7 +26,7 @@ public:
     ~displayMgrBase();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxDesc& setup, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// return true if display is currently setup

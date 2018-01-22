@@ -27,21 +27,20 @@ public:
     ~emscDisplayMgr();
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     
-    /// bind the default frame buffer
-    void glBindDefaultFramebuffer();
     /// emscripten callback when canvas size has changed (for soft-fullscreen)
     static EM_BOOL emscCanvasSizeChanged(int eventType, const void* reserved, void* userData);
     /// emscripten callback when window size has changed (for HTMLUseCanvasSize)
     static EM_BOOL emscWindowSizeChanged(int eventType, const EmscriptenUiEvent* uiEvent, void* userData);
 
     static emscDisplayMgr* self;
-    int storedCanvasWidth;
-    int storedCanvasHeight;
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx;
+    bool useGLES2 = false;
+    int storedCanvasWidth = 0;
+    int storedCanvasHeight = 0;
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = 0;
 };
 
 } // namespace _priv

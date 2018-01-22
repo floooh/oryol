@@ -485,8 +485,8 @@ sokolGfxBackend::Setup(const GfxDesc& desc, const gfxPointers& ptrs) {
     sgDesc.shader_pool_size = desc.ResourcePoolSize[GfxResourceType::Shader];
     sgDesc.pipeline_pool_size = desc.ResourcePoolSize[GfxResourceType::Pipeline];
     sgDesc.pass_pool_size = desc.ResourcePoolSize[GfxResourceType::Pass];
-    #if ORYOL_EMSCRIPTEN
-    sgDesc.gl_force_gles2 = this->displayManager.force_gles2;
+    #if ORYOL_GLES3
+    sgDesc.gl_force_gles2 = this->displayManager.forceGLES2;
     #elif ORYOL_METAL
     sgDesc.mtl_device = mtlDisplayMgr::mtlDevice();
     sgDesc.mtl_renderpass_descriptor_cb = mtlDisplayMgr::mtlRenderPassDescriptor;
@@ -546,10 +546,10 @@ sokolGfxBackend::QueryShaderLang() {
     ShaderLang::Code slang = ShaderLang::Invalid;
     #if ORYOL_OPENGL_CORE_PROFILE
     slang = ShaderLang::GLSL330;
-    #elif ORYOL_OPENGL_GLES2
+    #elif ORYOL_OPENGLES2
     slang = ShaderLang::GLSL100;
-    #elif ORYOL_OPENGL_GLES3
-    if (this->displayManager.force_gles2) {
+    #elif ORYOL_OPENGLES3
+    if (this->displayManager.useGLES2) {
         slang = ShaderLang::GLSL100;
     }
     else {
