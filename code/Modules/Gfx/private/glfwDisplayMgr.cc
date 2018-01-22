@@ -152,10 +152,10 @@ glfwDisplayMgr::createMainWindow(const GfxDesc& desc) {
     // this is necessary after the 29-Oct-2017 fips-glfw update to get the old behaviour
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     #else
-    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Red));
-    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Green));
-    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Blue));
-    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(setup.ColorFormat, PixelChannel::Alpha));
+    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Red));
+    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Green));
+    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Blue));
+    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Alpha));
     #endif
     glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Depth));
     glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Stencil));
