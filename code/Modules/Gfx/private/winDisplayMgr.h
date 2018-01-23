@@ -193,7 +193,7 @@ public:
     ~winDisplayMgr();
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs, const char* windowTitlePostfix);
+    void SetupDisplay(const GfxDesc& desc, const char* windowTitlePostfix);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// process window system events (call near start of frame)

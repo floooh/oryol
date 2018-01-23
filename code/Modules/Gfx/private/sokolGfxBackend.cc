@@ -427,7 +427,7 @@ static void convertBufferDesc(const BufferDesc& src, sg_buffer_desc& dst, const 
         dst.mtl_buffers[i] = (const void*) src.NativeBuffers[i];
     }
     #elif ORYOL_D3D11
-    dst.d3d11_buffer = (const void*) src.NativeBuffers[0]
+    dst.d3d11_buffer = (const void*) src.NativeBuffers[0];
     #endif
 }
 
@@ -467,7 +467,7 @@ static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst, const
         dst.mtl_textures[i] = (const void*) src.NativeTextures[i];
     }
     #elif ORYOL_D3D11
-    dst.d3d11_buffer = (const void*) src.NativeTextures[0]
+    dst.d3d11_texture = (const void*) src.NativeTextures[0];
     #endif
 }
 
@@ -496,10 +496,10 @@ sokolGfxBackend::Setup(const GfxDesc& desc) {
     sgDesc.mtl_renderpass_descriptor_cb = mtlDisplayMgr::mtlRenderPassDescriptor;
     sgDesc.mtl_drawable_cb = mtlDisplayMgr::mtlDrawable;
     #elif ORYOL_D3D11
-    sgDesc.d3d11_device = XXX; // FIXME
-    sgDesc.d3d11_device_context = XXX; // FIXME
-    sgDesc.d3d11_render_target_view_cb = XXX; // FIXME
-    sgDesc.d3d11_depth_stencil_view_cb = XXX; // FIXME
+    sgDesc.d3d11_device = this->displayManager.d3d11Device;
+    sgDesc.d3d11_device_context = this->displayManager.d3d11DeviceContext;
+    sgDesc.d3d11_render_target_view_cb = d3d11DisplayMgr::d3d11GetRenderTargetView;
+    sgDesc.d3d11_depth_stencil_view_cb = d3d11DisplayMgr::d3d11GetDepthStencilView;
     #endif
     sg_setup(&sgDesc);
 

@@ -3,32 +3,38 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "d3d11DisplayMgr.h"
-#include "d3d11Types.h"
-#include "Gfx/private/renderer.h"
-
 #ifndef UNICODE
 #define UNICODE
 #endif
-#include "d3d11_impl.h"
+#include <d3d11.h>
 
 namespace Oryol {
 namespace _priv {
 
 static DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
+d3d11DisplayMgr* d3d11DisplayMgr::ptr = nullptr;
+
+//------------------------------------------------------------------------------
+d3d11DisplayMgr::d3d11DisplayMgr() {
+    o_assert(!ptr);
+    ptr = this;
+}
 
 //------------------------------------------------------------------------------
 d3d11DisplayMgr::~d3d11DisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
     }
+    o_assert(ptr);
+    ptr = nullptr;
 }   
 
 //------------------------------------------------------------------------------
 void
-d3d11DisplayMgr::SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs) {
+d3d11DisplayMgr::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->IsDisplayValid());
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
-    winDisplayMgr::SetupDisplay(setup, ptrs, " (D3D11)");
+    winDisplayMgr::SetupDisplay(desc, " (D3D11)");
     this->createDeviceAndSwapChain();
     const DisplayAttrs& attrs = this->displayAttrs;
     this->createDefaultRenderTarget(attrs.FramebufferWidth, attrs.FramebufferHeight);
@@ -47,7 +53,7 @@ d3d11DisplayMgr::DiscardDisplay() {
 void
 d3d11DisplayMgr::Present() {
     o_assert_dbg(this->dxgiSwapChain);
-    this->dxgiSwapChain->Present(this->gfxSetup.SwapInterval, 0);
+    this->dxgiSwapChain->Present(this->gfxDesc.SwapInterval, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -66,15 +72,15 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
     dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
     dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
-    dxgiSwapChainDesc.BufferDesc.Format = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+    dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     dxgiSwapChainDesc.OutputWindow = this->hwnd;
-    dxgiSwapChainDesc.Windowed = this->gfxSetup.Windowed;
+    dxgiSwapChainDesc.Windowed = this->gfxDesc.Windowed;
     dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     dxgiSwapChainDesc.BufferCount = 1;
-    dxgiSwapChainDesc.SampleDesc.Count = this->gfxSetup.SampleCount;
-    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxSetup.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
+    dxgiSwapChainDesc.SampleDesc.Count = this->gfxDesc.SampleCount;
+    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxDesc.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
     dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     dxgiSwapChainDesc.Flags = 0;
 
@@ -135,14 +141,13 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
     o_assert_dbg(this->d3d11RenderTargetView);
 
     // setup depth/stencil buffer (if required)
-    if (PixelFormat::None != this->gfxSetup.DepthFormat) {
-        
+    if (PixelFormat::None != this->gfxDesc.DepthFormat) {
         D3D11_TEXTURE2D_DESC depthStencilDesc = { };
         depthStencilDesc.Width = width;
         depthStencilDesc.Height = height;
         depthStencilDesc.MipLevels = 1;
         depthStencilDesc.ArraySize = 1;
-        depthStencilDesc.Format = d3d11Types::asRenderTargetFormat(this->gfxSetup.DepthFormat);
+        depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         depthStencilDesc.SampleDesc = dxgiSwapChainDesc.SampleDesc;
         depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
         depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -154,7 +159,7 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
 
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = { };
         dsvDesc.Format = depthStencilDesc.Format;
-        if (this->gfxSetup.SampleCount > 1) {
+        if (this->gfxDesc.SampleCount > 1) {
             dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
         else {
@@ -198,9 +203,8 @@ d3d11DisplayMgr::onWindowDidResize() {
         const int newWidth = this->displayAttrs.FramebufferWidth;
         const int newHeight = this->displayAttrs.FramebufferHeight;
 
-        this->pointers.renderer->resetStateCache();
         this->destroyDefaultRenderTarget();
-        DXGI_FORMAT d3d11Fmt = d3d11Types::asSwapChainFormat(this->gfxSetup.ColorFormat);
+        DXGI_FORMAT d3d11Fmt = DXGI_FORMAT_R8G8B8A8_UNORM;
         HRESULT hr = this->dxgiSwapChain->ResizeBuffers(1, newWidth, newHeight, d3d11Fmt, 0);
         o_assert(SUCCEEDED(hr));
         this->createDefaultRenderTarget(newWidth, newHeight);
