@@ -24,7 +24,7 @@ public:
     ~glfwDisplayMgr();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxDesc& gfxDesc, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& gfxDesc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// process window system events (call near start of frame)

@@ -7,7 +7,6 @@
 */
 #include "Gfx/GfxTypes.h"
 #include "Gfx/private/displayMgr.h"
-#include "Gfx/private/gfxPointers.h"
 #include "Resource/ResourceLabel.h"
 #include "Resource/ResourceRegistry.h"
 #include "Resource/ResourceLabelStack.h"
@@ -23,7 +22,7 @@ public:
     ~sokolGfxBackend();
 
     /// setup the Gfx backend
-    void Setup(const GfxDesc& desc, const gfxPointers& ptrs);
+    void Setup(const GfxDesc& desc);
     /// shutdown the Gfx backend
     void Discard();
     /// check if Gfx backend has been setup

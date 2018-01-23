@@ -847,7 +847,7 @@ struct BufferDesc {
     /// the buffer type (vertex- or index-buffer)
     BufferType::Code Type = BufferType::VertexBuffer;
     /// the buffer usage
-    Usage::Code Usage = Usage::Immutable;
+    Oryol::Usage::Code Usage = Usage::Immutable;
     /// the buffer size in bytes
     int Size = 0;
     /// optional byte-offset to init-data
@@ -922,7 +922,7 @@ struct PipelineDesc {
     /// primitive type 
     PrimitiveType::Code PrimType = PrimitiveType::Triangles;
     /// index type (none, 16-bit or 32-bit)
-    IndexType::Code IndexType = IndexType::None;
+    Oryol::IndexType::Code IndexType = IndexType::None;
 
     /// depth-stencil-state
     CompareFunc::Code DepthCmpFunc = CompareFunc::Always;
@@ -1220,7 +1220,7 @@ public:
     /// number of mipmaps in the texture
     int NumMipMaps = 1;
     /// the usage-hint of the texture
-    Usage::Code Usage = Usage::Immutable;
+    Oryol::Usage::Code Usage = Usage::Immutable;
     /// the pixel format (can be one of the depth formats if this is a depth-render-target)
     PixelFormat::Code Format = PixelFormat::RGBA8;
     /// the sample count, for MSAA render targets

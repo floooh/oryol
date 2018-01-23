@@ -1,6 +1,10 @@
 //------------------------------------------------------------------------------
 //  sokolGfxBackend.cc
 //------------------------------------------------------------------------------
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
 #include "Pre.h"
 #include "Core/Core.h"
 #include "Core/Assertion.h"
@@ -474,9 +478,9 @@ sokolGfxBackend::~sokolGfxBackend() {
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::Setup(const GfxDesc& desc, const gfxPointers& ptrs) {
+sokolGfxBackend::Setup(const GfxDesc& desc) {
     o_assert(!this->isValid);
-    this->displayManager.SetupDisplay(desc, ptrs);
+    this->displayManager.SetupDisplay(desc);
 
     // setup sokol-gfx
     sg_desc sgDesc = { };
@@ -1015,3 +1019,6 @@ sokolGfxBackend::ProcessSystemEvents() {
 
 } // namespace _priv
 } // namespace Oryol
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif

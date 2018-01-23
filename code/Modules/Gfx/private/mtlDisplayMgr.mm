@@ -38,10 +38,10 @@ mtlDisplayMgr::~mtlDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-mtlDisplayMgr::SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs) {
+mtlDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->IsDisplayValid());
 
-    displayMgrBase::SetupDisplay(desc, ptrs);
+    displayMgrBase::SetupDisplay(desc);
 
     this->configureWindow(desc);
     #if ORYOL_MACOS

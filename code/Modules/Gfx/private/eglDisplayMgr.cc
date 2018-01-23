@@ -10,8 +10,6 @@
 #if ORYOL_RASPBERRYPI
 #include "bcm_host.h"
 #endif
-#include "Gfx/private/gl/gl_impl.h"
-#include "Gfx/private/gl/glCaps.h"
 
 #if ORYOL_ANDROID
 // this is in the app's main file (see App.h -> OryolApp)
@@ -22,15 +20,6 @@ namespace Oryol {
 namespace _priv {
 
 //------------------------------------------------------------------------------
-eglDisplayMgr::eglDisplayMgr() :
-eglDisplay(nullptr),
-eglConfig(nullptr),
-eglSurface(nullptr),
-eglContext(nullptr) {
-    // empty
-}
-
-//------------------------------------------------------------------------------
 eglDisplayMgr::~eglDisplayMgr() {
     if (this->IsDisplayValid()) {
         this->DiscardDisplay();
@@ -39,13 +28,13 @@ eglDisplayMgr::~eglDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
+eglDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->IsDisplayValid());
     o_assert(nullptr == this->eglDisplay);
 
     Log::Info("eglDisplayMgr::SetupDisplay() called!\n");
 
-    displayMgrBase::SetupDisplay(gfxSetup, ptrs);
+    displayMgrBase::SetupDisplay(desc);
 
     #if ORYOL_RASPBERRYPI
     bcm_host_init();
@@ -61,17 +50,17 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
 
     // make sure we have a valid rendering RGBA format, e.g. RGB is
     // not a valid framebuffer format
-    int colorBits = PixelFormat::NumBits(gfxSetup.ColorFormat, PixelChannel::Red);
+    int colorBits = PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Red);
     o_assert((colorBits == 4) || (colorBits == 8));
     EGLint eglConfigAttrs[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_SAMPLES, gfxSetup.SampleCount,
+        EGL_SAMPLES, desc.SampleCount,
         EGL_RED_SIZE, colorBits,
         EGL_GREEN_SIZE, colorBits,
         EGL_BLUE_SIZE, colorBits,
         EGL_ALPHA_SIZE, colorBits,
-        EGL_DEPTH_SIZE, PixelFormat::NumBits(gfxSetup.DepthFormat, PixelChannel::Depth),
-        EGL_STENCIL_SIZE, PixelFormat::NumBits(gfxSetup.DepthFormat, PixelChannel::Stencil),
+        EGL_DEPTH_SIZE, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Depth),
+        EGL_STENCIL_SIZE, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Stencil),
         EGL_NONE
     };
     EGLint numConfigs = 0;
@@ -97,6 +86,11 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     this->eglContext = eglCreateContext(this->eglDisplay, this->eglConfig, EGL_NO_CONTEXT, contextAttrs);
     o_assert(eglGetError() == EGL_SUCCESS);
     o_assert(nullptr != this->eglContext);
+    #if ORYOL_OPENGLES3
+    this->useGLES2 = false;
+    #else
+    this->useGLES2 = true;
+    #endif
 
     #if ORYOL_ANDROID
         o_assert(OryolAndroidAppState);
@@ -110,7 +104,7 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
         int32_t w = ANativeWindow_getWidth(window);
         int32_t h = ANativeWindow_getHeight(window);
-        if (!gfxSetup.HighDPI) {
+        if (!gfxDesc.HighDPI) {
             w/=2; h/=2;
         }
         ANativeWindow_setBuffersGeometry(window, w, h, format);
@@ -160,11 +154,6 @@ eglDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
         o_error("eglDisplayMgr: eglMakeCurrent failed!\n");
         return;
     }
-    #if ORYOL_OPENGLES3
-        glCaps::Setup(glCaps::GLES3);
-    #else
-        glCaps::Setup(glCaps::GLES2);
-    #endif
     
     // query actual display size and set in DisplayAttrs
     EGLint actualWidth = 0, actualHeight = 0;
@@ -189,7 +178,6 @@ eglDisplayMgr::DiscardDisplay() {
     eglTerminate(this->eglDisplay);
     this->eglConfig = nullptr;
     this->eglDisplay = nullptr;
-    glCaps::Discard();
 
     displayMgrBase::DiscardDisplay();
 }
@@ -200,13 +188,6 @@ eglDisplayMgr::Present() {
     o_assert(this->eglDisplay && this->eglSurface);
     eglSwapBuffers(this->eglDisplay, this->eglSurface);
     displayMgrBase::Present();
-}
-
-//------------------------------------------------------------------------------
-void
-eglDisplayMgr::glBindDefaultFramebuffer() {
-    ::glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    ORYOL_GL_CHECK_ERROR();
 }
 
 } // namespace _priv

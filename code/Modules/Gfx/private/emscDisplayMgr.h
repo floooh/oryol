@@ -27,7 +27,7 @@ public:
     ~emscDisplayMgr();
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     
@@ -38,8 +38,6 @@ public:
 
     static emscDisplayMgr* self;
     bool useGLES2 = false;
-    int storedCanvasWidth = 0;
-    int storedCanvasHeight = 0;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = 0;
 };
 

@@ -49,7 +49,7 @@ public:
     /// number of indices (default 0 for non-indexed meshes)
     uint32_t NumIndices = 0;
     /// index type (default is 16-bit indices)
-    IndexType::Code IndexType = IndexType::UInt16;
+    Oryol::IndexType::Code IndexType = IndexType::UInt16;
     /// read/write access to vertex layout
     VertexLayout Layout;
     /// vertex data usage
@@ -80,7 +80,7 @@ public:
         BufferDesc VertexBufferDesc;
         BufferDesc IndexBufferDesc;
         VertexLayout Layout;
-        IndexType::Code IndexType;
+        Oryol::IndexType::Code IndexType;
         MemoryBuffer Data;
     };
     /// end writing vertex and index data, return result, and reset MeshBuilfer

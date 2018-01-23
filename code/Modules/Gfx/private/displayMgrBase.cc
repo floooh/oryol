@@ -21,13 +21,11 @@ displayMgrBase::~displayMgrBase() {
  This method must be overwritten in a platform-specific subclass.
 */
 void
-displayMgrBase::SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs) {
+displayMgrBase::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->displayValid);
-    
     this->displayValid = true;
     this->gfxDesc = desc;
     this->displayAttrs = desc.GetDisplayAttrs();
-    this->pointers = ptrs;
     this->curFramebufferWidth = this->displayAttrs.FramebufferWidth;
     this->curFramebufferHeight = this->displayAttrs.FramebufferHeight;
 }
@@ -37,7 +35,6 @@ void
 displayMgrBase::DiscardDisplay() {
     o_assert(this->displayValid);
     this->displayValid = false;
-    this->pointers = gfxPointers();
 }
 
 //------------------------------------------------------------------------------

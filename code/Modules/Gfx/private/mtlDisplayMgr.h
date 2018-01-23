@@ -18,7 +18,7 @@ public:
     ~mtlDisplayMgr();
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// check whether the window system requests to quit the application

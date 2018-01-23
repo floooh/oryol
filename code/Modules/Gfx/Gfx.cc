@@ -5,7 +5,6 @@
 #include "Gfx.h"
 #include "Core/Core.h"
 #include "Core/Trace.h"
-#include "Gfx/private/gfxPointers.h"
 #include "Gfx/private/gfxBackend.h"
 
 namespace Oryol {
@@ -30,10 +29,7 @@ Gfx::Setup(const class GfxDesc& desc) {
     state = Memory::New<_state>();
     state->gfxDesc = desc;
 
-    gfxPointers pointers;
-    pointers.displayMgr = &state->backend.displayManager;
-    
-    state->backend.Setup(desc, pointers);
+    state->backend.Setup(desc);
     state->runLoopId = Core::PreRunLoop()->Add([] {
         state->backend.ProcessSystemEvents();
     });

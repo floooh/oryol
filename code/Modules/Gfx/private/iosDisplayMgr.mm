@@ -3,8 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "iosDisplayMgr.h"
-#include "Gfx/private/gl/gl_impl.h"
-#include "Gfx/private/gl/glCaps.h"
+#include "Core/private/ios/iosBridge.h"
 #include <GLKit/GLKit.h>
 
 namespace Oryol {
@@ -13,10 +12,7 @@ namespace _priv {
 iosDisplayMgr* iosDisplayMgr::self = nullptr;
 
 //------------------------------------------------------------------------------
-iosDisplayMgr::iosDisplayMgr() :
-glDefaultFramebuffer(0),
-glFramebufferWidth(0),
-glFramebufferHeight(0) {
+iosDisplayMgr::iosDisplayMgr() {
     o_assert(nullptr == self);
     self = this;
 }
@@ -32,21 +28,21 @@ iosDisplayMgr::~iosDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
+iosDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->IsDisplayValid());
 
     Log::Info("iosDisplayMgr::SetupDisplay() called!\n");
-    displayMgrBase::SetupDisplay(gfxSetup, ptrs);
+    displayMgrBase::SetupDisplay(gfxDesc);
     
     // modify the color/depth/stencil format and content scaling of the GLKView
     GLKView* glkView = _priv::iosBridge::ptr()->glkView;
-    if (gfxSetup.HighDPI) {
+    if (gfxDesc.HighDPI) {
         glkView.contentScaleFactor = 2.0f;
     }
     else {
         glkView.contentScaleFactor = 1.0f;
     }
-    switch (gfxSetup.ColorFormat) {
+    switch (gfxDesc.ColorFormat) {
         case PixelFormat::R5G6B5:
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
@@ -61,7 +57,7 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
             glkView.drawableColorFormat = GLKViewDrawableColorFormatRGB565;
             break;
     }
-    switch (gfxSetup.DepthFormat) {
+    switch (gfxDesc.DepthFormat) {
         case PixelFormat::None:
             glkView.drawableDepthFormat = GLKViewDrawableDepthFormatNone;
             glkView.drawableStencilFormat = GLKViewDrawableStencilFormatNone;
@@ -93,11 +89,10 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
     }
     */
     if ([glkView.context API] == kEAGLRenderingAPIOpenGLES2) {
-        glCaps::Setup(glCaps::GLES2);
+        this->useGLES2 = true;
     } else {
-        glCaps::Setup(glCaps::GLES3);
+        this->useGLES2 = false;
     }
-    
     
     // update the displayAttrs with the actual frame buffer size
     this->glFramebufferWidth = (int) glkView.drawableWidth;
@@ -113,10 +108,8 @@ iosDisplayMgr::SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs) {
 void
 iosDisplayMgr::DiscardDisplay() {
     o_assert(this->IsDisplayValid());
-    this->glDefaultFramebuffer = 0;
     this->glFramebufferWidth = 0;
     this->glFramebufferHeight = 0;
-    glCaps::Discard();
     displayMgrBase::DiscardDisplay();
 }
 
@@ -126,13 +119,6 @@ iosDisplayMgr::Present() {
     // the view is actually presented outside in the GLKView (the entire
     // Oryol frame runs from within the GLKView's draw request.
     displayMgrBase::Present();
-}
-
-//------------------------------------------------------------------------------
-void
-iosDisplayMgr::glBindDefaultFramebuffer() {
-    GLKView* glkView = _priv::iosBridge::ptr()->glkView;
-    [glkView bindDrawable];
 }
 
 } // namespace _priv

@@ -41,7 +41,7 @@ androidInputMgr::setup(const InputSetup& setup) {
         o_error("androidInputMgr: Gfx::Setup() must be called before Input::Setup!\n");
         return;
     }
-    this->highDPI = Gfx::GfxSetup().HighDPI;
+    this->highDPI = Gfx::Desc().HighDPI;
 
     inputMgrBase::setup(setup);
     this->touchpad.attached = true;

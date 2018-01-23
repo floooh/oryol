@@ -69,9 +69,9 @@ emscDisplayMgr::~emscDisplayMgr() {
 
 //------------------------------------------------------------------------------
 void
-emscDisplayMgr::SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs) {
+emscDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->IsDisplayValid());
-    displayMgrBase::SetupDisplay(desc, ptrs);
+    displayMgrBase::SetupDisplay(desc);
 
     if (desc.HtmlTrackElementSize) {
         // register notification callback when canvas size changes

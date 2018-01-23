@@ -6,8 +6,7 @@
     @brief display manager for IOS
 */
 #include "Gfx/private/displayMgrBase.h"
-#include "Gfx/private/gl/gl_decl.h"
-#include "Core/private/ios/iosBridge.h"
+#include "Gfx/private/gl.h"
 
 namespace Oryol {
 namespace _priv {
@@ -20,19 +19,16 @@ public:
     ~iosDisplayMgr();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// present the current rendered frame
     void Present();
     
-    /// bind the default frame buffer
-    void glBindDefaultFramebuffer();
-
     static iosDisplayMgr* self;
-    GLuint glDefaultFramebuffer;
-    GLint glFramebufferWidth;
-    GLint glFramebufferHeight;
+    bool useGLES2 = false;
+    GLint glFramebufferWidth = 0;
+    GLint glFramebufferHeight = 0;
 };
     
 } // namespace _priv

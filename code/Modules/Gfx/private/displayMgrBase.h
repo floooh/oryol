@@ -9,7 +9,6 @@
 */
 #include "Gfx/GfxTypes.h"
 #include "Core/Containers/Map.h"
-#include "Gfx/private/gfxPointers.h"
 #include <functional>
 
 namespace Oryol {
@@ -26,7 +25,7 @@ public:
     ~displayMgrBase();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxDesc& desc, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// return true if display is currently setup
@@ -56,7 +55,6 @@ protected:
     DisplayAttrs displayAttrs;
     eventHandlerId uniqueIdCounter = 0;
     Map<eventHandlerId, eventHandler> handlers;
-    gfxPointers pointers;
     bool displayValid = false;
     int curFramebufferWidth = 0;    // used to detect display size changes
     int curFramebufferHeight = 0;   // used to detect display size changes
