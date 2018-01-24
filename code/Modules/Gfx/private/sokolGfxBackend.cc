@@ -342,15 +342,21 @@ static void convertVertexLayouts(const PipelineDesc& src, sg_pipeline_desc& dst,
             dstLayout.stride = srcLayout.ByteSize();
             dstLayout.step_func = convertStepFunc(srcLayout.StepFunction);
             dstLayout.step_rate = srcLayout.StepRate;
-            for (int compIndex = 0; compIndex < srcLayout.NumComponents(); compIndex++) {
-                const auto& srcComp = srcLayout.ComponentAt(compIndex);
-                auto& dstComp = dstLayout.attrs[compIndex];
-                if (srcComp.Name.IsValid()) {
-                    dstComp.name = srcComp.Name.AsCStr();
+            int dstCompIndex = 0;
+            for (int srcCompIndex = 0; srcCompIndex < srcLayout.NumComponents(); srcCompIndex++) {
+                const auto& srcComp = srcLayout.ComponentAt(srcCompIndex);
+                int inputAttrSlot = vsInput.ComponentIndexByName(srcComp.Name);
+                if (InvalidIndex != inputAttrSlot) {
+                    auto& dstComp = dstLayout.attrs[dstCompIndex++];
+                    if (srcComp.Name.IsValid()) {
+                        dstComp.name = srcComp.Name.AsCStr();
+                    }
+                    // FIXME: this is hardcoded for SPIRVCross, should be more flexible
+                    dstComp.sem_name = "TEXCOORD";
+                    dstComp.sem_index = inputAttrSlot;
+                    dstComp.offset = srcComp.Offset;
+                    dstComp.format = convertVertexFormat(srcComp.Format);
                 }
-                // FIXME: sem_name, sem_index (D3D11!)
-                dstComp.offset = srcComp.Offset;
-                dstComp.format = convertVertexFormat(srcComp.Format);
             }
         }
     }
