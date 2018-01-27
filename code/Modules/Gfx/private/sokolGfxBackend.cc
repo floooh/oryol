@@ -337,26 +337,26 @@ static void convertVertexLayouts(const PipelineDesc& src, sg_pipeline_desc& dst,
     o_assert_dbg(GfxConfig::MaxNumVertexBuffers <= SG_MAX_SHADERSTAGE_BUFFERS);
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumVertexBuffers; layoutIndex++) {
         const auto& srcLayout = src.Layouts[layoutIndex];
-        auto& dstLayout = dst.vertex_layouts[layoutIndex];
-        if (!srcLayout.Empty()) {
-            dstLayout.stride = srcLayout.ByteSize();
-            dstLayout.step_func = convertStepFunc(srcLayout.StepFunction);
-            dstLayout.step_rate = srcLayout.StepRate;
-            int dstCompIndex = 0;
-            for (int srcCompIndex = 0; srcCompIndex < srcLayout.NumComponents(); srcCompIndex++) {
-                const auto& srcComp = srcLayout.ComponentAt(srcCompIndex);
-                int inputAttrSlot = vsInput.ComponentIndexByName(srcComp.Name);
-                if (InvalidIndex != inputAttrSlot) {
-                    auto& dstComp = dstLayout.attrs[dstCompIndex++];
-                    if (srcComp.Name.IsValid()) {
-                        dstComp.name = srcComp.Name.AsCStr();
-                    }
-                    // FIXME: this is hardcoded for SPIRVCross, should be more flexible
-                    dstComp.sem_name = "TEXCOORD";
-                    dstComp.sem_index = inputAttrSlot;
-                    dstComp.offset = srcComp.Offset;
-                    dstComp.format = convertVertexFormat(srcComp.Format);
-                }
+        if (srcLayout.Empty()) {
+            break;
+        }
+        auto& dstLayout = dst.layout.buffers[layoutIndex];
+        dstLayout.stride = srcLayout.ByteSize();
+        dstLayout.step_func = convertStepFunc(srcLayout.StepFunction);
+        dstLayout.step_rate = srcLayout.StepRate;
+        for (int compIndex = 0; compIndex < srcLayout.NumComponents(); compIndex++) {
+            const auto& srcComp = srcLayout.ComponentAt(compIndex);
+            o_assert_dbg(srcComp.Name.IsValid());
+            int attrSlot = vsInput.ComponentIndexByName(srcComp.Name);
+            if (InvalidIndex != attrSlot) {
+                auto& attr = dst.layout.attrs[attrSlot];
+                attr.name = srcComp.Name.AsCStr();
+                // FIXME: this is hardcoded for SPIRVCross, should be more flexible
+                attr.sem_name = "TEXCOORD";
+                attr.sem_index = attrSlot;
+                attr.offset = srcComp.Offset;
+                attr.format = convertVertexFormat(srcComp.Format);
+                attr.buffer_index = layoutIndex;
             }
         }
     }
@@ -1028,3 +1028,4 @@ sokolGfxBackend::ProcessSystemEvents() {
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
+
