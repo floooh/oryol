@@ -46,7 +46,7 @@ OryolMain(InstancingApp);
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc::Window(800, 500, "Oryol Instancing Sample"));
+    Gfx::Setup(NewGfxDesc().Windowed(800, 500, "Oryol Instancing Sample").Done());
     Dbg::Setup();
     Input::Setup();
     
@@ -65,23 +65,17 @@ InstancingApp::OnInit() {
         .Sphere(0.05f, 3, 2)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // create dynamic instance data vertex buffer on slot 1
-    this->drawState.VertexBuffers[1] = Gfx::Buffer()
+    this->drawState.VertexBuffers[1] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(MaxNumParticles * VertexFormat::ByteSize(VertexFormat::Float4))
         .Usage(Usage::Stream)
-        .Create();
+        .Done());
 
     // setup pipeline state for instanced rendering
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(1, VertexLayout::New()
@@ -90,11 +84,11 @@ InstancingApp::OnInit() {
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .Create();
+        .Done());
     
     // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     
     return App::OnInit();

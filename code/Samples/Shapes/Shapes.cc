@@ -31,10 +31,7 @@ OryolMain(ShapeApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnInit() {
-
-    auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Oryol Shapes Sample");
-    Gfx::Setup(gfxDesc);
-
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Oryol Shapes Sample").Done());
     auto shapes = ShapeBuilder::New()
         .RandomColors(true)
         .Positions("position", VertexFormat::Float3)
@@ -45,25 +42,19 @@ ShapeApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shapes.VertexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shapes.IndexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
     this->primGroups = std::move(shapes.PrimitiveGroups);
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

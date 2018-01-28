@@ -49,8 +49,7 @@ OryolMain(NativeTextureApp);
 AppState::Code
 NativeTextureApp::OnInit() {
 
-    auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Oryol NativeTexture Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Oryol NativeTexture Sample").Done());
     Dbg::Setup(DbgSetup::MSAA4());
 
     // FIXME: D3D and Metal
@@ -65,14 +64,8 @@ NativeTextureApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 4)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     #if ORYOL_OPENGL
     // the interesting part, create 2 GL textures and hand them to the
@@ -97,7 +90,7 @@ NativeTextureApp::OnInit() {
     // push a new resource label and keep it for later since we'll have
     // to cleanup the resource ourselves
     Gfx::PushResourceLabel();
-    this->drawState.FSTexture[0] = Gfx::Texture()
+    this->drawState.FSTexture[0] = Gfx::CreateTexture(NewTextureDesc()
         .Type(TextureType::Texture2D)
         .Width(TexWidth)
         .Height(TexHeight)
@@ -105,21 +98,21 @@ NativeTextureApp::OnInit() {
         .Usage(Usage::Stream)
         .NativeTexture(0, this->glTextures[0])
         .NativeTexture(1, this->glTextures[1])
-        .Create();
+        .Done());
     this->texLabel = Gfx::PopResourceLabel();
     #endif
 
     // ...and finally the pipeline object
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
 
@@ -148,10 +141,10 @@ NativeTextureApp::OnRunning() {
         }
     }
     this->counter++;
-    ImageDataAttrs updAttrs;
-    updAttrs.Offsets[0][0] = 0;
-    updAttrs.Sizes[0][0] = sizeof(this->Buffer);
-    Gfx::UpdateTexture(this->drawState.FSTexture[0], this->Buffer, updAttrs);
+    ImageContent imgContent;
+    imgContent.Pointer[0][0] = this->Buffer;
+    imgContent.Size[0][0] = sizeof(this->Buffer);
+    Gfx::UpdateTexture(this->drawState.FSTexture[0], imgContent);
 
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
@@ -191,8 +184,8 @@ NativeTextureApp::computeMVP(const glm::vec3& pos) {
 AppState::Code
 NativeTextureApp::notSupported() {
     const char* msg = "This demo needs GL\n";
-    int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(std::strlen(msg)))/2;
-    int y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
+    int x = (Gfx::DisplayAttrs().Width/16 - int(std::strlen(msg)))/2;
+    int y = (Gfx::DisplayAttrs().Height/16)/2;
     Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.0f, 0.0f, 1.0f));
     Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(uint8_t(x), uint8_t(y));

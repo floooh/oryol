@@ -45,8 +45,7 @@ DDSTextureLoadingApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    auto gfxDesc = GfxDesc::Window(600, 400, "Oryol DDS Loading Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().Windowed(600, 400, "Oryol DDS Loading Sample").Done());
 
     // setup resources
     static const char *paths[NumTextures] = {
@@ -68,13 +67,13 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int i = 0; i < NumTextures; i++) {
-        this->textures[i] = TextureLoader::Load(Gfx::Texture()
+        this->textures[i] = TextureLoader::Load(NewTextureDesc()
             .Locator(paths[i])
             .MinFilter(TextureFilterMode::LinearMipmapLinear)
             .MagFilter(TextureFilterMode::Linear)
             .WrapU(TextureWrapMode::ClampToEdge)
             .WrapV(TextureWrapMode::ClampToEdge)
-            .Desc);
+            .Done());
     }
 
     auto shape = ShapeBuilder::New()
@@ -84,23 +83,17 @@ DDSTextureLoadingApp::OnInit() {
         .Plane(1.0f, 1.0f, 4)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .Create();
+        .Done());
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

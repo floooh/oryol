@@ -43,22 +43,21 @@ OryolMain(InfiniteSpheresApp);
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    auto gfxDesc = GfxDesc::WindowMSAA4(800, 600, "Oryol Infinite Spheres Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Oryol Infinite Spheres Sample").Done());
 
     // create 2 ping-pong offscreen render targets, only need 1 depth buffer
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
     const int rtWidth = 512;
     const int rtHeight = 512;
-    Id rtDepth = Gfx::Texture()
+    Id rtDepth = Gfx::CreateTexture(NewTextureDesc()
         .RenderTarget(true)
         .Width(rtWidth)
         .Height(rtHeight)
         .Format(rtDepthFormat)
-        .Create();
+        .Done());
     for (int i = 0; i < 2; i++) {
-        this->passInfo[i].texture = Gfx::Texture()
+        this->passInfo[i].texture = Gfx::CreateTexture(NewTextureDesc()
             .RenderTarget(true)
             .Width(rtWidth)
             .Height(rtHeight)
@@ -67,11 +66,11 @@ InfiniteSpheresApp::OnInit() {
             .MagFilter(TextureFilterMode::Linear)
             .WrapU(TextureWrapMode::Repeat)
             .WrapV(TextureWrapMode::Repeat)
-            .Create();
-        this->passInfo[i].pass = Gfx::Pass()
+            .Done());
+        this->passInfo[i].pass = Gfx::CreatePass(NewPassDesc()
             .ColorAttachment(0, this->passInfo[i].texture)
             .DepthStencilAttachment(rtDepth)
-            .Create();
+            .Done());
     }
 
     // create a sphere shape mesh
@@ -82,8 +81,8 @@ InfiniteSpheresApp::OnInit() {
         .Sphere(0.75f, 72, 40)
         .Build();
     this->primGroup = sphere.PrimitiveGroups[0];
-    Id vbuf = Gfx::Buffer().From(sphere.VertexBufferDesc).Content(sphere.Data).Create();
-    Id ibuf = Gfx::Buffer().From(sphere.IndexBufferDesc).Content(sphere.Data).Create();
+    Id vbuf = Gfx::CreateBuffer(sphere.VertexBufferDesc);
+    Id ibuf = Gfx::CreateBuffer(sphere.IndexBufferDesc);
     this->offscreenDrawState.VertexBuffers[0] = vbuf;
     this->offscreenDrawState.IndexBuffer = ibuf;
     this->displayDrawState.VertexBuffers[0] = vbuf;
@@ -93,25 +92,25 @@ InfiniteSpheresApp::OnInit() {
     Id shd = Gfx::CreateShader(Shader::Desc());
 
     // create draw state for rendering into default render target
-    this->displayDrawState.Pipeline = Gfx::Pipeline()
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(sphere.PipelineDesc)
         .Shader(shd)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
-    this->offscreenDrawState.Pipeline = Gfx::Pipeline()
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(sphere.PipelineDesc)
         .Shader(shd)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
         .DepthFormat(rtDepthFormat)
-        .Create();
+        .Done());
 
     // setup static transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
     this->view = glm::mat4();

@@ -25,9 +25,15 @@ displayMgrBase::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->displayValid);
     this->displayValid = true;
     this->gfxDesc = desc;
-    this->displayAttrs = desc.GetDisplayAttrs();
-    this->curFramebufferWidth = this->displayAttrs.FramebufferWidth;
-    this->curFramebufferHeight = this->displayAttrs.FramebufferHeight;
+    this->displayAttrs.Width = desc.Width;
+    this->displayAttrs.Height = desc.Height;
+    this->displayAttrs.ColorFormat = desc.ColorFormat;
+    this->displayAttrs.DepthFormat = desc.DepthFormat;
+    this->displayAttrs.SampleCount = desc.SampleCount;
+    this->displayAttrs.Windowed = desc.Windowed;
+    this->displayAttrs.SwapInterval = desc.SwapInterval;
+    this->curFramebufferWidth = this->displayAttrs.Width;
+    this->curFramebufferHeight = this->displayAttrs.Height;
 }
 
 //------------------------------------------------------------------------------
@@ -44,14 +50,6 @@ displayMgrBase::IsDisplayValid() const {
 }
 
 //------------------------------------------------------------------------------
-void
-displayMgrBase::ModifyDisplay(const GfxDesc& desc) {
-    o_assert(this->displayValid);
-    this->displayAttrs = desc.GetDisplayAttrs();
-    this->notifyEventHandlers(GfxEvent(GfxEvent::DisplayModified, this->displayAttrs));
-}
-
-//------------------------------------------------------------------------------
 /**
  This method is expected to process the platform specific window system 
  messages. This is also usually the place where input events from the
@@ -61,11 +59,11 @@ displayMgrBase::ModifyDisplay(const GfxDesc& desc) {
 */
 void
 displayMgrBase::ProcessSystemEvents() {
-    if ((this->curFramebufferWidth != this->displayAttrs.FramebufferWidth) ||
-        (this->curFramebufferHeight != this->displayAttrs.FramebufferHeight)) {
+    if ((this->curFramebufferWidth != this->displayAttrs.Width) ||
+        (this->curFramebufferHeight != this->displayAttrs.Height)) {
 
-        this->curFramebufferWidth = this->displayAttrs.FramebufferWidth;
-        this->curFramebufferHeight = this->displayAttrs.FramebufferHeight;
+        this->curFramebufferWidth = this->displayAttrs.Width;
+        this->curFramebufferHeight = this->displayAttrs.Height;
         this->notifyEventHandlers(GfxEvent(GfxEvent::DisplayModified, this->displayAttrs));
     }
 }

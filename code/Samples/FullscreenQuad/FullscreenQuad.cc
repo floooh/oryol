@@ -22,17 +22,17 @@ OryolMain(FullscreenQuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    Gfx::Setup(GfxDesc::Window(600, 600, "Oryol Fullscreen Quad Sample"));
+    Gfx::Setup(NewGfxDesc().Windowed(600, 600, "Oryol Fullscreen Quad Sample").Done());
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(quadVertices))
         .Content(quadVertices)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+        .Done());
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, { { "in_pos", VertexFormat::Float2 } })
         .PrimitiveType(PrimitiveType::TriangleStrip)
-        .Create();
+        .Done());
     this->params.time = 0.0f;
     return App::OnInit();
 }

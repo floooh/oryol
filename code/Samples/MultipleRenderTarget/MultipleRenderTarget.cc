@@ -49,8 +49,7 @@ OryolMain(MultipleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 MultipleRenderTargetApp::OnInit() {
-    auto gfxDesc = GfxDesc::WindowMSAA4(DisplayWidth, DisplayHeight, "Oryol MRT Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(DisplayWidth, DisplayHeight, "Oryol MRT Sample").Done());
     Dbg::Setup();
 
     // if rendering backend doesn't support MRT, drop out now
@@ -64,7 +63,7 @@ MultipleRenderTargetApp::OnInit() {
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTHSTENCIL;
     const int rtSampleCount = 4;
-    auto rtDesc = Gfx::Texture()
+    auto rtDesc = NewTextureDesc()
         .Type(TextureType::Texture2D)
         .RenderTarget(true)
         .Width(OffscreenWidth)
@@ -73,19 +72,19 @@ MultipleRenderTargetApp::OnInit() {
         .MinFilter(TextureFilterMode::Linear)
         .MagFilter(TextureFilterMode::Linear)
         .SampleCount(rtSampleCount)
-        .Desc;
+        .Done();
     Id rtColor0 = Gfx::CreateTexture(rtDesc);
     Id rtColor1 = Gfx::CreateTexture(rtDesc);
     Id rtColor2 = Gfx::CreateTexture(rtDesc);
-    Id rtDepth = Gfx::Texture().From(rtDesc).Format(rtDepthFormat).Create();
+    Id rtDepth = Gfx::CreateTexture(NewTextureDesc().From(rtDesc).Format(rtDepthFormat).Done());
 
     // create a render pass with the 3 color- and 1 depth-attachment
-    this->mrtPass = Gfx::Pass()
+    this->mrtPass = Gfx::CreatePass(NewPassDesc()
         .ColorAttachment(0, rtColor0)
         .ColorAttachment(1, rtColor1)
         .ColorAttachment(2, rtColor2)
         .DepthStencilAttachment(rtDepth)
-        .Create();
+        .Done());
 
     // a pass-action to clear the multiple-render-target
     this->mrtPassAction
@@ -103,18 +102,12 @@ MultipleRenderTargetApp::OnInit() {
         .Build();
     this->cubePrimGroup = shapes.PrimitiveGroups[0];
     this->planePrimGroup = shapes.PrimitiveGroups[1];
-    Id shapesVertexBuffer = Gfx::Buffer()
-        .From(shapes.VertexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    Id shapesIndexBuffer = Gfx::Buffer()
-        .From(shapes.IndexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
+    Id shapesVertexBuffer = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    Id shapesIndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
 
     // create a draw state to render a cube into the
     // offscreen render targets (this is where the MRT rendering happens)
-    this->cubeDrawState.Pipeline = Gfx::Pipeline()
+    this->cubeDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
         .DepthWriteEnabled(true)
@@ -124,25 +117,25 @@ MultipleRenderTargetApp::OnInit() {
         .DepthFormat(rtDepthFormat)
         .SampleCount(rtSampleCount)
         .MRTCount(3)
-        .Create();
+        .Done());
     this->cubeDrawState.VertexBuffers[0] = shapesVertexBuffer;
     this->cubeDrawState.IndexBuffer = shapesIndexBuffer;
 
     // create a quad-mesh for displaying the 3 render target textures on screen
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    Id quadVertexBuffer = Gfx::Buffer()
+    Id quadVertexBuffer = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(quadVertices))
         .Content(quadVertices)
-        .Create();
-    Id quadPipeline = Gfx::Pipeline()
+        .Done());
+    Id quadPipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(QuadShader::Desc()))
         .Layout(0, { { "in_pos", VertexFormat::Float2 } })
         .PrimitiveType(PrimitiveType::TriangleStrip)
         .DepthWriteEnabled(false)
         .DepthCmpFunc(CompareFunc::Always)
         .CullFaceEnabled(false)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
     this->rt0DrawState.Pipeline = quadPipeline;
     this->rt0DrawState.VertexBuffers[0] = quadVertexBuffer;
     this->rt0DrawState.FSTexture[QuadShader::tex] = rtColor0;
@@ -155,14 +148,14 @@ MultipleRenderTargetApp::OnInit() {
 
     // and finally create a draw state to render a plane to the
     // main display which samples the 3 offscreen render targets
-    this->displayDrawState.Pipeline = Gfx::Pipeline()
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(false)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
     this->displayDrawState.VertexBuffers[0] = shapesVertexBuffer;
     this->displayDrawState.IndexBuffer = shapesIndexBuffer;
     this->displayDrawState.FSTexture[DisplayShader::redTex] = rtColor0;
@@ -212,7 +205,7 @@ MultipleRenderTargetApp::OnRunning() {
 
     // render the final plane which samples from all 3 offscreen rendertarget textures
     const auto& rpAttrs = Gfx::PassAttrs();
-    Gfx::ApplyViewPort(0, 0, rpAttrs.FramebufferWidth, rpAttrs.FramebufferHeight);
+    Gfx::ApplyViewPort(0, 0, rpAttrs.Width, rpAttrs.Height);
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->displayParams);
     Gfx::Draw(this->planePrimGroup);
@@ -247,8 +240,8 @@ MultipleRenderTargetApp::notSupported() {
     #else
     const char* msg = "This demo needs MultipleRenderTarget\n";
     #endif
-    uint8_t x = uint8_t((Gfx::DisplayAttrs().FramebufferWidth/16 - std::strlen(msg))/2);
-    uint8_t y = uint8_t(Gfx::DisplayAttrs().FramebufferHeight/16/2);
+    uint8_t x = uint8_t((Gfx::DisplayAttrs().Width/16 - std::strlen(msg))/2);
+    uint8_t y = uint8_t((Gfx::DisplayAttrs().Height/16)/2);
     Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.0f, 0.0f, 1.0f));
     Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(x, y);

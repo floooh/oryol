@@ -13,7 +13,7 @@ using namespace _priv;
 
 namespace {
     struct _state {
-        class GfxDesc gfxDesc;
+        GfxDesc gfxDesc;
         GfxFrameInfo gfxFrameInfo;
         RunLoop::Id runLoopId = RunLoop::InvalidId;
         _priv::gfxBackend backend;
@@ -24,7 +24,7 @@ namespace {
 
 //------------------------------------------------------------------------------
 void
-Gfx::Setup(const class GfxDesc& desc) {
+Gfx::Setup(const GfxDesc& desc) {
     o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
     state->gfxDesc = desc;
@@ -246,11 +246,11 @@ Gfx::UpdateBuffer(const Id& id, const void* data, int numBytes) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs) {
+Gfx::UpdateTexture(const Id& id, const ImageContent& content) {
     o_trace_scoped(Gfx_UpdateTexture);
     o_assert_dbg(IsValid());
     state->gfxFrameInfo.NumUpdateTextures++;
-    state->backend.UpdateTexture(id, data, attrs);
+    state->backend.UpdateTexture(id, content);
 }
 
 //------------------------------------------------------------------------------
@@ -275,35 +275,11 @@ Gfx::Draw(const PrimitiveGroup& primGroup, int numInstances) {
 
 //------------------------------------------------------------------------------
 Id
-Gfx::CreateTexture(const TextureDesc& desc, const void* data, int size) {
-    o_assert_dbg(IsValid());
-    Id resId = state->backend.LookupResource(desc.Locator);
-    if (!resId.IsValid()) {
-        resId = state->backend.CreateTexture(desc, data, size);
-        state->backend.AddResource(desc.Locator, resId);
-    }
-    return resId;
-}
-
-//------------------------------------------------------------------------------
-Id
 Gfx::CreateTexture(const TextureDesc& desc) {
-    return Gfx::CreateTexture(desc, nullptr, 0);
-}
-
-//------------------------------------------------------------------------------
-Id
-Gfx::CreateTexture(const TextureDesc& desc, const MemoryBuffer& data) {
-    return Gfx::CreateTexture(desc, data.Data(), data.Size());
-}
-
-//------------------------------------------------------------------------------
-Id
-Gfx::CreateBuffer(const BufferDesc& desc, const void* data, int size) {
     o_assert_dbg(IsValid());
     Id resId = state->backend.LookupResource(desc.Locator);
     if (!resId.IsValid()) {
-        resId = state->backend.CreateBuffer(desc, data, size);
+        resId = state->backend.CreateTexture(desc);
         state->backend.AddResource(desc.Locator, resId);
     }
     return resId;
@@ -312,13 +288,13 @@ Gfx::CreateBuffer(const BufferDesc& desc, const void* data, int size) {
 //------------------------------------------------------------------------------
 Id
 Gfx::CreateBuffer(const BufferDesc& desc) {
-    return Gfx::CreateBuffer(desc, nullptr, 0);
-}
-
-//------------------------------------------------------------------------------
-Id
-Gfx::CreateBuffer(const BufferDesc& desc, const MemoryBuffer& data) {
-    return Gfx::CreateBuffer(desc, data.Data(), data.Size());
+    o_assert_dbg(IsValid());
+    Id resId = state->backend.LookupResource(desc.Locator);
+    if (!resId.IsValid()) {
+        resId = state->backend.CreateBuffer(desc);
+        state->backend.AddResource(desc.Locator, resId);
+    }
+    return resId;
 }
 
 //------------------------------------------------------------------------------
@@ -383,30 +359,16 @@ Gfx::AllocTexture(const Locator& loc) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int size) {
+Gfx::InitBuffer(const Id& id, const BufferDesc& desc) {
     o_assert_dbg(IsValid());
-    state->backend.InitBuffer(id, desc, data, size);
+    state->backend.InitBuffer(id, desc);
 }
 
 //------------------------------------------------------------------------------
 void
-Gfx::InitBuffer(const Id& id, const BufferDesc& desc, const MemoryBuffer& data) {
+Gfx::InitTexture(const Id& id, const TextureDesc& desc) {
     o_assert_dbg(IsValid());
-    state->backend.InitBuffer(id, desc, data.Data(), data.Size());
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::InitTexture(const Id& id, const TextureDesc& desc, const void* data, int size) {
-    o_assert_dbg(IsValid());
-    state->backend.InitTexture(id, desc, data, size);
-}
-
-//------------------------------------------------------------------------------
-void
-Gfx::InitTexture(const Id& id, const TextureDesc& desc, const MemoryBuffer& data) {
-    o_assert_dbg(IsValid());
-    state->backend.InitTexture(id, desc, data.Data(), data.Size());
+    state->backend.InitTexture(id, desc);
 }
 
 //------------------------------------------------------------------------------

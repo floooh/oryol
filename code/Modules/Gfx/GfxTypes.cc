@@ -611,67 +611,13 @@ int VertexLayout::ComponentByteOffset(int componentIndex) const {
 }
 
 //------------------------------------------------------------------------------
-ImageDataAttrs::ImageDataAttrs() {
-    for (auto& offsets : this->Offsets) {
-        offsets.Fill(0);
+ImageContent::ImageContent() {
+    for (auto& ptr : this->Pointer) {
+        ptr.Fill(0);
     }
-    for (auto& sizes : this->Sizes) {
-        sizes.Fill(0);
+    for (auto& size : this->Size) {
+        size.Fill(0);
     }
-}
-
-//------------------------------------------------------------------------------
-GfxDesc GfxDesc::Window(int width, int height, String windowTitle) {
-    o_assert_dbg((width > 0) && (height > 0));
-    GfxDesc desc;
-    desc.Width    = width;
-    desc.Height   = height;
-    desc.Windowed = true;
-    desc.Title    = windowTitle;
-    return desc;
-}
-
-//------------------------------------------------------------------------------
-GfxDesc GfxDesc::Fullscreen(int width, int height, String windowTitle) {
-    o_assert_dbg((width > 0) && (height > 0));
-    GfxDesc desc;
-    desc.Width    = width;
-    desc.Height   = height;
-    desc.Windowed = false;
-    desc.Title    = windowTitle;
-    return desc;
-}
-
-//------------------------------------------------------------------------------
-GfxDesc GfxDesc::WindowMSAA4(int width, int height, String windowTitle) {
-    GfxDesc desc = Window(width, height, windowTitle);
-    desc.SampleCount = 4;
-    return desc;
-}
-
-//------------------------------------------------------------------------------
-GfxDesc GfxDesc::FullscreenMSAA4(int width, int height, String windowTitle) {
-    GfxDesc desc = Fullscreen(width, height, windowTitle);
-    desc.SampleCount = 4;
-    return desc;
-}
-
-//------------------------------------------------------------------------------
-DisplayAttrs GfxDesc::GetDisplayAttrs() const {
-    DisplayAttrs attrs;
-    attrs.WindowWidth       = this->Width;
-    attrs.WindowHeight      = this->Height;
-    attrs.WindowPosX        = 0;
-    attrs.WindowPosY        = 0;
-    attrs.FramebufferWidth  = this->Width;
-    attrs.FramebufferHeight = this->Height;
-    attrs.ColorPixelFormat  = this->ColorFormat;
-    attrs.DepthPixelFormat  = this->DepthFormat;
-    attrs.SampleCount       = this->SampleCount;
-    attrs.Windowed          = this->Windowed;
-    attrs.WindowTitle       = this->Title;
-    attrs.SwapInterval      = this->SwapInterval;
-    return attrs;
 }
 
 //------------------------------------------------------------------------------
@@ -680,33 +626,6 @@ GfxDesc::GfxDesc() {
         ResourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
         ResourceThrottling[i] = 0;    // unthrottled
     }
-}
-
-//------------------------------------------------------------------------------
-Id BufferBuilder::Create() {
-    // FIXME: hmm this ContentSize vs Desc.Size thing is weird
-    if (this->ContentSize != 0) {
-        o_assert_dbg(this->ContentSize >= (this->Desc.Offset+this->Desc.Size));
-        return Gfx::CreateBuffer(this->Desc, this->ContentPtr, this->ContentSize);
-    }
-    else {
-        return Gfx::CreateBuffer(this->Desc, this->ContentPtr, this->Desc.Size);
-    }
-}
-
-//------------------------------------------------------------------------------
-Id PipelineBuilder::Create() {
-    return Gfx::CreatePipeline(this->Desc);
-}
-
-//------------------------------------------------------------------------------
-Id TextureBuilder::Create() {
-    return Gfx::CreateTexture(this->Desc, this->ContentPtr, this->ContentSize);
-}
-
-//------------------------------------------------------------------------------
-Id PassBuilder::Create() {
-    return Gfx::CreatePass(this->Desc);
 }
 
 } // namespace Oryol

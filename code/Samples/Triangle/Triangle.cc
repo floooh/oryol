@@ -22,7 +22,7 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc::Window(400, 400, "Oryol Triangle Sample"));
+    Gfx::Setup(NewGfxDesc().Windowed(400, 400, "Oryol Triangle Sample").Done());
     
     // create a mesh with vertex data from memory
     const float vertices[] = {
@@ -31,19 +31,19 @@ TriangleApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
         -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
     };
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(vertices))
         .Content(vertices)
-        .Create();
-        
+        .Done());
+
     // create shader and pipeline-state-object
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, {
             { "position", VertexFormat::Float3 },
             { "color0", VertexFormat::Float4 }
         })
-        .Create();
+        .Done());
 
     return App::OnInit();
 }

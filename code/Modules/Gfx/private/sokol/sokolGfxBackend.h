@@ -49,9 +49,9 @@ public:
     ResourceLabel PopResourceLabel();
     
     /// create (alloc+init) a buffer resource
-    Id CreateBuffer(const BufferDesc& desc, const void* data, int dataSize);
+    Id CreateBuffer(const BufferDesc& desc);
     /// create (alloc+init) an texture resource
-    Id CreateTexture(const TextureDesc& desc, const void* data, int dataSize);
+    Id CreateTexture(const TextureDesc& desc);
     /// create (alloc+init) a shader resource
     Id CreateShader(const ShaderDesc& desc);
     /// create (alloc+init) a pipeline resource
@@ -64,9 +64,9 @@ public:
     /// allocate a new texture id
     Id AllocTexture();
     /// initialize a buffer
-    void InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int dataSize);
+    void InitBuffer(const Id& id, const BufferDesc& desc);
     /// initialize a texture
-    void InitTexture(const Id& id, const TextureDesc& desc, const void* data, int dataSize);
+    void InitTexture(const Id& id, const TextureDesc& desc);
     /// set allocated, non-initialized buffer to failed resource state
     void FailBuffer(const Id& id);
     /// set allocated, non-initialized texture to failed resource state
@@ -82,7 +82,7 @@ public:
     /// update dynamic buffer data
     void UpdateBuffer(const Id& id, const void* data, int numBytes);
     /// update dynamic texture data
-    void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs);
+    void UpdateTexture(const Id& id, const ImageContent& content);
 
     /// begin rendering pass
     void BeginPass(const Id& passId, const PassAction* action);

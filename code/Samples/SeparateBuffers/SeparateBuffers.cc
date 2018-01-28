@@ -43,8 +43,7 @@ OryolMain(SeparateBuffersApp);
 AppState::Code
 SeparateBuffersApp::OnInit() {
 
-    auto gfxDesc = GfxDesc::WindowMSAA4(600, 400, "Separate Buffers");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Separate Buffers").Done());
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
@@ -53,14 +52,8 @@ SeparateBuffersApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->cubePrimGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // create 3 meshes with only color data
     static const int NumVertices = 24;
@@ -70,25 +63,25 @@ SeparateBuffersApp::OnInit() {
         for (int vi = 0; vi < NumVertices; vi++) {
             colorVertices[vi][i] = glm::linearRand(0.5f, 1.0f);
         }
-        this->colorBuffers[i] = Gfx::Buffer()
+        this->colorBuffers[i] = Gfx::CreateBuffer(NewBufferDesc()
             .Size(sizeof(colorVertices))
             .Content(colorVertices)
-            .Create();
+            .Done());
     }
 
     // create shader and pipeline, the position data vertex Layout
     // goes into the first layout slot, and the color data vertex layout into the second slot
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(1, { { "in_color", VertexFormat::Float3 } })
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

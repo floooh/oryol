@@ -33,8 +33,7 @@ OryolMain(TextureFloatApp);
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    auto gfxDesc = GfxDesc::Window(512, 512, "Oryol Float Texture Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().Windowed(512, 512, "Oryol Float Texture Sample").Done());
     Dbg::Setup();
 
     // check required extensions
@@ -45,46 +44,46 @@ TextureFloatApp::OnInit() {
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA32F;
-    Id rt = Gfx::Texture()
+    Id rt = Gfx::CreateTexture(NewTextureDesc()
         .RenderTarget(true)
-        .Width(gfxDesc.Width)
-        .Height(gfxDesc.Height)
+        .Width(Gfx::Desc().Width)
+        .Height(Gfx::Desc().Height)
         .Format(rtColorFormat)
         .MinFilter(TextureFilterMode::Nearest)
         .MagFilter(TextureFilterMode::Nearest)
-        .Create();
-    this->renderPass = Gfx::Pass().ColorAttachment(0, rt).Create();
+        .Done());
+    this->renderPass = Gfx::CreatePass(NewPassDesc().ColorAttachment(0, rt).Done());
     this->renderPassAction.DontCareColor(0);
 
     // fullscreen mesh, we'll reuse this several times
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->offscreenDrawState.VertexBuffers[0] = Gfx::Buffer()
+    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(quadVertices))
         .Content(quadVertices)
-        .Create();
+        .Done());
     this->copyDrawState.VertexBuffers[0] = this->offscreenDrawState.VertexBuffers[0];
 
     // setup draw state for offscreen rendering to float render target
-    this->offscreenDrawState.Pipeline = Gfx::Pipeline()
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
         .Layout(0, {{"in_pos", VertexFormat::Float2}})
         .PrimitiveType(PrimitiveType::TriangleStrip)
         .ColorFormat(rtColorFormat)
         .DepthFormat(PixelFormat::None)
-        .Create();
+        .Done());
     this->offscreenFSParams.time = 0.0f;
 
     // fullscreen-copy resources
-    this->copyDrawState.Pipeline = Gfx::Pipeline()
+    this->copyDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(CopyShader::Desc()))
         .Layout(0, {{"in_pos", VertexFormat::Float2}})
         .PrimitiveType(PrimitiveType::TriangleStrip)
-        .Create();
+        .Done());
     this->copyDrawState.FSTexture[CopyShader::tex] = rt;
 
     // setup static transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
     this->view = glm::mat4();
 

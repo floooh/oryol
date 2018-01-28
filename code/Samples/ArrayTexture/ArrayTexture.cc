@@ -34,8 +34,7 @@ OryolMain(ArrayTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ArrayTextureApp::OnInit() {
-    auto gfxDesc = GfxDesc::WindowMSAA4(800, 512, "Array Texture Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 512, "Array Texture Sample").Done());
     Dbg::Setup();
 
     // if array textures are not supported, only show a warning
@@ -64,7 +63,7 @@ ArrayTextureApp::OnInit() {
             }
         }
     }
-    this->drawState.FSTexture[Shader::tex] = Gfx::Texture()
+    this->drawState.FSTexture[Shader::tex] = Gfx::CreateTexture(NewTextureDesc()
         .Type(TextureType::TextureArray)
         .Width(width)
         .Height(height)
@@ -72,9 +71,9 @@ ArrayTextureApp::OnInit() {
         .Format(PixelFormat::RGBA8)
         .MinFilter(TextureFilterMode::Linear)
         .MagFilter(TextureFilterMode::Linear)
-        .MipDataSize(0, 0, sizeof(data))
-        .Content(data, sizeof(data))
-        .Create();
+        .MipSize(0, 0, sizeof(data))
+        .MipContent(0, 0, data)
+        .Done());
 
     // build a cube mesh
     auto shape = ShapeBuilder::New()
@@ -83,27 +82,21 @@ ArrayTextureApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // ...and a pipeline object to complete the DrawState
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
 
     // setup a projection matrix with the right aspect ratio
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
 
     return App::OnInit();
@@ -170,8 +163,8 @@ ArrayTextureApp::notSupported() {
     #else
     const char* msg = "This demo needs array texture support\n";
     #endif
-    uint8_t x = uint8_t((Gfx::DisplayAttrs().FramebufferWidth/16 - std::strlen(msg))/2);
-    uint8_t y = uint8_t(Gfx::DisplayAttrs().FramebufferHeight/16/2);
+    uint8_t x = uint8_t((Gfx::DisplayAttrs().Width/16 - std::strlen(msg))/2);
+    uint8_t y = uint8_t((Gfx::DisplayAttrs().Height/16)/2);
     Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.0f, 0.0f, 1.0f));
     Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(x, y);

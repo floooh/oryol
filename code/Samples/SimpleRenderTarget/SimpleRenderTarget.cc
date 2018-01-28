@@ -38,16 +38,14 @@ OryolMain(SimpleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
-
-    auto gfxDesc = GfxDesc::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Oryol Simple Render Target Sample").Done());
 
     // create a color render target texture and compatible depth render target
     // texture for offscreen rendering
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
     const int rtSampleCount = Gfx::QueryFeature(GfxFeature::MSAARenderTargets) ? 4 : 1;
-    auto rtCommon = Gfx::Texture()
+    auto rtCommon = NewTextureDesc()
         .Type(TextureType::Texture2D)
         .RenderTarget(true)
         .Width(128)
@@ -57,13 +55,13 @@ SimpleRenderTargetApp::OnInit() {
         .MagFilter(TextureFilterMode::Linear)
         .MinFilter(TextureFilterMode::Linear)
         .SampleCount(rtSampleCount)
-        .Desc;
-    Id rtColorTexture = Gfx::Texture().From(rtCommon).Format(rtColorFormat).Create();
-    Id rtDepthTexture = Gfx::Texture().From(rtCommon).Format(rtDepthFormat).Create();
-    this->renderPass = Gfx::Pass()
+        .Done();
+    Id rtColorTexture = Gfx::CreateTexture(NewTextureDesc().From(rtCommon).Format(rtColorFormat).Done());
+    Id rtDepthTexture = Gfx::CreateTexture(NewTextureDesc().From(rtCommon).Format(rtDepthFormat).Done());
+    this->renderPass = Gfx::CreatePass(NewPassDesc()
         .ColorAttachment(0, rtColorTexture)
         .DepthStencilAttachment(rtDepthTexture)
-        .Create();
+        .Done());
 
     // create a donut mesh, shader and pipeline object
     // (this will be rendered into the offscreen render target)
@@ -73,15 +71,9 @@ SimpleRenderTargetApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Build();
     this->donutPrimGroup = donut.PrimitiveGroups[0];
-    this->offscreenDrawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(donut.VertexBufferDesc)
-        .Content(donut.Data)
-        .Create();
-    this->offscreenDrawState.IndexBuffer = Gfx::Buffer()
-        .From(donut.IndexBufferDesc)
-        .Content(donut.Data)
-        .Create();
-    this->offscreenDrawState.Pipeline = Gfx::Pipeline()
+    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(donut.VertexBufferDesc);
+    this->offscreenDrawState.IndexBuffer = Gfx::CreateBuffer(donut.IndexBufferDesc);
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(donut.PipelineDesc)
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
         .DepthWriteEnabled(true)
@@ -89,7 +81,7 @@ SimpleRenderTargetApp::OnInit() {
         .ColorFormat(rtColorFormat)
         .DepthFormat(rtDepthFormat)
         .SampleCount(rtSampleCount)
-        .Create();
+        .Done());
 
     // create a sphere mesh, shader and pipeline object for rendering to display
     auto sphere = ShapeBuilder::New()
@@ -99,26 +91,20 @@ SimpleRenderTargetApp::OnInit() {
         .Sphere(0.5f, 72, 40)
         .Build();
     this->spherePrimGroup = sphere.PrimitiveGroups[0];
-    this->displayDrawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(sphere.VertexBufferDesc)
-        .Content(sphere.Data)
-        .Create();
-    this->displayDrawState.IndexBuffer = Gfx::Buffer()
-        .From(sphere.IndexBufferDesc)
-        .Content(sphere.Data)
-        .Create();
-    this->displayDrawState.Pipeline = Gfx::Pipeline()
+    this->displayDrawState.VertexBuffers[0] = Gfx::CreateBuffer(sphere.VertexBufferDesc);
+    this->displayDrawState.IndexBuffer = Gfx::CreateBuffer(sphere.IndexBufferDesc);
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(sphere.PipelineDesc)
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
     this->displayDrawState.FSTexture[DisplayShader::tex] = rtColorTexture;
 
     // setup static transform matrices
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();

@@ -69,13 +69,9 @@ glfwDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     glfwGetFramebufferSize(glfwWindow, &fbWidth, &fbHeight);
     glfwGetWindowPos(glfwWindow, &posX, &posY);
     glfwGetWindowSize(glfwWindow, &width, &height);
-    this->displayAttrs.FramebufferWidth  = fbWidth;
-    this->displayAttrs.FramebufferHeight = fbHeight;
-    this->displayAttrs.WindowPosX        = posX;
-    this->displayAttrs.WindowPosY        = posY;
-    this->displayAttrs.WindowWidth       = width;
-    this->displayAttrs.WindowHeight      = height;
-    
+    this->displayAttrs.Width  = fbWidth;
+    this->displayAttrs.Height = fbHeight;
+
     // set framebuffer size changed callback
     glfwSetFramebufferSizeCallback(glfwWindow, glwfFramebufferSizeChanged);
 }
@@ -126,15 +122,9 @@ glfwDisplayMgr::glfwErrorCallback(int error, const char* desc) {
 //------------------------------------------------------------------------------
 void
 glfwDisplayMgr::glwfFramebufferSizeChanged(GLFWwindow* win, int width, int height) {
-
-    // update display attributes (ignore window-minimized)
     if ((width != 0) && (height != 0)) {
-        self->displayAttrs.FramebufferWidth = width;
-        self->displayAttrs.FramebufferHeight = height;
-        int winWidth, winHeight;
-        glfwGetWindowSize(glfwWindow, &winWidth, &winHeight);
-        self->displayAttrs.WindowWidth = winWidth;
-        self->displayAttrs.WindowHeight = winHeight;
+        self->displayAttrs.Width = width;
+        self->displayAttrs.Height = height;
     }
 }
 

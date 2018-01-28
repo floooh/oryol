@@ -30,18 +30,19 @@ MeshBuilder::Begin() {
     // setup Result object
     this->result.Layout = this->Layout;
     this->result.IndexType = this->IndexType;
-    this->result.VertexBufferDesc = Gfx::Buffer()
+    this->result.VertexBufferDesc = NewBufferDesc()
         .Size(vbSize)
         .Type(BufferType::VertexBuffer)
         .Usage(this->VertexUsage)
-        .Desc;
+        .Content(this->vertexPointer)
+        .Done();
     if (ibSize > 0) {
-        this->result.IndexBufferDesc = Gfx::Buffer()
+        this->result.IndexBufferDesc = NewBufferDesc()
             .Size(ibSize)
             .Type(BufferType::IndexBuffer)
             .Usage(this->IndexUsage)
-            .Offset(this->result.VertexBufferDesc.Size)
-            .Desc;
+            .Content(this->indexPointer)
+            .Done();
     }
     else {
         this->result.IndexBufferDesc = BufferDesc();

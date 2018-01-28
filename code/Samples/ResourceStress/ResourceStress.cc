@@ -52,19 +52,20 @@ ResourceStressApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup Gfx system
-    auto gfxDesc = GfxDesc::Window(600, 400, "Oryol Resource Stress Test");
-    gfxDesc.ResourcePoolSize[GfxResourceType::Buffer] = 2 * (MaxNumObjects + 32);
-    gfxDesc.ResourcePoolSize[GfxResourceType::Texture] = MaxNumObjects + 32;
-    gfxDesc.ResourcePoolSize[GfxResourceType::Pipeline] = MaxNumObjects + 32;
-    gfxDesc.ResourcePoolSize[GfxResourceType::Shader] = 4;
-    Gfx::Setup(gfxDesc);
-    
+    Gfx::Setup(NewGfxDesc()
+        .Windowed(600, 400, "Oryol Resource Stress Test")
+        .ResourcePoolSize(GfxResourceType::Buffer, 2 * (MaxNumObjects + 32))
+        .ResourcePoolSize(GfxResourceType::Texture, MaxNumObjects + 32)
+        .ResourcePoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32)
+        .ResourcePoolSize(GfxResourceType::Shader, 4)
+        .Done());
+
     // setup the shader that is used by all objects
     this->shader = Gfx::CreateShader(Shader::Desc());
 
     // setup matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     
@@ -130,28 +131,22 @@ ResourceStressApp::createObjects() {
         .Box(0.1f, 0.1f, 0.1f, 1)
         .Build();
     obj.primGroup = shape.PrimitiveGroups[0];
-    obj.drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    obj.drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    obj.drawState.Pipeline = Gfx::Pipeline()
+    obj.drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    obj.drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    obj.drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(this->shader)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
-        .Create();
-    obj.drawState.FSTexture[Shader::tex] = TextureLoader::Load(Gfx::Texture()
+        .Done());
+    obj.drawState.FSTexture[Shader::tex] = TextureLoader::Load(NewTextureDesc()
         .Locator(Locator::NonShared("tex:lok_dxt1.dds"))
         .MinFilter(TextureFilterMode::LinearMipmapLinear)
         .MagFilter(TextureFilterMode::Linear)
         .WrapU(TextureWrapMode::ClampToEdge)
         .WrapV(TextureWrapMode::ClampToEdge)
-        .Desc);
+        .Done());
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
     this->objects.Add(obj);

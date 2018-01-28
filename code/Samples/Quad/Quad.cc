@@ -21,7 +21,7 @@ OryolMain(QuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 QuadApp::OnInit() {
-    Gfx::Setup(GfxDesc::Window(400, 400, "Oryol Quad Sample"));
+    Gfx::Setup(NewGfxDesc().Windowed(400, 400, "Oryol Quad Sample").Done());
     
     // create vertex buffer
     const float vertices[4 * 7] = {
@@ -31,32 +31,32 @@ QuadApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
         -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
     };
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Type(BufferType::VertexBuffer)
         .Size(sizeof(vertices))
         .Content(vertices)
-        .Create();
+        .Done());
 
     // create index buffer
     const uint16_t indices[2 * 3] = {
         0, 1, 2,    // first triangle
         0, 2, 3,    // second triangle
     };
-    this->drawState.IndexBuffer = Gfx::Buffer()
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(NewBufferDesc()
         .Type(BufferType::IndexBuffer)
         .Size(sizeof(indices))
         .Content(indices)
-        .Create();
+        .Done());
 
     // create shader and pipeline-state-object
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float3 },
             { "in_color", VertexFormat::Float4 }
         })
         .IndexType(IndexType::UInt16)
-        .Create();
+        .Done());
 
     return App::OnInit();
 }

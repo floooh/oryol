@@ -124,8 +124,8 @@ debugTextRenderer::drawTextBuffer() {
         Gfx::UpdateBuffer(this->drawState.VertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);
         DbgTextShader::vsParams vsParams;
-        const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / Gfx::PassAttrs().Width;   // glyph is 8 pixels wide
+        const float h = 8.0f / Gfx::PassAttrs().Height;  // glyph is 8 pixel tall
         vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(0, this->curNumVertices);
@@ -145,15 +145,15 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         { "color0", VertexFormat::UByte4N }
     };
     const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(vbufSize)
         .Type(BufferType::VertexBuffer)
         .Usage(Usage::Stream)
-        .Create();
+        .Done());
     o_assert_dbg(this->drawState.VertexBuffers[0].IsValid());
 
     // create pipeline object
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(DbgTextShader::Desc()))
         .Layout(0, this->vertexLayout)
         .DepthWriteEnabled(false)
@@ -165,7 +165,7 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         .ColorFormat(setup.ColorFormat)
         .DepthFormat(setup.DepthFormat)
         .SampleCount(setup.SampleCount)
-        .Create();
+        .Done());
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;
@@ -194,7 +194,7 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
     }
 
     // setup texture, pixel format is 8bpp uncompressed
-    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::Texture()
+    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::CreateTexture(NewTextureDesc()
         .Type(TextureType::Texture2D)
         .Width(imgWidth)
         .Height(imgHeight)
@@ -203,9 +203,9 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         .MagFilter(TextureFilterMode::Nearest)
         .WrapU(TextureWrapMode::ClampToEdge)
         .WrapV(TextureWrapMode::ClampToEdge)
-        .Content(data)
-        .MipDataSize(0, 0, imgDataSize)
-        .Create();
+        .MipContent(0, 0, data.Data())
+        .MipSize(0, 0, data.Size())
+        .Done());
 }
 
 //------------------------------------------------------------------------------

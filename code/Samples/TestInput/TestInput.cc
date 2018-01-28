@@ -67,11 +67,12 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    auto gfxDesc = GfxDesc::Window(800, 400, "Oryol Input Test Sample");
-    gfxDesc.HighDPI = true;
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc()
+        .Windowed(800, 400, "Oryol Input Test Sample")
+        .HighDPI(true)
+        .Done());
     Dbg::Setup();
-    if (Gfx::DisplayAttrs().WindowWidth > 800) {
+    if (Gfx::DisplayAttrs().Width > 800) {
         Dbg::TextScale(2.0f, 2.0f);
     }
 
@@ -97,24 +98,18 @@ TestInputApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
-        .Create();
+        .Done());
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
     this->distance = 6.0f;

@@ -49,9 +49,10 @@ OryolMain(DrawCallPerfApp);
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    GfxDesc gfxDesc = GfxDesc::Window(800, 500, "Oryol DrawCallPerf Sample");
-    gfxDesc.GlobalUniformBufferSize = 1024 * 1024 * 32;
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc()
+        .Windowed(800, 500, "Oryol DrawCallPerf Sample")
+        .GlobalUniformBufferSize(1024 * 1024 * 32)
+        .Done());
     Dbg::Setup();
     Input::Setup();
 
@@ -65,25 +66,19 @@ DrawCallPerfApp::OnInit() {
         .Sphere(0.05f, 3, 2)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .Create();
+        .Done());
 
     // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->model = glm::mat4();

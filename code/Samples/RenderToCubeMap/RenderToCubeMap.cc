@@ -66,14 +66,13 @@ OryolMain(RenderToCubeMapApp);
 //------------------------------------------------------------------------------
 AppState::Code
 RenderToCubeMapApp::OnInit() {
-    auto gfxDesc = GfxDesc::WindowMSAA4(800, 600, "Render To CubeMap");
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Render To CubeMap").Done());
     Input::Setup();
 
     // create a cubemap which will serve as render target
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
-    this->cubeMap = Gfx::Texture()
+    this->cubeMap = Gfx::CreateTexture(NewTextureDesc()
         .Type(TextureType::TextureCube)
         .RenderTarget(true)
         .Width(1024)
@@ -81,23 +80,23 @@ RenderToCubeMapApp::OnInit() {
         .Format(rtColorFormat)
         .MinFilter(TextureFilterMode::Linear)
         .MagFilter(TextureFilterMode::Linear)
-        .Create();
+        .Done());
 
     // ...and a matching 2D depth buffer render target
-    Id rtDepth = Gfx::Texture()
+    Id rtDepth = Gfx::CreateTexture(NewTextureDesc()
         .Type(TextureType::Texture2D)
         .RenderTarget(true)
         .Width(1024)
         .Height(1024)
         .Format(rtDepthFormat)
-        .Create();
+        .Done());
 
     // create 6 render passes, one per cubemap face
     for (int faceIndex = 0; faceIndex < NumFaces; faceIndex++) {
-        this->passes[faceIndex] = Gfx::Pass()
+        this->passes[faceIndex] = Gfx::CreatePass(NewPassDesc()
             .ColorAttachment(0, this->cubeMap, 0, faceIndex)
             .DepthStencilAttachment(rtDepth)
-            .Create();
+            .Done());
     }
 
     // mesh, shaders and pipelines to render color shapes
@@ -111,45 +110,39 @@ RenderToCubeMapApp::OnInit() {
         .Sphere(3.5f, 72, 48, true) // this is the big center sphere
         .Build();
     this->primGroups = std::move(shapes.PrimitiveGroups);
-    this->shapesVertexBuffer = Gfx::Buffer()
-        .From(shapes.VertexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    this->shapesIndexBuffer = Gfx::Buffer()
-        .From(shapes.IndexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    this->displayShapesPipeline = Gfx::Pipeline()
+    this->shapesVertexBuffer = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    this->shapesIndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
+    this->displayShapesPipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(ShapeShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
-    this->offscreenShapesPipeline = Gfx::Pipeline()
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
+    this->offscreenShapesPipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(ShapeShaderWithGamma::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
         .DepthFormat(rtDepthFormat)
-        .Create();
+        .Done());
 
     // create a sphere where the env-shapes reflect and refract in
     this->sphereDrawState.VertexBuffers[0] = this->shapesVertexBuffer;
     this->sphereDrawState.IndexBuffer = this->shapesIndexBuffer;
     this->sphereDrawState.FSTexture[SphereShader::tex] = this->cubeMap;
-    this->sphereDrawState.Pipeline = Gfx::Pipeline()
+    this->sphereDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(SphereShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(gfxDesc.SampleCount)
-        .Create();
+        .SampleCount(Gfx::Desc().SampleCount)
+        .Done());
 
     // setup projection matrix for main view
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
 
     // setup projection matrix for cubemap rendering

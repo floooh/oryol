@@ -96,13 +96,12 @@ static TextureDesc buildDesc(const TextureDesc& blueprint, const gliml::context&
             break;
     }
 
-    // setup mipmap offsets
+    // setup mipmap content
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx.num_mipmaps(0));
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         for (int mipIndex = 0; mipIndex < numMips; mipIndex++) {
-            const uint8_t* cur = (const uint8_t*) ctx.image_data(faceIndex, mipIndex);
-            bld.MipDataOffset(faceIndex, mipIndex, int(cur - data));
-            bld.MipDataSize(faceIndex, mipIndex, ctx.image_size(faceIndex, mipIndex));
+            bld.MipContent(faceIndex, mipIndex, ctx.image_data(faceIndex, mipIndex));
+            bld.MipSize(faceIndex, mipIndex, ctx.image_size(faceIndex, mipIndex));
         }
     }
     return bld.Desc;
@@ -121,7 +120,7 @@ TextureLoader::Load(const TextureDesc& desc) {
         ctx.enable_etc2(true);
         if (ctx.load(data, dataSize)) {
             TextureDesc initDesc = buildDesc(desc, ctx, data);
-            Gfx::InitTexture(resId, initDesc, data, dataSize);
+            Gfx::InitTexture(resId, initDesc);
         }
     },
     [resId](const URL& url, IOStatus::Code ioStatus) {

@@ -418,11 +418,11 @@ static sg_feature convertFeature(GfxFeature::Code f) {
 }
 
 //------------------------------------------------------------------------------
-static void convertBufferDesc(const BufferDesc& src, sg_buffer_desc& dst, const void* data) {
+static void convertBufferDesc(const BufferDesc& src, sg_buffer_desc& dst) {
     dst.size = src.Size;
     dst.type = convertBufferType(src.Type);
     dst.usage = convertUsage(src.Usage);
-    dst.content = (uint8_t*)data + src.Offset;
+    dst.content = src.Content;
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
     #if ORYOL_OPENGL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
@@ -438,7 +438,7 @@ static void convertBufferDesc(const BufferDesc& src, sg_buffer_desc& dst, const 
 }
 
 //------------------------------------------------------------------------------
-static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst, const void* data) {
+static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst) {
     dst.type = convertTextureType(src.Type);
     dst.render_target = src.RenderTarget;
     dst.width = src.Width;
@@ -457,9 +457,9 @@ static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst, const
     o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
     for (int f = 0; f < GfxConfig::MaxNumTextureFaces; f++) {
         for (int m = 0; m < GfxConfig::MaxNumTextureMipMaps; m++) {
-            if (src.ImageData.Sizes[f][m] > 0) {
-                dst.content.subimage[f][m].ptr = (uint8_t*)data + src.ImageData.Offsets[f][m];
-                dst.content.subimage[f][m].size = src.ImageData.Sizes[f][m];
+            if (src.Content.Pointer[f][m] && (src.Content.Size[f][m] > 0)) {
+                dst.content.subimage[f][m].ptr = src.Content.Pointer[f][m];
+                dst.content.subimage[f][m].size = src.Content.Size[f][m];
             }
         }
     }
@@ -645,11 +645,10 @@ sokolGfxBackend::PopResourceLabel() {
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreateBuffer(const BufferDesc& desc, const void* data, int dataSize) {
+sokolGfxBackend::CreateBuffer(const BufferDesc& desc) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((data == nullptr) || (desc.Size+desc.Offset) <= dataSize);
     sg_buffer_desc sgDesc = { };
-    convertBufferDesc(desc, sgDesc, data);
+    convertBufferDesc(desc, sgDesc);
     return makeId(GfxResourceType::Buffer, sg_make_buffer(&sgDesc).id);
 }
 
@@ -662,11 +661,10 @@ sokolGfxBackend::AllocBuffer() {
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int dataSize) {
+sokolGfxBackend::InitBuffer(const Id& id, const BufferDesc& desc) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg((data == nullptr) || (desc.Size+desc.Offset) <= dataSize);
     sg_buffer_desc sgDesc = { };
-    convertBufferDesc(desc, sgDesc, data);
+    convertBufferDesc(desc, sgDesc);
     sg_init_buffer(makeBufferId(id), &sgDesc);
 }
 
@@ -679,10 +677,10 @@ sokolGfxBackend::FailBuffer(const Id& id) {
 
 //------------------------------------------------------------------------------
 Id
-sokolGfxBackend::CreateTexture(const TextureDesc& desc, const void* data, int size) {
+sokolGfxBackend::CreateTexture(const TextureDesc& desc) {
     o_assert_dbg(this->isValid);
     sg_image_desc sgDesc = { };
-    convertTextureDesc(desc, sgDesc, data);
+    convertTextureDesc(desc, sgDesc);
     return makeId(GfxResourceType::Texture, sg_make_image(&sgDesc).id);
 }
 
@@ -695,10 +693,10 @@ sokolGfxBackend::AllocTexture() {
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::InitTexture(const Id& id, const TextureDesc& desc, const void* data, int size) {
+sokolGfxBackend::InitTexture(const Id& id, const TextureDesc& desc) {
     o_assert_dbg(this->isValid);
     sg_image_desc sgDesc = { };
-    convertTextureDesc(desc, sgDesc, data);
+    convertTextureDesc(desc, sgDesc);
     sg_init_image(makeImageId(id), &sgDesc);
 }
 
@@ -888,25 +886,24 @@ sokolGfxBackend::UpdateBuffer(const Id& id, const void* data, int numBytes) {
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& attrs) {
+sokolGfxBackend::UpdateTexture(const Id& id, const ImageContent& srcContent) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(data);
     o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps <= SG_MAX_MIPMAPS);
-    sg_image_content content = { };
+    sg_image_content sgContent = { };
     for (int faceIndex = 0; faceIndex < GfxConfig::MaxNumTextureFaces; faceIndex++) {
         for (int mipIndex = 0; mipIndex < GfxConfig::MaxNumTextureMipMaps; mipIndex++) {
-            if (attrs.Sizes[faceIndex][mipIndex] > 0) {
-                auto& dst = content.subimage[faceIndex][mipIndex];
-                dst.size = attrs.Sizes[faceIndex][mipIndex];
-                dst.ptr = ((uint8_t*)data)+attrs.Offsets[faceIndex][mipIndex];
+            if (srcContent.Pointer[faceIndex][mipIndex] && (srcContent.Size[faceIndex][mipIndex] > 0)) {
+                auto& dst = sgContent.subimage[faceIndex][mipIndex];
+                dst.size = srcContent.Size[faceIndex][mipIndex];
+                dst.ptr = srcContent.Pointer[faceIndex][mipIndex];
             }
             else {
                 break;
             }
         }
     }
-    sg_update_image(makeImageId(id), &content);
+    sg_update_image(makeImageId(id), &sgContent);
 }
 
 //------------------------------------------------------------------------------
@@ -923,7 +920,7 @@ sokolGfxBackend::BeginPass(const Id& passId, const PassAction* action) {
     else {
         // default framebuffer
         const DisplayAttrs& attrs = this->displayManager.GetDisplayAttrs();
-        sg_begin_default_pass(&sgAction, attrs.FramebufferWidth, attrs.FramebufferHeight);
+        sg_begin_default_pass(&sgAction, attrs.Width, attrs.Height);
     }
 }
 

@@ -38,37 +38,37 @@ OryolMain(VertexTextureApp);
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc::WindowMSAA4(800, 600, "Oryol Vertex Texture Sample"));
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Oryol Vertex Texture Sample").Done());
     Dbg::Setup(DbgSetup::MSAA4());
     
     // FIXME: need a way to check number of vertex texture units
     
     // create RGBA offscreen render pass which holds the plasma
-    Id plasmaTex = Gfx::Texture()
+    Id plasmaTex = Gfx::CreateTexture(NewTextureDesc()
         .RenderTarget(true)
         .Width(256)
         .Height(256)
         .Format(PixelFormat::RGBA8)
         .MinFilter(TextureFilterMode::Nearest)
         .MagFilter(TextureFilterMode::Nearest)
-        .Create();
-    this->plasmaRenderPass = Gfx::Pass()
+        .Done());
+    this->plasmaRenderPass = Gfx::CreatePass(NewPassDesc()
         .ColorAttachment(0, plasmaTex)
-        .Create();
+        .Done());
 
     // setup draw state for offscreen rendering to float render target
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->plasmaDrawState.VertexBuffers[0] = Gfx::Buffer()
+    this->plasmaDrawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(quadVertices))
         .Content(quadVertices)
-        .Create();
-    this->plasmaDrawState.Pipeline = Gfx::Pipeline()
+        .Done());
+    this->plasmaDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(PlasmaShader::Desc()))
         .Layout(0, { { "in_pos", VertexFormat::Float2 } })
         .PrimitiveType(PrimitiveType::TriangleStrip)
         .ColorFormat(PixelFormat::RGBA8)
         .DepthFormat(PixelFormat::None)
-        .Create();
+        .Done());
     
     // draw state for a 256x256 plane
     auto shape = ShapeBuilder::New()
@@ -77,25 +77,19 @@ VertexTextureApp::OnInit() {
         .Plane(3.0f, 3.0f, 255)
         .Build();
     this->planePrimGroup = shape.PrimitiveGroups[0];
-    this->planeDrawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->planeDrawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->planeDrawState.Pipeline = Gfx::Pipeline()
+    this->planeDrawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->planeDrawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->planeDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(PlaneShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(4)
-        .Create();
+        .Done());
     this->planeDrawState.VSTexture[PlaneShader::tex] = plasmaTex;
     
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
     this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->plasmaFSParams.time = 0.0f;

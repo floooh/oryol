@@ -30,8 +30,6 @@ public:
     void DiscardDisplay();
     /// return true if display is currently setup
     bool IsDisplayValid() const;
-    /// modify the display settings, may not be supported on all platforms
-    void ModifyDisplay(const GfxDesc& setup);
     /// process window system events (call near start of frame)
     void ProcessSystemEvents();
     /// present the current rendered frame

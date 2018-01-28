@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
-#include "Assets/Gfx/MeshBuilder.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -26,23 +25,24 @@ OryolMain(BlendTestApp);
 AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
-    auto gfxDesc = GfxDesc::Window(1024, 768, "Oryol Blend Sample");
-    gfxDesc.ResourcePoolSize[GfxResourceType::Pipeline] =  512;
-    Gfx::Setup(gfxDesc);
+    Gfx::Setup(NewGfxDesc()
+        .Windowed(1024, 768, "Oryol Blend Sample")
+        .ResourcePoolSize(GfxResourceType::Pipeline, 512)
+        .Done());
 
     // create pipeline object for a patterned background
     const float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->bgDrawState.VertexBuffers[0] = Gfx::Buffer()
+    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(bgVertices))
         .Content(bgVertices)
-        .Create();
-    this->bgDrawState.Pipeline = Gfx::Pipeline()
+        .Done());
+    this->bgDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .Shader(Gfx::CreateShader(BGShader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float2 }
         })
         .PrimitiveType(PrimitiveType::TriangleStrip)
-        .Create();
+        .Done());
 
     // setup a triangle mesh and shader
     float triVertices[] = {
@@ -51,13 +51,13 @@ BlendTestApp::OnInit() {
           0.05f, -0.05f, 0.5f,  0.0f, 0.75f, 0.0f, 0.75f,
           -0.05f, -0.05f, 0.5f, 0.0f, 0.0f, 0.75f, 0.75f
     };
-    this->triVBuf = Gfx::Buffer()
+    this->triVBuf = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(triVertices))
         .Content(triVertices)
-        .Create();
+        .Done());
 
     // setup one draw state for each blend factor combination
-    auto ps = Gfx::Pipeline()
+    auto ps = NewPipelineDesc()
         .Shader(Gfx::CreateShader(TriShader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float3 },
@@ -70,7 +70,7 @@ BlendTestApp::OnInit() {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
             ps.BlendSrcFactorRGB((BlendFactor::Code)x);
             ps.BlendDstFactorRGB((BlendFactor::Code)y);
-            this->pipelines[y][x] = ps.Create();
+            this->pipelines[y][x] = Gfx::CreatePipeline(ps.Done());
         }
     }
     return App::OnInit();

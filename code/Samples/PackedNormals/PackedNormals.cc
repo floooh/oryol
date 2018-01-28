@@ -31,7 +31,7 @@ OryolMain(PackedNormalsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnInit() {
-    Gfx::Setup(GfxDesc::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
+    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Oryol Packed Normals Sample").Done());
 
     auto shapes = ShapeBuilder::New()
         .Positions("position", VertexFormat::Float3)
@@ -42,26 +42,20 @@ PackedNormalsApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shapes.VertexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shapes.IndexBufferDesc)
-        .Content(shapes.Data)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
         .SampleCount(4)
-        .Create();
+        .Done());
     this->primGroups = std::move(shapes.PrimitiveGroups);
 
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->view = glm::mat4();
     

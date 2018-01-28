@@ -2,7 +2,6 @@
 //------------------------------------------------------------------------------
 #include "Core/Types.h"
 #include "Core/Assertion.h"
-#include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
@@ -754,30 +753,20 @@ private:
     different from the display setup parameters.
 */
 struct DisplayAttrs {
-    /// window width (including window chrome)
-    int WindowWidth = 0;
-    /// window height (including window chrome)
-    int WindowHeight = 0;
-    /// x-position of window
-    int WindowPosX = 0;
-    /// y-position of window
-    int WindowPosY = 0;
     /// width of framebuffer associated with window
-    int FramebufferWidth = 0;
+    int Width = 0;
     /// height of framebuffer associated with window
-    int FramebufferHeight = 0;
+    int Height = 0;
     /// framebuffer pixel format
-    PixelFormat::Code ColorPixelFormat = PixelFormat::RGBA8;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
     /// depth buffer pixel format (PixelFormat::None if no depth buffer)
-    PixelFormat::Code DepthPixelFormat = PixelFormat::DEPTHSTENCIL;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
     /// number of multisample-anti-aliasing samples
     int SampleCount = 1;
     /// indicates windowed or fullscreen mode
     bool Windowed = true;
     /// vsync swap interval (0 means: no vsync)
     int SwapInterval = 1;
-    /// window title as UTF-8
-    String WindowTitle;
 };
 
 //------------------------------------------------------------------------------
@@ -811,17 +800,17 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ImageDataAttrs
-    @brief describe offsets and sizes of image surfaces
+    @class Oryol::ImageContent
+    @brief describe content of image surfaces
 */
-class ImageDataAttrs {
+class ImageContent {
 public:
     /// constructor
-    ImageDataAttrs();
+    ImageContent();
     /// pixel data mipmap image offsets
-    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Offsets;
+    StaticArray<StaticArray<const void*, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Pointer;
     /// pixel data mipmap image sizes
-    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Sizes;
+    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Size;
 };
 
 //------------------------------------------------------------------------------
@@ -837,16 +826,7 @@ public:
  
     @see Gfx, DisplayAttrs
 */
-class GfxDesc {
-public:
-    /// shortcut for windowed mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxDesc Window(int width, int height, String windowTitle);
-    /// shortcut for fullscreen mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxDesc Fullscreen(int width, int height, String windowTitle);
-    /// shortcut for windowed mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxDesc WindowMSAA4(int width, int height, String windowTitle);
-    /// shortcut for fullscreen mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxDesc FullscreenMSAA4(int width, int height, String windowTitle);
+struct GfxDesc {
     /// canvas width
     int Width = 640;
     /// canvas height
@@ -862,13 +842,13 @@ public:
     /// swap interval (0 => no vsync, default is 1)
     int SwapInterval = 1;
     /// window title
-    String Title = "Oryol";
+    StringAtom Title = "Oryol";
     /// enable to render full-res on HighDPI displays (not supported on all platforms)
     bool HighDPI = false;
     /// if true, ignore own size and instead track size of an HTML element (emscripten only)
     bool HtmlTrackElementSize = false;
     /// name of the HTML element to track (default: #canvas)
-    String HtmlElement = "#canvas";
+    StringAtom HtmlElement = "#canvas";
     /// resource pool size by resource type
     StaticArray<int,GfxResourceType::Num> ResourcePoolSize;
     /// resource creation throttling (max resources created async per frame)
@@ -883,11 +863,97 @@ public:
     int MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
     /// max number of ApplyDrawState per frame (only relevant on some platforms)
     int MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
-    /// get DisplayAttrs object initialized to setup values
-    DisplayAttrs GetDisplayAttrs() const;
     /// default constructor
     GfxDesc();
 };
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxDescBuilder
+    @ingroup Gfx
+    @brief builder class for GfxDesc
+*/
+class GfxDescBuilder {
+public:
+    GfxDesc Desc;
+    GfxDescBuilder& From(const GfxDesc& desc) {
+        Desc = desc; return *this;
+    }
+    GfxDescBuilder& Windowed(int width, int height, const StringAtom& title) {
+        Desc.Width = width; Desc.Height = height; Desc.Title = title;
+        return *this;
+    }
+    GfxDescBuilder& Fullscreen(int width, int height, const StringAtom& title) {
+        Desc.Width = width; Desc.Height = height; Desc.Windowed = false; Desc.Title = title;
+        return *this;
+    }
+    GfxDescBuilder& WindowedMSAA4(int width, int height, const StringAtom& title) {
+        Desc.Width = width; Desc.Height = height; Desc.Title = title; Desc.SampleCount = 4;
+        return *this;
+    }
+    GfxDescBuilder& FullscreenMSAA4(int width, int height, const StringAtom& title) {
+        Desc.Width = width; Desc.Height = height; Desc.Windowed = false;
+        Desc.SampleCount = 4; Desc.Title = title;
+        return *this;
+    }
+    GfxDescBuilder& Width(int width) {
+        Desc.Width = width; return *this;
+    }
+    GfxDescBuilder& Height(int height) {
+        Desc.Height = height; return *this;
+    }
+    GfxDescBuilder& ColorFormat(PixelFormat::Code fmt) {
+        Desc.ColorFormat = fmt; return *this;
+    }
+    GfxDescBuilder& DepthFormat(PixelFormat::Code fmt) {
+        Desc.DepthFormat = fmt; return *this;
+    }
+    GfxDescBuilder& SampleCount(int sampleCount) {
+        Desc.SampleCount = sampleCount; return *this;
+    }
+    GfxDescBuilder& Windowed() {
+        Desc.Windowed = true; return *this;
+    }
+    GfxDescBuilder& Fullscreen() {
+        Desc.Windowed = false; return *this;
+    }
+    GfxDescBuilder& SwapInterval(int interval) {
+        Desc.SwapInterval = interval; return *this;
+    }
+    GfxDescBuilder& Title(const StringAtom& title) {
+        Desc.Title = title; return *this;
+    }
+    GfxDescBuilder& HighDPI(bool highDpi) {
+        Desc.HighDPI = highDpi; return *this;
+    }
+    GfxDescBuilder& HtmlTrackElementSize(bool track) {
+        Desc.HtmlTrackElementSize = track; return *this;
+    }
+    GfxDescBuilder& HtmlElement(const StringAtom& elm) {
+        Desc.HtmlElement = elm; return *this;
+    }
+    GfxDescBuilder& ResourcePoolSize(GfxResourceType::Code type, int poolSize) {
+        Desc.ResourcePoolSize[type] = poolSize; return *this;
+    }
+    GfxDescBuilder& ResourceThrottle(GfxResourceType::Code type, int numPerFrame) {
+        Desc.ResourceThrottling[type] = numPerFrame; return *this;
+    }
+    GfxDescBuilder& ResourceLabelStackCapacity(int capacity) {
+        Desc.ResourceLabelStackCapacity = capacity; return *this;
+    }
+    GfxDescBuilder& ResourceRegistryCapacity(int capacity) {
+        Desc.ResourceRegistryCapacity = capacity; return *this;
+    }
+    GfxDescBuilder& GlobalUniformBufferSize(int size) {
+        Desc.GlobalUniformBufferSize = size; return *this;
+    }
+    const GfxDesc& Done() {
+        return Desc;
+    }
+};
+inline GfxDescBuilder NewGfxDesc() {
+    return GfxDescBuilder();
+}
 
 //------------------------------------------------------------------------------
 /**
@@ -904,8 +970,8 @@ struct BufferDesc {
     Oryol::Usage::Code Usage = Usage::Immutable;
     /// the buffer size in bytes
     int Size = 0;
-    /// optional byte-offset to init-data
-    int Offset = 0;
+    /// optional pointer to content
+    const void* Content = nullptr;
     /// optional native 3D-API buffers
     StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
 
@@ -924,8 +990,6 @@ struct BufferDesc {
 class BufferBuilder {
 public:
     BufferDesc Desc;
-    const void* ContentPtr = nullptr;
-    int ContentSize = 0;
     BufferBuilder& From(const BufferDesc& desc) {
         Desc = desc; return *this;
     }
@@ -941,24 +1005,19 @@ public:
     BufferBuilder& Size(int s) {
         Desc.Size = s; return *this;
     }
-    BufferBuilder& Offset(int o) {
-        Desc.Offset = o; return *this;
+    BufferBuilder& Content(const void* ptr) {
+        Desc.Content = ptr; return *this;
     }
     BufferBuilder& NativeBuffer(int index, intptr_t buf) {
         Desc.NativeBuffers[index] = buf; return *this;
     }
-    BufferBuilder& Content(const void* ptr) {
-        ContentPtr = ptr;
-        ContentSize = 0;
-        return *this;
+    const BufferDesc& Done() {
+        return Desc;
     }
-    BufferBuilder& Content(const MemoryBuffer& content) {
-        ContentPtr = content.Data();
-        ContentSize = content.Size();
-        return *this;
-    }
-    Id Create();
 };
+inline BufferBuilder NewBufferDesc() {
+    return BufferBuilder();
+}
 
 //------------------------------------------------------------------------------
 /**
@@ -1171,8 +1230,13 @@ public:
     PipelineBuilder& DepthBiasClamp(float f) {
         Desc.DepthBiasClamp = f; return *this;
     }
-    Id Create();
+    const PipelineDesc& Done() {
+        return Desc;
+    }
 };
+inline PipelineBuilder NewPipelineDesc() {
+    return PipelineBuilder();
+}
 
 //------------------------------------------------------------------------------
 /**
@@ -1292,7 +1356,7 @@ public:
     /// optional native textures (only on platforms which support GfxFeature::NativeTextures)
     StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeTextures;
     /// optional image surface offsets and sizes
-    ImageDataAttrs ImageData;
+    ImageContent Content;
 
     /// default constructor
     TextureDesc() {
@@ -1378,16 +1442,21 @@ public:
         ContentSize = content.Size();
         return *this;
     }
-    TextureBuilder& MipDataSize(int faceIndex, int mipIndex, int size) {
-        Desc.ImageData.Sizes[faceIndex][mipIndex] = size;
+    TextureBuilder& MipSize(int faceIndex, int mipIndex, int size) {
+        Desc.Content.Size[faceIndex][mipIndex] = size;
         return *this;
     }
-    TextureBuilder& MipDataOffset(int faceIndex, int mipIndex, int offset) {
-        Desc.ImageData.Offsets[faceIndex][mipIndex] = offset;
+    TextureBuilder& MipContent(int faceIndex, int mipIndex, const void* ptr) {
+        Desc.Content.Pointer[faceIndex][mipIndex] = ptr;
         return *this;
     }
-    Id Create();
+    const TextureDesc& Done() {
+        return Desc;
+    }
 };
+inline TextureBuilder NewTextureDesc() {
+    return TextureBuilder();
+}
 
 //------------------------------------------------------------------------------
 /**
@@ -1443,8 +1512,13 @@ public:
         att.Face = faceLayerSlice;
         return *this;
     }
-    Id Create();
+    const PassDesc& Done() {
+        return Desc;
+    }
 };
+inline PassBuilder NewPassDesc() {
+    return PassBuilder();
+}
 
 //------------------------------------------------------------------------------
 /**

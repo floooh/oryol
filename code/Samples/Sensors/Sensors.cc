@@ -34,7 +34,7 @@ OryolMain(SensorsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SensorsApp::OnInit() {
-    Gfx::Setup(GfxDesc::Window(800, 400, "Oryol Device Sensor Sample"));
+    Gfx::Setup(NewGfxDesc().Windowed(800, 400, "Oryol Device Sensor Sample").Done());
     Dbg::Setup();
     Input::Setup();
     
@@ -45,25 +45,19 @@ SensorsApp::OnInit() {
         .Box(2.0, 2.0, 2.0, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::Buffer()
-        .From(shape.VertexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.IndexBuffer = Gfx::Buffer()
-        .From(shape.IndexBufferDesc)
-        .Content(shape.Data)
-        .Create();
-    this->drawState.Pipeline = Gfx::Pipeline()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true)
-        .Create();
+        .Done());
 
     // setup transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
+    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
+    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.1f, 100.0f);
     return App::OnInit();
 }

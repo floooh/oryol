@@ -16,13 +16,6 @@
 
 namespace Oryol {
 
-namespace _priv {
-class gfxResourceContainer;
-class pipeline;
-class texture;
-class mesh;
-}
-    
 class Gfx {
 public:
     /// setup Gfx module
@@ -41,24 +34,13 @@ public:
     static void Unsubscribe(GfxEvent::HandlerId id);
     
     /// get the original render setup object
-    static const class GfxDesc& Desc();
+    static const GfxDesc& Desc();
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
     /// get the current render pass attributes (default or offscreen)
     static const struct DisplayAttrs& PassAttrs();
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
-
-    /// start creating a buffer through a BufferBuilder object
-    static BufferBuilder Buffer();
-    /// start creating a texture through a texture builder object
-    static TextureBuilder Texture();
-    /// start creating a shader through a shader builder object
-    static ShaderBuilder Shader();
-    /// start creating a pipeline through a pipeline builder object
-    static PipelineBuilder Pipeline();
-    /// start creating a render pass through a pass builder object
-    static PassBuilder Pass();
 
     /// generate new resource label and push on label stack
     static ResourceLabel PushResourceLabel();
@@ -69,16 +51,8 @@ public:
 
     /// create a buffer object without associated data
     static Id CreateBuffer(const BufferDesc& desc);
-    /// create a buffer object with associated data
-    static Id CreateBuffer(const BufferDesc& desc, const MemoryBuffer& data);
-    /// create a buffer object with raw pointer to associated data
-    static Id CreateBuffer(const BufferDesc& desc, const void* data, int size);
     /// create a texture object without associated data
     static Id CreateTexture(const TextureDesc& desc);
-    /// create a texture object with associated data
-    static Id CreateTexture(const TextureDesc& desc, const MemoryBuffer& data);
-    /// create a texture object with raw pointer to associated data
-    static Id CreateTexture(const TextureDesc& desc, const void* data, int size);
     /// create a shader object
     static Id CreateShader(const ShaderDesc& desc);
     /// create a pipeline object
@@ -94,17 +68,13 @@ public:
     /// allocate a buffer resource id (async resource creation)
     static Id AllocBuffer(const Locator& loc);
     /// initialize a buffer (async resource creation)
-    static void InitBuffer(const Id& id, const BufferDesc& desc, const MemoryBuffer& data);
-    /// initialize a buffer (async resource creation)
-    static void InitBuffer(const Id& id, const BufferDesc& desc, const void* data, int size);
+    static void InitBuffer(const Id& id, const BufferDesc& desc);
     /// set allocated buffer to failed resource state (async resource creation)
     static void FailBuffer(const Id& id);
     /// allocate a texture resource id (async resource creation)
     static Id AllocTexture(const Locator& loc);
     /// initialize a texture (async resource creation)
-    static void InitTexture(const Id& id, const TextureDesc& desc, const MemoryBuffer& data);
-    /// initialize a texture (async resource creation)
-    static void InitTexture(const Id& id, const TextureDesc& desc, const void* data, int size);
+    static void InitTexture(const Id& id, const TextureDesc& desc);
     /// set allocated texture to failed resource state (async resource creation)
     static void FailTexture(const Id& id);
 
@@ -134,7 +104,7 @@ public:
     /// update dynamic vertex or index data (complete replace)
     static void UpdateBuffer(const Id& id, const void* data, int numBytes);
     /// update dynamic texture image data (complete replace)
-    static void UpdateTexture(const Id& id, const void* data, const ImageDataAttrs& offsetsAndSizes);
+    static void UpdateTexture(const Id& id, const ImageContent& content);
     
     /// submit a draw call
     static void Draw(int baseElement, int numElements, int numInstances=1);
@@ -155,36 +125,6 @@ private:
 template<class T> inline void
 Gfx::ApplyUniformBlock(const T& ub) {
     applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, (const uint8_t*)&ub, sizeof(ub));
-}
-
-//------------------------------------------------------------------------------
-inline BufferBuilder
-Gfx::Buffer() {
-    return BufferBuilder();
-}
-
-//------------------------------------------------------------------------------
-inline TextureBuilder
-Gfx::Texture() {
-    return TextureBuilder();
-}
-
-//------------------------------------------------------------------------------
-inline ShaderBuilder
-Gfx::Shader() {
-    return ShaderBuilder();
-}
-
-//------------------------------------------------------------------------------
-inline PipelineBuilder
-Gfx::Pipeline() {
-    return PipelineBuilder();
-}
-
-//------------------------------------------------------------------------------
-inline PassBuilder
-Gfx::Pass() {
-    return PassBuilder();
 }
 
 } // namespace Oryol
