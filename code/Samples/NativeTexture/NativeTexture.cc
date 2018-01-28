@@ -13,7 +13,7 @@
 
 // need to access GL API directly
 #if ORYOL_OPENGL
-#include "Gfx/private/gl.h"
+#include "Gfx/private/gl/gl.h"
 #endif
 
 using namespace Oryol;

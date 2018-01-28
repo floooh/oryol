@@ -6,7 +6,7 @@
     @brief display manager for IOS
 */
 #include "Gfx/private/displayMgrBase.h"
-#include "Gfx/private/gl.h"
+#include "Gfx/private/gl/gl.h"
 
 namespace Oryol {
 namespace _priv {

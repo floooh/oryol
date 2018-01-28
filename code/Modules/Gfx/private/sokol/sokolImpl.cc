@@ -11,7 +11,7 @@
 #define SOKOL_LOG(m) Oryol::Log::Info("%s\n",m)
 #define SOKOL_UNREACHABLE o_assert_dbg(false)
 #if ORYOL_OPENGL
-#include "Gfx/private/gl.h"
+#include "Gfx/private/gl/gl.h"
 #endif
 #if ORYOL_OPENGLES2
 #define SOKOL_GLES2

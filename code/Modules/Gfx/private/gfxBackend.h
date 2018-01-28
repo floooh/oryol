@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief wrapper class for gfx backend implementations
 */
-#include "Gfx/private/sokolGfxBackend.h"
+#include "Gfx/private/sokol/sokolGfxBackend.h"
 
 namespace Oryol {
 namespace _priv {
