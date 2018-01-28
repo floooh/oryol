@@ -191,14 +191,14 @@ RenderToCubeMapApp::OnRunning() {
         { glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
     };
     for (int i = 0; i < NumFaces; i++) {
-        Gfx::BeginPass(this->passes[i], PassAction::Clear(ClearColor));
+        Gfx::BeginPass(this->passes[i], PassAction::New().Clear(ClearColor));
         const glm::mat4 view = glm::lookAt(glm::vec3(0.0f), centerAndUp[i][0], centerAndUp[i][1]);
         this->drawEnvShapes(this->offscreenShapesPipeline, glm::vec3(0.0f), view, this->offscreenProj);
         Gfx::EndPass();
     }
 
     // render the main view
-    Gfx::BeginPass(PassAction::Clear(ClearColor));
+    Gfx::BeginPass(PassAction::New().Clear(ClearColor));
 
     // draw the environment shapes
     const glm::vec3 eyePos = glm::euclidean(this->polar) * distance;

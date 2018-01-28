@@ -175,7 +175,7 @@ GPUParticlesApp::OnInit() {
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     for (int i = 0; i < 2; i++) {
-        Gfx::BeginPass(this->particleBuffer[0].pass, PassAction::DontCare());
+        Gfx::BeginPass(this->particleBuffer[0].pass, PassAction::New().DontCare());
         Gfx::ApplyDrawState(this->initParticles);
         Gfx::ApplyUniformBlock(this->initFSParams);
         Gfx::Draw(0, 4);
@@ -211,7 +211,7 @@ GPUParticlesApp::OnRunning() {
     const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
     this->updParticles.FSTexture[UpdateShader::prevState] = this->particleBuffer[readIndex].texture;
     this->updFSParams.numParticles = (float) this->curNumParticles;
-    Gfx::BeginPass(this->particleBuffer[drawIndex].pass, PassAction::DontCare());
+    Gfx::BeginPass(this->particleBuffer[drawIndex].pass, PassAction::New().DontCare());
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updParticles);
     Gfx::ApplyUniformBlock(this->updFSParams);

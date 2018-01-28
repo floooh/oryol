@@ -122,7 +122,7 @@ ArrayTextureApp::OnRunning() {
     auto vsParams = this->computeShaderParams();
 
     // render texture cube
-    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.2f, 0.2f, 0.3f, 1.0f)));
+    Gfx::BeginPass(PassAction::New().Clear(0.2f, 0.2f, 0.3f, 1.0f));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw(this->primGroup);
@@ -172,7 +172,7 @@ ArrayTextureApp::notSupported() {
     #endif
     uint8_t x = uint8_t((Gfx::DisplayAttrs().FramebufferWidth/16 - std::strlen(msg))/2);
     uint8_t y = uint8_t(Gfx::DisplayAttrs().FramebufferHeight/16/2);
-    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.0f, 0.0f, 1.0f));
     Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(x, y);
     Dbg::Print(msg);

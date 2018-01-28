@@ -111,7 +111,7 @@ VertexTextureApp::OnRunning() {
     this->planeVSParams.mvp = this->computeMVP(glm::vec2(0.0f, 0.0f));
 
     // render plasma to offscreen render target
-    Gfx::BeginPass(this->plasmaRenderPass, PassAction::DontCare());
+    Gfx::BeginPass(this->plasmaRenderPass, PassAction::New().DontCare());
     Gfx::ApplyDrawState(this->plasmaDrawState);
     Gfx::ApplyUniformBlock(this->plasmaFSParams);
     Gfx::Draw(0, 4);

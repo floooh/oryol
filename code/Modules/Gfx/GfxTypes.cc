@@ -389,45 +389,51 @@ PassAction::PassAction() {
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::Clear(const glm::vec4& c, float d, uint8_t s) {
-    PassAction p;
-    p.Color.Fill(c);
-    p.Depth = d;
-    p.Stencil = s;
-    return p;
+PassAction PassAction::New() {
+    return PassAction();
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::Clear(std::initializer_list<glm::vec4> colors, float d, uint8_t s) {
-    PassAction p;
-    int i = 0;
-    for (const auto& c : colors) {
-        p.Color[i++] = c;
-    }
-    p.Depth = d;
-    p.Stencil = s;
-    return p;
+PassAction& PassAction::Load() {
+    this->Flags = LoadC0|LoadC1|LoadC2|LoadC3|LoadDS;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::Load() {
-    PassAction p;
-    p.Flags = LoadC0|LoadC1|LoadC2|LoadC3|LoadDS;
-    return p;
+PassAction& PassAction::DontCare() {
+    this->Flags = 0;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::DontCare() {
-    PassAction p;
-    p.Flags = 0;
-    return p;
+PassAction& PassAction::ClearColor(int index, float r, float g, float b, float a) {
+    o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
+    this->Color[index] = glm::vec4(r, g, b, a);
+    this->Flags |= (ClearC0<<index);
+    return *this;
 }
 
 //------------------------------------------------------------------------------
 PassAction& PassAction::ClearColor(int index, const glm::vec4& color) {
+    o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
     this->Color[index] = color;
-    this->Flags &= ~((ClearC0|LoadC0)<<index);
-    this->Flags |= ClearC0<<index; 
+    this->Flags |= (ClearC0<<index);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::ClearColor(float r, float g, float b, float a) {
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        this->ClearColor(i, r, g, b, a);
+    }
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::ClearColor(const glm::vec4& color) {
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+        this->ClearColor(i, color);
+    }
     return *this;
 }
 
@@ -435,36 +441,69 @@ PassAction& PassAction::ClearColor(int index, const glm::vec4& color) {
 PassAction& PassAction::ClearDepthStencil(float d, uint8_t s) {
     this->Depth = d;
     this->Stencil = s;
-    this->Flags &= ~(ClearDS|LoadDS);
     this->Flags |= ClearDS;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-PassAction& PassAction::DontCareColor(int index) {
-    o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
-    this->Flags &= ~((ClearC0|LoadC0)<<index);
+PassAction& PassAction::Clear(float r, float g, float b, float a, float d, uint8_t s) {
+    this->ClearColor(r, g, b, a);
+    this->ClearDepthStencil(d, s);
     return *this;
 }
 
 //------------------------------------------------------------------------------
-PassAction& PassAction::DontCareDepthStencil() {
-    this->Flags &= ~(ClearDS|LoadDS);
+PassAction& PassAction::Clear(const glm::vec4& c, float d, uint8_t s) {
+    this->ClearColor(c);
+    this->ClearDepthStencil(d, s);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::Clear(std::initializer_list<glm::vec4> colors, float d, uint8_t s) {
+    int i = 0;
+    for (const auto& c : colors) {
+        this->ClearColor(i++, c);
+    }
+    this->ClearDepthStencil(d, s);
     return *this;
 }
 
 //------------------------------------------------------------------------------
 PassAction& PassAction::LoadColor(int index) {
     o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
-    this->Flags &= ~((ClearC0|LoadC0)<<index);
     this->Flags |= LoadC0<<index;
     return *this;
 }
 
 //------------------------------------------------------------------------------
+PassAction& PassAction::LoadColor() {
+    this->Flags |= LoadC0|LoadC1|LoadC2|LoadC3;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
 PassAction& PassAction::LoadDepthStencil() {
-    this->Flags &= ~(ClearDS|LoadDS);
     this->Flags |= LoadDS;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::DontCareColor(int index) {
+    o_assert_range_dbg(index, GfxConfig::MaxNumColorAttachments);
+    this->Flags &= ~(ClearC0|LoadC0<<index);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::DontCareColor() {
+    this->Flags &= ~(ClearC0|ClearC1|ClearC2|ClearC3|LoadC0|LoadC1|LoadC2|LoadC3);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassAction& PassAction::DontCareDepthStencil() {
+    this->Flags &= ~(ClearDS|LoadDS);
     return *this;
 }
 

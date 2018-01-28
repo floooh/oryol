@@ -572,31 +572,6 @@ struct PrimitiveGroup {
 */
 class PassAction {
 public:
-    /// default constructor, set all actions to 'clear with default values'
-    PassAction();
-    /// clear all surfaces with given values
-    static PassAction Clear(const glm::vec4& color=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float depth=1.0f, uint8_t stencil=0);
-    /// clear all surfaces with individual colors
-    static PassAction Clear(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
-    /// load previous content
-    static PassAction Load();
-    /// discard previous content
-    static PassAction DontCare();
-
-    /// FIXME: these methods are confusing, since some are static, some are not!
-    /// clear a single surface to a color
-    PassAction& ClearColor(int index, const glm::vec4& color);
-    /// clear depth-stencil surface  
-    PassAction& ClearDepthStencil(float depth=1.0f, uint8_t stencil=0); 
-    /// set a color surface to 'dont care' (initial content is undefined)
-    PassAction& DontCareColor(int index);
-    /// set depth-stencil initial state to 'dont care'
-    PassAction& DontCareDepthStencil();
-    /// initialize color surface with its previus content
-    PassAction& LoadColor(int index);
-    /// initialize depth-stencil surface with its previous content
-    PassAction& LoadDepthStencil();
-
     /// override clear colors
     StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;
     /// override clear depth value
@@ -620,6 +595,46 @@ public:
         LoadDS  = (1<<9),
     };
     uint16_t Flags = ClearC0|ClearC1|ClearC2|ClearC3|ClearDS;
+
+    /// return a default-initialized PassAction object
+    static PassAction New();
+
+    /// clear all attachments
+    PassAction& Clear(float r, float g, float b, float a, float depth=1.0f, uint8_t stencil=0);
+    /// clear all attachments with color as glm::vec4
+    PassAction& Clear(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0);
+    /// clear all attachments with separate colors
+    PassAction& Clear(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
+    /// load all attachments with previous content
+    PassAction& Load();
+    /// leave content of all attachments undefined
+    PassAction& DontCare();
+    /// clear all color attachments with the same color
+    PassAction& ClearColor(float r, float g, float b, float a);
+    /// clear all color attachments with the same color as glm::vec4
+    PassAction& ClearColor(const glm::vec4& color);
+    /// clear one of the color attachments
+    PassAction& ClearColor(int index, float r, float g, float b, float a);
+    /// clear of of the color attachments with color as glm::vec4
+    PassAction& ClearColor(int index, const glm::vec4& c);
+    /// load all color attachments with previous content
+    PassAction& LoadColor();
+    /// load one of the color attachments with previous content
+    PassAction& LoadColor(int index);
+    /// leave all color attachments at undefined state
+    PassAction& DontCareColor();
+    /// leave one of the color attachments at undefined state
+    PassAction& DontCareColor(int index);
+
+    /// clear the depth-stencil attachment
+    PassAction& ClearDepthStencil(float depth=1.0f, uint8_t stencil=0);
+    /// load the depth-stencil attachment with previous content
+    PassAction& LoadDepthStencil();
+    /// leave content of depth-stencil attachment undefined
+    PassAction& DontCareDepthStencil(); 
+
+    /// default constructor
+    PassAction();
 };
 
 //------------------------------------------------------------------------------

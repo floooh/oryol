@@ -135,7 +135,7 @@ SimpleRenderTargetApp::OnRunning() {
     this->angleX += 0.02f;
     
     // render donut to offscreen render target
-    Gfx::BeginPass(this->renderPass, PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f)));
+    Gfx::BeginPass(this->renderPass, PassAction::New().Clear(0.25f, 0.25f, 0.25f, 1.0f));
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.mvp = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
@@ -143,7 +143,7 @@ SimpleRenderTargetApp::OnRunning() {
     Gfx::EndPass();
     
     // render sphere to display, with offscreen render target as texture
-    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f)));
+    Gfx::BeginPass(PassAction::New().Clear(0.25f, 0.45f, 0.65f, 1.0f));
     Gfx::ApplyDrawState(this->displayDrawState);
     this->displayVSParams.mvp = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);

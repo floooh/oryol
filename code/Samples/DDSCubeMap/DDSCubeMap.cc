@@ -100,7 +100,7 @@ DDSCubeMapApp::OnRunning() {
     this->angleY += 0.02f;
     this->angleX += 0.01f;
     
-    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)));
+    Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.5f, 0.5f, 1.0f));
     this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(this->vsParams);
