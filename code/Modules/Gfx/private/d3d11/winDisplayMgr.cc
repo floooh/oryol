@@ -80,12 +80,10 @@ winDisplayMgr::SetupDisplay(const GfxDesc& desc, const char* windowTitlePostfix)
     // get actual size and update display attrs
     int actWidth, actHeight;
     this->winGetWindowSize(&actWidth, &actHeight);
-    this->displayAttrs.WindowWidth = int(actWidth / this->windowScale);
-    this->displayAttrs.WindowHeight = int(actHeight / this->windowScale);
-    this->displayAttrs.FramebufferWidth = int(this->displayAttrs.WindowWidth * this->contentScale);
-    this->displayAttrs.FramebufferHeight = int(this->displayAttrs.WindowHeight *  this->contentScale);
-    this->curFramebufferWidth = this->displayAttrs.FramebufferWidth;
-    this->curFramebufferHeight = this->displayAttrs.FramebufferHeight;
+    this->displayAttrs.Width = int(this->displayAttrs.Width * this->contentScale);
+    this->displayAttrs.Height = int(this->displayAttrs.Height *  this->contentScale);
+    this->curFramebufferWidth = this->displayAttrs.Width;
+    this->curFramebufferHeight = this->displayAttrs.Height;
 }
 
 //------------------------------------------------------------------------------
@@ -314,15 +312,21 @@ winDisplayMgr::checkWindowResize() {
     const int crHeight = (curClientRect.bottom - curClientRect.top);
     const int windowWidth = crWidth / this->windowScale;
     const int windowHeight = crHeight / this->windowScale;
+    int fbWidth = (crWidth * this->contentScale) / this->windowScale;
+    int fbHeight = (crHeight * this->contentScale) / this->windowScale;
+    // width and height will be 0 if the windows is minimized, set the size to one in this case
+    if (fbWidth == 0) {
+        fbWidth = 1;
+    }
+    if (fbHeight == 0) {
+        fbHeight = 1;
+    }
 
     // NOTE: this method is not called when minimized, or restored from minimized
-    if ((windowWidth != this->displayAttrs.WindowWidth) || (windowHeight != this->displayAttrs.WindowHeight)) {
+    if ((fbWidth != this->displayAttrs.Width) || (fbHeight != this->displayAttrs.Height)) {
 
-        this->displayAttrs.WindowWidth = windowWidth;
-        this->displayAttrs.WindowHeight = windowHeight;
-        this->displayAttrs.FramebufferWidth = int(windowWidth * this->contentScale);
-        this->displayAttrs.FramebufferHeight = int(windowHeight * this->contentScale);
-
+        this->displayAttrs.Width = fbWidth;
+        this->displayAttrs.Height = fbHeight;
         this->inputFramebufferSize(crWidth, crHeight);
         this->inputWindowSize(crWidth, crHeight);
         this->onWindowDidResize();

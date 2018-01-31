@@ -37,7 +37,7 @@ d3d11DisplayMgr::SetupDisplay(const GfxDesc& desc) {
     winDisplayMgr::SetupDisplay(desc, " (D3D11)");
     this->createDeviceAndSwapChain();
     const DisplayAttrs& attrs = this->displayAttrs;
-    this->createDefaultRenderTarget(attrs.FramebufferWidth, attrs.FramebufferHeight);
+    this->createDefaultRenderTarget(attrs.Width, attrs.Height);
 }
 
 //------------------------------------------------------------------------------
@@ -70,8 +70,8 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     #endif
 
     Memory::Clear(&dxgiSwapChainDesc, sizeof(dxgiSwapChainDesc));
-    dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.FramebufferWidth;
-    dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.FramebufferHeight;
+    dxgiSwapChainDesc.BufferDesc.Width = this->displayAttrs.Width;
+    dxgiSwapChainDesc.BufferDesc.Height = this->displayAttrs.Height;
     dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
@@ -200,8 +200,8 @@ d3d11DisplayMgr::onWindowDidResize() {
     // resize the DXGI framebuffer (this requires that all state is unbound)
     if (this->dxgiSwapChain) {
 
-        const int newWidth = this->displayAttrs.FramebufferWidth;
-        const int newHeight = this->displayAttrs.FramebufferHeight;
+        const int newWidth = this->displayAttrs.Width;
+        const int newHeight = this->displayAttrs.Height;
 
         this->destroyDefaultRenderTarget();
         DXGI_FORMAT d3d11Fmt = DXGI_FORMAT_R8G8B8A8_UNORM;

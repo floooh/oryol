@@ -5,7 +5,7 @@
     @ingroup _priv
     @brief display manager implementation for D3D11
 */
-#include "Gfx/private/winDisplayMgr.h"
+#include "Gfx/private/d3d11/winDisplayMgr.h"
 
 // d3d11 forward declarations
 struct IDXGISwapChain;
