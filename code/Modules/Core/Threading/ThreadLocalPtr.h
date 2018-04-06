@@ -15,7 +15,7 @@
     // platform only has pthread-keys, not compiler keyword
     #define ORYOL_THREADLOCAL_PTR(T) Oryol::ThreadLocalPtr<T>
 #elif ORYOL_COMPILER_HAS_THREADLOCAL
-    #if ORYOL_WINDOWS
+    #if ORYOL_WINDOWS && defined(_MSC_VER)
         // on Windows, use __declspec(thread)
         #define ORYOL_THREADLOCAL_PTR(T) __declspec(thread) T*
     #else
