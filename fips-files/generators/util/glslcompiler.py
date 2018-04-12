@@ -16,14 +16,14 @@ class Line :
 def getToolPath() :
     path = os.path.dirname(os.path.abspath(__file__))
     if platform.system() == 'Windows' :
-        path += '/../../tools/win32/'
+        path += '/../../../tools/win32/'
     elif platform.system() == 'Darwin' :
-        path += '/../../tools/osx/'
+        path += '/../../../tools/osx/'
     elif platform.system() == 'Linux' :
         if os.uname()[1] == 'raspberrypi' :
-            path += '/../../tools/raspi/'
+            path += '/../../../tools/raspi/'
         else :
-            path +=  '/../../tools/linux/'
+            path +=  '/../../../tools/linux/'
     else :
         error("Unknown host system {}".format(platform.system()))
     return path + 'glslangValidator'
