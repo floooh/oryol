@@ -33,7 +33,7 @@ OryolMain(VolumeTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 VolumeTextureApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "3D Texture Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("3D Texture Sample"));
     Dbg::Setup();
 
     // if 3D textures not supported show a warning later during rendering
@@ -85,7 +85,7 @@ VolumeTextureApp::OnInit() {
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
 
     // setup a projection matrix with the right aspect ratio

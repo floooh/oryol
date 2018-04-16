@@ -65,7 +65,7 @@ createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const Ve
 //------------------------------------------------------------------------------
 AppState::Code
 PrimitiveTypesApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(640, 480, "Oryol PrimitiveTypes Test").Done());
+    Gfx::Setup(GfxDesc().Width(640).Height(480).SampleCount(4).Title("Oryol PrimitiveTypes Test"));
     Dbg::Setup(DbgSetup::MSAA4());
     Input::Setup();
 
@@ -105,7 +105,7 @@ PrimitiveTypesApp::OnInit() {
     // point list (only need a pipeline object, no index buffer)
     {
         auto& ds = this->drawStates[PrimitiveType::Points];
-        ds.Pipeline = createPipeline(PrimitiveType::Points, IndexType::None, meshBuilder.Layout, shd, Gfx::Desc().SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::Points, IndexType::None, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
     }
 
@@ -125,7 +125,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::Lines];
-        ds.Pipeline = createPipeline(PrimitiveType::Lines, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::Lines, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -144,7 +144,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::LineStrip];
-        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -167,7 +167,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::Triangles];
-        ds.Pipeline = createPipeline(PrimitiveType::Triangles, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::Triangles, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -192,7 +192,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::TriangleStrip];
-        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount);
+        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }

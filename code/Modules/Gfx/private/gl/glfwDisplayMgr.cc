@@ -57,7 +57,7 @@ glfwDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     
     // and make the window's GL context current
     glfwMakeContextCurrent(glfwWindow);
-    glfwSwapInterval(desc.SwapInterval);
+    glfwSwapInterval(desc.swapInterval);
 
     // setup extensions and platform-dependent constants
     flextInit(glfwWindow);
@@ -142,14 +142,14 @@ glfwDisplayMgr::createMainWindow(const GfxDesc& desc) {
     // this is necessary after the 29-Oct-2017 fips-glfw update to get the old behaviour
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     #else
-    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Red));
-    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Green));
-    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Blue));
-    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Alpha));
+    glfwWindowHint(GLFW_RED_BITS, PixelFormat::NumBits(desc.colorFormat, PixelChannel::Red));
+    glfwWindowHint(GLFW_GREEN_BITS, PixelFormat::NumBits(desc.colorFormat, PixelChannel::Green));
+    glfwWindowHint(GLFW_BLUE_BITS, PixelFormat::NumBits(desc.colorFormat, PixelChannel::Blue));
+    glfwWindowHint(GLFW_ALPHA_BITS, PixelFormat::NumBits(desc.colorFormat, PixelChannel::Alpha));
     #endif
-    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Depth));
-    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Stencil));
-    glfwWindowHint(GLFW_SAMPLES, desc.SampleCount > 1 ? desc.SampleCount : 0);
+    glfwWindowHint(GLFW_DEPTH_BITS, PixelFormat::NumBits(desc.depthFormat, PixelChannel::Depth));
+    glfwWindowHint(GLFW_STENCIL_BITS, PixelFormat::NumBits(desc.depthFormat, PixelChannel::Stencil));
+    glfwWindowHint(GLFW_SAMPLES, desc.sampleCount > 1 ? desc.sampleCount : 0);
     #if ORYOL_DEBUG
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif
@@ -160,14 +160,14 @@ glfwDisplayMgr::createMainWindow(const GfxDesc& desc) {
 
     // windowed or fullscreen mode?
     GLFWmonitor* glfwMonitor = nullptr;
-    if (!desc.Windowed) {
+    if (!desc.windowed) {
         glfwMonitor = glfwGetPrimaryMonitor();
     }
     
     // now actually create the window
-    StringBuilder strBuilder(desc.Title);
+    StringBuilder strBuilder(desc.title);
     strBuilder.Append(" (GL)");
-    glfwDisplayMgr::glfwWindow = glfwCreateWindow(desc.Width, desc.Height, strBuilder.AsCStr(), glfwMonitor, 0);
+    glfwDisplayMgr::glfwWindow = glfwCreateWindow(desc.width, desc.height, strBuilder.AsCStr(), glfwMonitor, 0);
     o_assert(nullptr != glfwDisplayMgr::glfwWindow);
 }
 

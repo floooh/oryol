@@ -55,7 +55,7 @@ OryolMain(GPUParticlesApp);
 AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(NewGfxDesc().Windowed(800, 500, "Oryol GPU Particles Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(500).Title("Oryol GPU Particles Sample"));
     Dbg::Setup();
 
     // check required extensions

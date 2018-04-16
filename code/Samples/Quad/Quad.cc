@@ -21,7 +21,7 @@ OryolMain(QuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 QuadApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().Windowed(400, 400, "Oryol Quad Sample").Done());
+    Gfx::Setup(GfxDesc().Width(400).Height(400).Title("Oryol Quad Sample"));
     
     // create vertex buffer
     const float vertices[4 * 7] = {

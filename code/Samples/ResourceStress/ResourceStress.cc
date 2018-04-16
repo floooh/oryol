@@ -52,13 +52,12 @@ ResourceStressApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup Gfx system
-    Gfx::Setup(NewGfxDesc()
-        .Windowed(600, 400, "Oryol Resource Stress Test")
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400).Title("Oryol Resource Stress Test")
         .ResourcePoolSize(GfxResourceType::Buffer, 2 * (MaxNumObjects + 32))
         .ResourcePoolSize(GfxResourceType::Texture, MaxNumObjects + 32)
         .ResourcePoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32)
-        .ResourcePoolSize(GfxResourceType::Shader, 4)
-        .Done());
+        .ResourcePoolSize(GfxResourceType::Shader, 4));
 
     // setup the shader that is used by all objects
     this->shader = Gfx::CreateShader(Shader::Desc());

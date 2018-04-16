@@ -43,7 +43,7 @@ OryolMain(InfiniteSpheresApp);
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Oryol Infinite Spheres Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Oryol Infinite Spheres Sample"));
 
     // create 2 ping-pong offscreen render targets, only need 1 depth buffer
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
@@ -97,7 +97,7 @@ InfiniteSpheresApp::OnInit() {
         .Shader(shd)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
     this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(sphere.PipelineDesc)

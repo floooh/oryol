@@ -31,7 +31,7 @@ OryolMain(PackedNormalsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Oryol Packed Normals Sample").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Oryol Packed Normals Sample"));
 
     auto shapes = ShapeBuilder::New()
         .Positions("position", VertexFormat::Float3)

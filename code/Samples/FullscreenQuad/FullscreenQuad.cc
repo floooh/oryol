@@ -22,7 +22,7 @@ OryolMain(FullscreenQuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().Windowed(600, 600, "Oryol Fullscreen Quad Sample").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(600).Title("Oryol Fullscreen Quad Sample"));
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
         .Size(sizeof(quadVertices))

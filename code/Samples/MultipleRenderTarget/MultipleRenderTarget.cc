@@ -49,7 +49,7 @@ OryolMain(MultipleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 MultipleRenderTargetApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(DisplayWidth, DisplayHeight, "Oryol MRT Sample").Done());
+    Gfx::Setup(GfxDesc().Width(DisplayWidth).Height(DisplayHeight).SampleCount(4).Title("Oryol MRT Sample"));
     Dbg::Setup();
 
     // if rendering backend doesn't support MRT, drop out now
@@ -134,7 +134,7 @@ MultipleRenderTargetApp::OnInit() {
         .DepthWriteEnabled(false)
         .DepthCmpFunc(CompareFunc::Always)
         .CullFaceEnabled(false)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
     this->rt0DrawState.Pipeline = quadPipeline;
     this->rt0DrawState.VertexBuffers[0] = quadVertexBuffer;
@@ -154,7 +154,7 @@ MultipleRenderTargetApp::OnInit() {
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(false)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
     this->displayDrawState.VertexBuffers[0] = shapesVertexBuffer;
     this->displayDrawState.IndexBuffer = shapesIndexBuffer;

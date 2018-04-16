@@ -43,7 +43,7 @@ OryolMain(SeparateBuffersApp);
 AppState::Code
 SeparateBuffersApp::OnInit() {
 
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Separate Buffers").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Separate Buffers"));
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
@@ -77,7 +77,7 @@ SeparateBuffersApp::OnInit() {
         .Layout(1, { { "in_color", VertexFormat::Float3 } })
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

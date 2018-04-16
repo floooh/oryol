@@ -30,7 +30,7 @@ OryolMain(DebugTextApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().Windowed(800, 600, "Oryol DebugText Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("Oryol DebugText Sample"));
     DbgSetup dbgSetup;
     dbgSetup.TextScaleX = 2.0f;
     dbgSetup.TextScaleY = 2.0f;

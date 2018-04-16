@@ -31,7 +31,7 @@ OryolMain(ShapeApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ShapeApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Oryol Shapes Sample").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Oryol Shapes Sample"));
     auto shapes = ShapeBuilder::New()
         .RandomColors(true)
         .Positions("position", VertexFormat::Float3)
@@ -49,7 +49,7 @@ ShapeApp::OnInit() {
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
     this->primGroups = std::move(shapes.PrimitiveGroups);
 

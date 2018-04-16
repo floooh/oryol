@@ -49,7 +49,7 @@ OryolMain(NativeTextureApp);
 AppState::Code
 NativeTextureApp::OnInit() {
 
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(600, 400, "Oryol NativeTexture Sample").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Oryol NativeTexture Sample"));
     Dbg::Setup(DbgSetup::MSAA4());
 
     // FIXME: D3D and Metal
@@ -108,7 +108,7 @@ NativeTextureApp::OnInit() {
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

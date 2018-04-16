@@ -33,7 +33,7 @@ OryolMain(TextureFloatApp);
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(NewGfxDesc().Windowed(512, 512, "Oryol Float Texture Sample").Done());
+    Gfx::Setup(GfxDesc().Width(512).Height(512).Title("Oryol Float Texture Sample"));
     Dbg::Setup();
 
     // check required extensions
@@ -46,8 +46,8 @@ TextureFloatApp::OnInit() {
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA32F;
     Id rt = Gfx::CreateTexture(NewTextureDesc()
         .RenderTarget(true)
-        .Width(Gfx::Desc().Width)
-        .Height(Gfx::Desc().Height)
+        .Width(Gfx::Desc().Width())
+        .Height(Gfx::Desc().Height())
         .Format(rtColorFormat)
         .MinFilter(TextureFilterMode::Nearest)
         .MagFilter(TextureFilterMode::Nearest)

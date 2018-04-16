@@ -25,10 +25,11 @@ OryolMain(BlendTestApp);
 AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(NewGfxDesc()
-        .Windowed(1024, 768, "Oryol Blend Sample")
-        .ResourcePoolSize(GfxResourceType::Pipeline, 512)
-        .Done());
+    Gfx::Setup(GfxDesc()
+        .Width(1024)
+        .Height(768)
+        .Title("Oryol Blend Sample")
+        .ResourcePoolSize(GfxResourceType::Pipeline, 512));
 
     // create pipeline object for a patterned background
     const float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };

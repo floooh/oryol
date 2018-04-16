@@ -43,7 +43,7 @@ DDSCubeMapApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    Gfx::Setup(NewGfxDesc().Windowed(600, 400, "Oryol DXT Cube Map Sample").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(400).Title("Oryol DXT Cube Map Sample"));
 
     // create resources
     StringAtom texPath;

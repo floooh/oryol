@@ -827,133 +827,122 @@ public:
     @see Gfx, DisplayAttrs
 */
 struct GfxDesc {
-    /// canvas width
-    int Width = 640;
-    /// canvas height
-    int Height = 400;
-    /// color pixel format
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
-    /// depth pixel format
-    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
-    /// MSAA samples (2, 4, 8... no MSAA: 1)
-    int SampleCount = 1;
-    /// windowed vs Fullscreen
-    bool Windowed = true;
-    /// swap interval (0 => no vsync, default is 1)
-    int SwapInterval = 1;
-    /// window title
-    StringAtom Title = "Oryol";
-    /// enable to render full-res on HighDPI displays (not supported on all platforms)
-    bool HighDPI = false;
-    /// if true, ignore own size and instead track size of an HTML element (emscripten only)
-    bool HtmlTrackElementSize = false;
-    /// name of the HTML element to track (default: #canvas)
-    StringAtom HtmlElement = "#canvas";
-    /// resource pool size by resource type
-    StaticArray<int,GfxResourceType::Num> ResourcePoolSize;
-    /// resource creation throttling (max resources created async per frame)
-    StaticArray<int,GfxResourceType::Num> ResourceThrottling;
-    /// initial resource label stack capacity
-    int ResourceLabelStackCapacity = 256;
-    /// initial resource registry capacity
-    int ResourceRegistryCapacity = 256;
-    /// size of the global uniform buffer (only relevant on some platforms)
-    int GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
-    /// max number of drawcalls per frame (only relevant on some platforms)
-    int MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
-    /// max number of ApplyDrawState per frame (only relevant on some platforms)
-    int MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
-    /// default constructor
-    GfxDesc();
-};
+    /// init with content of anther GfxDesc object
+    GfxDesc& From(const GfxDesc& rhs) {
+        *this = rhs; return *this;
+    }
+    GfxDesc& Width(int w) {
+        width = w; return *this; 
+    }
+    int Width() const {
+        return width;
+    }
+    GfxDesc& Height(int h) {
+        height = h; return *this;
+    }
+    int Height() const {
+        return height;
+    }
+    GfxDesc& ColorFormat(PixelFormat::Code fmt) {
+        colorFormat = fmt; return *this;
+    }
+    PixelFormat::Code ColorFormat() const {
+        return colorFormat;
+    }
+    GfxDesc& DepthFormat(PixelFormat::Code fmt) {
+        depthFormat = fmt; return *this;
+    }
+    PixelFormat::Code DepthFormat() const {
+        return depthFormat;
+    }
+    GfxDesc& SampleCount(int c) {
+        sampleCount = c; return *this;
+    }
+    int SampleCount() const {
+        return sampleCount;
+    }
+    GfxDesc& Windowed(bool b) {
+        windowed = b; return *this;
+    }
+    bool Windowed() const {
+        return windowed;
+    }
+    GfxDesc& SwapInterval(int i) {
+        swapInterval = i; return *this;
+    }
+    int SwapInterval() const {
+        return swapInterval;
+    }
+    GfxDesc& Title(const StringAtom& t) {
+        title = t; return *this;
+    }
+    const StringAtom& Title() const {
+        return title;
+    }
+    GfxDesc& HighDPI(bool b) {
+        highDPI = b; return *this;
+    }
+    bool HighDPI() const {
+        return highDPI;
+    }
+    GfxDesc& HtmlTrackElementSize(bool b) {
+        htmlTrackElementSize = b; return *this;
+    }
+    bool HtmlTrackElementSize() const {
+        return htmlTrackElementSize;
+    }
+    GfxDesc& HtmlElement(const StringAtom& e) {
+        htmlElement = e; return *this;
+    }
+    const StringAtom& HtmlElement() const {
+        return htmlElement;
+    }
+    GfxDesc& ResourcePoolSize(GfxResourceType::Code type, int size) {
+        resourcePoolSize[type] = size; return *this;
+    }
+    int ResourcePoolSize(GfxResourceType::Code type) const {
+        return resourcePoolSize[type];
+    }
+    GfxDesc& ResourceLabelStackCapacity(int c) {
+        resourceLabelStackCapacity = c; return *this;
+    }
+    int ResourceLabelStackCapacity() const {
+        return resourceLabelStackCapacity;
+    }
+    GfxDesc& ResourceRegistryCapacity(int c) {
+        resourceRegistryCapacity = c; return *this;
+    }
+    int ResourceRegistryCapacity() const {
+        return resourceRegistryCapacity;
+    }
+    GfxDesc& GlobalUniformBufferSize(int s) {
+        globalUniformBufferSize = s; return *this;
+    }
+    int GlobalUniformBufferSize() const {
+        return globalUniformBufferSize;
+    }
 
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::GfxDescBuilder
-    @ingroup Gfx
-    @brief builder class for GfxDesc
-*/
-class GfxDescBuilder {
-public:
-    GfxDesc Desc;
-    GfxDescBuilder& From(const GfxDesc& desc) {
-        Desc = desc; return *this;
-    }
-    GfxDescBuilder& Windowed(int width, int height, const StringAtom& title) {
-        Desc.Width = width; Desc.Height = height; Desc.Title = title;
-        return *this;
-    }
-    GfxDescBuilder& Fullscreen(int width, int height, const StringAtom& title) {
-        Desc.Width = width; Desc.Height = height; Desc.Windowed = false; Desc.Title = title;
-        return *this;
-    }
-    GfxDescBuilder& WindowedMSAA4(int width, int height, const StringAtom& title) {
-        Desc.Width = width; Desc.Height = height; Desc.Title = title; Desc.SampleCount = 4;
-        return *this;
-    }
-    GfxDescBuilder& FullscreenMSAA4(int width, int height, const StringAtom& title) {
-        Desc.Width = width; Desc.Height = height; Desc.Windowed = false;
-        Desc.SampleCount = 4; Desc.Title = title;
-        return *this;
-    }
-    GfxDescBuilder& Width(int width) {
-        Desc.Width = width; return *this;
-    }
-    GfxDescBuilder& Height(int height) {
-        Desc.Height = height; return *this;
-    }
-    GfxDescBuilder& ColorFormat(PixelFormat::Code fmt) {
-        Desc.ColorFormat = fmt; return *this;
-    }
-    GfxDescBuilder& DepthFormat(PixelFormat::Code fmt) {
-        Desc.DepthFormat = fmt; return *this;
-    }
-    GfxDescBuilder& SampleCount(int sampleCount) {
-        Desc.SampleCount = sampleCount; return *this;
-    }
-    GfxDescBuilder& Windowed() {
-        Desc.Windowed = true; return *this;
-    }
-    GfxDescBuilder& Fullscreen() {
-        Desc.Windowed = false; return *this;
-    }
-    GfxDescBuilder& SwapInterval(int interval) {
-        Desc.SwapInterval = interval; return *this;
-    }
-    GfxDescBuilder& Title(const StringAtom& title) {
-        Desc.Title = title; return *this;
-    }
-    GfxDescBuilder& HighDPI(bool highDpi) {
-        Desc.HighDPI = highDpi; return *this;
-    }
-    GfxDescBuilder& HtmlTrackElementSize(bool track) {
-        Desc.HtmlTrackElementSize = track; return *this;
-    }
-    GfxDescBuilder& HtmlElement(const StringAtom& elm) {
-        Desc.HtmlElement = elm; return *this;
-    }
-    GfxDescBuilder& ResourcePoolSize(GfxResourceType::Code type, int poolSize) {
-        Desc.ResourcePoolSize[type] = poolSize; return *this;
-    }
-    GfxDescBuilder& ResourceThrottle(GfxResourceType::Code type, int numPerFrame) {
-        Desc.ResourceThrottling[type] = numPerFrame; return *this;
-    }
-    GfxDescBuilder& ResourceLabelStackCapacity(int capacity) {
-        Desc.ResourceLabelStackCapacity = capacity; return *this;
-    }
-    GfxDescBuilder& ResourceRegistryCapacity(int capacity) {
-        Desc.ResourceRegistryCapacity = capacity; return *this;
-    }
-    GfxDescBuilder& GlobalUniformBufferSize(int size) {
-        Desc.GlobalUniformBufferSize = size; return *this;
-    }
-    const GfxDesc& Done() {
-        return Desc;
+    int width = 640;
+    int height = 400;
+    PixelFormat::Code colorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code depthFormat = PixelFormat::DEPTHSTENCIL;
+    int sampleCount = 1;
+    bool windowed = true;
+    int swapInterval = 1;
+    StringAtom title = "Oryol";
+    bool highDPI = false;
+    bool htmlTrackElementSize = false;
+    StringAtom htmlElement = "#canvas";
+    StaticArray<int,GfxResourceType::Num> resourcePoolSize;
+    int resourceLabelStackCapacity = 256;
+    int resourceRegistryCapacity = 256;
+    int globalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
+    GfxDesc() {
+        for (int i = 0; i < GfxResourceType::Num; i++) {
+            resourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
+        }
     }
 };
-inline GfxDescBuilder NewGfxDesc() {
-    return GfxDescBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**

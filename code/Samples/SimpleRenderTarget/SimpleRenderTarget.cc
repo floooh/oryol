@@ -38,7 +38,7 @@ OryolMain(SimpleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Oryol Simple Render Target Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Oryol Simple Render Target Sample"));
 
     // create a color render target texture and compatible depth render target
     // texture for offscreen rendering
@@ -98,7 +98,7 @@ SimpleRenderTargetApp::OnInit() {
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
     this->displayDrawState.FSTexture[DisplayShader::tex] = rtColorTexture;
 

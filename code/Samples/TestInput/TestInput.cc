@@ -67,10 +67,7 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Gfx::Setup(NewGfxDesc()
-        .Windowed(800, 400, "Oryol Input Test Sample")
-        .HighDPI(true)
-        .Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(400).HighDPI(true).Title("Oryol Input Test Sample"));
     Dbg::Setup();
     if (Gfx::DisplayAttrs().Width > 800) {
         Dbg::TextScale(2.0f, 2.0f);

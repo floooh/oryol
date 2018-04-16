@@ -620,12 +620,4 @@ ImageContent::ImageContent() {
     }
 }
 
-//------------------------------------------------------------------------------
-GfxDesc::GfxDesc() {
-    for (int i = 0; i < GfxResourceType::Num; i++) {
-        ResourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
-        ResourceThrottling[i] = 0;    // unthrottled
-    }
-}
-
 } // namespace Oryol

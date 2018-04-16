@@ -49,7 +49,7 @@ const char* axisNames[GamepadAxis::NumAxes] = {
 //------------------------------------------------------------------------------
 AppState::Code
 GamepadExplorerApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().Windowed(800, 600, "Test Gamepads").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("Test Gamepads"));
     Dbg::Setup();
     Input::Setup();
     return App::OnInit();

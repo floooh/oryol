@@ -66,7 +66,7 @@ OryolMain(RenderToCubeMapApp);
 //------------------------------------------------------------------------------
 AppState::Code
 RenderToCubeMapApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 600, "Render To CubeMap").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Render To CubeMap"));
     Input::Setup();
 
     // create a cubemap which will serve as render target
@@ -117,7 +117,7 @@ RenderToCubeMapApp::OnInit() {
         .Shader(Gfx::CreateShader(ShapeShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
     this->offscreenShapesPipeline = Gfx::CreatePipeline(NewPipelineDesc()
         .From(shapes.PipelineDesc)
@@ -137,7 +137,7 @@ RenderToCubeMapApp::OnInit() {
         .Shader(Gfx::CreateShader(SphereShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
 
     // setup projection matrix for main view

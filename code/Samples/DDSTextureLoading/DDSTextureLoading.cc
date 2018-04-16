@@ -45,7 +45,7 @@ DDSTextureLoadingApp::OnInit() {
     IO::Setup(ioSetup);
 
     // setup rendering system
-    Gfx::Setup(NewGfxDesc().Windowed(600, 400, "Oryol DDS Loading Sample").Done());
+    Gfx::Setup(GfxDesc().Width(600).Height(400).Title("Oryol DDS Loading Sample"));
 
     // setup resources
     static const char *paths[NumTextures] = {

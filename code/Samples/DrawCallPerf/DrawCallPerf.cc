@@ -49,10 +49,11 @@ OryolMain(DrawCallPerfApp);
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(NewGfxDesc()
-        .Windowed(800, 500, "Oryol DrawCallPerf Sample")
-        .GlobalUniformBufferSize(1024 * 1024 * 32)
-        .Done());
+    Gfx::Setup(GfxDesc()
+        .Width(800)
+        .Height(500)
+        .Title("Oryol DrawCallPerf Sample")
+        .GlobalUniformBufferSize(1024 * 1024 * 32));
     Dbg::Setup();
     Input::Setup();
 

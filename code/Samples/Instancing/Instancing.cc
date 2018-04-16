@@ -46,7 +46,7 @@ OryolMain(InstancingApp);
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(NewGfxDesc().Windowed(800, 500, "Oryol Instancing Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(500).Title("Oryol Instancing Sample"));
     Dbg::Setup();
     Input::Setup();
     

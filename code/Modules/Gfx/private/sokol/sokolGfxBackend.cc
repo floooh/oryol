@@ -490,17 +490,18 @@ sokolGfxBackend::Setup(const GfxDesc& desc) {
 
     // setup sokol-gfx
     sg_desc sgDesc = { };
-    sgDesc.buffer_pool_size = desc.ResourcePoolSize[GfxResourceType::Buffer];
-    sgDesc.image_pool_size = desc.ResourcePoolSize[GfxResourceType::Texture];
-    sgDesc.shader_pool_size = desc.ResourcePoolSize[GfxResourceType::Shader];
-    sgDesc.pipeline_pool_size = desc.ResourcePoolSize[GfxResourceType::Pipeline];
-    sgDesc.pass_pool_size = desc.ResourcePoolSize[GfxResourceType::Pass];
+    sgDesc.buffer_pool_size = desc.resourcePoolSize[GfxResourceType::Buffer];
+    sgDesc.image_pool_size = desc.resourcePoolSize[GfxResourceType::Texture];
+    sgDesc.shader_pool_size = desc.resourcePoolSize[GfxResourceType::Shader];
+    sgDesc.pipeline_pool_size = desc.resourcePoolSize[GfxResourceType::Pipeline];
+    sgDesc.pass_pool_size = desc.resourcePoolSize[GfxResourceType::Pass];
     #if ORYOL_GLES3
     sgDesc.gl_force_gles2 = this->displayManager.forceGLES2;
     #elif ORYOL_METAL
     sgDesc.mtl_device = mtlDisplayMgr::mtlDevice();
     sgDesc.mtl_renderpass_descriptor_cb = mtlDisplayMgr::mtlRenderPassDescriptor;
     sgDesc.mtl_drawable_cb = mtlDisplayMgr::mtlDrawable;
+    sgDesc.mtl_global_uniform_buffer_size = desc.globalUniformBufferSize;
     #elif ORYOL_D3D11
     sgDesc.d3d11_device = this->displayManager.d3d11Device;
     sgDesc.d3d11_device_context = this->displayManager.d3d11DeviceContext;
@@ -509,10 +510,10 @@ sokolGfxBackend::Setup(const GfxDesc& desc) {
     #endif
     sg_setup(&sgDesc);
 
-    this->registry.Setup(desc.ResourceRegistryCapacity);
-    this->labelStack.Setup(desc.ResourceLabelStackCapacity);
+    this->registry.Setup(desc.resourceRegistryCapacity);
+    this->labelStack.Setup(desc.resourceLabelStackCapacity);
     this->toDestroy.Reserve(64);
-    this->vsInputs.Reserve(desc.ResourcePoolSize[GfxResourceType::Shader]);
+    this->vsInputs.Reserve(desc.resourcePoolSize[GfxResourceType::Shader]);
     for (int i = 0; i < this->vsInputs.Capacity(); i++) {
         this->vsInputs.Add(VertexLayout());
     }

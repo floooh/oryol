@@ -34,7 +34,7 @@ OryolMain(SensorsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SensorsApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().Windowed(800, 400, "Oryol Device Sensor Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(400).Title("Oryol Device Sensor Sample"));
     Dbg::Setup();
     Input::Setup();
     

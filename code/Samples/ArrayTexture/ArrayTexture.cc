@@ -34,7 +34,7 @@ OryolMain(ArrayTextureApp);
 //------------------------------------------------------------------------------
 AppState::Code
 ArrayTextureApp::OnInit() {
-    Gfx::Setup(NewGfxDesc().WindowedMSAA4(800, 512, "Array Texture Sample").Done());
+    Gfx::Setup(GfxDesc().Width(800).Height(512).SampleCount(4).Title("Array Texture Sample"));
     Dbg::Setup();
 
     // if array textures are not supported, only show a warning
@@ -91,7 +91,7 @@ ArrayTextureApp::OnInit() {
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount)
+        .SampleCount(Gfx::Desc().SampleCount())
         .Done());
 
     // setup a projection matrix with the right aspect ratio
