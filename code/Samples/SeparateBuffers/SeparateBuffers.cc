@@ -63,22 +63,19 @@ SeparateBuffersApp::OnInit() {
         for (int vi = 0; vi < NumVertices; vi++) {
             colorVertices[vi][i] = glm::linearRand(0.5f, 1.0f);
         }
-        this->colorBuffers[i] = Gfx::CreateBuffer(NewBufferDesc()
+        this->colorBuffers[i] = Gfx::CreateBuffer(BufferDesc()
             .Size(sizeof(colorVertices))
-            .Content(colorVertices)
-            .Done());
+            .Content(colorVertices));
     }
 
     // create shader and pipeline, the position data vertex Layout
     // goes into the first layout slot, and the color data vertex layout into the second slot
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(1, { { "in_color", VertexFormat::Float3 } })
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
+        .SampleCount(Gfx::Desc().SampleCount()));
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
     const float fbHeight = (const float) Gfx::DisplayAttrs().Height;

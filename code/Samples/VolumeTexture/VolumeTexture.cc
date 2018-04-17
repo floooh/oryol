@@ -60,7 +60,7 @@ VolumeTextureApp::OnInit() {
         }
         p.z += 1.0f / dim;
     }
-    this->drawState.FSTexture[Shader::tex] = Gfx::CreateTexture(NewTextureDesc()
+    this->drawState.FSTexture[Shader::tex] = Gfx::CreateTexture(TextureDesc()
         .Type(TextureType::Texture3D)
         .Width(dim)
         .Height(dim)
@@ -69,8 +69,7 @@ VolumeTextureApp::OnInit() {
         .MinFilter(TextureFilterMode::Linear)
         .MagFilter(TextureFilterMode::Linear)
         .MipSize(0, 0, sizeof(data))
-        .MipContent(0, 0, data)
-        .Done());
+        .MipContent(0, 0, data));
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
     auto shape = ShapeBuilder::New()
@@ -80,13 +79,11 @@ VolumeTextureApp::OnInit() {
     this->primGroup = shape.PrimitiveGroups[0];
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
     this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
+        .SampleCount(Gfx::Desc().SampleCount()));
 
     // setup a projection matrix with the right aspect ratio
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

@@ -53,13 +53,12 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->drawState.FSTexture[Shader::tex] = TextureLoader::Load(NewTextureDesc()
+    this->drawState.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
         .Locator(texPath)
         .MinFilter(TextureFilterMode::LinearMipmapLinear)
         .MagFilter(TextureFilterMode::Linear)
         .WrapU(TextureWrapMode::ClampToEdge)
-        .WrapV(TextureWrapMode::ClampToEdge)
-        .Done());
+        .WrapV(TextureWrapMode::ClampToEdge));
 
     auto shape = ShapeBuilder::New()
         .Positions("in_pos", VertexFormat::Float3)
@@ -70,12 +69,10 @@ DDSCubeMapApp::OnInit() {
     this->primGroup = shape.PrimitiveGroups[0];
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
     this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .Done());
+        .DepthCmpFunc(CompareFunc::LessEqual));
 
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

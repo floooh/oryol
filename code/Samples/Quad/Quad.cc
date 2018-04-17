@@ -31,32 +31,29 @@ QuadApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
         -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
     };
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
         .Type(BufferType::VertexBuffer)
         .Size(sizeof(vertices))
-        .Content(vertices)
-        .Done());
+        .Content(vertices));
 
     // create index buffer
     const uint16_t indices[2 * 3] = {
         0, 1, 2,    // first triangle
         0, 2, 3,    // second triangle
     };
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(NewBufferDesc()
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(BufferDesc()
         .Type(BufferType::IndexBuffer)
         .Size(sizeof(indices))
-        .Content(indices)
-        .Done());
+        .Content(indices));
 
     // create shader and pipeline-state-object
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float3 },
             { "in_color", VertexFormat::Float4 }
         })
-        .IndexType(IndexType::UInt16)
-        .Done());
+        .IndexType(IndexType::UInt16));
 
     return App::OnInit();
 }

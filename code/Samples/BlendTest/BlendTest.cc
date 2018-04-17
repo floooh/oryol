@@ -33,17 +33,15 @@ BlendTestApp::OnInit() {
 
     // create pipeline object for a patterned background
     const float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
+    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
         .Size(sizeof(bgVertices))
-        .Content(bgVertices)
-        .Done());
-    this->bgDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
+        .Content(bgVertices));
+    this->bgDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(BGShader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float2 }
         })
-        .PrimitiveType(PrimitiveType::TriangleStrip)
-        .Done());
+        .PrimitiveType(PrimitiveType::TriangleStrip));
 
     // setup a triangle mesh and shader
     float triVertices[] = {
@@ -52,13 +50,12 @@ BlendTestApp::OnInit() {
           0.05f, -0.05f, 0.5f,  0.0f, 0.75f, 0.0f, 0.75f,
           -0.05f, -0.05f, 0.5f, 0.0f, 0.0f, 0.75f, 0.75f
     };
-    this->triVBuf = Gfx::CreateBuffer(NewBufferDesc()
+    this->triVBuf = Gfx::CreateBuffer(BufferDesc()
         .Size(sizeof(triVertices))
-        .Content(triVertices)
-        .Done());
+        .Content(triVertices));
 
     // setup one draw state for each blend factor combination
-    auto ps = NewPipelineDesc()
+    auto ps = PipelineDesc()
         .Shader(Gfx::CreateShader(TriShader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float3 },
@@ -71,7 +68,7 @@ BlendTestApp::OnInit() {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
             ps.BlendSrcFactorRGB((BlendFactor::Code)x);
             ps.BlendDstFactorRGB((BlendFactor::Code)y);
-            this->pipelines[y][x] = Gfx::CreatePipeline(ps.Done());
+            this->pipelines[y][x] = Gfx::CreatePipeline(ps);
         }
     }
     return App::OnInit();

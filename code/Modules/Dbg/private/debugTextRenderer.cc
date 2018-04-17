@@ -145,15 +145,14 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         { "color0", VertexFormat::UByte4N }
     };
     const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
         .Size(vbufSize)
         .Type(BufferType::VertexBuffer)
-        .Usage(Usage::Stream)
-        .Done());
+        .Usage(Usage::Stream));
     o_assert_dbg(this->drawState.VertexBuffers[0].IsValid());
 
     // create pipeline object
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(DbgTextShader::Desc()))
         .Layout(0, this->vertexLayout)
         .DepthWriteEnabled(false)
@@ -164,8 +163,7 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         .ColorWriteMask(PixelChannel::RGB)
         .ColorFormat(setup.ColorFormat)
         .DepthFormat(setup.DepthFormat)
-        .SampleCount(setup.SampleCount)
-        .Done());
+        .SampleCount(setup.SampleCount));
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;
@@ -194,7 +192,7 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
     }
 
     // setup texture, pixel format is 8bpp uncompressed
-    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::CreateTexture(NewTextureDesc()
+    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::CreateTexture(TextureDesc()
         .Type(TextureType::Texture2D)
         .Width(imgWidth)
         .Height(imgHeight)
@@ -204,8 +202,7 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         .WrapU(TextureWrapMode::ClampToEdge)
         .WrapV(TextureWrapMode::ClampToEdge)
         .MipContent(0, 0, data.Data())
-        .MipSize(0, 0, data.Size())
-        .Done());
+        .MipSize(0, 0, data.Size()));
 }
 
 //------------------------------------------------------------------------------

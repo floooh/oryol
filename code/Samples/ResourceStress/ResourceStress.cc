@@ -132,20 +132,17 @@ ResourceStressApp::createObjects() {
     obj.primGroup = shape.PrimitiveGroups[0];
     obj.drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
     obj.drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    obj.drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    obj.drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(this->shader)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(true)
-        .Done());
-    obj.drawState.FSTexture[Shader::tex] = TextureLoader::Load(NewTextureDesc()
+        .CullFaceEnabled(true));
+    obj.drawState.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
         .Locator(Locator::NonShared("tex:lok_dxt1.dds"))
         .MinFilter(TextureFilterMode::LinearMipmapLinear)
         .MagFilter(TextureFilterMode::Linear)
         .WrapU(TextureWrapMode::ClampToEdge)
-        .WrapV(TextureWrapMode::ClampToEdge)
-        .Done());
+        .WrapV(TextureWrapMode::ClampToEdge));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
     this->objects.Add(obj);

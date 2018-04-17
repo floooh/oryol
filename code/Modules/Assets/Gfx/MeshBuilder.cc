@@ -30,19 +30,17 @@ MeshBuilder::Begin() {
     // setup Result object
     this->result.Layout = this->Layout;
     this->result.IndexType = this->IndexType;
-    this->result.VertexBufferDesc = NewBufferDesc()
+    this->result.VertexBufferDesc = BufferDesc()
         .Size(vbSize)
         .Type(BufferType::VertexBuffer)
         .Usage(this->VertexUsage)
-        .Content(this->vertexPointer)
-        .Done();
+        .Content(this->vertexPointer);
     if (ibSize > 0) {
-        this->result.IndexBufferDesc = NewBufferDesc()
+        this->result.IndexBufferDesc = BufferDesc()
             .Size(ibSize)
             .Type(BufferType::IndexBuffer)
             .Usage(this->IndexUsage)
-            .Content(this->indexPointer)
-            .Done();
+            .Content(this->indexPointer);
     }
     else {
         this->result.IndexBufferDesc = BufferDesc();

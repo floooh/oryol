@@ -90,27 +90,23 @@ NativeTextureApp::OnInit() {
     // push a new resource label and keep it for later since we'll have
     // to cleanup the resource ourselves
     Gfx::PushResourceLabel();
-    this->drawState.FSTexture[0] = Gfx::CreateTexture(NewTextureDesc()
+    this->drawState.FSTexture[0] = Gfx::CreateTexture(TextureDesc()
         .Type(TextureType::Texture2D)
         .Width(TexWidth)
         .Height(TexHeight)
         .Format(PixelFormat::RGBA8)
         .Usage(Usage::Stream)
         .NativeTexture(0, this->glTextures[0])
-        .NativeTexture(1, this->glTextures[1])
-        .Done());
+        .NativeTexture(1, this->glTextures[1]));
     this->texLabel = Gfx::PopResourceLabel();
     #endif
 
     // ...and finally the pipeline object
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
-
+        .SampleCount(Gfx::Desc().SampleCount()));
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
     const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);

@@ -50,14 +50,13 @@ InfiniteSpheresApp::OnInit() {
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
     const int rtWidth = 512;
     const int rtHeight = 512;
-    Id rtDepth = Gfx::CreateTexture(NewTextureDesc()
+    Id rtDepth = Gfx::CreateTexture(TextureDesc()
         .RenderTarget(true)
         .Width(rtWidth)
         .Height(rtHeight)
-        .Format(rtDepthFormat)
-        .Done());
+        .Format(rtDepthFormat));
     for (int i = 0; i < 2; i++) {
-        this->passInfo[i].texture = Gfx::CreateTexture(NewTextureDesc()
+        this->passInfo[i].texture = Gfx::CreateTexture(TextureDesc()
             .RenderTarget(true)
             .Width(rtWidth)
             .Height(rtHeight)
@@ -65,12 +64,10 @@ InfiniteSpheresApp::OnInit() {
             .MinFilter(TextureFilterMode::Linear)
             .MagFilter(TextureFilterMode::Linear)
             .WrapU(TextureWrapMode::Repeat)
-            .WrapV(TextureWrapMode::Repeat)
-            .Done());
-        this->passInfo[i].pass = Gfx::CreatePass(NewPassDesc()
+            .WrapV(TextureWrapMode::Repeat));
+        this->passInfo[i].pass = Gfx::CreatePass(PassDesc()
             .ColorAttachment(0, this->passInfo[i].texture)
-            .DepthStencilAttachment(rtDepth)
-            .Done());
+            .DepthStencilAttachment(rtDepth));
     }
 
     // create a sphere shape mesh
@@ -92,21 +89,17 @@ InfiniteSpheresApp::OnInit() {
     Id shd = Gfx::CreateShader(Shader::Desc());
 
     // create draw state for rendering into default render target
-    this->displayDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(sphere.PipelineDesc)
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
         .Shader(shd)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
-    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(sphere.PipelineDesc)
+        .SampleCount(Gfx::Desc().SampleCount()));
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
         .Shader(shd)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
-        .DepthFormat(rtDepthFormat)
-        .Done());
+        .DepthFormat(rtDepthFormat));
 
     // setup static transform matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

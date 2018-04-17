@@ -44,41 +44,37 @@ TextureFloatApp::OnInit() {
     // create an offscreen float render target, same size as display,
     // configure texture sampler with point-filtering
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA32F;
-    Id rt = Gfx::CreateTexture(NewTextureDesc()
+    Id rt = Gfx::CreateTexture(TextureDesc()
         .RenderTarget(true)
         .Width(Gfx::Desc().Width())
         .Height(Gfx::Desc().Height())
         .Format(rtColorFormat)
         .MinFilter(TextureFilterMode::Nearest)
-        .MagFilter(TextureFilterMode::Nearest)
-        .Done());
-    this->renderPass = Gfx::CreatePass(NewPassDesc().ColorAttachment(0, rt).Done());
+        .MagFilter(TextureFilterMode::Nearest));
+    this->renderPass = Gfx::CreatePass(PassDesc().ColorAttachment(0, rt));
     this->renderPassAction.DontCareColor(0);
 
     // fullscreen mesh, we'll reuse this several times
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
+    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
         .Size(sizeof(quadVertices))
-        .Content(quadVertices)
-        .Done());
+        .Content(quadVertices));
     this->copyDrawState.VertexBuffers[0] = this->offscreenDrawState.VertexBuffers[0];
 
     // setup draw state for offscreen rendering to float render target
-    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
         .Layout(0, {{"in_pos", VertexFormat::Float2}})
         .PrimitiveType(PrimitiveType::TriangleStrip)
         .ColorFormat(rtColorFormat)
-        .DepthFormat(PixelFormat::None)
-        .Done());
+        .DepthFormat(PixelFormat::None));
     this->offscreenFSParams.time = 0.0f;
 
     // fullscreen-copy resources
-    this->copyDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
+    this->copyDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(CopyShader::Desc()))
         .Layout(0, {{"in_pos", VertexFormat::Float2}})
-        .PrimitiveType(PrimitiveType::TriangleStrip)
-        .Done());
+        .PrimitiveType(PrimitiveType::TriangleStrip));
     this->copyDrawState.FSTexture[CopyShader::tex] = rt;
 
     // setup static transform matrices

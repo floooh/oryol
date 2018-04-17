@@ -44,31 +44,26 @@ VertexTextureApp::OnInit() {
     // FIXME: need a way to check number of vertex texture units
     
     // create RGBA offscreen render pass which holds the plasma
-    Id plasmaTex = Gfx::CreateTexture(NewTextureDesc()
+    Id plasmaTex = Gfx::CreateTexture(TextureDesc()
         .RenderTarget(true)
         .Width(256)
         .Height(256)
         .Format(PixelFormat::RGBA8)
         .MinFilter(TextureFilterMode::Nearest)
-        .MagFilter(TextureFilterMode::Nearest)
-        .Done());
-    this->plasmaRenderPass = Gfx::CreatePass(NewPassDesc()
-        .ColorAttachment(0, plasmaTex)
-        .Done());
+        .MagFilter(TextureFilterMode::Nearest));
+    this->plasmaRenderPass = Gfx::CreatePass(PassDesc().ColorAttachment(0, plasmaTex));
 
     // setup draw state for offscreen rendering to float render target
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->plasmaDrawState.VertexBuffers[0] = Gfx::CreateBuffer(NewBufferDesc()
+    this->plasmaDrawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
         .Size(sizeof(quadVertices))
-        .Content(quadVertices)
-        .Done());
-    this->plasmaDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
+        .Content(quadVertices));
+    this->plasmaDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(PlasmaShader::Desc()))
         .Layout(0, { { "in_pos", VertexFormat::Float2 } })
         .PrimitiveType(PrimitiveType::TriangleStrip)
         .ColorFormat(PixelFormat::RGBA8)
-        .DepthFormat(PixelFormat::None)
-        .Done());
+        .DepthFormat(PixelFormat::None));
     
     // draw state for a 256x256 plane
     auto shape = ShapeBuilder::New()
@@ -79,13 +74,11 @@ VertexTextureApp::OnInit() {
     this->planePrimGroup = shape.PrimitiveGroups[0];
     this->planeDrawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
     this->planeDrawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->planeDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->planeDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(PlaneShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(4)
-        .Done());
+        .SampleCount(4));
     this->planeDrawState.VSTexture[PlaneShader::tex] = plasmaTex;
     
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

@@ -827,9 +827,13 @@ public:
     @see Gfx, DisplayAttrs
 */
 struct GfxDesc {
-    /// init with content of anther GfxDesc object
-    GfxDesc& From(const GfxDesc& rhs) {
-        *this = rhs; return *this;
+    GfxDesc() {
+        for (int i = 0; i < GfxResourceType::Num; i++) {
+            resourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
+        }
+    }
+    GfxDesc(const GfxDesc& rhs) {
+        *this = rhs;
     }
     GfxDesc& Width(int w) {
         width = w; return *this; 
@@ -937,11 +941,6 @@ struct GfxDesc {
     int resourceLabelStackCapacity = 256;
     int resourceRegistryCapacity = 256;
     int globalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
-    GfxDesc() {
-        for (int i = 0; i < GfxResourceType::Num; i++) {
-            resourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
-        }
-    }
 };
 
 //------------------------------------------------------------------------------
@@ -951,62 +950,56 @@ struct GfxDesc {
     @brief creation attributes for vertex- and index-buffers
 */
 struct BufferDesc {
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// the buffer type (vertex- or index-buffer)
-    BufferType::Code Type = BufferType::VertexBuffer;
-    /// the buffer usage
-    Oryol::Usage::Code Usage = Usage::Immutable;
-    /// the buffer size in bytes
-    int Size = 0;
-    /// optional pointer to content
-    const void* Content = nullptr;
-    /// optional native 3D-API buffers
-    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
-
-    /// default constructor
     BufferDesc() {
-        NativeBuffers.Fill(0);
+        nativeBuffers.Fill(0);
     }
-};
+    BufferDesc(const BufferDesc& rhs) {
+        *this = rhs;
+    }
+    BufferDesc& Locator(const class Locator& l) {
+        locator = l; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    BufferDesc& Type(BufferType::Code t) {
+        type = t; return *this;
+    }
+    BufferType::Code Type() const {
+        return type;
+    }
+    BufferDesc& Usage(Usage::Code u) {
+        usage = u; return *this;
+    }
+    Usage::Code Usage() const {
+        return usage;
+    }
+    BufferDesc& Size(int s) {
+        size = s; return *this;
+    }
+    int Size() const {
+        return size;
+    }
+    BufferDesc& Content(const void* c) {
+        content = c; return *this;
+    }
+    const void* Content() const {
+        return content;
+    }
+    BufferDesc& NativeBuffer(int index, intptr_t buf) {
+        nativeBuffers[index] = buf; return *this;
+    }
+    intptr_t NativeBuffer(int index) const {
+        return nativeBuffers[index];
+    }
 
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::BufferBuilder
-    @ingroup Gfx
-    @brief builder for BufferDesc object
-*/
-class BufferBuilder {
-public:
-    BufferDesc Desc;
-    BufferBuilder& From(const BufferDesc& desc) {
-        Desc = desc; return *this;
-    }
-    BufferBuilder& Locator(const class Locator& loc) {
-        Desc.Locator = loc; return *this;
-    }
-    BufferBuilder& Type(BufferType::Code t) {
-        Desc.Type = t; return *this;
-    }
-    BufferBuilder& Usage(Usage::Code u) {
-        Desc.Usage = u; return *this;
-    }
-    BufferBuilder& Size(int s) {
-        Desc.Size = s; return *this;
-    }
-    BufferBuilder& Content(const void* ptr) {
-        Desc.Content = ptr; return *this;
-    }
-    BufferBuilder& NativeBuffer(int index, intptr_t buf) {
-        Desc.NativeBuffers[index] = buf; return *this;
-    }
-    const BufferDesc& Done() {
-        return Desc;
-    }
+    class Locator locator = Locator::NonShared();
+    BufferType::Code type = BufferType::VertexBuffer;
+    Oryol::Usage::Code usage = Usage::Immutable;
+    int size = 0;
+    const void* content = nullptr;
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> nativeBuffers;
 };
-inline BufferBuilder NewBufferDesc() {
-    return BufferBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**
@@ -1015,217 +1008,316 @@ inline BufferBuilder NewBufferDesc() {
     @brief creation attribute for pipeline state objects
 */
 struct PipelineDesc {
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// shader 
-    Id Shader;
-    /// input vertex layouts (one per vertex buffer slot)
-    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> Layouts;
-    /// primitive type 
-    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
-    /// index type (none, 16-bit or 32-bit)
-    Oryol::IndexType::Code IndexType = IndexType::None;
+    PipelineDesc() { };
+    PipelineDesc(const PipelineDesc& rhs) {
+        *this = rhs;
+    }
+    PipelineDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    PipelineDesc& Shader(const Id& shd) {
+        shader = shd; return *this;
+    }
+    const Id& Shader() const {
+        return shader;
+    }
+    PipelineDesc& Layout(int slotIndex, const VertexLayout& layout) {
+        layouts[slotIndex] = layout; return *this;
+    }
+    const VertexLayout& Layout(int slotIndex) const {
+        return layouts[slotIndex];
+    }
+    PipelineDesc& PrimitiveType(PrimitiveType::Code t) {
+        primType = t; return *this;
+    }
+    PrimitiveType::Code PrimitiveType() const {
+        return primType;
+    }
+    PipelineDesc& IndexType(IndexType::Code t) {
+        indexType = t; return *this;
+    }
+    IndexType::Code IndexType() const {
+        return indexType;
+    }
+    PipelineDesc& DepthCmpFunc(CompareFunc::Code f) {
+        depthCmpFunc = f; return *this;
+    }
+    CompareFunc::Code DepthCmpFunc() const {
+        return depthCmpFunc;
+    }
+    PipelineDesc& DepthWriteEnabled(bool b) {
+        depthWriteEnabled = b; return *this;
+    }
+    bool DepthWriteEnabled() const {
+        return depthWriteEnabled;
+    }
+    PipelineDesc& StencilEnabled(bool b) {
+        stencilEnabled = b; return *this;
+    }
+    bool StencilEnabled() const {
+        return stencilEnabled;
+    }
+    PipelineDesc& StencilReadMask(uint8_t m) {
+        stencilReadMask = m; return *this;
+    }
+    uint8_t StencilReadMask() const {
+        return stencilReadMask;
+    }
+    PipelineDesc& StencilWriteMask(uint8_t m) {
+        stencilWriteMask = m; return *this;
+    }
+    uint8_t StencilWriteMask() const {
+        return stencilWriteMask;
+    }
+    PipelineDesc& StencilRef(uint8_t r) {
+        stencilRef = r; return *this;
+    }
+    uint8_t StencilRef() const {
+        return stencilRef;
+    }
+    PipelineDesc& StencilFailOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            stencilFrontFailOp = op;
+        }
+        if (Face::Back & face) {
+            stencilBackFailOp = op;
+        }
+        return *this;
+    }
+    StencilOp::Code StencilFailOp(Face::Code face) const {
+        if (Face::Front & face) {
+            return stencilFrontFailOp;
+        }
+        else {
+            return stencilBackFailOp;
+        }
+    }
+    PipelineDesc& StencilDepthFailOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            stencilFrontDepthFailOp = op;
+        }
+        if (Face::Back & face) {
+            stencilBackDepthFailOp = op;
+        }
+        return *this;
+    }
+    StencilOp::Code StencilDepthFailOp(Face::Code face) {
+        if (Face::Front & face) {
+            return stencilFrontDepthFailOp;
+        }
+        else {
+            return stencilBackDepthFailOp;
+        }
+    }
+    PipelineDesc& StencilPassOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            stencilFrontPassOp = op;
+        }
+        if (Face::Back & face) {
+            stencilBackPassOp = op;
+        }
+        return *this;
+    }
+    StencilOp::Code StencilPassOp(Face::Code face) {
+        if (Face::Front & face) {
+            return stencilFrontPassOp;
+        }
+        else {
+            return stencilBackPassOp;
+        }
+    }
+    PipelineDesc& StencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
+        if (Face::Front & face) {
+            stencilFrontCmpFunc = fn;
+        }
+        if (Face::Back & face) {
+            stencilBackCmpFunc = fn;
+        }
+        return *this;
+    }
+    CompareFunc::Code StencilCmpFunc(Face::Code face) {
+        if (Face::Front & face) {
+            return stencilFrontCmpFunc;
+        }
+        else {
+            return stencilBackCmpFunc;
+        }
+    }
+    PipelineDesc& BlendEnabled(bool b) {
+        blendEnabled = b; return *this;
+    }
+    bool BlendEnabled() const {
+        return blendEnabled;
+    }
+    PipelineDesc& BlendSrcFactor(BlendFactor::Code f) {
+        blendSrcFactorRGB = f;
+        blendSrcFactorAlpha = f;
+        return *this;
+    }
+    PipelineDesc& BlendSrcFactorRGB(BlendFactor::Code f) {
+        blendSrcFactorRGB = f; return *this;
+    }
+    BlendFactor::Code BlendSrcFactorRGB() const {
+        return blendSrcFactorRGB;
+    }
+    PipelineDesc& BlendSrcFactorAlpha(BlendFactor::Code f) {
+        blendSrcFactorAlpha = f; return *this;
+    }
+    BlendFactor::Code BlendSrcFactorAlpha() const {
+        return blendSrcFactorAlpha;
+    }
+    PipelineDesc& BlendDstFactor(BlendFactor::Code f) {
+        blendDstFactorRGB = f;
+        blendDstFactorAlpha = f;
+        return *this;
+    }
+    PipelineDesc& BlendDstFactorRGB(BlendFactor::Code f) {
+        blendDstFactorRGB = f; return *this;
+    }
+    BlendFactor::Code BlendDstFactorRGB() const {
+        return blendDstFactorRGB;
+    }
+    PipelineDesc& BlendDstFactorAlpha(BlendFactor::Code f) {
+        blendDstFactorAlpha = f; return *this;
+    }
+    BlendFactor::Code BlendDstFactorAlpha() const {
+        return blendDstFactorAlpha;
+    }
+    PipelineDesc& BlendOp(BlendOperation::Code op) {
+        blendOpRGB = op;
+        blendOpAlpha = op;
+        return *this;
+    }
+    PipelineDesc& BlendOpRGB(BlendOperation::Code op) {
+        blendOpRGB = op; return *this;
+    }
+    BlendOperation::Code BlendOpRGB() const {
+        return blendOpRGB;
+    }
+    PipelineDesc& BlendOpAlpha(BlendOperation::Code op) {
+        blendOpAlpha = op; return *this;
+    }
+    BlendOperation::Code BlendOpAlpha() const {
+        return blendOpAlpha;
+    }
+    PipelineDesc& ColorWriteMask(PixelChannel::Mask m) {
+        colorWriteMask = m; return *this;
+    }
+    PixelChannel::Mask ColorWriteMask() const {
+        return colorWriteMask;
+    }
+    PipelineDesc& ColorFormat(PixelFormat::Code fmt) {
+        colorFormat = fmt; return *this;
+    }
+    PixelFormat::Code ColorFormat() const {
+        return colorFormat;
+    }
+    PipelineDesc& DepthFormat(PixelFormat::Code fmt) {
+        depthFormat = fmt; return *this;
+    }
+    PixelFormat::Code DepthFormat() const {
+        return depthFormat;
+    }
+    PipelineDesc& SampleCount(int c) {
+        sampleCount = c; return *this;
+    }
+    int SampleCount() const {
+        return sampleCount;
+    }
+    PipelineDesc& MRTCount(int c) {
+        mrtCount = c; return *this;
+    }
+    int MRTCount() const {
+        return mrtCount;
+    }
+    PipelineDesc& BlendColor(const glm::vec4& c) {
+        blendColor = c; return *this;
+    }
+    const glm::vec4& BlendColor() const {
+        return blendColor;
+    }
+    PipelineDesc& CullFaceEnabled(bool b) {
+        cullFaceEnabled = b; return *this;
+    }
+    bool CullFaceEnabled() const {
+        return cullFaceEnabled;
+    }
+    PipelineDesc& CullFace(Face::Code f) {
+        cullFace = f; return *this;
+    }
+    Face::Code CullFace() const {
+        return cullFace;
+    }
+    PipelineDesc& AlphaToCoverageEnabled(bool b) {
+        alphaToCoverageEnabled = b; return *this;
+    }
+    bool AlphaToCoverageEnabled() const {
+        return alphaToCoverageEnabled;
+    }
+    PipelineDesc& DepthBias(float f) {
+        depthBias = f; return *this;
+    }
+    float DepthBias() const {
+        return depthBias;
+    }
+    PipelineDesc& DepthBiasSlopeScale(float f) {
+        depthBiasSlopeScale = f; return *this;
+    }
+    float DepthBiasSlopeScale() const {
+        return depthBiasSlopeScale;
+    }
+    PipelineDesc& DepthBiasClamp(float f) {
+        depthBiasClamp = f; return *this;
+    }
+    float DepthBiasClamp() const {
+        return depthBiasClamp;
+    }
 
-    /// depth-stencil-state
-    CompareFunc::Code DepthCmpFunc = CompareFunc::Always;
-    bool DepthWriteEnabled = false;
-    bool StencilEnabled = false;
-    uint8_t StencilReadMask = 0xFF;
-    uint8_t StencilWriteMask = 0xFF;
-    uint8_t StencilRef = 0x00;
-    StencilOp::Code StencilFrontFailOp = StencilOp::Keep;
-    StencilOp::Code StencilFrontDepthFailOp = StencilOp::Keep;
-    StencilOp::Code StencilFrontPassOp = StencilOp::Keep;
-    CompareFunc::Code StencilFrontCmpFunc = CompareFunc::Always;
-    StencilOp::Code StencilBackFailOp = StencilOp::Keep;
-    StencilOp::Code StencilBackDepthFailOp = StencilOp::Keep;
-    StencilOp::Code StencilBackPassOp = StencilOp::Keep;
-    CompareFunc::Code StencilBackCmpFunc = CompareFunc::Always;
+    class Locator locator = Locator::NonShared();
+    Id shader;
+    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> layouts;
+    PrimitiveType::Code primType = PrimitiveType::Triangles;
+    Oryol::IndexType::Code indexType = IndexType::None;
 
-    /// blend state
-    bool BlendEnabled = false;
-    BlendFactor::Code BlendSrcFactorRGB = BlendFactor::One;
-    BlendFactor::Code BlendDstFactorRGB = BlendFactor::Zero;
-    BlendOperation::Code BlendOpRGB = BlendOperation::Add;
-    BlendFactor::Code BlendSrcFactorAlpha = BlendFactor::One;
-    BlendFactor::Code BlendDstFactorAlpha = BlendFactor::Zero;
-    BlendOperation::Code BlendOpAlpha = BlendOperation::Add;
-    PixelChannel::Mask ColorWriteMask = PixelChannel::RGBA;
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
-    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
-    int MRTCount = 1;
-    glm::vec4 BlendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    CompareFunc::Code depthCmpFunc = CompareFunc::Always;
+    bool depthWriteEnabled = false;
+    bool stencilEnabled = false;
+    uint8_t stencilReadMask = 0xFF;
+    uint8_t stencilWriteMask = 0xFF;
+    uint8_t stencilRef = 0x00;
+    StencilOp::Code stencilFrontFailOp = StencilOp::Keep;
+    StencilOp::Code stencilFrontDepthFailOp = StencilOp::Keep;
+    StencilOp::Code stencilFrontPassOp = StencilOp::Keep;
+    CompareFunc::Code stencilFrontCmpFunc = CompareFunc::Always;
+    StencilOp::Code stencilBackFailOp = StencilOp::Keep;
+    StencilOp::Code stencilBackDepthFailOp = StencilOp::Keep;
+    StencilOp::Code stencilBackPassOp = StencilOp::Keep;
+    CompareFunc::Code stencilBackCmpFunc = CompareFunc::Always;
 
-    /// rasterizer state
-    bool CullFaceEnabled = false;
-    bool AlphaToCoverageEnabled = false;
-    Face::Code CullFace = Face::Back;
-    int SampleCount = 1;
-    float DepthBias = 0.0f;
-    float DepthBiasSlopeScale = 0.0f;
-    float DepthBiasClamp = 0.0f;
+    bool blendEnabled = false;
+    BlendFactor::Code blendSrcFactorRGB = BlendFactor::One;
+    BlendFactor::Code blendDstFactorRGB = BlendFactor::Zero;
+    BlendOperation::Code blendOpRGB = BlendOperation::Add;
+    BlendFactor::Code blendSrcFactorAlpha = BlendFactor::One;
+    BlendFactor::Code blendDstFactorAlpha = BlendFactor::Zero;
+    BlendOperation::Code blendOpAlpha = BlendOperation::Add;
+    PixelChannel::Mask colorWriteMask = PixelChannel::RGBA;
+    PixelFormat::Code colorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code depthFormat = PixelFormat::DEPTHSTENCIL;
+    int mrtCount = 1;
+    glm::vec4 blendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    bool cullFaceEnabled = false;
+    bool alphaToCoverageEnabled = false;
+    Face::Code cullFace = Face::Back;
+    int sampleCount = 1;
+    float depthBias = 0.0f;
+    float depthBiasSlopeScale = 0.0f;
+    float depthBiasClamp = 0.0f;
 };
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::PipelineBuilder
-    @ingroup Gfx
-    @brief builder for PipelineDesc objects
-*/
-class PipelineBuilder {
-public:
-    PipelineDesc Desc;
-    PipelineBuilder& From(const PipelineDesc& desc) {
-        Desc = desc; return *this;
-    }
-    PipelineBuilder& Locator(const class Locator& loc) {
-        Desc.Locator = loc; return *this;
-    }
-    PipelineBuilder& Shader(const Id& shd) {
-        Desc.Shader = shd; return *this;
-    }
-    PipelineBuilder& Layout(int slotIndex, const VertexLayout& layout) {
-        Desc.Layouts[slotIndex] = layout; return *this;
-    }
-    PipelineBuilder& PrimitiveType(PrimitiveType::Code t) {
-        Desc.PrimType = t; return *this;
-    }
-    PipelineBuilder& IndexType(IndexType::Code t) {
-        Desc.IndexType = t; return *this;
-    }
-    PipelineBuilder& DepthCmpFunc(CompareFunc::Code f) {
-        Desc.DepthCmpFunc = f; return *this;
-    }
-    PipelineBuilder& DepthWriteEnabled(bool b) {
-        Desc.DepthWriteEnabled = b; return *this;
-    }
-    PipelineBuilder& StencilEnabled(bool b) {
-        Desc.StencilEnabled = b; return *this;
-    }
-    PipelineBuilder& StencilReadMask(uint8_t m) {
-        Desc.StencilReadMask = m; return *this;
-    }
-    PipelineBuilder& StencilWriteMask(uint8_t m) {
-        Desc.StencilWriteMask = m; return *this;
-    }
-    PipelineBuilder& StencilRef(uint8_t r) {
-        Desc.StencilRef = r; return *this;
-    }
-    PipelineBuilder& StencilFailOp(Face::Code face, StencilOp::Code op) {
-        if (Face::Front & face) {
-            Desc.StencilFrontFailOp = op;
-        }
-        if (Face::Back & face) {
-            Desc.StencilBackFailOp = op;
-        }
-        return *this;
-    }
-    PipelineBuilder& StencilDepthFailOp(Face::Code face, StencilOp::Code op) {
-        if (Face::Front & face) {
-            Desc.StencilFrontDepthFailOp = op;
-        }
-        if (Face::Back & face) {
-            Desc.StencilBackDepthFailOp = op;
-        }
-        return *this;
-    }
-    PipelineBuilder& StencilPassOp(Face::Code face, StencilOp::Code op) {
-        if (Face::Front & face) {
-            Desc.StencilFrontPassOp = op;
-        }
-        if (Face::Back & face) {
-            Desc.StencilBackPassOp = op;
-        }
-        return *this;
-    }
-    PipelineBuilder& StencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
-        if (Face::Front & face) {
-            Desc.StencilFrontCmpFunc = fn;
-        }
-        if (Face::Back & face) {
-            Desc.StencilBackCmpFunc = fn;
-        }
-        return *this;
-    }
-    PipelineBuilder& BlendEnabled(bool b) {
-        Desc.BlendEnabled = b; return *this;
-    }
-    PipelineBuilder& BlendSrcFactor(BlendFactor::Code f) {
-        Desc.BlendSrcFactorRGB = f;
-        Desc.BlendSrcFactorAlpha = f;
-        return *this;
-    }
-    PipelineBuilder& BlendSrcFactorRGB(BlendFactor::Code f) {
-        Desc.BlendSrcFactorRGB = f; return *this;
-    }
-    PipelineBuilder& BlendSrcFactorAlpha(BlendFactor::Code f) {
-        Desc.BlendSrcFactorAlpha = f; return *this;
-    }
-    PipelineBuilder& BlendDstFactor(BlendFactor::Code f) {
-        Desc.BlendDstFactorRGB = f;
-        Desc.BlendDstFactorAlpha = f;
-        return *this;
-    }
-    PipelineBuilder& BlendDstFactorRGB(BlendFactor::Code f) {
-        Desc.BlendDstFactorRGB = f; return *this;
-    }
-    PipelineBuilder& BlendDstFactorAlpha(BlendFactor::Code f) {
-        Desc.BlendDstFactorAlpha = f; return *this;
-    }
-    PipelineBuilder& BlendOp(BlendOperation::Code op) {
-        Desc.BlendOpRGB = op;
-        Desc.BlendOpAlpha = op;
-        return *this;
-    }
-    PipelineBuilder& BlendOpRGB(BlendOperation::Code op) {
-        Desc.BlendOpRGB = op; return *this;
-    }
-    PipelineBuilder& BlendOpAlpha(BlendOperation::Code op) {
-        Desc.BlendOpAlpha = op; return *this;
-    }
-    PipelineBuilder& ColorWriteMask(PixelChannel::Mask m) {
-        Desc.ColorWriteMask = m; return *this;
-    }
-    PipelineBuilder& ColorFormat(PixelFormat::Code fmt) {
-        Desc.ColorFormat = fmt; return *this;
-    }
-    PipelineBuilder& DepthFormat(PixelFormat::Code fmt) {
-        Desc.DepthFormat = fmt; return *this;
-    }
-    PipelineBuilder& SampleCount(int c) {
-        Desc.SampleCount = c; return *this;
-    }
-    PipelineBuilder& MRTCount(int c) {
-        Desc.MRTCount = c; return *this;
-    }
-    PipelineBuilder& BlendColor(const glm::vec4& c) {
-        Desc.BlendColor = c; return *this;
-    }
-    PipelineBuilder& CullFaceEnabled(bool b) {
-        Desc.CullFaceEnabled = b; return *this;
-    }
-    PipelineBuilder& CullFace(Face::Code f) {
-        Desc.CullFace = f; return *this;
-    }
-    PipelineBuilder& AlphaToCoverageEnabled(bool b) {
-        Desc.AlphaToCoverageEnabled = b; return *this;
-    }
-    PipelineBuilder& DepthBias(float f) {
-        Desc.DepthBias = f; return *this;
-    }
-    PipelineBuilder& DepthBiasSlopeScale(float f) {
-        Desc.DepthBiasSlopeScale = f; return *this;
-    }
-    PipelineBuilder& DepthBiasClamp(float f) {
-        Desc.DepthBiasClamp = f; return *this;
-    }
-    const PipelineDesc& Done() {
-        return Desc;
-    }
-};
-inline PipelineBuilder NewPipelineDesc() {
-    return PipelineBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**
@@ -1234,12 +1326,61 @@ inline PipelineBuilder NewPipelineDesc() {
     @brief creation attributes for shaders
 */
 struct ShaderDesc {
-    /// the resource locator
-    class Locator Locator = Locator::NonShared();
-    /// vertex shader input descriptions
-    VertexLayout Layout;
+    ShaderDesc() { };
+    ShaderDesc(const ShaderDesc& rhs) {
+        *this = rhs;
+    }
+    ShaderDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    ShaderDesc& Source(ShaderStage::Code stg, const char* src) {
+        stage[stg].Source = src; return *this;
+    }
+    const char* Source(ShaderStage::Code stg) {
+        return stage[stg].Source;
+    }
+    ShaderDesc& ByteCode(ShaderStage::Code stg, const uint8_t* ptr, int size) {
+        stage[stg].ByteCode = ptr;
+        stage[stg].ByteCodeSize = size;
+        return *this;
+    }
+    const uint8_t* ByteCodePtr(ShaderStage::Code stg) const {
+        return stage[stg].ByteCode;
+    }
+    int ByteCodeSize(ShaderStage::Code stg) const {
+        return stage[stg].ByteCodeSize;
+    }
+    ShaderDesc& Entry(ShaderStage::Code stg, const char* entry) {
+        stage[stg].Entry = entry; return *this;
+    }
+    const char* Entry(ShaderStage::Code stg) const {
+        return stage[stg].Entry;
+    }
+    ShaderDesc& Attr(const StringAtom& name, VertexFormat::Code fmt) {
+        layout.Add(name, fmt); return *this;
+    }
+    const VertexLayout& Layout() const {
+        return layout;
+    }
+    ShaderDesc& UniformBlock(ShaderStage::Code stg, int slot, const char* name, const char* type, int size) {
+        auto& ubSlot = stage[stg].UniformBlocks[slot];
+        ubSlot.Name = name;
+        ubSlot.Type = type;
+        ubSlot.Size = size;
+        return *this;
+    }
+    ShaderDesc& Texture(ShaderStage::Code stg, int slot, const char* name, TextureType::Code type) {
+        auto& texSlot = stage[stg].Textures[slot];
+        texSlot.Name = name;
+        texSlot.Type = type;
+        return *this;
+    }
 
-    /// shader stage descriptions
+    class Locator locator = Locator::NonShared();
+    VertexLayout layout;
     struct UniformBlockDesc {
         const char* Name = nullptr;
         const char* Type = nullptr;
@@ -1257,51 +1398,7 @@ struct ShaderDesc {
         StaticArray<UniformBlockDesc, GfxConfig::MaxNumUniformBlocksPerStage> UniformBlocks;
         StaticArray<TextureDesc, GfxConfig::MaxNumShaderTextures> Textures;
     };
-    StaticArray<StageDesc, ShaderStage::Num> Stage;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::ShaderBuilder
-    @ingroup Gfx
-    @brief builder for ShaderDesc objects
-*/
-class ShaderBuilder {
-public:
-    ShaderDesc Desc;
-    ShaderBuilder& From(const ShaderDesc& desc) {
-        Desc = desc; return *this;
-    }
-    ShaderBuilder& Locator(const class Locator& loc) {
-        Desc.Locator = loc; return *this;
-    }
-    ShaderBuilder& Source(ShaderStage::Code stage, const char* src) {
-        Desc.Stage[stage].Source = src; return *this;
-    }
-    ShaderBuilder& ByteCode(ShaderStage::Code stage, const uint8_t* ptr, int size) {
-        Desc.Stage[stage].ByteCode = ptr;
-        Desc.Stage[stage].ByteCodeSize = size;
-        return *this;
-    }
-    ShaderBuilder& Entry(ShaderStage::Code stage, const char* entry) {
-        Desc.Stage[stage].Entry = entry; return *this;
-    }
-    ShaderBuilder& Attr(const StringAtom& name, VertexFormat::Code fmt) {
-        Desc.Layout.Add(name, fmt); return *this;
-    }
-    ShaderBuilder& UniformBlock(ShaderStage::Code stage, int slot, const char* name, const char* type, int size) {
-        auto& ubSlot = Desc.Stage[stage].UniformBlocks[slot];
-        ubSlot.Name = name;
-        ubSlot.Type = type;
-        ubSlot.Size = size;
-        return *this;
-    }
-    ShaderBuilder& Texture(ShaderStage::Code stage, int slot, const char* name, TextureType::Code type) {
-        auto& texSlot = Desc.Stage[stage].Textures[slot];
-        texSlot.Name = name;
-        texSlot.Type = type;
-        return *this;
-    }
+    StaticArray<StageDesc, ShaderStage::Num> stage;
 };
 
 //------------------------------------------------------------------------------
@@ -1310,142 +1407,148 @@ public:
     @ingroup Gfx
     @brief setup object for textures and render targets
 */
-class TextureDesc {
-public:
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// the texture type
-    TextureType::Code Type = TextureType::Texture2D;
-    /// whether the texture will be used as a render target
-    bool RenderTarget = false;
-    /// the texture width
-    int Width = 1;
-    /// the texture height
-    int Height = 1;
-    /// the texture depth or number of layers
-    int Depth = 1;
-    /// number of mipmaps in the texture
-    int NumMipMaps = 1;
-    /// the usage-hint of the texture
-    Oryol::Usage::Code Usage = Usage::Immutable;
-    /// the pixel format (can be one of the depth formats if this is a depth-render-target)
-    PixelFormat::Code Format = PixelFormat::RGBA8;
-    /// the sample count, for MSAA render targets
-    int SampleCount = 1;
-    /// magnification texture filter mode
-    TextureFilterMode::Code MagFilter = TextureFilterMode::Nearest;
-    /// minification texture filter mode
-    TextureFilterMode::Code MinFilter = TextureFilterMode::Nearest;
-    /// texture coordinate wrapping mode along U
-    TextureWrapMode::Code WrapU = TextureWrapMode::Repeat;
-    /// texture coordinate wrapping mode along V
-    TextureWrapMode::Code WrapV = TextureWrapMode::Repeat;
-    /// texture coordinate wrapping mode along W
-    TextureWrapMode::Code WrapW = TextureWrapMode::Repeat;
-    /// optional native textures (only on platforms which support GfxFeature::NativeTextures)
-    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeTextures;
-    /// optional image surface offsets and sizes
-    ImageContent Content;
-
-    /// default constructor
+struct TextureDesc {
     TextureDesc() {
-        NativeTextures.Fill(0);
+        nativeTextures.Fill(0);
     }
-};
+    TextureDesc(const TextureDesc& rhs) {
+        *this = rhs;
+    }
+    TextureDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    TextureDesc& Type(TextureType::Code t) {
+        type = t; return *this;
+    }
+    TextureType::Code Type() const {
+        return type;
+    }
+    TextureDesc& RenderTarget(bool b) {
+        renderTarget = b; return *this;
+    }
+    bool RenderTarget() const {
+        return renderTarget;
+    }
+    TextureDesc& Width(int w) {
+        width = w; return *this;
+    }
+    int Width() const {
+        return width;
+    }
+    TextureDesc& Height(int h) {
+        height = h; return *this;
+    }
+    int Height() const {
+        return height;
+    }
+    TextureDesc& Depth(int d) {
+        depth = d; return *this;
+    }
+    int Depth() const {
+        return depth;
+    }
+    TextureDesc& Layers(int l) {
+        depth = l; return *this;
+    }
+    int Layers() const {
+        return depth;
+    }
+    TextureDesc& NumMipMaps(int n) {
+        numMipMaps = n; return *this;
+    }
+    int NumMipMaps() const {
+        return numMipMaps;
+    }
+    TextureDesc& Usage(Usage::Code u) {
+        usage = u; return *this;
+    }
+    Usage::Code Usage() const {
+        return usage;
+    }
+    TextureDesc& Format(PixelFormat::Code fmt) {
+        format = fmt; return *this;
+    }
+    PixelFormat::Code Format() const {
+        return format;
+    }
+    TextureDesc& SampleCount(int c) {
+        sampleCount = c; return *this;
+    }
+    int SampleCount() const {
+        return sampleCount;
+    }
+    TextureDesc& MagFilter(TextureFilterMode::Code f) {
+        magFilter = f; return *this;
+    }
+    TextureFilterMode::Code MagFilter() const {
+        return magFilter;
+    }
+    TextureDesc& MinFilter(TextureFilterMode::Code f) {
+        minFilter = f; return *this;
+    }
+    TextureFilterMode::Code MinFilter() const {
+        return minFilter;
+    }
+    TextureDesc& WrapU(TextureWrapMode::Code m) {
+        wrapU = m; return *this;
+    }
+    TextureWrapMode::Code WrapU() const {
+        return wrapU;
+    }
+    TextureDesc& WrapV(TextureWrapMode::Code m) {
+        wrapV = m; return *this;
+    }
+    TextureWrapMode::Code WrapV() const {
+        return wrapV;
+    }
+    TextureDesc& WrapW(TextureWrapMode::Code m) {
+        wrapW = m; return *this;
+    }
+    TextureWrapMode::Code WrapW() const {
+        return wrapW;
+    }
+    TextureDesc& NativeTexture(int index, intptr_t tex) {
+        nativeTextures[index] = tex; return *this;
+    }
+    intptr_t NativeTexture(int index) const {
+        return nativeTextures[index];
+    }
+    TextureDesc& MipSize(int faceIndex, int mipIndex, int size) {
+        content.Size[faceIndex][mipIndex] = size;
+        return *this;
+    }
+    int MipSize(int faceIndex, int mipIndex) const {
+        return content.Size[faceIndex][mipIndex];
+    }
+    TextureDesc& MipContent(int faceIndex, int mipIndex, const void* ptr) {
+        content.Pointer[faceIndex][mipIndex] = ptr;
+        return *this;
+    }
+    const void* MipContent(int faceIndex, int mipIndex) const {
+        return content.Pointer[faceIndex][mipIndex];
+    }
 
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::TextureBuilder
-    @ingroup Gfx
-    @brief builder for TextureDesc objects
-*/
-class TextureBuilder {
-public:
-    TextureDesc Desc;
-    const void* ContentPtr = nullptr;
-    int ContentSize = 0;
-    static TextureBuilder New() {
-        return TextureBuilder();
-    }
-    TextureBuilder& From(const TextureDesc& desc) {
-        Desc = desc; return *this;
-    }
-    TextureBuilder& Locator(const class Locator& loc) {
-        Desc.Locator = loc; return *this;
-    }
-    TextureBuilder& Type(TextureType::Code t) {
-        Desc.Type = t; return *this;
-    }
-    TextureBuilder& RenderTarget(bool b) {
-        Desc.RenderTarget = b; return *this;
-    }
-    TextureBuilder& Width(int w) {
-        Desc.Width = w; return *this;
-    }
-    TextureBuilder& Height(int h) {
-        Desc.Height = h; return *this;
-    }
-    TextureBuilder& Depth(int d) {
-        Desc.Depth = d; return *this;
-    }
-    TextureBuilder& Layers(int l) {
-        Desc.Depth = l; return *this;
-    }
-    TextureBuilder& NumMipMaps(int n) {
-        Desc.NumMipMaps = n; return *this;
-    }
-    TextureBuilder& Usage(Usage::Code u) {
-        Desc.Usage = u; return *this;
-    }
-    TextureBuilder& Format(PixelFormat::Code fmt) {
-        Desc.Format = fmt; return *this;
-    }
-    TextureBuilder& SampleCount(int c) {
-        Desc.SampleCount = c; return *this;
-    }
-    TextureBuilder& MagFilter(TextureFilterMode::Code f) {
-        Desc.MagFilter = f; return *this;
-    }
-    TextureBuilder& MinFilter(TextureFilterMode::Code f) {
-        Desc.MinFilter = f; return *this;
-    }
-    TextureBuilder& WrapU(TextureWrapMode::Code m) {
-        Desc.WrapU = m; return *this;
-    }
-    TextureBuilder& WrapV(TextureWrapMode::Code m) {
-        Desc.WrapV = m; return *this;
-    }
-    TextureBuilder& WrapW(TextureWrapMode::Code m) {
-        Desc.WrapW = m; return *this;
-    }
-    TextureBuilder& NativeTexture(int index, intptr_t tex) {
-        Desc.NativeTextures[index] = tex; return *this;
-    }
-    TextureBuilder& Content(const void* ptr, int size) {
-        ContentPtr = ptr;
-        ContentSize = size;
-        return *this;
-    }
-    TextureBuilder& Content(const MemoryBuffer& content) {
-        ContentPtr = content.Data();
-        ContentSize = content.Size();
-        return *this;
-    }
-    TextureBuilder& MipSize(int faceIndex, int mipIndex, int size) {
-        Desc.Content.Size[faceIndex][mipIndex] = size;
-        return *this;
-    }
-    TextureBuilder& MipContent(int faceIndex, int mipIndex, const void* ptr) {
-        Desc.Content.Pointer[faceIndex][mipIndex] = ptr;
-        return *this;
-    }
-    const TextureDesc& Done() {
-        return Desc;
-    }
+    class Locator locator = Locator::NonShared();
+    TextureType::Code type = TextureType::Texture2D;
+    bool renderTarget = false;
+    int width = 1;
+    int height = 1;
+    int depth = 1;
+    int numMipMaps = 1;
+    Oryol::Usage::Code usage = Usage::Immutable;
+    PixelFormat::Code format = PixelFormat::RGBA8;
+    int sampleCount = 1;
+    TextureFilterMode::Code magFilter = TextureFilterMode::Nearest;
+    TextureFilterMode::Code minFilter = TextureFilterMode::Nearest;
+    TextureWrapMode::Code wrapU = TextureWrapMode::Repeat;
+    TextureWrapMode::Code wrapV = TextureWrapMode::Repeat;
+    TextureWrapMode::Code wrapW = TextureWrapMode::Repeat;
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> nativeTextures;
+    ImageContent content;
 };
-inline TextureBuilder NewTextureDesc() {
-    return TextureBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**
@@ -1454,9 +1557,32 @@ inline TextureBuilder NewTextureDesc() {
     @brief creation attributes for render pass resource
 */
 struct PassDesc {
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// a color- or depth-stencil attachment description
+    PassDesc() { };
+    PassDesc(const PassDesc& rhs) {
+        *this = rhs;
+    }
+    PassDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    PassDesc& ColorAttachment(int slotIndex, const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
+        auto& att = colorAttachments[slotIndex];
+        att.Texture = tex;
+        att.MipLevel = mipLevel;
+        att.Face = faceLayerSlice;
+        return *this;
+    }
+    PassDesc& DepthStencilAttachment(const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
+        auto& att = depthStencilAttachment;
+        att.Texture = tex;
+        att.MipLevel = mipLevel;
+        att.Face = faceLayerSlice;
+        return *this;
+    }
+
+    class Locator locator = Locator::NonShared();
     struct Attachment {
         Id Texture;
         int MipLevel = 0;
@@ -1466,48 +1592,9 @@ struct PassDesc {
             int Slice;
         };
     };
-    /// color attachments (at least the first must be valid)
-    StaticArray<Attachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
-    /// optional depth-stencil attachment
-    Attachment DepthStencilAttachment;
+    StaticArray<Attachment, GfxConfig::MaxNumColorAttachments> colorAttachments;
+    Attachment depthStencilAttachment;
 };
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::PassBuilder
-    @ingroup Gfx
-    @brief builder class for render pass creation
-*/
-class PassBuilder {
-public:
-    PassDesc Desc;
-    PassBuilder& From(const PassDesc& desc) {
-        Desc = desc; return *this;
-    }
-    PassBuilder& Locator(const class Locator& loc) {
-        Desc.Locator = loc; return *this;
-    }
-    PassBuilder& ColorAttachment(int slotIndex, const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
-        auto& att = this->Desc.ColorAttachments[slotIndex];
-        att.Texture = tex;
-        att.MipLevel = mipLevel;
-        att.Face = faceLayerSlice;
-        return *this;
-    }
-    PassBuilder& DepthStencilAttachment(const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
-        auto& att = this->Desc.DepthStencilAttachment;
-        att.Texture = tex;
-        att.MipLevel = mipLevel;
-        att.Face = faceLayerSlice;
-        return *this;
-    }
-    const PassDesc& Done() {
-        return Desc;
-    }
-};
-inline PassBuilder NewPassDesc() {
-    return PassBuilder();
-}
 
 //------------------------------------------------------------------------------
 /**

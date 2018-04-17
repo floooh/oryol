@@ -63,7 +63,7 @@ MultipleRenderTargetApp::OnInit() {
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTHSTENCIL;
     const int rtSampleCount = 4;
-    auto rtDesc = NewTextureDesc()
+    auto rtDesc = TextureDesc()
         .Type(TextureType::Texture2D)
         .RenderTarget(true)
         .Width(OffscreenWidth)
@@ -71,20 +71,18 @@ MultipleRenderTargetApp::OnInit() {
         .Format(rtColorFormat)
         .MinFilter(TextureFilterMode::Linear)
         .MagFilter(TextureFilterMode::Linear)
-        .SampleCount(rtSampleCount)
-        .Done();
+        .SampleCount(rtSampleCount);
     Id rtColor0 = Gfx::CreateTexture(rtDesc);
     Id rtColor1 = Gfx::CreateTexture(rtDesc);
     Id rtColor2 = Gfx::CreateTexture(rtDesc);
-    Id rtDepth = Gfx::CreateTexture(NewTextureDesc().From(rtDesc).Format(rtDepthFormat).Done());
+    Id rtDepth = Gfx::CreateTexture(TextureDesc(rtDesc).Format(rtDepthFormat));
 
     // create a render pass with the 3 color- and 1 depth-attachment
-    this->mrtPass = Gfx::CreatePass(NewPassDesc()
+    this->mrtPass = Gfx::CreatePass(PassDesc()
         .ColorAttachment(0, rtColor0)
         .ColorAttachment(1, rtColor1)
         .ColorAttachment(2, rtColor2)
-        .DepthStencilAttachment(rtDepth)
-        .Done());
+        .DepthStencilAttachment(rtDepth));
 
     // a pass-action to clear the multiple-render-target
     this->mrtPassAction
@@ -107,8 +105,7 @@ MultipleRenderTargetApp::OnInit() {
 
     // create a draw state to render a cube into the
     // offscreen render targets (this is where the MRT rendering happens)
-    this->cubeDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shapes.PipelineDesc)
+    this->cubeDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
@@ -116,26 +113,23 @@ MultipleRenderTargetApp::OnInit() {
         .ColorFormat(rtColorFormat)
         .DepthFormat(rtDepthFormat)
         .SampleCount(rtSampleCount)
-        .MRTCount(3)
-        .Done());
+        .MRTCount(3));
     this->cubeDrawState.VertexBuffers[0] = shapesVertexBuffer;
     this->cubeDrawState.IndexBuffer = shapesIndexBuffer;
 
     // create a quad-mesh for displaying the 3 render target textures on screen
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    Id quadVertexBuffer = Gfx::CreateBuffer(NewBufferDesc()
+    Id quadVertexBuffer = Gfx::CreateBuffer(BufferDesc()
         .Size(sizeof(quadVertices))
-        .Content(quadVertices)
-        .Done());
-    Id quadPipeline = Gfx::CreatePipeline(NewPipelineDesc()
+        .Content(quadVertices));
+    Id quadPipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(QuadShader::Desc()))
         .Layout(0, { { "in_pos", VertexFormat::Float2 } })
         .PrimitiveType(PrimitiveType::TriangleStrip)
         .DepthWriteEnabled(false)
         .DepthCmpFunc(CompareFunc::Always)
         .CullFaceEnabled(false)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
+        .SampleCount(Gfx::Desc().SampleCount()));
     this->rt0DrawState.Pipeline = quadPipeline;
     this->rt0DrawState.VertexBuffers[0] = quadVertexBuffer;
     this->rt0DrawState.FSTexture[QuadShader::tex] = rtColor0;
@@ -148,14 +142,12 @@ MultipleRenderTargetApp::OnInit() {
 
     // and finally create a draw state to render a plane to the
     // main display which samples the 3 offscreen render targets
-    this->displayDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shapes.PipelineDesc)
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(false)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
+        .SampleCount(Gfx::Desc().SampleCount()));
     this->displayDrawState.VertexBuffers[0] = shapesVertexBuffer;
     this->displayDrawState.IndexBuffer = shapesIndexBuffer;
     this->displayDrawState.FSTexture[DisplayShader::redTex] = rtColor0;

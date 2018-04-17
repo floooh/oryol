@@ -75,21 +75,20 @@ static TextureDesc buildDesc(const TextureDesc& blueprint, const gliml::context&
             break;
     }
     o_assert(PixelFormat::Invalid != pixelFormat);
-    auto bld = TextureBuilder::New()
-        .From(blueprint)
+    auto desc = TextureDesc(blueprint)
         .Width(w)
         .Height(h)
         .NumMipMaps(numMips)
         .Format(pixelFormat);
     switch (ctx.texture_target()) {
         case GLIML_GL_TEXTURE_2D:
-            bld.Type(TextureType::Texture2D);
+            desc.Type(TextureType::Texture2D);
             break;
         case GLIML_GL_TEXTURE_3D:
-            bld.Type(TextureType::Texture3D).Depth(d);
+            desc.Type(TextureType::Texture3D).Depth(d);
             break;
         case GLIML_GL_TEXTURE_CUBE_MAP:
-            bld.Type(TextureType::TextureCube);
+            desc.Type(TextureType::TextureCube);
             break;
         default:
             o_error("Unknown texture type!\n");
@@ -100,18 +99,18 @@ static TextureDesc buildDesc(const TextureDesc& blueprint, const gliml::context&
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx.num_mipmaps(0));
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         for (int mipIndex = 0; mipIndex < numMips; mipIndex++) {
-            bld.MipContent(faceIndex, mipIndex, ctx.image_data(faceIndex, mipIndex));
-            bld.MipSize(faceIndex, mipIndex, ctx.image_size(faceIndex, mipIndex));
+            desc.MipContent(faceIndex, mipIndex, ctx.image_data(faceIndex, mipIndex));
+            desc.MipSize(faceIndex, mipIndex, ctx.image_size(faceIndex, mipIndex));
         }
     }
-    return bld.Desc;
+    return desc;
 }
 
 //------------------------------------------------------------------------------
 Id
 TextureLoader::Load(const TextureDesc& desc) {
-    Id resId = Gfx::AllocTexture(desc.Locator);
-    IO::Load(URL(desc.Locator.Location()), [resId, desc](IO::LoadResult result) {
+    Id resId = Gfx::AllocTexture(desc.locator);
+    IO::Load(URL(desc.locator.Location()), [resId, desc](IO::LoadResult result) {
         const uint8_t* data = result.Data.Data();
         const int dataSize = result.Data.Size();
         gliml::context ctx;

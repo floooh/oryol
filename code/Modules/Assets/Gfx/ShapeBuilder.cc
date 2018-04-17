@@ -290,8 +290,8 @@ ShapeBuilder::Build() {
     ShapeBuilder::Result shapeResult;
     shapeResult.VertexBufferDesc = std::move(meshResult.VertexBufferDesc);
     shapeResult.IndexBufferDesc = std::move(meshResult.IndexBufferDesc);
-    shapeResult.PipelineDesc.Layouts[0] = std::move(meshResult.Layout);
-    shapeResult.PipelineDesc.IndexType = meshResult.IndexType;
+    shapeResult.PipelineDesc.layouts[0] = std::move(meshResult.Layout);
+    shapeResult.PipelineDesc.indexType = meshResult.IndexType;
     shapeResult.Data = std::move(meshResult.Data);
     shapeResult.PrimitiveGroups = std::move(this->primGroups);
 

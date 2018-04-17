@@ -40,26 +40,24 @@ OryolMain(PrimitiveTypesApp);
 //------------------------------------------------------------------------------
 Id
 createIndexBuffer(const uint16_t* data, int dataSize) {
-    return Gfx::CreateBuffer(NewBufferDesc()
+    return Gfx::CreateBuffer(BufferDesc()
         .Size(dataSize)
         .Content(data)
         .Type(BufferType::IndexBuffer)
-        .Usage(Usage::Immutable)
-        .Done());
+        .Usage(Usage::Immutable));
 }
 
 //------------------------------------------------------------------------------
 Id
 createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const VertexLayout& layout, Id shd, int sampleCount) {
-    return Gfx::CreatePipeline(NewPipelineDesc()
+    return Gfx::CreatePipeline(PipelineDesc()
         .Shader(shd)
         .Layout(0, layout)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(sampleCount)
         .IndexType(indexType)
-        .PrimitiveType(primType)
-        .Done());
+        .PrimitiveType(primType));
 }
 
 //------------------------------------------------------------------------------

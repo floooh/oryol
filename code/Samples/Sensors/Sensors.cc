@@ -47,13 +47,11 @@ SensorsApp::OnInit() {
     this->primGroup = shape.PrimitiveGroups[0];
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
     this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(true)
-        .Done());
+        .CullFaceEnabled(true));
 
     // setup transform matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

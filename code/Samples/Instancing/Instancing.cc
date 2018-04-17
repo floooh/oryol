@@ -69,22 +69,19 @@ InstancingApp::OnInit() {
     this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // create dynamic instance data vertex buffer on slot 1
-    this->drawState.VertexBuffers[1] = Gfx::CreateBuffer(NewBufferDesc()
+    this->drawState.VertexBuffers[1] = Gfx::CreateBuffer(BufferDesc()
         .Size(MaxNumParticles * VertexFormat::ByteSize(VertexFormat::Float4))
-        .Usage(Usage::Stream)
-        .Done());
+        .Usage(Usage::Stream));
 
     // setup pipeline state for instanced rendering
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(1, VertexLayout::New()
             .EnableInstancing()
             .Add("in_instpos", VertexFormat::Float4))
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .Done());
+        .DepthCmpFunc(CompareFunc::LessEqual));
     
     // setup projection and view matrices
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;

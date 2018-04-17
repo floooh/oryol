@@ -45,7 +45,7 @@ SimpleRenderTargetApp::OnInit() {
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
     const int rtSampleCount = Gfx::QueryFeature(GfxFeature::MSAARenderTargets) ? 4 : 1;
-    auto rtCommon = NewTextureDesc()
+    auto rtCommon = TextureDesc()
         .Type(TextureType::Texture2D)
         .RenderTarget(true)
         .Width(128)
@@ -54,14 +54,12 @@ SimpleRenderTargetApp::OnInit() {
         .WrapV(TextureWrapMode::Repeat)
         .MagFilter(TextureFilterMode::Linear)
         .MinFilter(TextureFilterMode::Linear)
-        .SampleCount(rtSampleCount)
-        .Done();
-    Id rtColorTexture = Gfx::CreateTexture(NewTextureDesc().From(rtCommon).Format(rtColorFormat).Done());
-    Id rtDepthTexture = Gfx::CreateTexture(NewTextureDesc().From(rtCommon).Format(rtDepthFormat).Done());
-    this->renderPass = Gfx::CreatePass(NewPassDesc()
+        .SampleCount(rtSampleCount);
+    Id rtColorTexture = Gfx::CreateTexture(TextureDesc(rtCommon).Format(rtColorFormat));
+    Id rtDepthTexture = Gfx::CreateTexture(TextureDesc(rtCommon).Format(rtDepthFormat));
+    this->renderPass = Gfx::CreatePass(PassDesc()
         .ColorAttachment(0, rtColorTexture)
-        .DepthStencilAttachment(rtDepthTexture)
-        .Done());
+        .DepthStencilAttachment(rtDepthTexture));
 
     // create a donut mesh, shader and pipeline object
     // (this will be rendered into the offscreen render target)
@@ -73,15 +71,13 @@ SimpleRenderTargetApp::OnInit() {
     this->donutPrimGroup = donut.PrimitiveGroups[0];
     this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(donut.VertexBufferDesc);
     this->offscreenDrawState.IndexBuffer = Gfx::CreateBuffer(donut.IndexBufferDesc);
-    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(donut.PipelineDesc)
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(donut.PipelineDesc)
         .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .ColorFormat(rtColorFormat)
         .DepthFormat(rtDepthFormat)
-        .SampleCount(rtSampleCount)
-        .Done());
+        .SampleCount(rtSampleCount));
 
     // create a sphere mesh, shader and pipeline object for rendering to display
     auto sphere = ShapeBuilder::New()
@@ -93,13 +89,11 @@ SimpleRenderTargetApp::OnInit() {
     this->spherePrimGroup = sphere.PrimitiveGroups[0];
     this->displayDrawState.VertexBuffers[0] = Gfx::CreateBuffer(sphere.VertexBufferDesc);
     this->displayDrawState.IndexBuffer = Gfx::CreateBuffer(sphere.IndexBufferDesc);
-    this->displayDrawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(sphere.PipelineDesc)
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
         .Shader(Gfx::CreateShader(DisplayShader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
+        .SampleCount(Gfx::Desc().SampleCount()));
     this->displayDrawState.FSTexture[DisplayShader::tex] = rtColorTexture;
 
     // setup static transform matrices

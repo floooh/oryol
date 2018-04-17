@@ -67,13 +67,12 @@ DDSTextureLoadingApp::OnInit() {
         "tex:lok_bgr565.dds",
     };
     for (int i = 0; i < NumTextures; i++) {
-        this->textures[i] = TextureLoader::Load(NewTextureDesc()
+        this->textures[i] = TextureLoader::Load(TextureDesc()
             .Locator(paths[i])
             .MinFilter(TextureFilterMode::LinearMipmapLinear)
             .MagFilter(TextureFilterMode::Linear)
             .WrapU(TextureWrapMode::ClampToEdge)
-            .WrapV(TextureWrapMode::ClampToEdge)
-            .Done());
+            .WrapV(TextureWrapMode::ClampToEdge));
     }
 
     auto shape = ShapeBuilder::New()
@@ -85,12 +84,10 @@ DDSTextureLoadingApp::OnInit() {
     this->primGroup = shape.PrimitiveGroups[0];
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
     this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shape.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .Done());
+        .DepthCmpFunc(CompareFunc::LessEqual));
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
     const float fbHeight = (const float) Gfx::DisplayAttrs().Height;

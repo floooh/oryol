@@ -44,13 +44,11 @@ ShapeApp::OnInit() {
         .Build();
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shapes.VertexBufferDesc);
     this->drawState.IndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(NewPipelineDesc()
-        .From(shapes.PipelineDesc)
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount())
-        .Done());
+        .SampleCount(Gfx::Desc().SampleCount()));
     this->primGroups = std::move(shapes.PrimitiveGroups);
 
     const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
