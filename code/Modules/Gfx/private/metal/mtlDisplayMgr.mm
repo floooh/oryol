@@ -72,16 +72,16 @@ void
 mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
 
     #if ORYOL_MACOS
-    StringBuilder strBuilder(desc.Title);
+    StringBuilder strBuilder(desc.title);
     strBuilder.Append(" (Metal)");
 
     NSWindow* window = osxBridge::ptr()->appWindow;
     [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
-    [window setContentSize:NSMakeSize(desc.Width, desc.Height)];
+    [window setContentSize:NSMakeSize(desc.width, desc.height)];
     [window center];
     osBridge* bridge = osBridge::ptr();
-    if (!desc.HighDPI) {
-        CGSize drawableSize = { (CGFloat) desc.Width, (CGFloat) desc.Height };
+    if (!desc.highDPI) {
+        CGSize drawableSize = { (CGFloat) desc.width, (CGFloat) desc.height };
         [bridge->mtkView setDrawableSize:drawableSize];
     }
     #elif ORYOL_IOS
@@ -99,26 +99,19 @@ mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
     [[bridge->mtkView layer] setMagnificationFilter:kCAFilterNearest];
 
     // get actual rendering size
-    #if ORYOL_IOS
-    const CGRect winContentRect = [bridge->mtkView frame];
-    #else
-    const NSRect winContentRect = [bridge->mtkView frame];
-    #endif
     CGSize fbSize = [bridge->mtkView drawableSize];
     int fbWidth = (int) fbSize.width;
     int fbHeight = (int) fbSize.height;
     #if ORYOL_OSX
-    if (fbWidth == desc.Width * 2) {
+    if (fbWidth == desc.width * 2) {
         // we're on a Retina display
         bridge->mouseScale = 2.0;
     }
     #endif
     Log::Info("mtlDisplayMgr: actual framebuffer size w=%d, h=%d\n", fbWidth, fbHeight);
-    this->displayAttrs.FramebufferWidth = fbWidth;
-    this->displayAttrs.FramebufferHeight = fbHeight;
-    this->displayAttrs.WindowWidth = winContentRect.size.width;
-    this->displayAttrs.WindowHeight = winContentRect.size.height;
-    [osBridge::ptr()->mtkView setSampleCount:desc.SampleCount];
+    this->displayAttrs.Width = fbWidth;
+    this->displayAttrs.Height = fbHeight;
+    [osBridge::ptr()->mtkView setSampleCount:desc.sampleCount];
 }
 
 //------------------------------------------------------------------------------
@@ -129,10 +122,8 @@ mtlDisplayMgr::onFramebufferSize(int w, int h) {
     if (self) {
         // need to get the actual size
         CGSize fbSize = [osxBridge::ptr()->mtkView drawableSize];
-        self->displayAttrs.FramebufferWidth = (int) fbSize.width;
-        self->displayAttrs.FramebufferHeight = (int) fbSize.height;
-        self->displayAttrs.WindowWidth = w;
-        self->displayAttrs.WindowHeight = h;
+        self->displayAttrs.Width = (int) fbSize.width;
+        self->displayAttrs.Height = (int) fbSize.height;
     }
 }
 #endif

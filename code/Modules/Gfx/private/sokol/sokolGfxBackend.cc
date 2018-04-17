@@ -719,10 +719,10 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     sgDesc.vs.source = desc.stage[ShaderStage::VS].Source;
     sgDesc.fs.source = desc.stage[ShaderStage::FS].Source;
     #elif ORYOL_METAL || ORYOL_D3D11
-    sgDesc.vs.byte_code = desc.stage[ShaderStage::VS].byteCode;
-    sgDesc.vs.byte_code_size = desc.stage[ShaderStage::VS].byteCodeSize;
-    sgDesc.fs.byte_code = desc.stage[ShaderStage::FS].byteCode;
-    sgDesc.fs.byte_code_size = desc.stage[ShaderStage::FS].byteCodeSize;
+    sgDesc.vs.byte_code = desc.stage[ShaderStage::VS].ByteCode;
+    sgDesc.vs.byte_code_size = desc.stage[ShaderStage::VS].ByteCodeSize;
+    sgDesc.fs.byte_code = desc.stage[ShaderStage::FS].ByteCode;
+    sgDesc.fs.byte_code_size = desc.stage[ShaderStage::FS].ByteCodeSize;
     #endif
     if (desc.stage[ShaderStage::VS].Entry) {
         sgDesc.vs.entry = desc.stage[ShaderStage::VS].Entry;
