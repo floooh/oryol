@@ -25,10 +25,6 @@ public:
     static const int DefaultResourcePoolSize = 128;
     /// default uniform buffer size (only relevant on some platforms)
     static const int DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
-    /// default maximum number of draw-calls per frame (only relevant on some platforms)
-    static const int DefaultMaxDrawCallsPerFrame = (1<<16);
-    /// default maximum number of Gfx::ApplyDrawState per frame (only relevant on some platforms)
-    static const int DefaultMaxApplyDrawStatesPerFrame = 4096;
     /// max number of input vertex buffers
     static const int MaxNumVertexBuffers = 4;
     /// maximum number of textures on vertex shader stage
@@ -41,8 +37,6 @@ public:
     static const int MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
     /// max number of texture faces
     static const int MaxNumTextureFaces = 6;
-    /// max number of texture array slices
-    static const int MaxNumTextureArraySlices = 128;
     /// max number of texture mipmaps
     static const int MaxNumTextureMipMaps = 12;
     /// maximum number of components in vertex layout
