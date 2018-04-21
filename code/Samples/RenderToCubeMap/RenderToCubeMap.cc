@@ -97,7 +97,7 @@ RenderToCubeMapApp::OnInit() {
     }
 
     // mesh, shaders and pipelines to render color shapes
-    auto shapes = ShapeBuilder::New()
+    auto shapes = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1, true)

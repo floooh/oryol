@@ -47,7 +47,7 @@ SeparateBuffersApp::OnInit() {
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();

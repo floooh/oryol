@@ -89,7 +89,7 @@ TestInputApp::OnInit() {
     });
     
     // create a 3D cube
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Byte4N)
         .Box(1.0f, 1.0f, 1.0f, 1)

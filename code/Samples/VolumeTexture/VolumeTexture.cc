@@ -72,7 +72,7 @@ VolumeTextureApp::OnInit() {
         .MipContent(0, 0, data));
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();

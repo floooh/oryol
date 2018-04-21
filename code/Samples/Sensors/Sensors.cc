@@ -39,7 +39,7 @@ SensorsApp::OnInit() {
     Input::Setup();
     
     // create a 3D cube
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Byte4N)
         .Box(2.0, 2.0, 2.0, 1)

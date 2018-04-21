@@ -17,8 +17,6 @@ namespace Oryol {
     
 class ShapeBuilder {
 public:
-    /// return a new ShapeBuilder object
-    static ShapeBuilder New();
     /// declare position vertex components
     ShapeBuilder& Positions(const StringAtom& name, VertexFormat::Code fmt);
     /// declare normal vertex components
@@ -77,13 +75,13 @@ private:
         int numTris;
     };
 
-    void UpdateNumElements(ShapeData& shapeData);
-    void BuildVertexColors(const ShapeData& shape, int startVertexIndex);
-    void BuildBox(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    void BuildSphere(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    void BuildCylinder(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    void BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    void BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void updateNumElements(ShapeData& shapeData);
+    void buildVertexColors(MeshBuilder& mb, const ShapeData& shape, int startVertexIndex);
+    void buildBox(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildSphere(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildCylinder(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildTorus(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildPlane(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
     void buildPrimitiveGroup();
 
     bool randomColors = false;
@@ -97,13 +95,7 @@ private:
     glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     Array<ShapeData> shapes;
     Array<PrimitiveGroup> primGroups;
-    MeshBuilder meshBuilder;
+    VertexLayout layout;
 };
-
-//------------------------------------------------------------------------------
-inline ShapeBuilder
-ShapeBuilder::New() {
-    return ShapeBuilder();
-}
 
 } // namespace Oryol

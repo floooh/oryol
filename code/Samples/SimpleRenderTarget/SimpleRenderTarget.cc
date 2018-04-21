@@ -63,7 +63,7 @@ SimpleRenderTargetApp::OnInit() {
 
     // create a donut mesh, shader and pipeline object
     // (this will be rendered into the offscreen render target)
-    auto donut = ShapeBuilder::New()
+    auto donut = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Byte4N)
         .Torus(0.3f, 0.5f, 20, 36)
@@ -80,7 +80,7 @@ SimpleRenderTargetApp::OnInit() {
         .SampleCount(rtSampleCount));
 
     // create a sphere mesh, shader and pipeline object for rendering to display
-    auto sphere = ShapeBuilder::New()
+    auto sphere = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Byte4N)
         .TexCoords("in_uv", VertexFormat::Float2)

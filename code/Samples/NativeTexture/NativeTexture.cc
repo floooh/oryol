@@ -57,7 +57,7 @@ NativeTextureApp::OnInit() {
     return App::OnInit();
     #endif
 
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .RandomColors(true)
         .Positions("in_pos", VertexFormat::Float3)
         .TexCoords("in_uv", VertexFormat::Float2)

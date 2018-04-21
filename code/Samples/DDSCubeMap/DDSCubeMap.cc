@@ -60,7 +60,7 @@ DDSCubeMapApp::OnInit() {
         .WrapU(TextureWrapMode::ClampToEdge)
         .WrapV(TextureWrapMode::ClampToEdge));
 
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Float3)
         .Transform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)))

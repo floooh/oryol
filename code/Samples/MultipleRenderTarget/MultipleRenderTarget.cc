@@ -91,7 +91,7 @@ MultipleRenderTargetApp::OnInit() {
         .ClearColor(2, glm::vec4(0.0f, 0.0f, 0.25f, 1.0f));
 
     // create a mesh with 2 shapes, a box and a plane
-    auto shapes = ShapeBuilder::New()
+    auto shapes = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::UByte4N)
         .TexCoords("in_uv", VertexFormat::Float2)

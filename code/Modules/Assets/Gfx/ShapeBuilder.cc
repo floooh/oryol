@@ -21,8 +21,8 @@ ShapeBuilder::RandomColors(bool b) {
 ShapeBuilder&
 ShapeBuilder::Positions(const StringAtom& name, VertexFormat::Code fmt) {
     o_assert_dbg(this->posIndex == InvalidIndex);
-    this->posIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
+    this->posIndex = this->layout.NumComponents();
+    this->layout.Add(name, fmt);
     return *this;
 }
 
@@ -44,8 +44,8 @@ ShapeBuilder::VertexColor(const glm::vec4& c) {
 ShapeBuilder&
 ShapeBuilder::Normals(const StringAtom& name, VertexFormat::Code fmt) {
     o_assert_dbg(this->normalIndex == InvalidIndex);
-    this->normalIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
+    this->normalIndex = this->layout.NumComponents();
+    this->layout.Add(name, fmt);
     return *this;
 }
 
@@ -53,8 +53,8 @@ ShapeBuilder::Normals(const StringAtom& name, VertexFormat::Code fmt) {
 ShapeBuilder&
 ShapeBuilder::TexCoords(const StringAtom& name, VertexFormat::Code fmt) {
     o_assert_dbg(this->texCoordIndex == InvalidIndex);
-    this->texCoordIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
+    this->texCoordIndex = this->layout.NumComponents();
+    this->layout.Add(name, fmt);
     return *this;
 }
 
@@ -62,8 +62,8 @@ ShapeBuilder::TexCoords(const StringAtom& name, VertexFormat::Code fmt) {
 ShapeBuilder&
 ShapeBuilder::Colors(const Oryol::StringAtom &name, VertexFormat::Code fmt) {
     o_assert_dbg(this->colorIndex == InvalidIndex);
-    this->colorIndex = this->meshBuilder.Layout.NumComponents();
-    this->meshBuilder.Layout.Add(name, fmt);
+    this->colorIndex = this->layout.NumComponents();
+    this->layout.Add(name, fmt);
     return *this;
 }
 
@@ -91,7 +91,7 @@ ShapeBuilder::Box(float w, float h, float d, int tiles, bool buildPrimGroup) {
     shape.f2 = d;
     shape.i0 = tiles;
     shape.color = this->color;
-    this->UpdateNumElements(shape);
+    this->updateNumElements(shape);
     this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
@@ -112,7 +112,7 @@ ShapeBuilder::Sphere(float radius, int slices, int stacks, bool buildPrimGroup) 
     shape.i0 = slices;
     shape.i1 = stacks;
     shape.color = this->color;
-    this->UpdateNumElements(shape);
+    this->updateNumElements(shape);
     this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
@@ -134,7 +134,7 @@ ShapeBuilder::Cylinder(float radius, float length, int slices, int stacks, bool 
     shape.i0 = slices;
     shape.i1 = stacks;
     shape.color = this->color;
-    this->UpdateNumElements(shape);
+    this->updateNumElements(shape);
     this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
@@ -156,7 +156,7 @@ ShapeBuilder::Torus(float ringRadius, float radius, int sides, int rings, bool b
     shape.i0 = sides;
     shape.i1 = rings;
     shape.color = this->color;
-    this->UpdateNumElements(shape);
+    this->updateNumElements(shape);
     this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
@@ -177,7 +177,7 @@ ShapeBuilder::Plane(float w, float d, int tiles, bool buildPrimGroup) {
     shape.f1 = d;
     shape.i0 = tiles;
     shape.color = this->color;
-    this->UpdateNumElements(shape);
+    this->updateNumElements(shape);
     this->shapes.Add(shape);
     this->curPrimGroupNumElements += shape.numTris * 3;
     if (buildPrimGroup) {
@@ -188,7 +188,7 @@ ShapeBuilder::Plane(float w, float d, int tiles, bool buildPrimGroup) {
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::UpdateNumElements(ShapeData& shape) {
+ShapeBuilder::updateNumElements(ShapeData& shape) {
     switch (shape.type) {
         case BoxShape:
             {
@@ -256,43 +256,33 @@ ShapeBuilder::Build() {
     }
     
     // configure the mesh builder
-    this->meshBuilder.NumVertices = numVerticesAll;
-    this->meshBuilder.IndexType = IndexType::UInt16;
-    this->meshBuilder.NumIndices = numIndicesAll;
-    this->meshBuilder.Begin();
-    int curVertexIndex = 0;
-    int curTriIndex = 0;
-    for (const ShapeData& shape : this->shapes) {
-        switch (shape.type) {
-            case BoxShape:
-                this->BuildBox(shape, curVertexIndex, curTriIndex);
-                break;
-            case SphereShape:
-                this->BuildSphere(shape, curVertexIndex, curTriIndex);
-                break;
-            case CylinderShape:
-                this->BuildCylinder(shape, curVertexIndex, curTriIndex);
-                break;
-            case TorusShape:
-                this->BuildTorus(shape, curVertexIndex, curTriIndex);
-                break;
-            case PlaneShape:
-                this->BuildPlane(shape, curVertexIndex, curTriIndex);
-                break;
-            default:
-                o_assert(false);
-                break;
-        }
-        curVertexIndex += shape.numVertices;
-        curTriIndex += shape.numTris;
-    }
-    MeshBuilder::Result meshResult = this->meshBuilder.Build();
+    auto mesh = MeshBuilder()
+        .Layout(this->layout)
+        .NumVertices(numVerticesAll)
+        .IndexType(IndexType::UInt16)
+        .NumIndices(numIndicesAll)
+        .Build([this](MeshBuilder& mb) {
+            int curVertexIndex = 0;
+            int curTriIndex = 0;
+            for (const ShapeData& shape : this->shapes) {
+                switch (shape.type) {
+                    case BoxShape:      this->buildBox(mb, shape, curVertexIndex, curTriIndex); break;
+                    case SphereShape:   this->buildSphere(mb, shape, curVertexIndex, curTriIndex); break;
+                    case CylinderShape: this->buildCylinder(mb, shape, curVertexIndex, curTriIndex); break;
+                    case TorusShape:    this->buildTorus(mb, shape, curVertexIndex, curTriIndex); break;
+                    case PlaneShape:    this->buildPlane(mb, shape, curVertexIndex, curTriIndex); break;
+                    default: o_assert(false); break;
+                }
+                curVertexIndex += shape.numVertices;
+                curTriIndex += shape.numTris;
+            }
+        });
     ShapeBuilder::Result shapeResult;
-    shapeResult.VertexBufferDesc = std::move(meshResult.VertexBufferDesc);
-    shapeResult.IndexBufferDesc = std::move(meshResult.IndexBufferDesc);
-    shapeResult.PipelineDesc.layouts[0] = std::move(meshResult.Layout);
-    shapeResult.PipelineDesc.indexType = meshResult.IndexType;
-    shapeResult.Data = std::move(meshResult.Data);
+    shapeResult.VertexBufferDesc = std::move(mesh.VertexBufferDesc);
+    shapeResult.IndexBufferDesc = std::move(mesh.IndexBufferDesc);
+    shapeResult.PipelineDesc.layouts[0] = std::move(mesh.Layout);
+    shapeResult.PipelineDesc.indexType = mesh.IndexType;
+    shapeResult.Data = std::move(mesh.Data);
     shapeResult.PrimitiveGroups = std::move(this->primGroups);
 
     // clear private data (but not config params)
@@ -306,21 +296,20 @@ ShapeBuilder::Build() {
     this->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     this->shapes.Clear();
     this->primGroups.Clear();
-    this->meshBuilder.Layout.Clear();
 
     return shapeResult;
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::BuildVertexColors(const ShapeData& shape, int startVertexIndex) {
+ShapeBuilder::buildVertexColors(MeshBuilder& mb, const ShapeData& shape, int startVertexIndex) {
     o_assert(InvalidIndex != this->colorIndex);
     if (this->randomColors) {
         const glm::vec3 minRand(0.0f, 0.0f, 0.0f);
         const glm::vec3 maxRand(1.0f, 1.0f, 1.0f);
         for (int i = 0; i < shape.numVertices; i++) {
             glm::vec3 rnd = glm::linearRand(minRand, maxRand);
-            this->meshBuilder.Vertex(startVertexIndex + i, this->colorIndex, rnd.x, rnd.y, rnd.z, 1.0f);
+            mb.Vertex(startVertexIndex + i, this->colorIndex, rnd.x, rnd.y, rnd.z, 1.0f);
         }
     }
     else {
@@ -329,14 +318,14 @@ ShapeBuilder::BuildVertexColors(const ShapeData& shape, int startVertexIndex) {
         const float b = shape.color.z;
         const float a = shape.color.w;
         for (int i = 0; i < shape.numVertices; i++) {
-            this->meshBuilder.Vertex(startVertexIndex + i, this->colorIndex, r, g, b, a);
+            mb.Vertex(startVertexIndex + i, this->colorIndex, r, g, b, a);
         }
     }
 }
 
 //------------------------------------------------------------------------------
 void
-ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriIndex) {
+ShapeBuilder::buildBox(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex) {
     o_assert(InvalidIndex != this->posIndex);
     
     const int startVertexIndex = curVertexIndex;
@@ -379,12 +368,12 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriInd
             for (int iz = 0; iz <= numTiles; iz++) {
                 pos.z = z0 + dz * iz;
                 glm::vec4 tpos = shape.transform * pos;
-                this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+                mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
                 if (hasNormals) {
-                    this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+                    mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
                 }
                 if (hasTexCoords) {
-                    this->meshBuilder.Vertex(curVertexIndex, this->texCoordIndex, ix * duv, iz * duv);
+                    mb.Vertex(curVertexIndex, this->texCoordIndex, ix * duv, iz * duv);
                 }
                 curVertexIndex++;
             }
@@ -408,12 +397,12 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriInd
             for (int iz = 0; iz <= numTiles; iz++) {
                 pos.z = z0 + dz * iz;
                 glm::vec4 tpos = shape.transform * pos;
-                this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+                mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
                 if (hasNormals) {
-                    this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+                    mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
                 }
                 if (hasTexCoords) {
-                    this->meshBuilder.Vertex(curVertexIndex, this->texCoordIndex, iy * duv, iz * duv);
+                    mb.Vertex(curVertexIndex, this->texCoordIndex, iy * duv, iz * duv);
                 }
                 curVertexIndex++;
             }
@@ -437,12 +426,12 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriInd
             for (int iy = 0; iy <= numTiles; iy++) {
                 pos.y = y0 + dy * iy;
                 glm::vec4 tpos = shape.transform * pos;
-                this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+                mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
                 if (hasNormals) {
-                    this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+                    mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
                 }
                 if (hasTexCoords) {
-                    this->meshBuilder.Vertex(curVertexIndex, this->texCoordIndex, ix * duv, iy * duv);
+                    mb.Vertex(curVertexIndex, this->texCoordIndex, ix * duv, iy * duv);
                 }
                 curVertexIndex++;
             }
@@ -451,7 +440,7 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriInd
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (InvalidIndex != this->colorIndex) {
-        this->BuildVertexColors(shape, startVertexIndex);
+        this->buildVertexColors(mb, shape, startVertexIndex);
     }
 
     // write indices
@@ -467,8 +456,8 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriInd
                 uint16_t i3 = i2 + 1;
                 
                 // the 2 tile triangles
-                this->meshBuilder.Triangle(curTriIndex++, i0, i1, i3);
-                this->meshBuilder.Triangle(curTriIndex++, i0, i3, i2);
+                mb.Triangle(curTriIndex++, i0, i1, i3);
+                mb.Triangle(curTriIndex++, i0, i3, i2);
             }
         }
     }
@@ -494,7 +483,7 @@ ShapeBuilder::BuildBox(const ShapeData& shape, int curVertexIndex, int curTriInd
     +  +  +  +  +  +        south pole
 */
 void
-ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTriIndex) {
+ShapeBuilder::buildSphere(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex) {
     o_assert(InvalidIndex != this->posIndex);
     const int startVertexIndex = curVertexIndex;
     const int numSlices = shape.i0;
@@ -519,13 +508,13 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTri
             const glm::vec3 norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
             const glm::vec4 pos(norm * radius, 1.0f);
             const glm::vec4 tpos  = shape.transform * pos;
-            this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+            mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
             if (hasNormals) {
                 const glm::vec4 tnorm = shape.transform * glm::vec4(norm, 0.0f);
-                this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, tnorm.x, tnorm.y, tnorm.z);
+                mb.Vertex(curVertexIndex, this->normalIndex, tnorm.x, tnorm.y, tnorm.z);
             }
             if (hasTexCoords) {
-                this->meshBuilder.Vertex(curVertexIndex, this->texCoordIndex, du * slice, dv * stack);
+                mb.Vertex(curVertexIndex, this->texCoordIndex, du * slice, dv * stack);
             }
             curVertexIndex++;
         }
@@ -533,7 +522,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTri
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
 
     if (InvalidIndex != this->colorIndex) {
-        this->BuildVertexColors(shape, startVertexIndex);
+        this->buildVertexColors(mb, shape, startVertexIndex);
     }
 
     // north-pole triangles
@@ -541,7 +530,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTri
     int rowA = startVertexIndex;
     int rowB = rowA + numSlices + 1;
     for (int slice = 0; slice < numSlices; slice++) {
-        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice, rowB + slice + 1);
+        mb.Triangle(curTriIndex++, rowA + slice, rowB + slice, rowB + slice + 1);
     }
     
     // stack triangles
@@ -549,8 +538,8 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTri
         rowA = startVertexIndex + stack * (numSlices + 1);
         rowB = rowA + numSlices + 1;
         for (int slice = 0; slice < numSlices; slice++) {
-            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowA + slice + 1);
-            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice, rowB + slice + 1);
+            mb.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowA + slice + 1);
+            mb.Triangle(curTriIndex++, rowA + slice, rowB + slice, rowB + slice + 1);
         }
     }
     
@@ -558,7 +547,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTri
     rowA = startVertexIndex + (numStacks - 1) * (numSlices + 1);
     rowB = rowA + numSlices + 1;
     for (int slice = 0; slice < numSlices; slice++) {
-        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowA + slice + 1);
+        mb.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowA + slice + 1);
     }
     o_assert_dbg((curTriIndex - startTriIndex) == shape.numTris);
 }
@@ -585,7 +574,7 @@ ShapeBuilder::BuildSphere(const ShapeData& shape, int curVertexIndex, int curTri
  
 */
 void
-ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curTriIndex) {
+ShapeBuilder::buildCylinder(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex) {
     o_assert(InvalidIndex != this->posIndex);
     const int startVertexIndex = curVertexIndex;
     const int numSlices = shape.i0;
@@ -602,9 +591,9 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
     glm::vec4 cpos(0.0f, y, 0.0f, 1.0f);
     glm::vec4 tcpos = shape.transform * cpos;
     for (int slice = 0; slice <= numSlices; slice++) {
-        this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tcpos.x, tcpos.y, tcpos.z);
+        mb.Vertex(curVertexIndex, this->posIndex, tcpos.x, tcpos.y, tcpos.z);
         if (hasNormal) {
-            this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+            mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
         }
         curVertexIndex++;
     }
@@ -616,9 +605,9 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
         const float cosSlice = glm::cos(sliceAngle);
         const glm::vec4 pos(sinSlice * radius, y, cosSlice * radius, 1.0f);
         const glm::vec4 tpos = shape.transform * pos;
-        this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+        mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
         if (hasNormal) {
-            this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+            mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
         }
         curVertexIndex++;
     }
@@ -633,11 +622,11 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
             const float cosSlice = glm::cos(sliceAngle);
             const glm::vec4 pos(sinSlice * radius, y, cosSlice * radius, 1.0f);
             const glm::vec4 tpos = shape.transform * pos;
-            this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+            mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
             if (hasNormal) {
                 glm::vec4 norm(sinSlice, 0.0f, cosSlice, 0.0f);
                 norm = shape.transform * norm;
-                this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+                mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
             }
             curVertexIndex++;
         }
@@ -652,9 +641,9 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
         const float cosSlice = glm::cos(sliceAngle);
         const glm::vec4 pos(sinSlice * radius, y, cosSlice * radius, 1.0f);
         const glm::vec4 tpos = shape.transform * pos;
-        this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+        mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
         if (hasNormal) {
-            this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+            mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
         }
         curVertexIndex++;
     }
@@ -663,19 +652,19 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
     cpos = glm::vec4(0.0f, y, 0.0f, 1.0f);
     tcpos = shape.transform * cpos;
     for (int slice = 0; slice <= numSlices; slice++) {
-        this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tcpos.x, tcpos.y, tcpos.z);
+        mb.Vertex(curVertexIndex, this->posIndex, tcpos.x, tcpos.y, tcpos.z);
         if (hasNormal) {
-            this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+            mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
         }
         curVertexIndex++;
     }
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (InvalidIndex != this->colorIndex) {
-        this->BuildVertexColors(shape, startVertexIndex);
+        this->buildVertexColors(mb, shape, startVertexIndex);
     }
     if (InvalidIndex != this->texCoordIndex) {
-        o_warn("FIXME: ShapeBuilder::BuildCylinder() texcoord not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::buildCylinder() texcoord not implemented yet!\n");
     }
     
     // north cap triangles
@@ -683,7 +672,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
     int rowA = startVertexIndex;
     int rowB = rowA + numSlices + 1;
     for (int slice = 0; slice < numSlices; slice++) {
-        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
+        mb.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
     }
     
     // shaft triangles
@@ -691,8 +680,8 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
         rowA = startVertexIndex + (stack + 2) * (numSlices + 1);
         rowB = rowA + numSlices + 1;
         for (int slice = 0; slice < numSlices; slice++) {
-            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
-            this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
+            mb.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
+            mb.Triangle(curTriIndex++, rowA + slice, rowB + slice + 1, rowB + slice);
         }
     }
     
@@ -700,7 +689,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
     rowA = startVertexIndex + (numStacks + 3) * (numSlices + 1);
     rowB = rowA + numSlices + 1;
     for (int slice = 0; slice < numSlices; slice++) {
-        this->meshBuilder.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
+        mb.Triangle(curTriIndex++, rowA + slice, rowA + slice + 1, rowB + slice + 1);
     }
     o_assert((curTriIndex - startTriIndex) == shape.numTris);
 }
@@ -725,7 +714,7 @@ ShapeBuilder::BuildCylinder(const ShapeData& shape, int curVertexIndex, int curT
 
 */
 void
-ShapeBuilder::BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriIndex) {
+ShapeBuilder::buildTorus(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex) {
     o_assert(InvalidIndex != this->posIndex);
     const int startVertexIndex = curVertexIndex;
     static const float ringRadius = shape.f0;
@@ -753,7 +742,7 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriI
 
             // surface position
             const glm::vec4 tpos = shape.transform * glm::vec4(spx, spy, spz, 1.0f);
-            this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+            mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
             
             // surface normal
             if (hasNormals) {
@@ -763,7 +752,7 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriI
                 const float ipz = 0.0f;
                 glm::vec4 norm  = glm::normalize(glm::vec4(spx - ipx, spy - ipy, spz - ipz, 0.0f));
                 norm = shape.transform * norm;
-                this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+                mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
             }
             curVertexIndex++;
         }
@@ -771,10 +760,10 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriI
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (InvalidIndex != this->colorIndex) {
-        this->BuildVertexColors(shape, startVertexIndex);
+        this->buildVertexColors(mb, shape, startVertexIndex);
     }
     if (InvalidIndex != this->texCoordIndex) {
-        o_warn("FIXME: ShapeBuilder::BuildTorus() texcoord not implemented yet!\n");
+        o_warn("FIXME: ShapeBuilder::buildTorus() texcoord not implemented yet!\n");
     }
     
     // triangles
@@ -783,8 +772,8 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriI
         const int rowA = startVertexIndex + side * (numRings + 1);
         const int rowB = rowA + numRings + 1;
         for (int ring = 0; ring < numRings; ring++) {
-            this->meshBuilder.Triangle(curTriIndex++, rowA + ring, rowA + ring + 1, rowB + ring + 1);
-            this->meshBuilder.Triangle(curTriIndex++, rowA + ring, rowB + ring + 1, rowB + ring);
+            mb.Triangle(curTriIndex++, rowA + ring, rowA + ring + 1, rowB + ring + 1);
+            mb.Triangle(curTriIndex++, rowA + ring, rowB + ring + 1, rowB + ring);
         }
     }
     o_assert((curTriIndex - startTriIndex) == shape.numTris);
@@ -809,7 +798,7 @@ ShapeBuilder::BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriI
     +--+--+--+--+
 */
 void
-ShapeBuilder::BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriIndex) {
+ShapeBuilder::buildPlane(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex) {
     o_assert(InvalidIndex != this->posIndex);
     const int startVertexIndex = curVertexIndex;
 
@@ -833,12 +822,12 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriI
         for (int iz = 0; iz <= numTiles; iz++) {
             pos.z = z0 + dz * iz;
             glm::vec4 tpos = shape.transform * pos;
-            this->meshBuilder.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
+            mb.Vertex(curVertexIndex, this->posIndex, tpos.x, tpos.y, tpos.z);
             if (hasNormal) {
-                this->meshBuilder.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
+                mb.Vertex(curVertexIndex, this->normalIndex, norm.x, norm.y, norm.z);
             }
             if (hasTexCoords) {
-                this->meshBuilder.Vertex(curVertexIndex, this->texCoordIndex, ix * duv, iz * duv);
+                mb.Vertex(curVertexIndex, this->texCoordIndex, ix * duv, iz * duv);
             }
             curVertexIndex++;
         }
@@ -846,7 +835,7 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriI
     o_assert((curVertexIndex - startVertexIndex) == shape.numVertices);
     
     if (InvalidIndex != this->colorIndex) {
-        this->BuildVertexColors(shape, startVertexIndex);
+        this->buildVertexColors(mb, shape, startVertexIndex);
     }
 
     // write indices
@@ -860,8 +849,8 @@ ShapeBuilder::BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriI
             uint16_t i3 = i2 + 1;
             
             // the 2 tile triangles
-            this->meshBuilder.Triangle(curTriIndex++, i0, i1, i3);
-            this->meshBuilder.Triangle(curTriIndex++, i0, i3, i2);
+            mb.Triangle(curTriIndex++, i0, i1, i3);
+            mb.Triangle(curTriIndex++, i0, i3, i2);
         }
     }
     o_assert((curTriIndex - startTriIndex) == shape.numTris);

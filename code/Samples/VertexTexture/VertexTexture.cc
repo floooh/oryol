@@ -66,7 +66,7 @@ VertexTextureApp::OnInit() {
         .DepthFormat(PixelFormat::None));
     
     // draw state for a 256x256 plane
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .TexCoords("in_uv", VertexFormat::Float2)
         .Plane(3.0f, 3.0f, 255)

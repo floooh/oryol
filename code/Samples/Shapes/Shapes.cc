@@ -32,7 +32,7 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnInit() {
     Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Oryol Shapes Sample"));
-    auto shapes = ShapeBuilder::New()
+    auto shapes = ShapeBuilder()
         .RandomColors(true)
         .Positions("position", VertexFormat::Float3)
         .Colors("color0", VertexFormat::UByte4N)

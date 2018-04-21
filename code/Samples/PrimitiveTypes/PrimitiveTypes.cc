@@ -69,30 +69,30 @@ PrimitiveTypesApp::OnInit() {
 
     // create a 2D vertex grid mesh, the same vertex data is combined
     // with different index buffers
-    MeshBuilder meshBuilder;
-    meshBuilder.NumVertices = NumVertices;
-    meshBuilder.IndexType = IndexType::None;
-    meshBuilder.Layout = {
-        { "position", VertexFormat::Float3 },
-        { "color0", VertexFormat::UByte4N }
-    };
-    meshBuilder.Begin();
-    const float dx = 1.0f / NumX;
-    const float dy = 1.0f / NumY;
-    const float xOffset = -dx * (NumX/2);
-    const float yOffset = -dy * (NumY/2);
-    for (int y = 0, vi=0; y < NumY; y++) {
-        for (int x = 0; x < NumX; x++, vi++) {
-            meshBuilder.Vertex(vi, 0, x*dx+xOffset, y*dy+yOffset, 0.0f);
-            switch (vi % 3) {
-                case 0: meshBuilder.Vertex(vi, 1, 1.0f, 0.0f, 0.0f, 1.0f); break;
-                case 1: meshBuilder.Vertex(vi, 1, 0.0f, 1.0f, 0.0f, 1.0f); break;
-                default: meshBuilder.Vertex(vi, 1, 1.0f, 1.0f, 0.0f, 1.0f); break;
+    MeshBuilder::Result mesh = MeshBuilder()
+        .NumVertices(NumVertices)
+        .IndexType(IndexType::None)
+        .Layout({
+            { "position", VertexFormat::Float3 },
+            { "color0", VertexFormat::UByte4N }
+        })
+        .Build([](MeshBuilder& mb) {
+            const float dx = 1.0f / NumX;
+            const float dy = 1.0f / NumY;
+            const float xOffset = -dx * (NumX/2);
+            const float yOffset = -dy * (NumY/2);
+            for (int y = 0, vi=0; y < NumY; y++) {
+                for (int x = 0; x < NumX; x++, vi++) {
+                    mb.Vertex(vi, 0, x*dx+xOffset, y*dy+yOffset, 0.0f);
+                    switch (vi % 3) {
+                        case 0:  mb.Vertex(vi, 1, 1.0f, 0.0f, 0.0f, 1.0f); break;
+                        case 1:  mb.Vertex(vi, 1, 0.0f, 1.0f, 0.0f, 1.0f); break;
+                        default: mb.Vertex(vi, 1, 1.0f, 1.0f, 0.0f, 1.0f); break;
+                    }
+                }
             }
-        }
-    }
-    auto meshResult = meshBuilder.Build();
-    Id vbuf = Gfx::CreateBuffer(meshResult.VertexBufferDesc);
+        });
+    Id vbuf = Gfx::CreateBuffer(mesh.VertexBufferDesc);
 
     // a single shader used by all pipeline objects
     Id shd = Gfx::CreateShader(Shader::Desc());
@@ -103,7 +103,7 @@ PrimitiveTypesApp::OnInit() {
     // point list (only need a pipeline object, no index buffer)
     {
         auto& ds = this->drawStates[PrimitiveType::Points];
-        ds.Pipeline = createPipeline(PrimitiveType::Points, IndexType::None, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
+        ds.Pipeline = createPipeline(PrimitiveType::Points, IndexType::None, mesh.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
     }
 
@@ -123,7 +123,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::Lines];
-        ds.Pipeline = createPipeline(PrimitiveType::Lines, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
+        ds.Pipeline = createPipeline(PrimitiveType::Lines, IndexType::UInt16, mesh.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -142,7 +142,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::LineStrip];
-        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
+        ds.Pipeline = createPipeline(PrimitiveType::LineStrip, IndexType::UInt16, mesh.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -165,7 +165,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::Triangles];
-        ds.Pipeline = createPipeline(PrimitiveType::Triangles, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
+        ds.Pipeline = createPipeline(PrimitiveType::Triangles, IndexType::UInt16, mesh.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
@@ -190,7 +190,7 @@ PrimitiveTypesApp::OnInit() {
         }
         o_assert_dbg(i == numIndices);
         auto& ds = this->drawStates[PrimitiveType::TriangleStrip];
-        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, IndexType::UInt16, meshBuilder.Layout, shd, Gfx::Desc().SampleCount());
+        ds.Pipeline = createPipeline(PrimitiveType::TriangleStrip, IndexType::UInt16, mesh.Layout, shd, Gfx::Desc().SampleCount());
         ds.VertexBuffers[0] = vbuf;
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }

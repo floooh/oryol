@@ -37,6 +37,8 @@ public:
     /// get number of free bytes at back
     int Spare() const;
 
+    /// take ownership of a memory chunk allocated with Memory::Alloc
+    void MoveRaw(const void* ptr, int numBytes);
     /// make room for N more bytes
     void Reserve(int numBytes);
     /// add bytes to buffer
@@ -80,6 +82,16 @@ data(rhs.data) {
 inline
 MemoryBuffer::~MemoryBuffer() {
     this->destroy();
+}
+
+//------------------------------------------------------------------------------
+inline void
+MemoryBuffer::MoveRaw(const void* ptr, int numBytes) {
+    o_assert(ptr && (numBytes > 0));
+    this->destroy();
+    this->data = (uint8_t*) ptr;
+    this->capacity = numBytes;
+    this->size = numBytes;
 }
 
 //------------------------------------------------------------------------------

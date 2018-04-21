@@ -75,7 +75,7 @@ DDSTextureLoadingApp::OnInit() {
             .WrapV(TextureWrapMode::ClampToEdge));
     }
 
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .TexCoords("in_uv", VertexFormat::Float2)
         .Transform(glm::rotate(glm::mat4(), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)))

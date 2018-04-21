@@ -71,7 +71,7 @@ InfiniteSpheresApp::OnInit() {
     }
 
     // create a sphere shape mesh
-    auto sphere = ShapeBuilder::New()
+    auto sphere = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .Normals("in_normal", VertexFormat::Byte4N)
         .TexCoords("in_uv", VertexFormat::Float2)

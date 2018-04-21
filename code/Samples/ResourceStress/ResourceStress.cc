@@ -124,7 +124,7 @@ ResourceStressApp::createObjects() {
     Object obj;
     obj.label = Gfx::PushResourceLabel();
     obj.createdFrame = this->frameCount;
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("position", VertexFormat::Float3)
         .TexCoords("texcoord0", VertexFormat::Float2)
         .Box(0.1f, 0.1f, 0.1f, 1)

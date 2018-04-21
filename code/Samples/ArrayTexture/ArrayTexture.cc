@@ -75,7 +75,7 @@ ArrayTextureApp::OnInit() {
         .MipContent(0, 0, data));
 
     // build a cube mesh
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
         .TexCoords("in_uv", VertexFormat::Float2)
         .Box(1.0f, 1.0f, 1.0f, 1)

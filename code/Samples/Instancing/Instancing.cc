@@ -57,7 +57,7 @@ InstancingApp::OnInit() {
 
     // create static mesh at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    auto shape = ShapeBuilder::New()
+    auto shape = ShapeBuilder()
         .RandomColors(true)
         .Positions("in_pos", VertexFormat::Float3)
         .Colors("in_color", VertexFormat::Float4)
