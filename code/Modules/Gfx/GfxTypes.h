@@ -19,32 +19,31 @@ namespace Oryol {
     @ingroup Gfx
     @brief central configuration constants of the Gfx module
 */
-class GfxConfig {
-public:
+namespace GfxConfig {
     /// default resource pool size
-    static const int DefaultResourcePoolSize = 128;
+    constexpr int DefaultResourcePoolSize = 128;
     /// default uniform buffer size (only relevant on some platforms)
-    static const int DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
+    constexpr int DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
     /// max number of input vertex buffers
-    static const int MaxNumVertexBuffers = 4;
+    constexpr int MaxNumVertexBuffers = 4;
     /// maximum number of textures on vertex shader stage
-    static const int MaxNumVertexTextures = 4;
+    constexpr int MaxNumVertexTextures = 4;
     /// maximum number of textures on fragment shader stage
-    static const int MaxNumFragmentTextures = 12;
+    constexpr int MaxNumFragmentTextures = 12;
     /// max number of uniform blocks per stage
-    static const int MaxNumUniformBlocksPerStage = 4;
+    constexpr int MaxNumUniformBlocksPerStage = 4;
     /// max number of textures on any stage
-    static const int MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
+    constexpr int MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
     /// max number of texture faces
-    static const int MaxNumTextureFaces = 6;
+    constexpr int MaxNumTextureFaces = 6;
     /// max number of texture mipmaps
-    static const int MaxNumTextureMipMaps = 12;
+    constexpr int MaxNumTextureMipMaps = 12;
     /// maximum number of components in vertex layout
-    static const int MaxNumVertexLayoutComponents = 16;
+    constexpr int MaxNumVertexLayoutComponents = 16;
     /// maximum number of in-flight frames (not used by all platforms)
-    static const int MaxInflightFrames = 2;
+    constexpr int MaxInflightFrames = 2;
     /// maximum number of render pass color attachments
-    static const int MaxNumColorAttachments = 4;
+    constexpr int MaxNumColorAttachments = 4;
 };
 
 //------------------------------------------------------------------------------
@@ -286,8 +285,6 @@ struct PrimitiveType {
         Num,
         Invalid
     };
-    /// convert primitive type to string
-    static const char* ToString(PrimitiveType::Code c);
 };
 
 //------------------------------------------------------------------------------
@@ -671,9 +668,9 @@ public:
     class Component {
     public:
         /// default constructor
-        Component() {};
+        Component() { }
         /// construct from format (no attr name)
-        Component(VertexFormat::Code fmt): Format(fmt) { };
+        Component(VertexFormat::Code fmt): Format(fmt) { }
         /// construct from vertex attr name and format
         Component(const StringAtom& name, VertexFormat::Code fmt): Name(name), Format(fmt) { }
         /// return true if valid (attr and format set)

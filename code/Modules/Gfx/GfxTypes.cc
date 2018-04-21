@@ -318,20 +318,6 @@ int PixelFormat::ImagePitch(PixelFormat::Code fmt, int width, int height) {
 }
 
 //------------------------------------------------------------------------------
-const char* PrimitiveType::ToString(PrimitiveType::Code c) {
-    switch (c) {
-        case Points:        return "Points";
-        case Lines:         return "Lines";
-        case LineStrip:     return "LineStrip";
-        case Triangles:     return "Triangles";
-        case TriangleStrip: return "TriangleStrip";
-        default:
-            o_error("PrimitiveType::ToString(): invalid value!\n");
-            return 0;
-    }
-}
-
-//------------------------------------------------------------------------------
 int VertexFormat::ByteSize(Code c) {
     switch (c) {
         case Float:

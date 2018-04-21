@@ -205,6 +205,18 @@ PrimitiveTypesApp::OnInit() {
 }
 
 //------------------------------------------------------------------------------
+static const char* primTypeToString(PrimitiveType::Code t) {
+    switch (t) {
+        case PrimitiveType::Points:         return "Points";
+        case PrimitiveType::Lines:          return "Lines";
+        case PrimitiveType::LineStrip:      return "LineStrip";
+        case PrimitiveType::Triangles:      return "Triangles";
+        case PrimitiveType::TriangleStrip:  return "TriangleString";
+        default: return "Unknown";
+    }
+}
+
+//------------------------------------------------------------------------------
 AppState::Code
 PrimitiveTypesApp::OnRunning() {
 
@@ -279,7 +291,7 @@ PrimitiveTypesApp::OnRunning() {
         else {
             Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
         }
-        Dbg::PrintF("\n\r %d: %s", i+1, PrimitiveType::ToString(PrimitiveType::Code(i)));
+        Dbg::PrintF("\n\r %d: %s", i+1, primTypeToString(PrimitiveType::Code(i)));
     }
 
     Dbg::DrawTextBuffer();
