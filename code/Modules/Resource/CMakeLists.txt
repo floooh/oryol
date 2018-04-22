@@ -8,7 +8,6 @@ fips_begin_module(Resource)
         Locator.cc Locator.h
         ResourceLabel.h
         ResourceState.h
-        ResourceLoader.cc ResourceLoader.h
         ResourcePool.h
         ResourceLabelStack.cc ResourceLabelStack.h
         ResourceRegistry.cc ResourceRegistry.h

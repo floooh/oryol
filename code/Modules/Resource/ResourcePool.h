@@ -50,8 +50,6 @@ public:
     bool Contains(const Id& id) const;
     /// query the loading state of a contained resource
     ResourceState::Code QueryState(const Id& id) const;
-    /// query additional info about a contained resource
-    ResourceInfo QueryResourceInfo(const Id& id) const;
     /// query additional info about the pool (slow)
     ResourcePoolInfo QueryPoolInfo() const;
     
@@ -168,7 +166,6 @@ ResourcePool<RESOURCE>::Assign(const Id& id, ResourceState::Code state) {
     auto& slot = this->slots[id.SlotIndex];
     o_assert_dbg(ResourceState::Valid != slot.State);
     slot.State = state;
-    slot.StateStartFrame = this->frameCounter;
     slot.Id = id;
     return slot;
 }
@@ -183,7 +180,6 @@ ResourcePool<RESOURCE>::Unassign(const Id& id) {
         o_assert_dbg(ResourceState::Initial != slot.State);
         slot.Id.Invalidate();
         slot.State = ResourceState::Initial;
-        slot.StateStartFrame = 0;
         this->FreeId(id);
     }
     else {
@@ -233,7 +229,6 @@ ResourcePool<RESOURCE>::UpdateState(const Id& id, ResourceState::Code newState) 
     if (id == slot.Id) {
         o_assert_dbg(ResourceState::Initial != slot.State);
         slot.State = newState;
-        slot.StateStartFrame = this->frameCounter;
     }
     else {
         o_warn("ResourcePool::UpdateState(): id not in pool (type: '%d', slot: '%d')\n", id.Type, id.SlotIndex);
@@ -261,21 +256,6 @@ ResourcePool<RESOURCE>::QueryState(const Id& id) const {
     else {
         return ResourceState::InvalidState;
     }
-}
-
-//------------------------------------------------------------------------------
-template<class RESOURCE> ResourceInfo
-ResourcePool<RESOURCE>::QueryResourceInfo(const Id& id) const {
-    o_assert_dbg(this->isValid);
-    o_assert_dbg(id.Type == this->resourceType);
-    
-    ResourceInfo info;
-    const auto& slot = this->slots[id.SlotIndex];
-    if (id == slot.Id) {
-        info.State = slot.State;
-        info.StateAge = this->frameCounter - slot.StateStartFrame;
-    }
-    return info;
 }
 
 //------------------------------------------------------------------------------

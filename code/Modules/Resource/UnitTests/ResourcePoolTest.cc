@@ -41,7 +41,6 @@ TEST(ResourcePoolTest) {
     const myResource* res = resourcePool.Lookup(resId);
     CHECK(nullptr != res);
     CHECK(res->Id == resId);
-    CHECK(resourcePool.QueryResourceInfo(resId).State == ResourceState::Valid);
 
     Id resId1 = resourcePool.AllocId();
     CHECK(resId1.IsValid());
@@ -58,7 +57,6 @@ TEST(ResourcePoolTest) {
     const myResource* res1 = resourcePool.Lookup(resId1);
     CHECK(nullptr != res1);
     CHECK(res1->Id == resId1);
-    CHECK(resourcePool.QueryResourceInfo(resId1).State == ResourceState::Valid);
 
     const ResourcePoolInfo poolInfo = resourcePool.QueryPoolInfo();
     CHECK(poolInfo.ResourceType == myResourceType);

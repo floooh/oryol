@@ -13,7 +13,6 @@
     of a resource is controlled by a matching Setup object, which holds
     all information required to create a resource object. 
 */
-#include "Core/Assertion.h"
 #include "Resource/Id.h"
 #include "Resource/ResourceState.h"
 
@@ -25,8 +24,6 @@ public:
     class Id Id;
     /// current resource state
     ResourceState::Code State = ResourceState::Initial;
-    /// frame count of last state change
-    int StateStartFrame = 0;
 };
 
 } // namespace Oryol
