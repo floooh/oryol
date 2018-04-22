@@ -18,10 +18,10 @@ namespace {
 
 //------------------------------------------------------------------------------
 void
-Dbg::Setup(const DbgSetup& setup) {
+Dbg::Setup(const DbgDesc& desc) {
     o_assert(!IsValid());
     state = Memory::New<_state>();
-    state->debugTextRenderer.setup(setup);
+    state->debugTextRenderer.setup(desc);
 }
 
 //------------------------------------------------------------------------------

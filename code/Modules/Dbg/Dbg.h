@@ -16,7 +16,7 @@ namespace Oryol {
 class Dbg {
 public:
     /// setup the Debug module
-    static void Setup(const DbgSetup& setup=DbgSetup());
+    static void Setup(const DbgDesc& desc=DbgDesc());
     /// discard the Debug module
     static void Discard();
     /// return true if Debug module is valid

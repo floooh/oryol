@@ -64,7 +64,7 @@ createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const Ve
 AppState::Code
 PrimitiveTypesApp::OnInit() {
     Gfx::Setup(GfxDesc().Width(640).Height(480).SampleCount(4).Title("Oryol PrimitiveTypes Test"));
-    Dbg::Setup(DbgSetup::MSAA4());
+    Dbg::Setup(DbgDesc().SampleCount(4));
     Input::Setup();
 
     // create a 2D vertex grid mesh, the same vertex data is combined

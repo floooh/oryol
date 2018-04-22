@@ -28,21 +28,21 @@ debugTextRenderer::~debugTextRenderer() {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setup(const DbgSetup& s) {
+debugTextRenderer::setup(const DbgDesc& desc) {
     o_assert_dbg(!this->valid);
     o_assert_dbg(nullptr == this->vertexData);
 
-    this->numColumns = s.NumTextColumns;
-    this->numRows = s.NumTextRows;
-    this->maxNumChars = s.NumTextColumns * s.NumTextRows;
-    this->textScaleX = s.TextScaleX;
-    this->textScaleY = s.TextScaleY;
+    this->numColumns = desc.numTextColumns;
+    this->numRows = desc.numTextRows;
+    this->maxNumChars = desc.numTextColumns * desc.numTextRows;
+    this->textScaleX = desc.textScaleX;
+    this->textScaleY = desc.textScaleY;
     this->maxNumVertices = this->maxNumChars * 6;
     this->stringBuilder.Reserve(this->maxNumChars * 2);
     this->curNumVertices = 0;
     this->vertexData = (Vertex*) Memory::Alloc(this->maxNumVertices * sizeof(Vertex));
     Gfx::PushResourceLabel();
-    this->setupResources(s);
+    this->setupResources(desc);
     this->resourceLabel = Gfx::PopResourceLabel();
     this->valid = true;
 }
@@ -82,8 +82,8 @@ debugTextRenderer::printf(const char* text, std::va_list args) {
 void
 debugTextRenderer::cursorPos(uint8_t x, uint8_t y) {
     SCOPED_LOCK;
-    this->stringBuilder.Append((char) 0x1B);   // start ESC control sequence
-    this->stringBuilder.Append((char) 0x01);   // set cursor
+    this->stringBuilder.Append(0x1B);   // start ESC control sequence
+    this->stringBuilder.Append(0x01);   // set cursor
     this->stringBuilder.Append((char)x);
     this->stringBuilder.Append((char)y);
 }
@@ -135,7 +135,7 @@ debugTextRenderer::drawTextBuffer() {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupResources(const DbgSetup& setup) {
+debugTextRenderer::setupResources(const DbgDesc& desc) {
     o_assert_dbg(this->vertexLayout.Empty());
     o_assert_dbg((this->maxNumVertices > 0) && (this->maxNumVertices == this->maxNumChars*6));
     
@@ -161,9 +161,9 @@ debugTextRenderer::setupResources(const DbgSetup& setup) {
         .BlendSrcFactorRGB(BlendFactor::SrcAlpha)
         .BlendDstFactorRGB(BlendFactor::OneMinusSrcAlpha)
         .ColorWriteMask(PixelChannel::RGB)
-        .ColorFormat(setup.ColorFormat)
-        .DepthFormat(setup.DepthFormat)
-        .SampleCount(setup.SampleCount));
+        .ColorFormat(desc.colorFormat)
+        .DepthFormat(desc.depthFormat)
+        .SampleCount(desc.sampleCount));
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;

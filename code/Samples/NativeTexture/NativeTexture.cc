@@ -50,7 +50,7 @@ AppState::Code
 NativeTextureApp::OnInit() {
 
     Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Oryol NativeTexture Sample"));
-    Dbg::Setup(DbgSetup::MSAA4());
+    Dbg::Setup(DbgDesc().SampleCount(4));
 
     // FIXME: D3D and Metal
     #if !ORYOL_OPENGL
