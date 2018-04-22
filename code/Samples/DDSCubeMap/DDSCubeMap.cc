@@ -37,10 +37,9 @@ AppState::Code
 DDSCubeMapApp::OnInit() {
 
     // setup IO system
-    IOSetup ioSetup;
-    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("tex:", ORYOL_SAMPLE_URL);
-    IO::Setup(ioSetup);
+    IO::Setup(IODesc()
+        .FileSystem("http", HTTPFileSystem::Creator())
+        .Assign("tex:", ORYOL_SAMPLE_URL));
 
     // setup rendering system
     Gfx::Setup(GfxDesc().Width(600).Height(400).Title("Oryol DXT Cube Map Sample"));

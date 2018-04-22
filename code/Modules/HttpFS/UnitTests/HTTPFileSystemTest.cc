@@ -16,9 +16,7 @@ TEST(HTTPFileSystemTest) {
     Core::Setup();
 
     // setup an IO facade, and associate http: with the HTTPFileSystem
-    IOSetup ioSetup;
-    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    IO::Setup(ioSetup);
+    IO::Setup(IOSetup.FileSystem("http", HTTPFileSystem::Create()));
     
     // asynchronously load the index.html file
     Ptr<IORead> req = IO::LoadFile("http://www.flohofwoe.net/index.html");

@@ -46,10 +46,9 @@ OryolMain(ResourceStressApp);
 AppState::Code
 ResourceStressApp::OnInit() {
     // setup IO system
-    IOSetup ioSetup;
-    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("tex:", ORYOL_SAMPLE_URL);
-    IO::Setup(ioSetup);
+    IO::Setup(IODesc()
+        .FileSystem("http", HTTPFileSystem::Creator())
+        .Assign("tex:", ORYOL_SAMPLE_URL));
 
     // setup Gfx system
     Gfx::Setup(GfxDesc()

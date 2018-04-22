@@ -18,7 +18,7 @@ namespace Oryol {
 class IO {
 public:
     /// setup the IO module
-    static void Setup(const IOSetup& setup);
+    static void Setup(const IODesc& desc);
     /// discard the IO module
     static void Discard();
     /// check if IO module is valid

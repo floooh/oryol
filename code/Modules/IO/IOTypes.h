@@ -17,12 +17,25 @@ class FileSystemBase;
     @ingroup IO
     @brief configure the IO system
 */
-class IOSetup {
+class IODesc {
 public:
     /// initial assigns
-    Map<String, String> Assigns;
+    IODesc& Assign(const String& name, const String& path) {
+        assigns.Add(name, path);
+        return *this;
+    }
+    const Map<String, String> Assigns() const { return assigns; }
     /// initial file systems
-    Map<StringAtom, std::function<Ptr<FileSystemBase>()>> FileSystems;
+    IODesc& FileSystem(const StringAtom& scheme, std::function<Ptr<FileSystemBase>()> fsCreatorFunc) {
+        fileSystems.Add(scheme, fsCreatorFunc);
+        return *this;
+    }
+    const Map<StringAtom, std::function<Ptr<FileSystemBase>()>>& FileSystems() const {
+        return fileSystems;
+    }
+
+    Map<String, String> assigns;
+    Map<StringAtom, std::function<Ptr<FileSystemBase>()>> fileSystems;
 };
 
 //------------------------------------------------------------------------------
