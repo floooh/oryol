@@ -29,9 +29,9 @@ winInputMgr::~winInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-winInputMgr::setup(const InputSetup& setup) {
+winInputMgr::setup(const InputDesc& desc) {
 
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->keyboard.attached = true;
     this->mouse.attached = true;
 

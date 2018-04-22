@@ -31,10 +31,10 @@ glfwInputMgr::~glfwInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-glfwInputMgr::setup(const InputSetup& setup) {
+glfwInputMgr::setup(const InputDesc& desc) {
     
     this->setupGamepadMappings();   // must be called before parent class!
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->keyboard.attached = true;
     this->mouse.attached = true;
     

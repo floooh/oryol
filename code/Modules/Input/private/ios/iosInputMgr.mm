@@ -84,9 +84,9 @@ iosInputMgr::~iosInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-iosInputMgr::setup(const InputSetup& setup) {
+iosInputMgr::setup(const InputDesc& desc) {
 
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
 
     if (!Gfx::IsValid()) {
         o_error("iosInputMgr: Gfx::Setup() must be called before Input::Setup()!\n");
@@ -98,7 +98,7 @@ iosInputMgr::setup(const InputSetup& setup) {
     this->inputDelegate = [[iosInputDelegate alloc] init];
     
     // create CoreMotionManager to sample device motion data
-    if (setup.AccelerometerEnabled || setup.GyrometerEnabled) {
+    if (desc.accelerometerEnabled || desc.gyrometerEnabled) {
         this->motionManager = [[CMMotionManager alloc] init];
         if ([this->motionManager isDeviceMotionAvailable]) {
             [this->motionManager startDeviceMotionUpdates];
@@ -165,14 +165,14 @@ iosInputMgr::sampleMotionData() {
         CMAcceleration cmUserAccel = motionData.userAcceleration;
         
         // acceleration
-        if (this->inputSetup.AccelerometerEnabled) {
+        if (this->inputDesc.accelerometerEnabled) {
             static const float earthGravity = 9.80665f;
             glm::vec3 accel(cmGravity.x + cmUserAccel.x, cmGravity.y + cmUserAccel.y, cmGravity.z + cmUserAccel.z);
             this->sensors.acceleration = accel * earthGravity;
         }
         
         // attitude
-        if (this->inputSetup.GyrometerEnabled) {
+        if (this->inputDesc.gyrometerEnabled) {
             this->sensors.yawPitchRoll.x = motionData.attitude.yaw;
             this->sensors.yawPitchRoll.y = motionData.attitude.pitch;
             this->sensors.yawPitchRoll.z = motionData.attitude.roll;

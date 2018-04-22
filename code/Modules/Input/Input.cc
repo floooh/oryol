@@ -17,10 +17,10 @@ namespace {
     
 //------------------------------------------------------------------------------
 void
-Input::Setup(const InputSetup& setup) {
+Input::Setup(const InputDesc& desc) {
     o_assert_dbg(!IsValid());
     state = Memory::New<_state>();
-    state->inputManager.setup(setup);
+    state->inputManager.setup(desc);
 }
 
 //------------------------------------------------------------------------------

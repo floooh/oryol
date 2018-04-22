@@ -30,9 +30,9 @@ osxInputMgr::~osxInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-osxInputMgr::setup(const InputSetup& setup) {
+osxInputMgr::setup(const InputDesc& desc) {
     
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->keyboard.attached = true;
     this->mouse.attached = true;
     

@@ -113,26 +113,46 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::InputSetup
+    @class Oryol::InputDesc
     @ingroup Input
     @brief configure the Input module
 */
-class InputSetup {
+class InputDesc {
 public:
-    /// initial set of gamepad mappings, use id="__default" to override default mapping
-    Map<StringAtom, GamepadMapping> GamepadMappings;
+    /// initial set of gamepad mappings, use name="__default" to override default mapping
+    InputDesc& GamepadMapping(const StringAtom& name, const class GamepadMapping& mapping) {
+        gamepadMappings.Add(name, mapping);
+        return *this;
+    }
+    const Map<StringAtom, class GamepadMapping>& GamepadMappings() const {
+        return gamepadMappings;
+    }
     /// enable/disable single-tap touch gesture
-    bool TapEnabled = true;
+    InputDesc& TapEnabled(bool b)       { tapEnabled = b; return *this; }
+    bool TapEnabled() const             { return tapEnabled; }
     /// enable/disable double-tap touch gesture
-    bool DoubleTapEnabled = true;
+    InputDesc& DoubleTapEnabled(bool b) { doubleTapEnabled = b; return *this; }
+    bool DoubleTapEnabled() const       { return doubleTapEnabled; }
     /// enable/disable pinch touch gesture
-    bool PinchEnabled = true;
+    InputDesc& PinchEnabled(bool b)     { pinchEnabled = b; return *this; }
+    bool PinchEnabled() const           { return pinchEnabled; }
     /// enable/disable pan touch gesture
-    bool PanEnabled = true;
-    /// accelerometer enabled
-    bool AccelerometerEnabled = true;
-    /// gyrometer enabled
-    bool GyrometerEnabled = true;
+    InputDesc& PanEnabled(bool b)       { panEnabled = b; return *this; }
+    bool PanEnabled() const             { return panEnabled; }
+    /// enable/disable accelerometer readings
+    InputDesc& AccelerometerEnabled(bool b) { accelerometerEnabled = b; return *this; }
+    bool AccelerometerEnabled() const       { return accelerometerEnabled; }
+    /// enable/disable gyrometer readings
+    InputDesc& GyrometerEnabled(bool b)     { gyrometerEnabled = b; return *this; }
+    bool GyrometerEnabled() const           { return gyrometerEnabled; }
+
+    Map<StringAtom, class GamepadMapping> gamepadMappings;
+    bool tapEnabled = true;
+    bool doubleTapEnabled = true;
+    bool pinchEnabled = true;
+    bool panEnabled = true;
+    bool accelerometerEnabled = true;
+    bool gyrometerEnabled = true;
 };
 
 //------------------------------------------------------------------------------
