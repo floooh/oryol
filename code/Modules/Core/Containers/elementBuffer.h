@@ -633,7 +633,7 @@ elementBuffer<TYPE>::insert(int index, TYPE&& elm) {
     bool slotConstructed = true;
     TYPE* ptr = this->prepareInsert(index, slotConstructed);
     if (slotConstructed) {
-        *ptr = elm;
+        *ptr = std::move(elm);
     }
     else {
         new(ptr) TYPE(std::move(elm));

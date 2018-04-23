@@ -3,6 +3,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Core/Assertion.h"
 #include "Input/InputTypes.h"
+#include "Input/private/gestureDetectors.h"
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
 #include <bitset>
@@ -90,7 +91,7 @@ public:
 */
 class touchpadDevice {
 public:
-    void onTouch(bool active, const glm::vec2& pos);
+    void onTouchEvent(touchEvent::touchType type, const glm::vec2& pos);
     void onTapped(const glm::vec2& pos);
     void onDoubleTapped(const glm::vec2& pos);
     void onPanningStarted(const glm::vec2& pos, const glm::vec2& startPos);
@@ -108,7 +109,10 @@ public:
     StaticArray<glm::vec2, MaxNumTouches> position;
     StaticArray<glm::vec2, MaxNumTouches> movement;
     StaticArray<glm::vec2, MaxNumTouches> startPosition;
-    bool touched = false;
+    bool touchStarted = false;
+    bool touchMoved = false;
+    bool touchEnded = false;
+    bool touchCancelled = false;
     bool tapped = false;
     bool doubleTapped = false;
     bool panningStarted = false;

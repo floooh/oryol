@@ -52,7 +52,7 @@ public:
     /// erase element
     void Erase(const VALUE& val);
     /// get value at index
-    const VALUE& ValueAtIndex(int index);
+    const VALUE& ValueAtIndex(int index) const;
     
     /// C++ conform begin
     VALUE* begin();
@@ -192,7 +192,7 @@ Set<VALUE>::Erase(const VALUE& val) {
 
 //------------------------------------------------------------------------------
 template<class VALUE> const VALUE&
-Set<VALUE>::ValueAtIndex(int index) {
+Set<VALUE>::ValueAtIndex(int index) const {
     return this->valueArray[index];
 };
     

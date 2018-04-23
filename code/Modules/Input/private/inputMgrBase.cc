@@ -24,7 +24,7 @@ void
 inputMgrBase::setup(const InputDesc& desc) {
     o_assert_dbg(!this->isValid());
     this->singleTapDetector.numRequiredTaps = 1;
-    this->doubleTapDetector.numRequiredTaps = 2;        
+    this->doubleTapDetector.numRequiredTaps = 2;
     this->valid = true;
     this->inputDesc = desc;
     for (const auto& item : desc.gamepadMappings) {
@@ -69,6 +69,11 @@ void
 inputMgrBase::onTouchEvent(const touchEvent& event) {
     o_assert_dbg(event.numTouches > 0);
     if (this->touchpad.attached) {
+        // track raw touch events
+        if (event.numTouches == 1) {
+            this->touchpad.onTouchEvent(event.type, event.points[0].pos);
+        }
+        // panning detection
         if (this->inputDesc.panEnabled) {
             switch (this->panDetector.detect(event)) {
                 case gestureState::start:
@@ -86,19 +91,20 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
                     }
                     break;
             }
-            // extract 'raw' touch state and position from panDetector
-            this->touchpad.onTouch(touchEvent::invalid != this->panDetector.startEvent.type, this->panDetector.position);
         }
+        // tapping detection
         if (this->inputDesc.tapEnabled) {
             if (gestureState::action == this->singleTapDetector.detect(event)) {
                 this->touchpad.onTapped(this->singleTapDetector.position);
             }
         }
+        // double tap detection
         if (this->inputDesc.doubleTapEnabled) {
             if (gestureState::action == this->doubleTapDetector.detect(event)) {
                 this->touchpad.onDoubleTapped(this->doubleTapDetector.position);
             }
         }
+        // pinc detection
         if (this->inputDesc.pinchEnabled) {
             switch (this->pinchDetector.detect(event)) {
                 case gestureState::start:

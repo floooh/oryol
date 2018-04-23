@@ -231,12 +231,14 @@ DWORD64
 
 
 // secure-CRT_functions are only available starting with VC8
+#ifdef _MSC_VER
 #if _MSC_VER < 1400
 #define strcpy_s(dst, len, src) strcpy(dst, src)
 #define strncpy_s(dst, len, src, maxLen) strncpy(dst, len, src)
 #define strcat_s(dst, len, src) strcat(dst, src)
 #define _snprintf_s _snprintf
 #define _tcscat_s _tcscat
+#endif
 #endif
 
 static void MyStrCpy(char* szDest, size_t nMaxDestSize, const char* szSrc)
@@ -665,7 +667,7 @@ private:
       return FALSE;
     }
 
-    hMods = (HMODULE*) malloc(sizeof(HMODULE) * (TTBUFLEN / sizeof HMODULE));
+    hMods = (HMODULE*) malloc(sizeof(HMODULE) * (TTBUFLEN / sizeof(HMODULE)));
     tt = (char*) malloc(sizeof(char) * TTBUFLEN);
     tt2 = (char*) malloc(sizeof(char) * TTBUFLEN);
     if ( (hMods == NULL) || (tt == NULL) || (tt2 == NULL) )
