@@ -73,7 +73,7 @@ winDisplayMgr::SetupDisplay(const GfxDesc& desc, const char* windowTitlePostfix)
 
     displayMgrBase::SetupDisplay(desc);
 
-    this->initDPI(desc.HighDPI);
+    this->initDPI(desc.highDPI);
     this->registerWindowClass();
     this->createWindow(windowTitlePostfix);
 
@@ -183,7 +183,7 @@ winDisplayMgr::createWindow(const char* titlePostFix) {
     // setup window style flags
     this->dwStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
     this->dwExStyle = WS_EX_APPWINDOW;
-    if (this->gfxDesc.Windowed) {
+    if (this->gfxDesc.windowed) {
         this->dwStyle |= WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
         this->dwExStyle |= WS_EX_WINDOWEDGE;
     }
@@ -192,9 +192,9 @@ winDisplayMgr::createWindow(const char* titlePostFix) {
     }
 
     int width, height;
-    this->computeWindowSize(this->gfxDesc.Width, this->gfxDesc.Height, width, height);
+    this->computeWindowSize(this->gfxDesc.width, this->gfxDesc.height, width, height);
 
-    StringBuilder strBuilder(this->gfxDesc.Title);
+    StringBuilder strBuilder(this->gfxDesc.title);
     strBuilder.Append(titlePostFix);
     WideString title = StringConverter::UTF8ToWide(strBuilder.AsCStr());
 

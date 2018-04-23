@@ -53,7 +53,7 @@ d3d11DisplayMgr::DiscardDisplay() {
 void
 d3d11DisplayMgr::Present() {
     o_assert_dbg(this->dxgiSwapChain);
-    this->dxgiSwapChain->Present(this->gfxDesc.SwapInterval, 0);
+    this->dxgiSwapChain->Present(this->gfxDesc.swapInterval, 0);
 }
 
 //------------------------------------------------------------------------------
@@ -76,11 +76,11 @@ d3d11DisplayMgr::createDeviceAndSwapChain() {
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     dxgiSwapChainDesc.OutputWindow = this->hwnd;
-    dxgiSwapChainDesc.Windowed = this->gfxDesc.Windowed;
+    dxgiSwapChainDesc.Windowed = this->gfxDesc.windowed;
     dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     dxgiSwapChainDesc.BufferCount = 1;
-    dxgiSwapChainDesc.SampleDesc.Count = this->gfxDesc.SampleCount;
-    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxDesc.SampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
+    dxgiSwapChainDesc.SampleDesc.Count = this->gfxDesc.sampleCount;
+    dxgiSwapChainDesc.SampleDesc.Quality = this->gfxDesc.sampleCount > 1 ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
     dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     dxgiSwapChainDesc.Flags = 0;
 
@@ -141,7 +141,7 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
     o_assert_dbg(this->d3d11RenderTargetView);
 
     // setup depth/stencil buffer (if required)
-    if (PixelFormat::None != this->gfxDesc.DepthFormat) {
+    if (PixelFormat::None != this->gfxDesc.depthFormat) {
         D3D11_TEXTURE2D_DESC depthStencilDesc = { };
         depthStencilDesc.Width = width;
         depthStencilDesc.Height = height;
@@ -159,7 +159,7 @@ d3d11DisplayMgr::createDefaultRenderTarget(int width, int height) {
 
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = { };
         dsvDesc.Format = depthStencilDesc.Format;
-        if (this->gfxDesc.SampleCount > 1) {
+        if (this->gfxDesc.sampleCount > 1) {
             dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         }
         else {
