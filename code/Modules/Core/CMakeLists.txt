@@ -118,7 +118,7 @@ fips_begin_unittest(Core)
         SliceTest.cc
         InlineArrayTest.cc
         StackTraceTest.cc
-        BufferTest.cc
+        MemoryBufferTest.cc
         ArgsTest.cc
         ArrayTest.cc
         StaticArrayTest.cc
