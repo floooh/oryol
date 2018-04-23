@@ -79,7 +79,7 @@ ResourceStressApp::OnRunning() {
     this->updateObjects();
     this->createObjects();
 
-    Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
     for (const auto& obj : this->objects) {
         // only render objects that have successfully loaded (technically
         // the check is not necessary since rendering for non-valid resources

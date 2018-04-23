@@ -490,7 +490,7 @@ TestInputApp::OnRunning() {
     this->updateView();
     
     // draw frame
-    Gfx::BeginPass(PassAction::New().Clear(this->getClearColor()));
+    Gfx::BeginPass(PassAction().Clear(this->getClearColor()));
     this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::EndPass();

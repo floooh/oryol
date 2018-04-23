@@ -182,7 +182,7 @@ NativeTextureApp::notSupported() {
     const char* msg = "This demo needs GL\n";
     int x = (Gfx::DisplayAttrs().Width/16 - int(std::strlen(msg)))/2;
     int y = (Gfx::DisplayAttrs().Height/16)/2;
-    Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.0f, 0.0f, 1.0f));
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.0f, 0.0f, 1.0f));
     Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(uint8_t(x), uint8_t(y));
     Dbg::Print(msg);

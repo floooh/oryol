@@ -29,7 +29,7 @@ public:
         Id pass;
     } passInfo[2];
     Shader::vsParams vsParams;
-    PassAction passAction = PassAction::New().Clear(0.25f, 0.25f, 0.25f, 1.0f);
+    PassAction passAction = PassAction().Clear(0.25f, 0.25f, 0.25f, 1.0f);
     glm::mat4 view;
     glm::mat4 offscreenProj;
     glm::mat4 displayProj;

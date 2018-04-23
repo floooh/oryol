@@ -76,8 +76,7 @@ InstancingApp::OnInit() {
     // setup pipeline state for instanced rendering
     this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
-        .Layout(1, VertexLayout::New()
-            .EnableInstancing()
+        .Layout(1, VertexLayout().EnableInstancing()
             .Add("in_instpos", VertexFormat::Float4))
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)

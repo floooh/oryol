@@ -586,9 +586,8 @@ public:
     };
     uint16_t Flags = ClearC0|ClearC1|ClearC2|ClearC3|ClearDS;
 
-    /// return a default-initialized PassAction object
-    static PassAction New();
-
+    /// default constructor
+    PassAction();
     /// clear all attachments
     PassAction& Clear(float r, float g, float b, float a, float depth=1.0f, uint8_t stencil=0);
     /// clear all attachments with color as glm::vec4
@@ -622,9 +621,6 @@ public:
     PassAction& LoadDepthStencil();
     /// leave content of depth-stencil attachment undefined
     PassAction& DontCareDepthStencil(); 
-
-    /// default constructor
-    PassAction();
 };
 
 //------------------------------------------------------------------------------
@@ -700,8 +696,6 @@ public:
     VertexLayout();
     /// initializer list constructor
     VertexLayout(std::initializer_list<Component> l);
-    /// return a new vertex layout object to start building via chained methods
-    static VertexLayout New();
     /// clear the vertex layout, chainable
     VertexLayout& Clear();
     /// return true if layout is empty

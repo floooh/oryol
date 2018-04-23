@@ -138,8 +138,7 @@ GPUParticlesApp::OnInit() {
     // ...and the pipeline object for instanced particle rendering
     this->drawParticles.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
         .Shader(Gfx::CreateShader(DrawShader::Desc()))
-        .Layout(1, VertexLayout::New()
-            .EnableInstancing()
+        .Layout(1, VertexLayout().EnableInstancing()
             .Add("in_particleId", VertexFormat::Float))
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)
@@ -158,7 +157,7 @@ GPUParticlesApp::OnInit() {
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     for (int i = 0; i < 2; i++) {
-        Gfx::BeginPass(this->particleBuffer[0].pass, PassAction::New().DontCare());
+        Gfx::BeginPass(this->particleBuffer[0].pass, PassAction().DontCare());
         Gfx::ApplyDrawState(this->initParticles);
         Gfx::ApplyUniformBlock(this->initFSParams);
         Gfx::Draw(0, 4);
@@ -194,7 +193,7 @@ GPUParticlesApp::OnRunning() {
     const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
     this->updParticles.FSTexture[UpdateShader::prevState] = this->particleBuffer[readIndex].texture;
     this->updFSParams.numParticles = (float) this->curNumParticles;
-    Gfx::BeginPass(this->particleBuffer[drawIndex].pass, PassAction::New().DontCare());
+    Gfx::BeginPass(this->particleBuffer[drawIndex].pass, PassAction().DontCare());
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updParticles);
     Gfx::ApplyUniformBlock(this->updFSParams);

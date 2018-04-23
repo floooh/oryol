@@ -51,7 +51,7 @@ DebugTextApp::OnRunning() {
     this->moveChars();
     this->drawText();
     
-    Gfx::BeginPass(PassAction::New().Clear(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
     Dbg::DrawTextBuffer();
     Gfx::EndPass();
     Gfx::CommitFrame();

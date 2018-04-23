@@ -375,11 +375,6 @@ PassAction::PassAction() {
 }
 
 //------------------------------------------------------------------------------
-PassAction PassAction::New() {
-    return PassAction();
-}
-
-//------------------------------------------------------------------------------
 PassAction& PassAction::Load() {
     this->Flags = LoadC0|LoadC1|LoadC2|LoadC3|LoadDS;
     return *this;
@@ -504,11 +499,6 @@ VertexLayout::VertexLayout(std::initializer_list<Component> l) {
     for (const auto& c : l) {
         this->Add(c);
     }
-}
-
-//------------------------------------------------------------------------------
-VertexLayout VertexLayout::New() {
-    return VertexLayout();
 }
 
 //------------------------------------------------------------------------------
