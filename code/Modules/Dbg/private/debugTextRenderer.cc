@@ -102,7 +102,7 @@ debugTextRenderer::textColor(float r, float g, float b, float a) {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::drawTextBuffer() {
+debugTextRenderer::drawTextBuffer(int width, int height) {
     
     // get the currently accumulated string
     String str;
@@ -121,11 +121,17 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
+        if (0 == width) {
+            width = Gfx::DisplayAttrs().Width;
+        }
+        if (0 == height) {
+            height = Gfx::DisplayAttrs().Height;
+        }
         Gfx::UpdateBuffer(this->drawState.VertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);
         DbgTextShader::vsParams vsParams;
-        const float w = 8.0f / Gfx::PassAttrs().Width;   // glyph is 8 pixels wide
-        const float h = 8.0f / Gfx::PassAttrs().Height;  // glyph is 8 pixel tall
+        const float w = 8.0f / width;   // glyph is 8 pixels wide
+        const float h = 8.0f / height;  // glyph is 8 pixel tall
         vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
         Gfx::ApplyUniformBlock(vsParams);
         Gfx::Draw(0, this->curNumVertices);

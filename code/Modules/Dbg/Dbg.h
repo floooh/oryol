@@ -34,8 +34,8 @@ public:
     static void TextColor(float r, float g, float b, float a);
     /// add a color tag as float[4] array
     static void TextColor(const float (&c)[4]);
-    /// draw the debug text buffer (call one per frame)
-    static void DrawTextBuffer();
+    /// draw the debug text buffer (call once per frame)
+    static void DrawTextBuffer(int width=0, int height=0);
 };
     
 } // namespace Oryol

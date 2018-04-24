@@ -37,7 +37,7 @@ public:
     /// change text color
     void textColor(float r, float g, float b, float a);
     /// draw the accumulated text
-    void drawTextBuffer();
+    void drawTextBuffer(int width, int height);
     /// setup the text dynamic mesh
     void setupResources(const DbgDesc& desc);
     /// convert the provides string object into vertices, and return number of vertices
