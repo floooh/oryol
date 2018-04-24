@@ -89,15 +89,6 @@ Gfx::DisplayAttrs() {
 }
 
 //------------------------------------------------------------------------------
-const DisplayAttrs&
-Gfx::PassAttrs() {
-    o_assert_dbg(IsValid());
-    // FIXME
-    return DisplayAttrs();
-    //return state->backend.renderer.renderPassAttrs();
-}
-
-//------------------------------------------------------------------------------
 const GfxFrameInfo&
 Gfx::FrameInfo() {
     o_assert_dbg(IsValid());

@@ -37,8 +37,6 @@ public:
     static const GfxDesc& Desc();
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
-    /// get the current render pass attributes (default or offscreen)
-    static const struct DisplayAttrs& PassAttrs();
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
 
