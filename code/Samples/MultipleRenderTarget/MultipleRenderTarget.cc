@@ -196,7 +196,7 @@ MultipleRenderTargetApp::OnRunning() {
     Gfx::Draw(0, 4);
 
     // render the final plane which samples from all 3 offscreen rendertarget textures
-    const auto& rpAttrs = Gfx::PassAttrs();
+    const auto& rpAttrs = Gfx::DisplayAttrs();
     Gfx::ApplyViewPort(0, 0, rpAttrs.Width, rpAttrs.Height);
     Gfx::ApplyDrawState(this->displayDrawState);
     Gfx::ApplyUniformBlock(this->displayParams);

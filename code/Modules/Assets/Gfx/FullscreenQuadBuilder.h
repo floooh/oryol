@@ -33,7 +33,7 @@ class FullscreenQuadBuilder {
 public:
     struct Result {
         BufferDesc VertexBufferDesc;
-        PipelineDesc PipelineDesc;  // blueprint pipeline desc
+        struct PipelineDesc PipelineDesc;  // blueprint pipeline desc
         int NumElements = 4;        // rendered as triangle strip
     };
     bool flipV = false;
