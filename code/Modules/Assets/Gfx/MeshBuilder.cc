@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "MeshBuilder.h"
 #include "Core/Assertion.h"
-#include "Gfx/Gfx.h"
 
 namespace Oryol {
 
