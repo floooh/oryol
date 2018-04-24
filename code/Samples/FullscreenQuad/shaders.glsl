@@ -31,7 +31,8 @@ uniform params {
     float time;
 };
 
-in vec2 in_pos;
+in vec4 position;
+in vec2 texcoord0;
 out vec2 uv;
 out vec3 eye;
 out vec3 up;
@@ -40,8 +41,8 @@ out vec3 fwd;
 out vec4 sinTime;
 
 void main() {
-    gl_Position = vec4(in_pos * 2.0 - 1.0, 0.5, 1.0);
-    uv = in_pos * 2.0 - 1.0;
+    gl_Position = position;
+    uv = texcoord0 * 2.0 - 1.0;
     vec3 center = vec3(0.0, 0.0, 0.0);
     eye = eyePos(time, center);
     lookatResult lookatVecs = lookat(eye, center, vec3(0.0, 1.0, 0.0));

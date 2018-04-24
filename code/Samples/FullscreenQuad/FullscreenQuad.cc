@@ -4,6 +4,7 @@
 #include "Pre.h"
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
+#include "Assets/Gfx/FullscreenQuadBuilder.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -23,14 +24,10 @@ OryolMain(FullscreenQuadApp);
 AppState::Code
 FullscreenQuadApp::OnInit() {
     Gfx::Setup(GfxDesc().Width(600).Height(600).Title("Oryol Fullscreen Quad Sample"));
-    const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
-        .Size(sizeof(quadVertices))
-        .Content(quadVertices));
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .Layout(0, { { "in_pos", VertexFormat::Float2 } })
-        .PrimitiveType(PrimitiveType::TriangleStrip));
+    auto fsq = FullscreenQuadBuilder().Build();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(fsq.VertexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(fsq.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc())));
     this->params.time = 0.0f;
     return App::OnInit();
 }

@@ -2,6 +2,7 @@ fips_begin_module(Assets)
     fips_vs_warning_level(3)
     fips_dir(Gfx)
     fips_files(
+        FullscreenQuadBuilder.cc FullscreenQuadBuilder.h
         MeshBuilder.cc MeshBuilder.h
         ShapeBuilder.cc ShapeBuilder.h
         VertexWriter.cc VertexWriter.h
