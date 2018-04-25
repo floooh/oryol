@@ -107,8 +107,8 @@ Locator::operator!=(const Locator& rhs) const {
 //------------------------------------------------------------------------------
 inline bool
 Locator::operator<(const Locator& rhs) const {
-    if (this->signature < rhs.signature) {
-        return true;
+    if (this->location == rhs.location) {
+        return this->signature < rhs.signature;
     }
     else {
         return this->location < rhs.location;
