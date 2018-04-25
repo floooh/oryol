@@ -47,6 +47,8 @@ public:
     #if ORYOL_DEBUG
     /// validate integrity of internal data structures
     bool CheckIntegrity() const;
+    /// dump debugging info to stdout
+    void DumpDebugInfo() const;
     #endif
     
     struct Entry {
