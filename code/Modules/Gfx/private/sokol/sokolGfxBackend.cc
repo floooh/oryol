@@ -495,8 +495,8 @@ sokolGfxBackend::Setup(const GfxDesc& desc) {
     sgDesc.shader_pool_size = desc.resourcePoolSize[GfxResourceType::Shader];
     sgDesc.pipeline_pool_size = desc.resourcePoolSize[GfxResourceType::Pipeline];
     sgDesc.pass_pool_size = desc.resourcePoolSize[GfxResourceType::Pass];
-    #if ORYOL_GLES3
-    sgDesc.gl_force_gles2 = this->displayManager.forceGLES2;
+    #if ORYOL_OPENGLES3
+    sgDesc.gl_force_gles2 = this->displayManager.useGLES2;
     #elif ORYOL_METAL
     sgDesc.mtl_device = mtlDisplayMgr::mtlDevice();
     sgDesc.mtl_renderpass_descriptor_cb = mtlDisplayMgr::mtlRenderPassDescriptor;
