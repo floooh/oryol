@@ -86,7 +86,7 @@ mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
     }
     #elif ORYOL_IOS
     osBridge* bridge = osBridge::ptr();
-    if (desc.HighDPI) {
+    if (desc.HighDPI()) {
         [bridge->mtkView setContentScaleFactor:2.0f];
         bridge->mouseScale = 2.0f;
     }
