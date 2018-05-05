@@ -58,8 +58,8 @@ MultipleRenderTargetApp::OnInit() {
         return App::OnInit();
     }
 
-    // create 3 rendertarget textures, the first one with a DepthStencil
-    // surface, note that the render target textures use MSAA anti-aliasing
+    // create 3 color rendertarget textures, and a matching
+    // depth-stencil render target texture 
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTHSTENCIL;
     const int rtSampleCount = 4;
