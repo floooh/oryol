@@ -6,7 +6,7 @@
     @brief display manager class for EGL platforms
 */
 #include "Gfx/private/displayMgrBase.h"
-#include "Gfx/private/gl.h"
+#include "Gfx/private/gl/gl.h"
 #include <EGL/egl.h>
 
 namespace Oryol {

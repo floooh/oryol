@@ -50,17 +50,17 @@ eglDisplayMgr::SetupDisplay(const GfxDesc& desc) {
 
     // make sure we have a valid rendering RGBA format, e.g. RGB is
     // not a valid framebuffer format
-    int colorBits = PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Red);
+    int colorBits = PixelFormat::NumBits(desc.ColorFormat(), PixelChannel::Red);
     o_assert((colorBits == 4) || (colorBits == 8));
     EGLint eglConfigAttrs[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_SAMPLES, desc.SampleCount,
+        EGL_SAMPLES, desc.SampleCount(),
         EGL_RED_SIZE, colorBits,
         EGL_GREEN_SIZE, colorBits,
         EGL_BLUE_SIZE, colorBits,
         EGL_ALPHA_SIZE, colorBits,
-        EGL_DEPTH_SIZE, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Depth),
-        EGL_STENCIL_SIZE, PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Stencil),
+        EGL_DEPTH_SIZE, PixelFormat::NumBits(desc.DepthFormat(), PixelChannel::Depth),
+        EGL_STENCIL_SIZE, PixelFormat::NumBits(desc.DepthFormat(), PixelChannel::Stencil),
         EGL_NONE
     };
     EGLint numConfigs = 0;
@@ -104,7 +104,7 @@ eglDisplayMgr::SetupDisplay(const GfxDesc& desc) {
         eglGetConfigAttrib(this->eglDisplay, this->eglConfig, EGL_NATIVE_VISUAL_ID, &format);
         int32_t w = ANativeWindow_getWidth(window);
         int32_t h = ANativeWindow_getHeight(window);
-        if (!gfxDesc.HighDPI) {
+        if (!gfxDesc.HighDPI()) {
             w/=2; h/=2;
         }
         ANativeWindow_setBuffersGeometry(window, w, h, format);
@@ -160,10 +160,8 @@ eglDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_WIDTH, &actualWidth);
     eglQuerySurface(this->eglDisplay, this->eglSurface, EGL_HEIGHT, &actualHeight);
     Log::Info("eglDisplayMgr: actual framebuffer size w=%d, h=%d\n", actualWidth, actualHeight);
-    this->displayAttrs.FramebufferWidth = actualWidth;
-    this->displayAttrs.FramebufferHeight = actualHeight;
-    this->displayAttrs.WindowWidth = actualWidth;
-    this->displayAttrs.WindowHeight = actualHeight;
+    this->displayAttrs.Width = actualWidth;
+    this->displayAttrs.Height = actualHeight;
 }
 
 //------------------------------------------------------------------------------

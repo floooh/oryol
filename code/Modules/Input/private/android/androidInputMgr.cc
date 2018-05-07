@@ -43,7 +43,7 @@ androidInputMgr::setup(const InputDesc& desc) {
     }
     this->highDPI = Gfx::Desc().HighDPI();
 
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->touchpad.attached = true;
     this->sensors.attached = true;
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
