@@ -1,107 +1,70 @@
 body {
     margin: 0;
-    background-color: ${background};
+    background-color: #292d3e
 }
 
 /** sample header styling **/
 .title {    
-    text-align: center;
-    text-shadow: 3px 2px #E3E3E3;
-    font-family: 'Racing Sans One';
-    font-size: 80px;
-    background-color: white;
-    min-width: 500px;
-    margin-top: 0px;
-}
-.subtitle {
-    text-align: center;
-    font-family: 'Racing Sans One';
-    font-size: 40px;
-    background-color: rgba(0, 0, 0, 0); /*transparent background*/
-    min-width: 500px;
-    margin-top: 0px;
+    color: #52a3dd;
+    text-align: left;
     padding-left: 20px;
-}
-.cr {
-    position: relative;
-    top: -33px;
-    left: 3px;
-    font-size: 30px;
-}
-.rainbow-separator {
-    margin-top: -10px;
-    height: 14px;
-    background: linear-gradient(red,orange,yellow,green,blue);
-}
-.simple-separator {
-    margin-top: -2px;
-    height: 3px;
-    background: black;
-}
-
-
-/** navigation bar **/
-.nav-bar {
-    margin-top: 8px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 10px;
-    width: 300px;
-    height: auto;
-    background-color: white;
-    outline: black solid thin;
-}
-.nav-list {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 0px; 
-    margin-bottom: 0px;
-    list-style-type: none;
-    padding: 0px;
-}
-.nav-item {
-    display: inline;
-    float: left;
-}
-a.nav-link:link, a.nav-link:visited {
     font-family: 'Racing Sans One';
-    font-size: 22px;    
-    display: block;
-    width: 100px;
-    color: black;
-    text-align: center;
-    text-decoration: none;
-}
-a.nav-link:hover, a.nav-link:active {
-    background-color: #CCCCCC;
+    font-size: 60px;
+    margin-top: 0px;
 }
 
-/* this breaks the float after the navbar */
-.break {
-    clear: both;
+.main-menu-item {
+    font-size: 18px;
+    padding-left: 10px;
+}
+
+.main-menu-link {
+    text-decoration: none;
+    color: #52a3dd;
+}
+
+/** game page styling **/
+.game-title {
+    pointer-events: none;
+    position: absolute;
+    color: white;
+    z-index: 1;
+    text-align: left;
+    font-family: 'Racing Sans One';
+    font-size: 30px;
+    margin-top: 0px;
+    padding-left: 10px;
+}
+.game-menu-item {
+    pointer-events: auto;
+    font-size: 18px;
+    padding-left: 10px;
+}
+.game-menu-link {
+    text-decoration: none;
+    color: white;
 }
 
 /** thumbnail gallery **/
 .gallery {
-    margin-left: auto;
+    margin-left: 50px;
     margin-right: auto;
     display: block;
-    width: 790px;
     height: auto;
 }
 .thumb {
-    width: 240px;
+    width: 250px;
     height: 220px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 30px;
     padding: 1px;
     float: left;
-    background: white;
-    outline: rgb(0, 0, 0) solid thin;
+    background: #191a24;
 }
 .thumb-title {
     text-align: center;
+    color: #448fc5;
     font-family: 'Racing Sans One';
     font-size: 20px;        
 }
@@ -117,12 +80,11 @@ a.nav-link:hover, a.nav-link:active {
     max-width: 236px;
     margin-left: auto;
     margin-right: auto;
-    border-radius: 3px;
+    border: 1px solid black;
 }
 .thumb-bar {
     padding: 0;
     width: 240px;
-    background-color: red;
     vertical-align: bottom;
 }
 .thumb-list {
@@ -139,60 +101,26 @@ a.thumb-link:link, a.thumb-link:visited {
     font-size: 16px;    
     display: block;
     width: 80px;
-    color: black;
-    background-color: white;
+    color: #448fc5;
     text-align: center;
     text-decoration: none;
-}
-
-a.thumb-link:hover, a.thumb-link:active {
-    background-color: rgb(220, 220, 220);
 }
 
 .gallery-bottom {
-    height: 1px;
+    height: 60px;
     clear: both;
 }
 
-.bottom {
-    height: 20px;
-}
-
-/** game page styling **/
-.game-title {
-    text-align: center;
-    font-family: 'Racing Sans One';
-    font-size: 40px;
-    background-color: white;
-    min-width: 500px;
-    margin-top: 0px;
-    padding-left: 20px;
-}
-.game-subtitle {
-    font-size: 18px;
-    padding-left: 20px;
-}
-.game-sdk-link {
-    text-decoration: none;
-    color: black;
-}
-.game-rainbow-separator {
-    margin-top: 0px;
-    height: 10px;
-    background: linear-gradient(red,orange,yellow,green,blue);
-}
-.game-border {
-    margin-top: 0px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-}
 /* the emscripten canvas must not have any border or padding, or mouse coords will be wrong */
 .game {
-    padding: 0px;
-    margin-left: auto;
-    margin-right: auto;
-    border: 0px none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    margin: 0px;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     display: block;
     image-rendering: optimizeSpeed;
     image-rendering: -moz-crisp-edges;
@@ -203,41 +131,3 @@ a.thumb-link:hover, a.thumb-link:active {
     image-rendering: pixelated;
     -ms-interpolation-mode: nearest-neighbor;
 }
-.game:-webkit-full-screen {
-    width: 100%;
-    height: 100%;
-}
-.game-output {
-    background-color: #BAE3FF;
-    font-family: courier;
-    font-size: 12px;
-    margin-top: 10px;
-    margin-left: auto;
-    margin-right: auto;
-    display: none;
-    border: 0px none;
-}
-
-/* styling for the about page */
-.about-textbox {
-    text-align: center;
-    font-family: 'courier';
-    font-size: 20px;    
-    margin-top: 40px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 20px;
-    width: 700px;
-    height: auto;
-    background-color: white;
-    outline: black solid thin;
-}
-a.about-link:link, a.about-link:visited {
-    color: #19A3FF;
-    text-decoration: none;
-}
-
-a.about-link:hover, a.about-link:active {
-    color: #0C5280;
-}
-

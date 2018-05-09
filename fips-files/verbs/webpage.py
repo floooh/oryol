@@ -18,16 +18,6 @@ ExtensionSamples = True
 
 # webpage template arguments
 GitHubSamplesURL = 'https://github.com/floooh/oryol/tree/master/code/Samples/'
-DocTitle = 'Oryol Core Samples'
-Title = 'Oryol'
-Subtitle = 'core samples'
-# Separator = 'rainbow-separator'
-# GameSeparator = 'game-rainbow-separator'
-# BackgroundColor = '#19A3FF'     # this is the original bright blue 
-
-Separator = 'simple-separator'
-GameSeparator = 'simple-separator'
-BackgroundColor = '#42A5F5'
 
 # build configuration
 EmscConfig  = 'webgl2-emsc-ninja-release'
@@ -85,19 +75,19 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
     # populate the html template, and write to the build directory
     with open(proj_dir + '/web/index.html', 'r') as f :
         templ = Template(f.read())
-    html = templ.safe_substitute(doctitle=DocTitle, title=Title, subtitle=Subtitle, samples=content, separator=Separator)
+    html = templ.safe_substitute(samples=content)
     with open(webpage_dir + '/index.html', 'w') as f :
         f.write(html)
 
     # and the same with the CSS template
     with open(proj_dir + '/web/style.css', 'r') as f :
         templ = Template(f.read())
-    css = templ.safe_substitute(background=BackgroundColor)
+    css = templ.safe_substitute()
     with open(webpage_dir +'/style.css', 'w') as f :
         f.write(css)
 
     # copy other required files
-    for name in ['dummy.jpg', 'emsc.js', 'wasm.js', 'about.html', 'favicon.png', 'ext_samples.jpg'] :
+    for name in ['dummy.jpg', 'emsc.js', 'wasm.js', 'favicon.png', 'ext_samples.jpg'] :
         log.info('> copy file: {}'.format(name))
         shutil.copy(proj_dir + '/web/' + name, webpage_dir + '/' + name)
 
@@ -108,14 +98,14 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
             name = sample['name']
             if name != '__end__' and 'emscripten' in sample['type'] :
                 log.info('> generate emscripten HTML page: {}'.format(name))
-                for ext in ['js', 'html.mem'] :
+                for ext in ['js'] :
                     src_path = '{}/{}.{}'.format(emsc_deploy_dir, name, ext)
                     if os.path.isfile(src_path) :
                         shutil.copy(src_path, '{}/asmjs/'.format(webpage_dir))
                 with open(proj_dir + '/web/emsc.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
-                html = templ.safe_substitute(name=name, source=src_url, separator=GameSeparator)
+                html = templ.safe_substitute(name=name, source=src_url)
                 with open('{}/asmjs/{}.html'.format(webpage_dir, name, name), 'w') as f :
                     f.write(html)
 
@@ -130,14 +120,14 @@ def deploy_webpage(fips_dir, proj_dir, webpage_dir) :
                     src_path = '{}/{}.{}'.format(wasm_deploy_dir, name, ext)
                     if os.path.isfile(src_path) :
                         shutil.copy(src_path, '{}/wasm/'.format(webpage_dir))
-                for ext in ['html.mem', 'wasm'] :
+                for ext in ['wasm'] :
                     src_path = '{}/{}.{}'.format(wasm_deploy_dir, name, ext)
                     if os.path.isfile(src_path) :
                         shutil.copy(src_path, '{}/wasm/{}.{}.txt'.format(webpage_dir, name, ext))
                 with open(proj_dir + '/web/wasm.html', 'r') as f :
                     templ = Template(f.read())
                 src_url = GitHubSamplesURL + sample['src'];
-                html = templ.safe_substitute(name=name, source=src_url, separator=GameSeparator)
+                html = templ.safe_substitute(name=name, source=src_url)
                 with open('{}/wasm/{}.html'.format(webpage_dir, name), 'w') as f :
                     f.write(html)
 
