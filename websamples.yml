@@ -133,18 +133,8 @@
   type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/ResourceStress/none
   src: ResourceStress/ResourceStress.cc
-- name: CoreHello
-  desc: Low-level hello world sample
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/CoreHello/none
-  src: CoreHello/CoreHello.cc
 - name: Sensors
   desc: Device sensors sample
   type: emscripten
   image: /Users/floh/projects/oryol/code/Samples/Sensors/none
   src: Sensors/Sensors.cc
-- name: IOQueueSample
-  desc: Asynchronous file loading with IOQueue
-  type: emscripten
-  image: /Users/floh/projects/oryol/code/Samples/IOQueueSample/none
-  src: IOQueueSample/IOQueueSample.cc
