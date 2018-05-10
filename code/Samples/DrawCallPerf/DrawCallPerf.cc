@@ -27,9 +27,6 @@ public:
 
     PrimitiveGroup primGroup;
     DrawState drawState;
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 model;
     Shader::perFrameParams perFrameParams;
     Shader::perParticleParams perParticleParams;
     bool updateEnabled = true;
@@ -53,7 +50,8 @@ DrawCallPerfApp::OnInit() {
         .Width(800)
         .Height(500)
         .Title("Oryol DrawCallPerf Sample")
-        .GlobalUniformBufferSize(1024 * 1024 * 32));
+        .GlobalUniformBufferSize(1024 * 1024 * 32)
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
 
@@ -74,13 +72,6 @@ DrawCallPerfApp::OnInit() {
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual));
-
-    // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->model = glm::mat4();
     
     return App::OnInit();
 }
@@ -126,7 +117,7 @@ DrawCallPerfApp::OnRunning() {
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
-    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r applyRt=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+    Dbg::PrintF("\n\n\n\n\n %d draws\n\r upd=%.3fms\n\r applyRt=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
                 " LMB/tap: toggle particle update",
                 this->curNumParticles,
                 updTime.AsMilliSeconds(),
@@ -144,8 +135,9 @@ void
 DrawCallPerfApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->perFrameParams.mvp = this->proj * this->view * this->model;
+    glm::mat4 view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->perFrameParams.mvp = proj * view;
 }
 
 //------------------------------------------------------------------------------

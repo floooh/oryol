@@ -60,11 +60,12 @@ body {
     margin-top: 30px;
     padding: 1px;
     float: left;
-    background: #191a24;
+    background: #292d3e;
+    border: 1px solid #52a3dd;
 }
 .thumb-title {
     text-align: center;
-    color: #448fc5;
+    color: #52a3dd;
     font-family: 'Racing Sans One';
     font-size: 20px;        
 }
@@ -88,7 +89,8 @@ body {
     vertical-align: bottom;
 }
 .thumb-list {
-    margin: 0;
+    margin: 0px;
+    margin-left: 40px;
     padding: 0;
     list-style-type: none;
 }
@@ -101,7 +103,7 @@ a.thumb-link:link, a.thumb-link:visited {
     font-size: 16px;    
     display: block;
     width: 80px;
-    color: #448fc5;
+    color: #52a3dd;
     text-align: center;
     text-decoration: none;
 }

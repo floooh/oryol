@@ -23,7 +23,10 @@ OryolMain(FullscreenQuadApp);
 //------------------------------------------------------------------------------
 AppState::Code
 FullscreenQuadApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(600).Height(600).Title("Oryol Fullscreen Quad Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(600)
+        .Title("Oryol Fullscreen Quad Sample")
+        .HtmlTrackElementSize(true));
     auto fsq = FullscreenQuadBuilder().Build();
     this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(fsq.VertexBufferDesc);
     this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(fsq.PipelineDesc)

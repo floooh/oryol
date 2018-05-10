@@ -45,7 +45,6 @@ public:
 
     DrawState sphereDrawState;
 
-    glm::mat4 displayProj;
     glm::mat4 offscreenProj;
     glm::vec2 polar;
     float distance = 20.0f;
@@ -66,7 +65,11 @@ OryolMain(RenderToCubeMapApp);
 //------------------------------------------------------------------------------
 AppState::Code
 RenderToCubeMapApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Render To CubeMap"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("Render To CubeMap")
+        .HtmlTrackElementSize(true));
     Input::Setup();
 
     // create a cubemap which will serve as render target
@@ -131,11 +134,6 @@ RenderToCubeMapApp::OnInit() {
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(Gfx::Desc().SampleCount()));
 
-    // setup projection matrix for main view
-    float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-
     // setup projection matrix for cubemap rendering
     this->offscreenProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 100.0f);
 
@@ -187,12 +185,13 @@ RenderToCubeMapApp::OnRunning() {
     // draw the environment shapes
     const glm::vec3 eyePos = glm::euclidean(this->polar) * distance;
     const glm::mat4 view = glm::lookAt(eyePos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawEnvShapes(this->displayShapesPipeline, eyePos, view, this->displayProj);
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->drawEnvShapes(this->displayShapesPipeline, eyePos, view, proj);
 
     // draw the sphere with reflection/refraction from cubemap
     Gfx::ApplyDrawState(this->sphereDrawState);
     SphereShader::vsParams vsParams;
-    vsParams.mvp = this->displayProj * view;
+    vsParams.mvp = proj * view;
     vsParams.model = glm::mat4();
     vsParams.lightDir = LightDir;
     vsParams.eyePos = eyePos;

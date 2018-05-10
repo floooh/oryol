@@ -29,8 +29,6 @@ public:
     static const int NumTextures = 16;
     StaticArray<Id, NumTextures> textures;
     Shader::vsParams vsParams;
-    glm::mat4 view;
-    glm::mat4 proj;
 };
 OryolMain(DDSTextureLoadingApp);
 
@@ -44,7 +42,10 @@ DDSTextureLoadingApp::OnInit() {
         .Assign("tex:", ORYOL_SAMPLE_URL));
 
     // setup rendering system
-    Gfx::Setup(GfxDesc().Width(600).Height(400).Title("Oryol DDS Loading Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400)
+        .Title("Oryol DDS Loading Sample")
+        .HtmlTrackElementSize(true));
 
     // setup resources
     static const char *paths[NumTextures] = {
@@ -87,11 +88,6 @@ DDSTextureLoadingApp::OnInit() {
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual));
-
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
     
     return App::OnInit();
 }
@@ -154,7 +150,8 @@ DDSTextureLoadingApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 DDSTextureLoadingApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
-    return this->proj * this->view * modelTform;
+    return proj * modelTform;
 }
 

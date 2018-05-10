@@ -38,9 +38,6 @@ public:
     DrawState drawParticles;
 
     PrimitiveGroup shapePrimGroup;
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 model;
     int frameCount = 0;
     TimePoint lastFrameTimePoint;
     int curNumParticles = 0;
@@ -55,7 +52,10 @@ OryolMain(GPUParticlesApp);
 AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc().Width(800).Height(500).Title("Oryol GPU Particles Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(500)
+        .Title("Oryol GPU Particles Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
 
     // check required extensions
@@ -144,11 +144,6 @@ GPUParticlesApp::OnInit() {
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual));
 
-    // the static projection matrix
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
-
     // setup initial shader params
     const glm::vec2 bufferDims(ParticleBufferWidth, ParticleBufferHeight);
     this->initFSParams.bufDims = bufferDims;
@@ -213,7 +208,7 @@ GPUParticlesApp::OnRunning() {
     Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
+    Dbg::PrintF("\n\n\n\n\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -224,8 +219,9 @@ void
 GPUParticlesApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawVSParams.mvp = this->proj * this->view * this->model;
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 50.0f);
+    glm::mat4 view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->drawVSParams.mvp = proj * view;
 }
 
 //------------------------------------------------------------------------------

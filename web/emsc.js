@@ -1,5 +1,3 @@
-/** emscripten wrapper page Javascript functions **/
-
 var loaded = false;
 var Module = {
     preRun: [],

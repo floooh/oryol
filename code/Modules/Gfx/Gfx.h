@@ -37,6 +37,10 @@ public:
     static const GfxDesc& Desc();
     /// get the default frame buffer attributes
     static const struct DisplayAttrs& DisplayAttrs();
+    /// get current default framebuffer width
+    static int Width();
+    /// get current default framebuffer height
+    static int Height();
     /// get frame-render stats, gets reset in CommitFrame()!
     static const GfxFrameInfo& FrameInfo();
 

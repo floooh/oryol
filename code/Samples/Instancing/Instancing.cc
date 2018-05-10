@@ -27,9 +27,6 @@ public:
 
     PrimitiveGroup primGroup;
     DrawState drawState;
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 model;
     Shader::vsParams vsParams;
     bool updateEnabled = true;
     int frameCount = 0;
@@ -46,7 +43,10 @@ OryolMain(InstancingApp);
 AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc().Width(800).Height(500).Title("Oryol Instancing Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(500)
+        .Title("Oryol Instancing Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     
@@ -81,11 +81,6 @@ InstancingApp::OnInit() {
         .CullFaceEnabled(true)
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual));
-    
-    // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     
     return App::OnInit();
 }
@@ -129,7 +124,7 @@ InstancingApp::OnRunning() {
     }
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+    Dbg::PrintF("\n\n\n\n\n %d instances\n\r upd=%.3fms\n\r bufUpd=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
                 " LMB/Tap: toggle particle updates",
                 this->curNumParticles,
                 updTime.AsMilliSeconds(),
@@ -145,8 +140,9 @@ void
 InstancingApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->vsParams.mvp = this->proj * this->view * this->model;
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    glm::mat4 view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->vsParams.mvp = proj * view;
 }
 
 //------------------------------------------------------------------------------

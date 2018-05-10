@@ -37,8 +37,6 @@ public:
     uint32_t frameCount = 0;
     Id shader;
     Array<Object> objects;
-    glm::mat4 view;
-    glm::mat4 proj;
 };
 OryolMain(ResourceStressApp);
 
@@ -56,17 +54,12 @@ ResourceStressApp::OnInit() {
         .ResourcePoolSize(GfxResourceType::Buffer, 2 * (MaxNumObjects + 32))
         .ResourcePoolSize(GfxResourceType::Texture, MaxNumObjects + 32)
         .ResourcePoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32)
-        .ResourcePoolSize(GfxResourceType::Shader, 4));
+        .ResourcePoolSize(GfxResourceType::Shader, 4)
+        .HtmlTrackElementSize(true));
 
     // setup the shader that is used by all objects
     this->shader = Gfx::CreateShader(Shader::Desc());
 
-    // setup matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    
     return App::OnInit();
 }
 
@@ -88,8 +81,9 @@ ResourceStressApp::OnRunning() {
         const Id& tex = obj.drawState.FSTexture[Shader::tex];
         if (Gfx::QueryResourceState(tex) == ResourceState::Valid) {
             Gfx::ApplyDrawState(obj.drawState);
+            glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
             Shader::vsParams vsParams;
-            vsParams.mvp = this->proj * this->view * obj.modelTransform;
+            vsParams.mvp = proj * obj.modelTransform;
             Gfx::ApplyUniformBlock(vsParams);
             Gfx::Draw(obj.primGroup);
         }

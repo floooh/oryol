@@ -29,6 +29,7 @@ BlendTestApp::OnInit() {
         .Width(1024)
         .Height(768)
         .Title("Oryol Blend Sample")
+        .HtmlTrackElementSize(true)
         .ResourcePoolSize(GfxResourceType::Pipeline, 512));
 
     // create pipeline object for a patterned background

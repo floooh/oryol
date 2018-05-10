@@ -14,7 +14,7 @@
       <span class="game-menu-item"><a class="game-menu-link" href="http://webassembly.org/" target="_blank">wasm</a></span>
   </div>
   <canvas class="game" id="canvas" hidden oncontextmenu="event.preventDefault()"></canvas>
-  <script type="text/javascript" src="../wasm.js"></script>
+  <script type="text/javascript" src="../emsc.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '${name}.wasm.txt', true)

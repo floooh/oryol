@@ -89,6 +89,20 @@ Gfx::DisplayAttrs() {
 }
 
 //------------------------------------------------------------------------------
+int
+Gfx::Width() {
+    o_assert_dbg(IsValid());
+    return state->backend.displayManager.GetDisplayAttrs().Width;
+}
+
+//------------------------------------------------------------------------------
+int
+Gfx::Height() {
+    o_assert_dbg(IsValid());
+    return state->backend.displayManager.GetDisplayAttrs().Height;
+}
+
+//------------------------------------------------------------------------------
 const GfxFrameInfo&
 Gfx::FrameInfo() {
     o_assert_dbg(IsValid());

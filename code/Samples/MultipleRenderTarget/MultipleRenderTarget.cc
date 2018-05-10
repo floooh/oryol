@@ -18,7 +18,7 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnCleanup();
 
-    glm::mat4 computeMVP(float angleX, float angleY, const glm::vec3& pos);
+    glm::mat4 computeMVP(const glm::mat4& proj, float angleX, float angleY, const glm::vec3& pos);
     AppState::Code notSupported();
 
     const int DisplayWidth = 640;
@@ -40,7 +40,7 @@ public:
     DrawState displayDrawState;
     DisplayShader::vsParams displayParams;
 
-    glm::mat4 proj;
+    glm::mat4 offscreenProj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -154,7 +154,7 @@ MultipleRenderTargetApp::OnInit() {
     this->displayDrawState.FSTexture[DisplayShader::greenTex] = rtColor1;
     this->displayDrawState.FSTexture[DisplayShader::blueTex] = rtColor2;
 
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), float(OffscreenWidth), float(OffscreenHeight), 0.01f, 100.0f);
+    this->offscreenProj = glm::perspectiveFov(glm::radians(45.0f), float(OffscreenWidth), float(OffscreenHeight), 0.01f, 100.0f);
 
     return App::OnInit();
 }
@@ -171,8 +171,9 @@ MultipleRenderTargetApp::OnRunning() {
     // compute all the vertex shader uniforms
     this->angleY += 0.01f;
     this->angleX += 0.02f;
-    this->cubeParams.mvp = this->computeMVP(this->angleX, this->angleY, glm::vec3(0, 0, -3));
-    this->displayParams.mvp = this->computeMVP(this->angleX * 0.5f, this->angleY * 0.5f, glm::vec3(0.0f, 0.55f, -3.0f));
+    this->cubeParams.mvp = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0, 0, -3));
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->displayParams.mvp = this->computeMVP(proj, this->angleX * 0.5f, this->angleY * 0.5f, glm::vec3(0.0f, 0.55f, -3.0f));
     this->displayParams.offsets = glm::sin(glm::vec2(this->angleX, this->angleY)) * 0.1f;
 
     // render the cube into the 3 MRT render targets using a single draw call,
@@ -217,11 +218,11 @@ MultipleRenderTargetApp::OnCleanup() {
 
 //------------------------------------------------------------------------------
 glm::mat4
-MultipleRenderTargetApp::computeMVP(float ax, float ay, const glm::vec3& pos) {
+MultipleRenderTargetApp::computeMVP(const glm::mat4& proj, float ax, float ay, const glm::vec3& pos) {
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, ax, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, ay, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * modelTform;
+    return proj * modelTform;
 }
 
 //------------------------------------------------------------------------------

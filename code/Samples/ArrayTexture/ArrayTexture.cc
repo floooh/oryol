@@ -27,14 +27,17 @@ public:
     PrimitiveGroup primGroup;
     DrawState drawState;
     int frameIndex = 0;
-    glm::mat4 proj;
 };
 OryolMain(ArrayTextureApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 ArrayTextureApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(512).SampleCount(4).Title("Array Texture Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(512)
+        .SampleCount(4)
+        .Title("Array Texture Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
 
     // if array textures are not supported, only show a warning
@@ -91,11 +94,6 @@ ArrayTextureApp::OnInit() {
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(Gfx::Desc().SampleCount()));
 
-    // setup a projection matrix with the right aspect ratio
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-
     return App::OnInit();
 }
 
@@ -141,13 +139,14 @@ ArrayTextureApp::computeShaderParams() {
     vsParams.uvOffset1 = glm::vec2(-offset, offset);
     vsParams.uvOffset2 = glm::vec2(0.0f, 0.0f);
 
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     const glm::vec3 cubePos(0.0f, 0.0f, -2.5f);
     float angleX = glm::radians(0.25f * this->frameIndex);
     float angleY = glm::radians(0.2f * this->frameIndex);
     glm::mat4 model = glm::translate(glm::mat4(), cubePos);
     model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    vsParams.mvp = this->proj * model;
+    vsParams.mvp = proj * model;
 
     return vsParams;
 }

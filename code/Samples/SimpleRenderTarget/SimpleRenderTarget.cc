@@ -27,9 +27,7 @@ public:
     DrawState displayDrawState;
     OffscreenShader::vsParams offscreenParams;
     DisplayShader::vsParams displayVSParams;
-    glm::mat4 view;
     glm::mat4 offscreenProj;
-    glm::mat4 displayProj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -38,7 +36,11 @@ OryolMain(SimpleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Oryol Simple Render Target Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("Oryol Simple Render Target Sample")
+        .HtmlTrackElementSize(true));
 
     // create a color render target texture and compatible depth render target
     // texture for offscreen rendering
@@ -97,11 +99,7 @@ SimpleRenderTargetApp::OnInit() {
     this->displayDrawState.FSTexture[DisplayShader::tex] = rtColorTexture;
 
     // setup static transform matrices
-    float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
-    this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
 
     return App::OnInit();
 }
@@ -125,7 +123,8 @@ SimpleRenderTargetApp::OnRunning() {
     // render sphere to display, with offscreen render target as texture
     Gfx::BeginPass(PassAction().Clear(0.25f, 0.45f, 0.65f, 1.0f));
     Gfx::ApplyDrawState(this->displayDrawState);
-    this->displayVSParams.mvp = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->displayVSParams.mvp = this->computeMVP(proj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
     Gfx::Draw(this->spherePrimGroup);
     Gfx::EndPass();
@@ -149,5 +148,5 @@ SimpleRenderTargetApp::computeMVP(const glm::mat4& proj, float rotX, float rotY,
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return proj * this->view * modelTform;
+    return proj * modelTform;
 }

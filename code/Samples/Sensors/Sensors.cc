@@ -26,7 +26,6 @@ public:
     PrimitiveGroup primGroup;
     DrawState drawState;
     Shader::vsParams vsParams;
-    glm::mat4 proj;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(SensorsApp);
@@ -34,7 +33,10 @@ OryolMain(SensorsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SensorsApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(400).Title("Oryol Device Sensor Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(400)
+        .Title("Oryol Device Sensor Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     
@@ -52,24 +54,19 @@ SensorsApp::OnInit() {
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true));
-
-    // setup transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.1f, 100.0f);
     return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
 glm::mat4
 SensorsApp::computeMVP() {
-    glm::mat4 model = glm::mat4();
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.1f, 100.0f);
     const glm::vec3& ypr = Input::SensorYawPitchRoll();
     glm::mat4 att = glm::yawPitchRoll(ypr.y, -ypr.z, 0.0f);
     glm::vec3 eye = glm::vec3(att[2]) * 6.0f;
     glm::vec3 up = glm::vec3(att[1]);
     glm::mat4 view = glm::lookAt(eye, glm::vec3(0.0f), up);
-    return this->proj * view * model;
+    return proj * view;
 }
 
 //------------------------------------------------------------------------------
@@ -81,6 +78,7 @@ SensorsApp::OnRunning() {
     this->vsParams.mvp = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
     Gfx::Draw(this->primGroup);
+    Dbg::Print("\n\n\n\n");
     if (!Input::SensorsAttached()) {
         Dbg::Print("\n Please run on mobile device!\n\r");
     }

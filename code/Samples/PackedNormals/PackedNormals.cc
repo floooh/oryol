@@ -21,8 +21,6 @@ public:
     Array<PrimitiveGroup> primGroups;
     DrawState drawState;
     Shader::params params;
-    glm::mat4 view;
-    glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -31,7 +29,11 @@ OryolMain(PackedNormalsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(600).Height(400).SampleCount(4).Title("Oryol Packed Normals Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400)
+        .SampleCount(4)
+        .Title("Oryol Packed Normals Sample")
+        .HtmlTrackElementSize(true));
 
     auto shapes = ShapeBuilder()
         .Positions("position", VertexFormat::Float3)
@@ -52,11 +54,6 @@ PackedNormalsApp::OnInit() {
         .SampleCount(4));
     this->primGroups = std::move(shapes.PrimitiveGroups);
 
-    float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    
     return App::OnInit();
 }
 
@@ -98,8 +95,9 @@ PackedNormalsApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 PackedNormalsApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
+    return proj * modelTform;
 }

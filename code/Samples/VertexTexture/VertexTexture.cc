@@ -26,8 +26,6 @@ public:
     PrimitiveGroup planePrimGroup;
     DrawState planeDrawState;
     
-    glm::mat4 view;
-    glm::mat4 proj;
     PlaneShader::vsParams planeVSParams;
     PlasmaShader::fsParams plasmaFSParams;
     TimePoint lastFrameTimePoint;
@@ -38,7 +36,11 @@ OryolMain(VertexTextureApp);
 AppState::Code
 VertexTextureApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Oryol Vertex Texture Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("Oryol Vertex Texture Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup(DbgDesc().SampleCount(4));
     
     // FIXME: need a way to check number of vertex texture units
@@ -81,10 +83,6 @@ VertexTextureApp::OnInit() {
         .SampleCount(4));
     this->planeDrawState.VSTexture[PlaneShader::tex] = plasmaTex;
     
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 10.0f);
-    this->view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     this->plasmaFSParams.time = 0.0f;
 
     return App::OnInit();
@@ -114,7 +112,7 @@ VertexTextureApp::OnRunning() {
     Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
+    Dbg::PrintF("\n\n\n\n\n %.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -131,9 +129,11 @@ VertexTextureApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 VertexTextureApp::computeMVP(const glm::vec2& angles) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 10.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.5f, 0.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 modelTform = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
     modelTform = glm::rotate(modelTform, angles.x, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, angles.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
+    return proj * view * modelTform;
 }
 

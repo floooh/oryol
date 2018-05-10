@@ -22,8 +22,6 @@ public:
     PassAction renderPassAction;
     DrawState offscreenDrawState;
     DrawState copyDrawState;
-    glm::mat4 view;
-    glm::mat4 proj;
     OffscreenShader::fsParams offscreenFSParams;
     TimePoint lastFrameTimePoint;
 };
@@ -33,7 +31,10 @@ OryolMain(TextureFloatApp);
 AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc().Width(512).Height(512).Title("Oryol Float Texture Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(512).Height(512)
+        .Title("Oryol Float Texture Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
 
     // check required extensions
@@ -77,12 +78,6 @@ TextureFloatApp::OnInit() {
         .PrimitiveType(PrimitiveType::TriangleStrip));
     this->copyDrawState.FSTexture[CopyShader::tex] = rt;
 
-    // setup static transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 5.0f);
-    this->view = glm::mat4();
-
     return App::OnInit();
 }
 
@@ -108,7 +103,7 @@ TextureFloatApp::OnRunning() {
     Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("%.3fms", frameTime.AsMilliSeconds());
+    Dbg::PrintF("\n\n\n\n\n  %.3fms", frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;

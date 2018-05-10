@@ -29,8 +29,6 @@ public:
 
     StaticArray<DrawState, PrimitiveType::Num> drawStates;
     int curPrimType = 0;
-    glm::mat4 view;
-    glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;    
     Shader::params params;
@@ -63,7 +61,11 @@ createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const Ve
 //------------------------------------------------------------------------------
 AppState::Code
 PrimitiveTypesApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(640).Height(480).SampleCount(4).Title("Oryol PrimitiveTypes Test"));
+    Gfx::Setup(GfxDesc()
+        .Width(640).Height(480)
+        .SampleCount(4)
+        .Title("Oryol PrimitiveTypes Test")
+        .HtmlTrackElementSize(true));
     Dbg::Setup(DbgDesc().SampleCount(4));
     Input::Setup();
 
@@ -195,10 +197,6 @@ PrimitiveTypesApp::OnInit() {
         ds.IndexBuffer = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
     this->params.psize = 4.0f;
 
     return App::OnInit();
@@ -226,7 +224,8 @@ PrimitiveTypesApp::OnRunning() {
     glm::mat4 model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.5f));
     model = glm::rotate(model, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    this->params.mvp = this->proj * this->view * model;
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->params.mvp = proj * model;
 
     // render the currently selected drawstate
     Gfx::BeginPass();
@@ -282,7 +281,7 @@ PrimitiveTypesApp::OnRunning() {
 
     // print help- and status-text
     Dbg::TextColor(0.0f, 1.0f, 0.0f, 1.0f);
-    Dbg::PrintF("\n Point Size (left/right key to change): %d\n\r", int(this->params.psize));
+    Dbg::PrintF("\n\n\n\n\n Point Size (left/right key to change): %d\n\r", int(this->params.psize));
     Dbg::Print(" Keys 1..5, left mouse button, or touch-tap to change primitive type\n\n\r");
     for (int i = 0; i < int(PrimitiveType::Num); i++) {
         if (i == this->curPrimType) {

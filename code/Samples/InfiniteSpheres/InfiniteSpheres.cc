@@ -30,9 +30,7 @@ public:
     } passInfo[2];
     Shader::vsParams vsParams;
     PassAction passAction = PassAction().Clear(0.25f, 0.25f, 0.25f, 1.0f);
-    glm::mat4 view;
     glm::mat4 offscreenProj;
-    glm::mat4 displayProj;
     float angleX = 0.0f;
     float angleY = 0.0f;
     int frameIndex = 0;
@@ -43,7 +41,11 @@ OryolMain(InfiniteSpheresApp);
 AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxDesc().Width(800).Height(600).SampleCount(4).Title("Oryol Infinite Spheres Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("Oryol Infinite Spheres Sample")
+        .HtmlTrackElementSize(true));
 
     // create 2 ping-pong offscreen render targets, only need 1 depth buffer
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
@@ -102,11 +104,7 @@ InfiniteSpheresApp::OnInit() {
         .DepthFormat(rtDepthFormat));
 
     // setup static transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
-    this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 20.0f);
-    this->view = glm::mat4();
     
     return App::OnInit();
 }
@@ -135,7 +133,8 @@ InfiniteSpheresApp::OnRunning() {
     
     // ...and again to display
     model = this->computeModel(-this->angleX, -this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
-    this->vsParams.mvp = this->computeMVP(this->displayProj, model);
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 20.0f);
+    this->vsParams.mvp = this->computeMVP(proj, model);
     Gfx::BeginPass(this->passAction);
     this->displayDrawState.FSTexture[Shader::tex] = this->passInfo[index0].texture;
     Gfx::ApplyDrawState(this->displayDrawState);
@@ -168,6 +167,6 @@ InfiniteSpheresApp::computeModel(float rotX, float rotY, const glm::vec3& pos) {
 //------------------------------------------------------------------------------
 glm::mat4
 InfiniteSpheresApp::computeMVP(const glm::mat4& proj, const glm::mat4& modelTform) {
-    return proj * this->view * modelTform;
+    return proj * modelTform;
 }
 

@@ -26,14 +26,17 @@ public:
     DrawState drawState;
     Shader::vsParams vsParams;
     int frameIndex = 0;
-    glm::mat4 proj;
 };
 OryolMain(VolumeTextureApp);
 
 //------------------------------------------------------------------------------
 AppState::Code
 VolumeTextureApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("3D Texture Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("3D Texture Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
 
     // if 3D textures not supported show a warning later during rendering
@@ -85,11 +88,6 @@ VolumeTextureApp::OnInit() {
         .DepthCmpFunc(CompareFunc::LessEqual)
         .SampleCount(Gfx::Desc().SampleCount()));
 
-    // setup a projection matrix with the right aspect ratio
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-
     return App::OnInit();
 }
 
@@ -129,13 +127,14 @@ VolumeTextureApp::computeShaderParams() {
     const glm::vec4 eyePos(0.0f, 0.0f, 0.0f, 1.0f);
     const glm::vec3 pos(0.0f, 0.0f, -2.0f);
 
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     float angleX = glm::radians(0.2f * this->frameIndex);
     float angleY = glm::radians(0.1f * this->frameIndex);
     glm::mat4 model = glm::translate(glm::mat4(), pos);
     model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 invModel = glm::inverse(model);
-    this->vsParams.mvp = this->proj * model;
+    this->vsParams.mvp = proj * model;
     this->vsParams.modelEyePos = invModel * eyePos;
 }
 

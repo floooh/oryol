@@ -55,7 +55,6 @@ public:
     float startDistance = 6.0f;
     glm::vec2 startMousePos;
     glm::vec3 pointOfInterest;
-    glm::mat4 proj;
     glm::mat4 view;
     glm::mat4 invView;
     bool pointerLock = false;
@@ -67,7 +66,11 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(400).HighDPI(true).Title("Oryol Input Test Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(400)
+        .HighDPI(true)
+        .Title("Oryol Input Test Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
     if (Gfx::DisplayAttrs().Width > 800) {
         Dbg::TextScale(2.0f, 2.0f);
@@ -103,9 +106,6 @@ TestInputApp::OnInit() {
         .DepthCmpFunc(CompareFunc::LessEqual)
         .CullFaceEnabled(true));
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().Width;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().Height;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
     this->distance = 6.0f;
     this->minLatitude = glm::radians(-85.0f);
@@ -467,8 +467,9 @@ void TestInputApp::handleGamepadInput(int gamepadIndex) {
 //------------------------------------------------------------------------------
 void
 TestInputApp::drawCube() {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     Shader::vsParams vsParams;
-    vsParams.mvp = this->proj * this->view;
+    vsParams.mvp = proj * this->view;
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
     Gfx::Draw(this->primGroup);
@@ -478,6 +479,7 @@ TestInputApp::drawCube() {
 AppState::Code
 TestInputApp::OnRunning() {
     // print input device status as debug text
+    Dbg::Print("\n\n");
     this->printMouseState();
     this->printKeyboardState();
     this->printTouchpadState();

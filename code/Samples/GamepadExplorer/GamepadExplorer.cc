@@ -49,7 +49,7 @@ const char* axisNames[GamepadAxis::NumAxes] = {
 //------------------------------------------------------------------------------
 AppState::Code
 GamepadExplorerApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("Test Gamepads"));
+    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("Test Gamepads").HtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     return App::OnInit();
@@ -61,7 +61,7 @@ GamepadExplorerApp::OnRunning() {
     Gfx::BeginPass();
     
     // Gamepad0 Gamepad1 Gamepad2 Gamepad3
-    Dbg::Print("\n\t\t");
+    Dbg::Print("\n\n\n\n\n\t\t");
     for (int i = 0; i < Input::MaxNumGamepads; i++) {
         if (Input::GamepadAttached(i)) {
             Dbg::TextColor(0.0f, 1.0f, 0.0f, 1.0f);
