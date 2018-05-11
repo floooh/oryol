@@ -13,11 +13,5 @@
 #if !ORYOL_METAL
 #error "please include sokolImpl.cc for non-Metal builds"
 #endif
-#if ORYOL_MACOS
-#define SOKOL_METAL_MACOS
-#elif ORYOL_IOS
-#define SOKOL_METAL_IOS
-#else
-#error "unknown Metal platform"
-#endif
+#define SOKOL_METAL
 #include "sokol_gfx.h"
