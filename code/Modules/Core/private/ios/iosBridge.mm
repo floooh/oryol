@@ -101,7 +101,7 @@ using namespace _priv;
 @end
 
 #if ORYOL_METAL
-@interface oryolViewDelegate<MTKViewDelegate> : NSObject
+@interface oryolViewDelegate : NSObject<MTKViewDelegate>
 @end
 
 @implementation oryolViewDelegate
