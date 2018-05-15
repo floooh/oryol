@@ -83,8 +83,6 @@ public:
     void onDidBecomeActive();
     /// called by app delegate when app is about to be killed
     void onWillTerminate();
-    /// called per frame by display link, this will in turn call GLKView
-    void onDrawRequested();
     /// called per frame by GLKView
     void onFrame();
     
