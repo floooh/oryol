@@ -8,7 +8,7 @@ body {
     color: #52a3dd;
     text-align: left;
     padding-left: 20px;
-    font-family: 'Racing Sans One';
+    font-family: "Arial Black", Gadget, sans-serif;
     font-size: 60px;
     margin-top: 0px;
 }
@@ -16,6 +16,7 @@ body {
 .main-menu-item {
     font-size: 18px;
     padding-left: 10px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .main-menu-link {
@@ -28,9 +29,10 @@ body {
     pointer-events: none;
     position: absolute;
     color: white;
+    text-decoration: none;
     z-index: 1;
     text-align: left;
-    font-family: 'Racing Sans One';
+    font-family: "Arial Black", Gadget, sans-serif;
     font-size: 30px;
     margin-top: 0px;
     padding-left: 10px;
@@ -39,6 +41,7 @@ body {
     pointer-events: auto;
     font-size: 18px;
     padding-left: 10px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 .game-menu-link {
     text-decoration: none;
@@ -66,7 +69,7 @@ body {
 .thumb-title {
     text-align: center;
     color: #52a3dd;
-    font-family: 'Racing Sans One';
+    font-family: "Arial Black", Gadget, sans-serif;
     font-size: 20px;        
 }
 .img-frame {
@@ -90,16 +93,16 @@ body {
 }
 .thumb-list {
     margin: 0px;
-    margin-left: 40px;
+    margin-left: 45px;
     padding: 0;
     list-style-type: none;
 }
 .thumb-item {
-    display: inline;
     float: left;
+    display: inline;
 }
 a.thumb-link:link, a.thumb-link:visited {
-    font-family: 'Racing Sans One';
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;    
     display: block;
     width: 80px;

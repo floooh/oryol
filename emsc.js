@@ -1,4 +1,3 @@
-var loaded = false;
 var Module = {
     preRun: [],
     postRun: [],
@@ -20,13 +19,8 @@ var Module = {
     setStatus: function(text) {
         console.log("status: " + text);
     },
-    totalDependencies: 0,
     monitorRunDependencies: function(left) {
         console.log("monitor run deps: " + left);
-        if (0 == left) {
-            document.getElementById('canvas').style.display = 'block';
-            loaded = true;
-        }
     },
 };
 
