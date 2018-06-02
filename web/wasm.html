@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8"/>
 <title>${name}</title>
-<link href='https://fonts.googleapis.com/css?family=Racing+Sans+One' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="../style.css"/>
 <link rel="icon" type="image/png" href="favicon.png"/>
 </head>
@@ -13,7 +12,7 @@
       <span class="game-menu-item"><a class="game-menu-link" href="${source}" target="_blank">src</a></span>
       <span class="game-menu-item"><a class="game-menu-link" href="http://webassembly.org/" target="_blank">wasm</a></span>
   </div>
-  <canvas class="game" id="canvas" hidden oncontextmenu="event.preventDefault()"></canvas>
+  <canvas class="game" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
   <script type="text/javascript" src="../emsc.js"></script>
   <script>
     var xhr = new XMLHttpRequest();
