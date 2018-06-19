@@ -296,8 +296,9 @@ TestInputApp::printGamepadState(int gamepadIndex) {
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::X) ? " X" : "  ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Y) ? " Y\n\r" : "\n\r");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Start) ? " Start" : "      ");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Back) ? " Back\n\r" : "\n\r");
-        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::LeftBumper) ? " LeftBumper\t" : "            ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Back) ? " Back" : "     ");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::Center) ? " Center\n\r" : "       \n\r");
+        Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::LeftBumper) ? " LeftBumper" : "           ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::RightBumper) ? " RightBumper\n\r" : "\n\r");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::DPadLeft) ? " DPadLeft" : "         ");
         Dbg::PrintF(Input::GamepadButtonPressed(gamepadIndex, GamepadButton::DPadRight) ? " DPadRight" : "          ");
