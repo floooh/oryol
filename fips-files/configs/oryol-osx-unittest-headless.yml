@@ -2,7 +2,7 @@
 ---
 platform: osx
 generator: Xcode
-build_tool: cmake
+build_tool: xcodebuild
 build_type: Debug
 defines:
     FIPS_UNITTESTS: ON
