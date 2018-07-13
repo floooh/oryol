@@ -167,8 +167,8 @@ IO::Load("tex:wood.dds", [](IO::LoadResult res) {
     // the file tex:wood.dds has been successfully loaded, and
     // the data and original URL is provided in the LoadResult object:
     //      res.Data - a Memory::Buffer object with the loaded data
-    //      res.URL  - the original URL
-    Log::Info("'%s' has been loaded!\n", res.URL.Path().AsCStr());
+    //      res.Url  - the original URL
+    Log::Info("'%s' has been loaded!\n", res.Url.Path().AsCStr());
 
     // get pointer to data and size and do something with it...
     const uint8_t* ptr = res.Data.Data();
@@ -190,7 +190,7 @@ loaded. This is implemented by the **IO::LoadGroup()** function:
         [](Array<IO::LoadResult> results) {
             // all 3 files have been successfully loaded
             for (const auto& res : results) {
-                Log::Info("'%s' has been loaded!\n", res.URL.Path().AsCStr());
+                Log::Info("'%s' has been loaded!\n", res.Url.Path().AsCStr());
                 const uint8_t* ptr = res.Data.Data();
                 const int size = res.Data.Size();
                 ...
