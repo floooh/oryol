@@ -36,7 +36,7 @@ public:
 #if !ORYOL_EMSCRIPTEN && !ORYOL_UNITTESTS_HEADLESS
 TEST(IOFacadeTest) {
     Core::Setup();
-    IO::Setup(IOSetup());
+    IO::Setup();
     
     // register our test file-system as URI scheme "test"
     IO::RegisterFileSystem("test", TestFileSystem::Creator());

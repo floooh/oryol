@@ -18,7 +18,7 @@ public:
     ~osxInputMgr();
 
     /// setup the input manager
-    void setup(const InputSetup& setup);
+    void setup(const InputDesc& desc);
     /// discard the input manager
     void discard();
 

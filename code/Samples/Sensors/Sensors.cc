@@ -23,9 +23,9 @@ public:
     
     glm::mat4 computeMVP();
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     Shader::vsParams vsParams;
-    glm::mat4 proj;
     TimePoint lastFrameTimePoint;
 };
 OryolMain(SensorsApp);
@@ -33,42 +33,40 @@ OryolMain(SensorsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SensorsApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(800, 400, "Oryol Device Sensor Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(400)
+        .Title("Oryol Device Sensor Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     
     // create a 3D cube
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N }
-    };
-    shapeBuilder.Box(2.0, 2.0, 2.0, 1);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.CullFaceEnabled = true;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
-
-    // setup transform matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.1f, 100.0f);
+    auto shape = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .Box(2.0, 2.0, 2.0, 1)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .CullFaceEnabled(true));
     return App::OnInit();
 }
 
 //------------------------------------------------------------------------------
 glm::mat4
 SensorsApp::computeMVP() {
-    glm::mat4 model = glm::mat4();
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.1f, 100.0f);
     const glm::vec3& ypr = Input::SensorYawPitchRoll();
     glm::mat4 att = glm::yawPitchRoll(ypr.y, -ypr.z, 0.0f);
     glm::vec3 eye = glm::vec3(att[2]) * 6.0f;
     glm::vec3 up = glm::vec3(att[1]);
     glm::mat4 view = glm::lookAt(eye, glm::vec3(0.0f), up);
-    return this->proj * view * model;
+    return proj * view;
 }
 
 //------------------------------------------------------------------------------
@@ -79,7 +77,8 @@ SensorsApp::OnRunning() {
     Gfx::ApplyDrawState(this->drawState);
     this->vsParams.mvp = this->computeMVP();
     Gfx::ApplyUniformBlock(this->vsParams);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
+    Dbg::Print("\n\n\n\n");
     if (!Input::SensorsAttached()) {
         Dbg::Print("\n Please run on mobile device!\n\r");
     }

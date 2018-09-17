@@ -4,64 +4,55 @@
 #include "Pre.h"
 #include "MeshBuilder.h"
 #include "Core/Assertion.h"
-#include <cstring>
 
 namespace Oryol {
 
 //------------------------------------------------------------------------------
-MeshBuilder&
-MeshBuilder::Begin() {
-    o_assert(!this->inBegin);
-    o_assert(this->NumVertices > 0);
-    o_assert(!this->Layout.Empty());
-    this->inBegin = true;
+MeshBuilder::Result
+MeshBuilder::Build(std::function<void(MeshBuilder& mb)> func) {
+    o_assert_dbg(!this->inBuild);
+    o_assert_dbg(this->numVertices > 0);
+    o_assert_dbg(!this->layout.Empty());
+    this->inBuild = true;
 
-    // setup MeshSetup object
-    MeshSetup& meshSetup = this->setupAndData.Setup;
-    meshSetup = MeshSetup::FromData(this->VertexUsage, this->IndexUsage);
-    meshSetup.Layout = this->Layout;
-    meshSetup.NumVertices = this->NumVertices;
-    meshSetup.NumIndices = this->NumIndices;
-    meshSetup.IndicesType = this->IndicesType;
-    for (const auto& primGroup : this->PrimitiveGroups) {
-        meshSetup.AddPrimitiveGroup(primGroup);
-    }
-    
-    // compute the required stream size
-    const int vbSize  = Memory::RoundUp(this->NumVertices * this->Layout.ByteSize(), 4);
-    const int ibSize  = this->NumIndices * IndexType::ByteSize(this->IndicesType);
+    // compute the data buffer size
+    const int vbSize  = this->numVertices * this->layout.ByteSize();
+    const int ibSize  = this->numIndices * IndexType::ByteSize(this->indexType);
     int allSize = vbSize + ibSize;
-    meshSetup.VertexDataOffset = 0;
-    if (ibSize > 0) {
-        meshSetup.IndexDataOffset = vbSize;
-    }
-    
+
     // setup the data buffer object
-    this->vertexPointer = this->setupAndData.Data.Add(allSize);
+    this->vertexPointer = (uint8_t*) Memory::Alloc(allSize);
     this->indexPointer  = this->vertexPointer + vbSize;
     this->endPointer    = this->indexPointer + ibSize;
-    
-    return *this;
-}
 
-//------------------------------------------------------------------------------
-SetupAndData<MeshSetup>
-MeshBuilder::Build() {
-    o_assert(this->inBegin);
+    // call the content-build function
+    func(*this);
 
-    this->inBegin = false;
-
-    // NOTE: explicit moves required by VS2013
-    SetupAndData<MeshSetup> result(std::move(this->setupAndData));
-
-    // clear private data, not configuration data
+    // setup the Result object
+    Result res;
+    res.Data.MoveRaw(this->vertexPointer, allSize);
+    res.Layout = this->layout;
+    res.IndexType = this->indexType;
+    res.VertexBufferDesc = BufferDesc()
+        .Size(vbSize)
+        .Type(BufferType::VertexBuffer)
+        .Usage(this->vertexUsage)
+        .Content(this->vertexPointer);
+    if (ibSize > 0) {
+        res.IndexBufferDesc = BufferDesc()
+            .Size(ibSize)
+            .Type(BufferType::IndexBuffer)
+            .Usage(this->indexUsage)
+            .Content(this->indexPointer);
+    }
+    else {
+        res.IndexBufferDesc = BufferDesc();
+    }
+    this->inBuild = false;
     this->vertexPointer = nullptr;
     this->indexPointer = nullptr;
     this->endPointer = nullptr;
-    this->setupAndData.Setup = MeshSetup::FromData();
-    this->setupAndData.Data.Clear();
-    
-    return result;
+    return res;
 }
 
 } // namespace Oryol

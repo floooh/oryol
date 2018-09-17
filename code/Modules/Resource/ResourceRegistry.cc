@@ -121,6 +121,7 @@ ResourceRegistry::Remove(ResourceLabel label) {
             this->entries.EraseSwapBack(entryIndex);
             this->idIndexMap.Erase(id);
             if (loc.IsShared()) {
+                o_assert_dbg(this->locatorIndexMap.Contains(loc));
                 this->locatorIndexMap.Erase(loc);
             }
             
@@ -143,6 +144,7 @@ ResourceRegistry::Remove(ResourceLabel label) {
             
             // make sure nothing broke
             #if ORYOL_DEBUG
+            //this->DumpDebugInfo();
             o_assert(this->CheckIntegrity());
             #endif
         }
@@ -212,6 +214,38 @@ ResourceRegistry::CheckIntegrity() const {
         }
     }
     return true;
+}
+#endif
+
+//------------------------------------------------------------------------------
+#if ORYOL_DEBUG
+void
+ResourceRegistry::DumpDebugInfo() const {
+    Log::Info("\n\n--- entries:\n");
+    for (int i = 0; i < this->entries.Size(); i++) {
+        const auto& item = this->entries[i];
+        Log::Info("%d: loc=%s/%08X, id=%lld, label=%d\n",
+            i,
+            item.locator.HasValidLocation() ? item.locator.Location().AsCStr() : "---",
+            item.locator.Signature(),
+            item.id.Value, item.label.Value);
+    }
+    Log::Info("--- locator/index map:\n");
+    for (int i = 0; i < this->locatorIndexMap.Size(); i++) {
+        const Locator& loc = this->locatorIndexMap.KeyAtIndex(i);
+        int entryIndex = this->locatorIndexMap.ValueAtIndex(i);
+        Log::Info("%d: loc=%s/%08X, i=%d\n",
+            i,
+            loc.HasValidLocation() ? loc.Location().AsCStr() : "---",
+            loc.Signature(),
+            entryIndex);
+    }
+    Log::Info("--- id/index map:\n");
+    for (int i = 0; i < this->idIndexMap.Size(); i++) {
+        const Id& id = this->idIndexMap.KeyAtIndex(i);
+        int entryIndex = this->idIndexMap.ValueAtIndex(i);
+        Log::Info("%d: id=%lld, i=%d\n", i, id.Value, entryIndex);
+    }
 }
 #endif
 

@@ -20,14 +20,14 @@ public:
 
     glm::mat4 computeMVP(const glm::mat4& proj, float rotX, float rotY, const glm::vec3& pos);
 
+    PrimitiveGroup donutPrimGroup;
+    PrimitiveGroup spherePrimGroup;
     Id renderPass;
     DrawState offscreenDrawState;
     DrawState displayDrawState;
     OffscreenShader::vsParams offscreenParams;
     DisplayShader::vsParams displayVSParams;
-    glm::mat4 view;
     glm::mat4 offscreenProj;
-    glm::mat4 displayProj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -36,71 +36,70 @@ OryolMain(SimpleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 SimpleRenderTargetApp::OnInit() {
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("Oryol Simple Render Target Sample")
+        .HtmlTrackElementSize(true));
 
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Oryol Simple Render Target Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.25f, 0.45f, 0.65f, 1.0f));
-    Gfx::Setup(gfxSetup);
-
-    // create an offscreen render pass object with a single color attachment
-    // texture, we explicitly want repeat texture wrap mode and linear blending...
-    auto rtSetup = TextureSetup::RenderTarget2D(128, 128, PixelFormat::RGBA8, PixelFormat::DEPTH);
-    rtSetup.Sampler.WrapU = TextureWrapMode::Repeat;
-    rtSetup.Sampler.WrapV = TextureWrapMode::Repeat;
-    rtSetup.Sampler.MagFilter = TextureFilterMode::Linear;
-    rtSetup.Sampler.MinFilter = TextureFilterMode::Linear;
-    // if supported, use an anti-aliased offscreen render target
-    if (Gfx::QueryFeature(GfxFeature::MSAARenderTargets)) {
-        rtSetup.SampleCount = 4;
-        Log::Info("Using MSAA4 render target\n");
-    }
-    Id rtTexture = Gfx::CreateResource(rtSetup);
-    auto rpSetup = PassSetup::From(rtTexture, rtTexture);
-    rpSetup.DefaultAction = PassAction::Clear(glm::vec4(0.25f, 0.25f, 0.25f, 1.0f));
-    this->renderPass = Gfx::CreateResource(rpSetup);
+    // create a color render target texture and compatible depth render target
+    // texture for offscreen rendering
+    const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
+    const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
+    const int rtSampleCount = Gfx::QueryFeature(GfxFeature::MSAARenderTargets) ? 4 : 1;
+    auto rtCommon = TextureDesc()
+        .Type(TextureType::Texture2D)
+        .RenderTarget(true)
+        .Width(128)
+        .Height(128)
+        .WrapU(TextureWrapMode::Repeat)
+        .WrapV(TextureWrapMode::Repeat)
+        .MagFilter(TextureFilterMode::Linear)
+        .MinFilter(TextureFilterMode::Linear)
+        .SampleCount(rtSampleCount);
+    Id rtColorTexture = Gfx::CreateTexture(TextureDesc(rtCommon).Format(rtColorFormat));
+    Id rtDepthTexture = Gfx::CreateTexture(TextureDesc(rtCommon).Format(rtDepthFormat));
+    this->renderPass = Gfx::CreatePass(PassDesc()
+        .ColorAttachment(0, rtColorTexture)
+        .DepthStencilAttachment(rtDepthTexture));
 
     // create a donut mesh, shader and pipeline object
     // (this will be rendered into the offscreen render target)
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N }
-    };
-    shapeBuilder.Torus(0.3f, 0.5f, 20, 36);
-    this->offscreenDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-
-    // create shader and pipeline-state-object for offscreen rendering
-    Id offScreenShader = Gfx::CreateResource(OffscreenShader::Setup());
-    auto offpsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, offScreenShader);
-    offpsSetup.DepthStencilState.DepthWriteEnabled = true;
-    offpsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    offpsSetup.BlendState.ColorFormat = rtSetup.ColorFormat;
-    offpsSetup.BlendState.DepthFormat = rtSetup.DepthFormat;
-    offpsSetup.RasterizerState.SampleCount = rtSetup.SampleCount;
-    this->offscreenDrawState.Pipeline = Gfx::CreateResource(offpsSetup);
+    auto donut = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .Torus(0.3f, 0.5f, 20, 36)
+        .Build();
+    this->donutPrimGroup = donut.PrimitiveGroups[0];
+    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(donut.VertexBufferDesc);
+    this->offscreenDrawState.IndexBuffer = Gfx::CreateBuffer(donut.IndexBufferDesc);
+    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(donut.PipelineDesc)
+        .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .ColorFormat(rtColorFormat)
+        .DepthFormat(rtDepthFormat)
+        .SampleCount(rtSampleCount));
 
     // create a sphere mesh, shader and pipeline object for rendering to display
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N },
-        { VertexAttr::TexCoord0, VertexFormat::Float2 }
-    };
-    shapeBuilder.Sphere(0.5f, 72, 40);
-    this->displayDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-
-    Id dispShader = Gfx::CreateResource(DisplayShader::Setup());
-    auto disppsSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, dispShader);
-    disppsSetup.DepthStencilState.DepthWriteEnabled = true;
-    disppsSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    disppsSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->displayDrawState.Pipeline = Gfx::CreateResource(disppsSetup);
-    this->displayDrawState.FSTexture[DisplayShader::tex] = rtTexture;
+    auto sphere = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .TexCoords("in_uv", VertexFormat::Float2)
+        .Sphere(0.5f, 72, 40)
+        .Build();
+    this->spherePrimGroup = sphere.PrimitiveGroups[0];
+    this->displayDrawState.VertexBuffers[0] = Gfx::CreateBuffer(sphere.VertexBufferDesc);
+    this->displayDrawState.IndexBuffer = Gfx::CreateBuffer(sphere.IndexBufferDesc);
+    this->displayDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
+        .Shader(Gfx::CreateShader(DisplayShader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(Gfx::Desc().SampleCount()));
+    this->displayDrawState.FSTexture[DisplayShader::tex] = rtColorTexture;
 
     // setup static transform matrices
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
-    this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
 
     return App::OnInit();
 }
@@ -114,19 +113,20 @@ SimpleRenderTargetApp::OnRunning() {
     this->angleX += 0.02f;
     
     // render donut to offscreen render target
-    Gfx::BeginPass(this->renderPass);
+    Gfx::BeginPass(this->renderPass, PassAction().Clear(0.25f, 0.25f, 0.25f, 1.0f));
     Gfx::ApplyDrawState(this->offscreenDrawState);
     this->offscreenParams.mvp = this->computeMVP(this->offscreenProj, this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->offscreenParams);
-    Gfx::Draw();
+    Gfx::Draw(this->donutPrimGroup);
     Gfx::EndPass();
     
     // render sphere to display, with offscreen render target as texture
-    Gfx::BeginPass();
+    Gfx::BeginPass(PassAction().Clear(0.25f, 0.45f, 0.65f, 1.0f));
     Gfx::ApplyDrawState(this->displayDrawState);
-    this->displayVSParams.mvp = this->computeMVP(this->displayProj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->displayVSParams.mvp = this->computeMVP(proj, -this->angleX * 0.25f, this->angleY * 0.25f, glm::vec3(0.0f, 0.0f, -1.5f));
     Gfx::ApplyUniformBlock(this->displayVSParams);
-    Gfx::Draw();
+    Gfx::Draw(this->spherePrimGroup);
     Gfx::EndPass();
     
     Gfx::CommitFrame();
@@ -148,5 +148,5 @@ SimpleRenderTargetApp::computeMVP(const glm::mat4& proj, float rotX, float rotY,
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return proj * this->view * modelTform;
+    return proj * modelTform;
 }

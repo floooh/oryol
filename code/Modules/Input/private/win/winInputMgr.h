@@ -22,7 +22,7 @@ public:
     ~winInputMgr();
 
     /// setup the window input manager
-    void setup(const InputSetup& setup);
+    void setup(const InputDesc& desc);
     /// discard the windows input manager
     void discard();
 

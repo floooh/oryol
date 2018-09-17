@@ -22,7 +22,10 @@ OryolMain(TriangleApp);
 AppState::Code
 TriangleApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(400, 400, "Oryol Triangle Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(400).Height(400)
+        .Title("Oryol Triangle Sample")
+        .HtmlTrackElementSize(true));
     
     // create a mesh with vertex data from memory
     const float vertices[] = {
@@ -31,19 +34,17 @@ TriangleApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
         -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
     };
-    auto meshSetup = MeshSetup::FromData();
-    meshSetup.NumVertices = 3;
-    meshSetup.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    meshSetup.AddPrimitiveGroup({0, 3});
-    this->drawState.Mesh[0] = Gfx::CreateResource(meshSetup, vertices, sizeof(vertices));
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
+        .Size(sizeof(vertices))
+        .Content(vertices));
 
     // create shader and pipeline-state-object
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(meshSetup.Layout, shd);
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .Layout(0, {
+            { "position", VertexFormat::Float3 },
+            { "color0", VertexFormat::Float4 }
+        }));
 
     return App::OnInit();
 }
@@ -54,7 +55,7 @@ TriangleApp::OnRunning() {
     
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
-    Gfx::Draw();
+    Gfx::Draw(0, 3);
     Gfx::EndPass();
     Gfx::CommitFrame();
     

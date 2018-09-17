@@ -47,6 +47,7 @@ public:
     float minDist;
     float maxDist;
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     glm::vec2 startPolar;
     glm::vec2 polar;
@@ -54,7 +55,6 @@ public:
     float startDistance = 6.0f;
     glm::vec2 startMousePos;
     glm::vec3 pointOfInterest;
-    glm::mat4 proj;
     glm::mat4 view;
     glm::mat4 invView;
     bool pointerLock = false;
@@ -66,11 +66,13 @@ OryolMain(TestInputApp);
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 400, "Oryol Input Test Sample");
-    gfxSetup.HighDPI = true;
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(400)
+        .HighDPI(true)
+        .Title("Oryol Input Test Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
-    if (Gfx::DisplayAttrs().WindowWidth > 800) {
+    if (Gfx::DisplayAttrs().Width > 800) {
         Dbg::TextScale(2.0f, 2.0f);
     }
 
@@ -90,23 +92,20 @@ TestInputApp::OnInit() {
     });
     
     // create a 3D cube
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.CullFaceEnabled = true;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    auto shape = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Byte4N)
+        .Box(1.0f, 1.0f, 1.0f, 1)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .CullFaceEnabled(true));
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
     this->distance = 6.0f;
     this->minLatitude = glm::radians(-85.0f);
@@ -468,17 +467,19 @@ void TestInputApp::handleGamepadInput(int gamepadIndex) {
 //------------------------------------------------------------------------------
 void
 TestInputApp::drawCube() {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     Shader::vsParams vsParams;
-    vsParams.mvp = this->proj * this->view;
+    vsParams.mvp = proj * this->view;
     Gfx::ApplyDrawState(this->drawState);
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 TestInputApp::OnRunning() {
     // print input device status as debug text
+    Dbg::Print("\n\n");
     this->printMouseState();
     this->printKeyboardState();
     this->printTouchpadState();
@@ -491,7 +492,7 @@ TestInputApp::OnRunning() {
     this->updateView();
     
     // draw frame
-    Gfx::BeginPass(PassAction::Clear(this->getClearColor()));
+    Gfx::BeginPass(PassAction().Clear(this->getClearColor()));
     this->drawCube();
     Dbg::DrawTextBuffer();
     Gfx::EndPass();

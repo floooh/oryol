@@ -9,7 +9,6 @@
 */
 #include "Gfx/GfxTypes.h"
 #include "Core/Containers/Map.h"
-#include "Gfx/private/gfxPointers.h"
 #include <functional>
 
 namespace Oryol {
@@ -26,13 +25,11 @@ public:
     ~displayMgrBase();
     
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& setup, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// return true if display is currently setup
     bool IsDisplayValid() const;
-    /// modify the display settings, may not be supported on all platforms
-    void ModifyDisplay(const GfxSetup& setup);
     /// process window system events (call near start of frame)
     void ProcessSystemEvents();
     /// present the current rendered frame
@@ -52,11 +49,10 @@ protected:
     /// notify event handlers, all handlers get the same message object
     void notifyEventHandlers(const GfxEvent& gfxEvent);
 
-    GfxSetup gfxSetup;
+    GfxDesc gfxDesc;
     DisplayAttrs displayAttrs;
     eventHandlerId uniqueIdCounter = 0;
     Map<eventHandlerId, eventHandler> handlers;
-    gfxPointers pointers;
     bool displayValid = false;
     int curFramebufferWidth = 0;    // used to detect display size changes
     int curFramebufferHeight = 0;   // used to detect display size changes

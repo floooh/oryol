@@ -34,16 +34,17 @@ public:
     const glm::vec4 ClearColor = glm::vec4(0.5f, 0.5f, 0.7f, 1.0f);
     const glm::vec3 LightDir = glm::normalize(glm::vec3(-0.75, 1.0, 0.0));
 
+    Array<PrimitiveGroup> primGroups;
     Id cubeMap;
     Id passes[NumFaces];
 
-    Id shapesMesh;
+    Id shapesVertexBuffer;
+    Id shapesIndexBuffer;
     Id displayShapesPipeline;
     Id offscreenShapesPipeline;
 
     DrawState sphereDrawState;
 
-    glm::mat4 displayProj;
     glm::mat4 offscreenProj;
     glm::vec2 polar;
     float distance = 20.0f;
@@ -64,64 +65,74 @@ OryolMain(RenderToCubeMapApp);
 //------------------------------------------------------------------------------
 AppState::Code
 RenderToCubeMapApp::OnInit() {
-    auto gfxSetup = GfxSetup::WindowMSAA4(800, 600, "Render To CubeMap");
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(600)
+        .SampleCount(4)
+        .Title("Render To CubeMap")
+        .HtmlTrackElementSize(true));
     Input::Setup();
 
     // create a cubemap which will serve as render target
-    auto cubeMapSetup = TextureSetup::RenderTargetCube(1024, 1024, PixelFormat::RGBA8, PixelFormat::DEPTH);
-    cubeMapSetup.Sampler.MinFilter = TextureFilterMode::Linear;
-    cubeMapSetup.Sampler.MagFilter = TextureFilterMode::Linear;
-    this->cubeMap = Gfx::CreateResource(cubeMapSetup);
+    const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
+    const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTH;
+    this->cubeMap = Gfx::CreateTexture(TextureDesc()
+        .Type(TextureType::TextureCube)
+        .RenderTarget(true)
+        .Width(1024)
+        .Height(1024)
+        .Format(rtColorFormat)
+        .MinFilter(TextureFilterMode::Linear)
+        .MagFilter(TextureFilterMode::Linear));
+
+    // ...and a matching 2D depth buffer render target
+    Id rtDepth = Gfx::CreateTexture(TextureDesc()
+        .Type(TextureType::Texture2D)
+        .RenderTarget(true)
+        .Width(1024)
+        .Height(1024)
+        .Format(rtDepthFormat));
 
     // create 6 render passes, one per cubemap face
-    auto rpSetup = PassSetup::From(this->cubeMap, this->cubeMap);
-    rpSetup.DefaultAction = PassAction::Clear(ClearColor);
     for (int faceIndex = 0; faceIndex < NumFaces; faceIndex++) {
-        rpSetup.ColorAttachments[0].Slice = faceIndex;
-        this->passes[faceIndex] = Gfx::CreateResource(rpSetup);
+        this->passes[faceIndex] = Gfx::CreatePass(PassDesc()
+            .ColorAttachment(0, this->cubeMap, 0, faceIndex)
+            .DepthStencilAttachment(rtDepth));
     }
 
     // mesh, shaders and pipelines to render color shapes
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Float3 }
-    };
-    shapeBuilder
+    auto shapes = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Float3)
         .Box(1.0f, 1.0f, 1.0f, 1, true)
         .Cylinder(0.5f, 1.0f, 36, 1, true)
         .Torus(0.25f, 0.5f, 8, 36, true)
-        .Sphere(0.5f, 18, 12, true);
-    this->shapesMesh = Gfx::CreateResource(shapeBuilder.Build());
-    Id envShd = Gfx::CreateResource(ShapeShader::Setup());
-    auto pipSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, envShd);
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    pipSetup.BlendState.ColorFormat = gfxSetup.ColorFormat;
-    pipSetup.BlendState.DepthFormat = gfxSetup.DepthFormat;
-    this->displayShapesPipeline = Gfx::CreateResource(pipSetup);
-    pipSetup.Shader = Gfx::CreateResource(ShapeShaderWithGamma::Setup());
-    pipSetup.RasterizerState.SampleCount = cubeMapSetup.SampleCount;
-    pipSetup.BlendState.ColorFormat = cubeMapSetup.ColorFormat;
-    pipSetup.BlendState.DepthFormat = cubeMapSetup.DepthFormat;
-    this->offscreenShapesPipeline = Gfx::CreateResource(pipSetup);
+        .Sphere(0.5f, 18, 12, true)
+        .Sphere(3.5f, 72, 48, true) // this is the big center sphere
+        .Build();
+    this->primGroups = std::move(shapes.PrimitiveGroups);
+    this->shapesVertexBuffer = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    this->shapesIndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
+    this->displayShapesPipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+        .Shader(Gfx::CreateShader(ShapeShader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(Gfx::Desc().SampleCount()));
+    this->offscreenShapesPipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+        .Shader(Gfx::CreateShader(ShapeShaderWithGamma::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .ColorFormat(rtColorFormat)
+        .DepthFormat(rtDepthFormat));
 
     // create a sphere where the env-shapes reflect and refract in
-    this->sphereDrawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Sphere(3.5f, 72, 48).Build());
-    Id sphereShd = Gfx::CreateResource(SphereShader::Setup());
-    pipSetup = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, sphereShd);
-    pipSetup.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    pipSetup.DepthStencilState.DepthWriteEnabled = true;
-    pipSetup.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->sphereDrawState.Pipeline = Gfx::CreateResource(pipSetup);
+    this->sphereDrawState.VertexBuffers[0] = this->shapesVertexBuffer;
+    this->sphereDrawState.IndexBuffer = this->shapesIndexBuffer;
     this->sphereDrawState.FSTexture[SphereShader::tex] = this->cubeMap;
-
-    // setup projection matrix for main view
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->displayProj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
+    this->sphereDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+        .Shader(Gfx::CreateShader(SphereShader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(Gfx::Desc().SampleCount()));
 
     // setup projection matrix for cubemap rendering
     this->offscreenProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 100.0f);
@@ -162,29 +173,30 @@ RenderToCubeMapApp::OnRunning() {
         { glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f) },
     };
     for (int i = 0; i < NumFaces; i++) {
-        Gfx::BeginPass(this->passes[i]);
+        Gfx::BeginPass(this->passes[i], PassAction().Clear(ClearColor));
         const glm::mat4 view = glm::lookAt(glm::vec3(0.0f), centerAndUp[i][0], centerAndUp[i][1]);
         this->drawEnvShapes(this->offscreenShapesPipeline, glm::vec3(0.0f), view, this->offscreenProj);
         Gfx::EndPass();
     }
 
     // render the main view
-    Gfx::BeginPass(PassAction::Clear(ClearColor));
+    Gfx::BeginPass(PassAction().Clear(ClearColor));
 
     // draw the environment shapes
     const glm::vec3 eyePos = glm::euclidean(this->polar) * distance;
     const glm::mat4 view = glm::lookAt(eyePos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawEnvShapes(this->displayShapesPipeline, eyePos, view, this->displayProj);
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->drawEnvShapes(this->displayShapesPipeline, eyePos, view, proj);
 
     // draw the sphere with reflection/refraction from cubemap
     Gfx::ApplyDrawState(this->sphereDrawState);
     SphereShader::vsParams vsParams;
-    vsParams.mvp = this->displayProj * view;
+    vsParams.mvp = proj * view;
     vsParams.model = glm::mat4();
     vsParams.lightDir = LightDir;
     vsParams.eyePos = eyePos;
     Gfx::ApplyUniformBlock(vsParams);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroups[4]);
 
     Gfx::EndPass();
     Gfx::CommitFrame();
@@ -232,7 +244,8 @@ RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::vec3& eyePos, const gl
     const glm::mat4 viewProj = proj * view;
     DrawState drawState;
     drawState.Pipeline = pipeline;
-    drawState.Mesh[0] = this->shapesMesh;
+    drawState.VertexBuffers[0] = this->shapesVertexBuffer;
+    drawState.IndexBuffer = this->shapesIndexBuffer;
     Gfx::ApplyDrawState(drawState);
     ShapeShader::vsParams vsParams;
     for (int i = 0; i < NumShapes; i++) {
@@ -243,7 +256,7 @@ RenderToCubeMapApp::drawEnvShapes(Id pipeline, const glm::vec3& eyePos, const gl
         vsParams.lightDir = LightDir;
         vsParams.eyePos = eyePos;
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::Draw(shape.shapeIndex);
+        Gfx::Draw(this->primGroups[shape.shapeIndex]);
     }
 }
 

@@ -4,7 +4,7 @@
 #include "Pre.h"
 #include "curlURLLoader.h"
 #include "Core/String/StringConverter.h"
-#include "Core/Containers/Buffer.h"
+#include "Core/Containers/MemoryBuffer.h"
 #include "curl/curl.h"
 #include <mutex>
 
@@ -89,7 +89,7 @@ curlURLLoader::curlWriteDataCallback(char* ptr, size_t size, size_t nmemb, void*
     // userData is expected to point to a Buffer object
     int bytesToWrite = (int) (size * nmemb);
     if (bytesToWrite > 0) {
-        Buffer* buf = (Buffer*) userData;
+        MemoryBuffer* buf = (MemoryBuffer*) userData;
         buf->Add((const uint8_t*)ptr, bytesToWrite);
         return bytesToWrite;
     }

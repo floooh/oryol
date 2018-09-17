@@ -6,13 +6,13 @@ uniform vsParams {
     mat4 mvp;
 };
 
-in vec4 position;
-in vec4 normal;
+in vec4 in_pos;
+in vec4 in_normal;
 out vec4 nrm;
 
 void main() {
-    gl_Position = mvp * position;
-    nrm = normal;
+    gl_Position = mvp * in_pos;
+    nrm = in_normal;
 }
 @end
 
@@ -34,16 +34,16 @@ uniform vsParams {
     mat4 mvp;
 };
 
-in vec4 position;
-in vec4 normal;
-in vec2 texcoord0;
+in vec4 in_pos;
+in vec4 in_normal;
+in vec2 in_uv;
 out vec2 uv;
 out vec4 nrm;
 
 void main() {
-    gl_Position = mvp * position;
-    uv = texcoord0;
-    nrm = normalize(mvp * normal);
+    gl_Position = mvp * in_pos;
+    uv = in_uv;
+    nrm = normalize(mvp * in_normal);
 }
 @end
 

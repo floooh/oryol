@@ -66,7 +66,7 @@ can be easily selected via fips build configs:
 ##### D3D11:
 
 Building with D3D11 support requires at least Windows7 and a recent 
-Visual Studio version (VS2013 or VS2015). Select any of the following build 
+Visual Studio version (at least VS2015). Select any of the following build 
 configs:
 
 - d3d11-win64-vstudio-debug

@@ -10,14 +10,14 @@ management.
 
 ### Platform/API support matrix
 
-Platform   |GL3.3|GLES3|Metal|D3D11
------------|-----|-----|-----|-----
-OSX 10.11+ |YES  |---  |YES  |---  
-iOS 9.x+   |---  |YES  |YES  |---  
-Window7+   |YES  |---  |---  |YES  
-Linux      |YES  |---  |---  |---  
-Android    |---  |YES  |---  |---  
-HTML5      |---  |YES  |---  |---  
+Platform   |GL3.3|GLES2|GLES3|Metal|D3D11
+-----------|-----|-----|-----|-----|-----
+OSX 10.11+ |YES  |---  |---  |YES  |---  
+iOS 9.x+   |---  |YES  |YES  |YES  |---  
+Window7+   |YES  |---  |---  |---  |YES  
+Linux      |YES  |---  |---  |---  |---  
+Android    |---  |YES  |YES  |---  |---  
+HTML5      |---  |YES  |YES  |---  |---  
 RaspberryPi|---  |YES  |---  |---  
 
 ### Sample Code

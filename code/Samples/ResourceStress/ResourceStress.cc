@@ -5,7 +5,6 @@
 #include "Core/Main.h"
 #include "IO/IO.h"
 #include "Gfx/Gfx.h"
-#include "Dbg/Dbg.h"
 #include "HttpFS/HTTPFileSystem.h"
 #include "Assets/Gfx/ShapeBuilder.h"
 #include "Assets/Gfx/TextureLoader.h"
@@ -24,9 +23,10 @@ public:
 
     void createObjects();
     void updateObjects();
-    void showInfo();
 
     struct Object {
+        uint32_t createdFrame = 0;
+        PrimitiveGroup primGroup;
         DrawState drawState;
         ResourceLabel label;
         glm::mat4 modelTransform;
@@ -37,9 +37,6 @@ public:
     uint32_t frameCount = 0;
     Id shader;
     Array<Object> objects;
-    glm::mat4 view;
-    glm::mat4 proj;
-    TextureSetup texBlueprint;
 };
 OryolMain(ResourceStressApp);
 
@@ -47,36 +44,21 @@ OryolMain(ResourceStressApp);
 AppState::Code
 ResourceStressApp::OnInit() {
     // setup IO system
-    IOSetup ioSetup;
-    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("tex:", ORYOL_SAMPLE_URL);
-    IO::Setup(ioSetup);
+    IO::Setup(IODesc()
+        .FileSystem("http", HTTPFileSystem::Creator())
+        .Assign("tex:", ORYOL_SAMPLE_URL));
 
     // setup Gfx system
-    auto gfxSetup = GfxSetup::Window(600, 400, "Oryol Resource Stress Test");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    gfxSetup.ResourcePoolSize[GfxResourceType::Mesh] = MaxNumObjects + 32;
-    gfxSetup.ResourcePoolSize[GfxResourceType::Texture] = MaxNumObjects + 32;
-    gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] = MaxNumObjects + 32;
-    gfxSetup.ResourcePoolSize[GfxResourceType::Shader] = 4;
-    Gfx::Setup(gfxSetup);
-    
-    // setup debug text rendering
-    Dbg::Setup();    
-    
-    // setup the shader that is used by all objects
-    this->shader = Gfx::CreateResource(Shader::Setup());
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400).Title("Oryol Resource Stress Test")
+        .ResourcePoolSize(GfxResourceType::Buffer, 2 * (MaxNumObjects + 32))
+        .ResourcePoolSize(GfxResourceType::Texture, MaxNumObjects + 32)
+        .ResourcePoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32)
+        .ResourcePoolSize(GfxResourceType::Shader, 4)
+        .HtmlTrackElementSize(true));
 
-    // setup matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    
-    this->texBlueprint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    this->texBlueprint.Sampler.MagFilter = TextureFilterMode::Linear;
-    this->texBlueprint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    this->texBlueprint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
+    // setup the shader that is used by all objects
+    this->shader = Gfx::CreateShader(Shader::Desc());
 
     return App::OnInit();
 }
@@ -89,21 +71,23 @@ ResourceStressApp::OnRunning() {
     this->frameCount++;
     this->updateObjects();
     this->createObjects();
-    this->showInfo();
 
-    Gfx::BeginPass();
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
     for (const auto& obj : this->objects) {
-        // only render objects that have successfully loaded
+        // only render objects that have successfully loaded (technically
+        // the check is not necessary since rendering for non-valid resources
+        // will be skipped anyway, but this way we have test coverage for
+        // Gfx::QueryResourceState()
         const Id& tex = obj.drawState.FSTexture[Shader::tex];
-        if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
+        if (Gfx::QueryResourceState(tex) == ResourceState::Valid) {
             Gfx::ApplyDrawState(obj.drawState);
+            glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
             Shader::vsParams vsParams;
-            vsParams.mvp = this->proj * this->view * obj.modelTransform;
+            vsParams.mvp = proj * obj.modelTransform;
             Gfx::ApplyUniformBlock(vsParams);
-            Gfx::Draw();
+            Gfx::Draw(obj.primGroup);
         }
     }
-    Dbg::DrawTextBuffer();
     Gfx::EndPass();
     Gfx::CommitFrame();
     
@@ -114,7 +98,6 @@ ResourceStressApp::OnRunning() {
 //------------------------------------------------------------------------------
 AppState::Code
 ResourceStressApp::OnCleanup() {
-    Dbg::Discard();
     Gfx::Discard();
     IO::Discard();
     return App::OnCleanup();
@@ -127,29 +110,32 @@ ResourceStressApp::createObjects() {
     if (this->objects.Size() >= MaxNumObjects) {
         return;
     }
-    if (Gfx::QueryFreeResourceSlots(GfxResourceType::Mesh) == 0) {
-        return;
-    }
-    if (Gfx::QueryFreeResourceSlots(GfxResourceType::Texture) == 0) {
-        return;
-    }
 
     // create a cube object
     // NOTE: we're deliberatly not sharing resources to actually
     // put some stress on the resource system
     Object obj;
     obj.label = Gfx::PushResourceLabel();
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::TexCoord0, VertexFormat::Float2 }
-    };
-    shapeBuilder.Box(0.1f, 0.1f, 0.1f, 1);
-    obj.drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, this->shader);
-    obj.drawState.Pipeline = Gfx::CreateResource(ps);
-    obj.drawState.FSTexture[Shader::tex] = Gfx::LoadResource(TextureLoader::Create(
-        TextureSetup::FromFile(Locator::NonShared("tex:lok_dxt1.dds"), this->texBlueprint)));
+    obj.createdFrame = this->frameCount;
+    auto shape = ShapeBuilder()
+        .Positions("position", VertexFormat::Float3)
+        .TexCoords("texcoord0", VertexFormat::Float2)
+        .Box(0.1f, 0.1f, 0.1f, 1)
+        .Build();
+    obj.primGroup = shape.PrimitiveGroups[0];
+    obj.drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    obj.drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    obj.drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(this->shader)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .CullFaceEnabled(true));
+    obj.drawState.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
+        .Locator(Locator::NonShared("tex:lok_dxt1.dds"))
+        .MinFilter(TextureFilterMode::LinearMipmapLinear)
+        .MagFilter(TextureFilterMode::Linear)
+        .WrapU(TextureWrapMode::ClampToEdge)
+        .WrapV(TextureWrapMode::ClampToEdge));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
     this->objects.Add(obj);
@@ -161,14 +147,15 @@ void
 ResourceStressApp::updateObjects() {
     for (int i = this->objects.Size() - 1; i >= 0; i--) {
         Object& obj = this->objects[i];
+        int age = this->frameCount - obj.createdFrame;
         
         // check if object should be destroyed (it will be
         // destroyed after the texture object had been valid for
         // at least 3 seconds, or if it failed to load)
         const Id& tex = obj.drawState.FSTexture[Shader::tex];
-        const auto info = Gfx::QueryResourceInfo(tex);
-        if ((info.State == ResourceState::Failed) ||
-            ((info.State == ResourceState::Valid) && (info.StateAge > (20 * 60)))) {
+        ResourceState::Code state = Gfx::QueryResourceState(tex);
+        if ((state == ResourceState::Failed) ||
+            ((state == ResourceState::Valid) && (age > (20 * 60)))) {
 
             Gfx::DestroyResources(obj.label);
             this->objects.Erase(i);
@@ -176,39 +163,3 @@ ResourceStressApp::updateObjects() {
     }
 }
 
-//------------------------------------------------------------------------------
-void
-ResourceStressApp::showInfo() {
-    ResourcePoolInfo texPoolInfo = Gfx::QueryResourcePoolInfo(GfxResourceType::Texture);
-    ResourcePoolInfo mshPoolInfo = Gfx::QueryResourcePoolInfo(GfxResourceType::Mesh);
-    
-    Dbg::PrintF("texture pool\r\n"
-                "  num slots: %d, free: %d, used: %d\r\n"
-                "  by state:\r\n"
-                "    initial: %d\r\n"
-                "    setup:   %d\r\n"
-                "    pending: %d\r\n"
-                "    valid:   %d\r\n"
-                "    failed:  %d\r\n\n",
-                texPoolInfo.NumSlots, texPoolInfo.NumFreeSlots, texPoolInfo.NumUsedSlots,
-                texPoolInfo.NumSlotsByState[ResourceState::Initial],
-                texPoolInfo.NumSlotsByState[ResourceState::Setup],
-                texPoolInfo.NumSlotsByState[ResourceState::Pending],
-                texPoolInfo.NumSlotsByState[ResourceState::Valid],
-                texPoolInfo.NumSlotsByState[ResourceState::Failed]);
-    
-    Dbg::PrintF("mesh pool\r\n"
-                "  num slots: %d, free: %d, used: %d\r\n"
-                "  by state:\r\n"
-                "    initial: %d\r\n"
-                "    setup:   %d\r\n"
-                "    pending: %d\r\n"
-                "    valid:   %d\r\n"
-                "    failed:  %d",
-                mshPoolInfo.NumSlots, mshPoolInfo.NumFreeSlots, mshPoolInfo.NumUsedSlots,
-                mshPoolInfo.NumSlotsByState[ResourceState::Initial],
-                mshPoolInfo.NumSlotsByState[ResourceState::Setup],
-                mshPoolInfo.NumSlotsByState[ResourceState::Pending],
-                mshPoolInfo.NumSlotsByState[ResourceState::Valid],
-                mshPoolInfo.NumSlotsByState[ResourceState::Failed]);
-}

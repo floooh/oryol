@@ -38,7 +38,7 @@ public:
 OryolMain(SimpleApp);
 
 AppState::Code SimpleApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(640, 480, "Window Title"));
+    Gfx::Setup(GfxDesc().Width(640).Height(480).Title("Window Title"));
     return App::OnInit();
 }
 
@@ -81,11 +81,11 @@ OryolMain(SimpleApp);
 
 In OnInit(), the call to **Gfx::Setup()** initializes the entire Gfx module,
 it opens a window, and initializes the underlying 3D-API. The method takes a
-**GfxSetup** object with setup parameters (more on that later).
+**GfxDesc** object with setup parameters (more on that later).
 
 ```cpp
 AppState::Code SimpleApp::OnInit() {
-    Gfx::Setup(GfxSetup::Window(640, 480, "Window Title"));
+    Gfx::Setup(GfxDesc().Width(640).Height(480).Title("Window Title"));
     return App::OnInit();
 }
 ```
@@ -134,118 +134,87 @@ AppState::Code SimpleApp::OnCleanup() {
 The call to Gfx::Discard() shuts down the Gfx module, in a more complex
 application this would also clean up all the left-over rendering resources.
 
-### The GfxSetup object
+### The GfxDesc object
 
-The GfxSetup object provides setup parameters to the Gfx module, most 
+The GfxDesc object provides setup parameters to the Gfx module, most 
 importantly the window size, color- and depth-buffer formats, and the
 sample count for multisample anti-aliasing.
 
-For the most common setup methods, a small set of construction methods
-exist:
+The GfxDesc class uses method chaining to override the default parameters:
 
 ```cpp
-class GfxSetup {
-public:
-    /// shortcut for windowed mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Window(int width, int height, String windowTitle);
-    /// shortcut for fullscreen mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Fullscreen(int width, int height, String windowTitle);
-    /// shortcut for windowed mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup WindowMSAA4(int width, int height, String windowTitle);
-    /// shortcut for fullscreen mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup FullscreenMSAA4(int width, int height, String windowTitle);
-...
-}
+auto gfxDesc = GfxDesc()
+    .Width(1024)
+    .Height(768)
+    .ColorFormat(PixelFormat::RGBA8)
+    .DepthFormat(PixelFormat::None)
+    .SampleCount(4)
+    .Windowed(true)
+    .Title("My Window Title);
+Gfx::Setup(gfxDesc);
 ```
 
-You can also set or override the most common setup parameters manually:
+The method chaining approach also lets you move the entire GfxDesc object
+initialization into the Gfx::Setup() method call:
 
 ```cpp
-GfxSetup setup;
-setup.Width = 1024;
-setup.Height = 768;
-setup.ColorFormat = PixelFormat::RGBA8;
-setup.DepthFormat = PixelFormat::None;
-setup.SampleCount = 4;
-setup.Windowed = true;
-setup.Title = "My Window Title"
-Gfx::Setup(setup);
+Gfx::Setup(GfxDesc()
+    .Width(1024)
+    .Height(768)
+    .ColorFormat(PixelFormat::RGBA8)
+    .DepthFormat(PixelFormat::None)
+    .SampleCount(4)
+    .Windowed(true)
+    .Title("My Window Title));
 ```
 
 On platforms which support HighDPI rendering (e.g. Windows, macOS, iOS),
 rendering happens by default at half resolution if a HighDPI display is
-detected. To render at full resolution set the GfxSetup::HighDPI member to
-true:
+detected. To render at full resolution set the GfxDesc::HighDPI attribute
+to true:
 
 ```cpp
-GfxSetup setup;
-...
-setup.HighDPI = true;
-...
-Gfx::Setup(setup);
+Gfx::Setup(GfxDesc()
+    ...
+    .HighDPI(true)
+    ...);
 ```
 
-You can override the default 'pass action' (what should happen in BeginPass)
-via the GfxSetup::DefaultPassAction member. For instance if you want to
-clear the default framebuffer with color red instead of black:
-
-```cpp
-GfxSetup setup;
-setup.DefaultPassAction = PassAction::Clear(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-...
-```
-...you can also change the clear values for the depth/stencil buffer from
-the default 1.0 and 0:
-
-```cpp
-GfxSetup setup;
-setup.DefaultPassAction = PassAction::Clear(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.5f, 255);
-...
-```
-
-More information on render pass actions [is provided here](RenderPasses.md).
-
-Finally there's a number of GfxSetup members which tweak various
+There's a number of GfxDesc members which tweak various
 Gfx resource-system upper bounds. When starting with Oryol you don't
 need to care about those values yet, but tweaking those values will
 be useful for very big apps (which use a lot of resources), or very small app
 which only use a handful resources.
 
-Just for completeness, here are the GfxSetup members for resource
-system tweaking:
+Just for completeness, here are the GfxDesc members for resource
+system tweaking and their default values:
 
 ```cpp
 /// resource pool size by resource type
-StaticArray<int,GfxResourceType::NumResourceTypes> ResourcePoolSize;
-/// resource creation throttling (max resources created async per frame)
-StaticArray<int,GfxResourceType::NumResourceTypes> ResourceThrottling;
+ResourcePoolSize(GfxResourceType::Code type, int size): default=128
 /// initial resource label stack capacity
-int ResourceLabelStackCapacity = 256;
+ResourceLabelStackCapacity(int capacity): default=256
 /// initial resource registry capacity
-int ResourceRegistryCapacity = 256;
+ResourceRegistryCapacity(int capacity): default=256
 /// size of the global uniform buffer (only relevant on some platforms)
-int GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
-/// max number of drawcalls per frame (only relevant on some platforms)
-int MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
-/// max number of ApplyDrawState per frame (only relevant on some platforms)
-int MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
+GfxDesc& GlobalUniformBufferSize(int sizeInBytes): default=4MB
 ```
 
 ### The special HTML5 'canvas tracking' mode
 
-There are 2 special GfxSetup members useful for HTML5 apps:
+There are 2 special GfxDesc members useful for HTML5 apps:
 
 ```cpp
 /// if true, ignore own size and instead track size of an HTML element (emscripten only)
-bool HtmlTrackElementSize = false;
-/// name of the HTML element to track (default: #canvas)
-String HtmlElement = "#canvas";
+HtmlTrackElementSize(bool track): default = false
+/// name of the HTML element to track
+HtmlElement(const StringAtom& domName): default = "#canvas"
 ```
 
-If **GfxSetup::HtmlTrackElementSize** is set to true, the size members
-GfxSetup::Width and GfxSetup::Height are ignored, and the Oryol Gfx module
+If **GfxDesc::HtmlTrackElementSize** is set to true, the size members
+GfxDesc::Width and GfxDesc::Height are ignored, and the Oryol Gfx module
 will instead track the size of the HTML DOM element identified by
-**GfxSetup::HtmlElement** (the default value '#canvas' automatically
+**GfxDesc::HtmlElement** (the default value '#canvas' automatically
 resolves to the WebGL canvas managed by the emscripten GL wrapper) . This is
 useful for HTML5 apps where the WebGL canvas size is fully controlled by
 Javascript code. The Oryol Gfx module needs to know when such changes take

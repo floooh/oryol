@@ -19,7 +19,7 @@ namespace Oryol {
 class Input {
 public:
     /// setup the Input module
-    static void Setup(const InputSetup& inputSetup = InputSetup());
+    static void Setup(const InputDesc& desc = InputDesc());
     /// discard the Input module
     static void Discard();
     /// check if Input module is valid

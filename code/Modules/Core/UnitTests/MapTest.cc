@@ -6,6 +6,7 @@
 #include "UnitTest++/src/UnitTest++.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/String.h"
+#include "Core/String/StringAtom.h"
 
 using namespace Oryol;
 
@@ -155,4 +156,161 @@ TEST(MapTest) {
         testMap.Add(counter, "testString");
         testMap.Erase(counter);
     }
+
+    // test removing the first element
+    Map<int, int> map5;
+    map5.Add(0, 0);
+    map5.Add(1, 1);
+    map5.Add(2, 2);
+    map5.Add(3, 3);
+    map5.Add(4, 4);
+    map5.Add(5, 5);
+    CHECK(map5.KeyAtIndex(0) == 0);
+    CHECK(map5.KeyAtIndex(1) == 1);
+    int key = map5.KeyAtIndex(0);
+    map5.Erase(key);
+    CHECK(map5.KeyAtIndex(0) == 1);
 }
+
+namespace MapTest {
+
+class Locator {
+public:
+    static const uint32_t NonSharedSignature = 0xFFFFFFFF;
+    static const uint32_t DefaultSignature = 0xFFFFFFFE;
+
+    Locator();
+    Locator(const StringAtom& location);
+    Locator(const char* location);
+    Locator(const StringAtom& location, uint32_t signature);
+    Locator(const char* location, uint32_t signature);
+
+    static Locator NonShared();
+    static Locator NonShared(const StringAtom& location);
+
+    Locator(const Locator& rhs);
+    void operator=(const Locator& rhs);
+
+    bool operator==(const Locator& rhs) const;
+    bool operator!=(const Locator& rhs) const;
+    bool operator<(const Locator& rhs) const;
+
+    bool IsShared() const;
+    bool HasValidLocation() const;
+    const StringAtom& Location() const;
+    uint32_t Signature() const;
+
+private:
+    StringAtom location;
+    uint32_t signature;
+};
+
+inline Locator::Locator(const StringAtom& loc) :
+location(loc),
+signature(DefaultSignature) {
+    // empty
+}
+
+inline Locator::Locator(const char* loc) :
+location(loc),
+signature(DefaultSignature) {
+    // empty
+}
+
+inline Locator::Locator(const StringAtom& loc, uint32_t sig) :
+location(loc),
+signature(sig) {
+    // empty
+}
+
+inline Locator::Locator(const char* loc, uint32_t sig) :
+location(loc),
+signature(sig) {
+    // empty
+}
+
+inline Locator Locator::NonShared() {
+    return Locator(StringAtom(), NonSharedSignature);
+}
+
+inline Locator Locator::NonShared(const StringAtom& loc) {
+    return Locator(loc, NonSharedSignature);
+}
+
+inline Locator::Locator() :
+signature(DefaultSignature) {
+    // empty
+}
+
+inline Locator::Locator(const Locator& rhs) :
+location(rhs.location),
+signature(rhs.signature) {
+    // empty
+}
+
+inline void Locator::operator=(const Locator& rhs) {
+    this->location = rhs.location;
+    this->signature = rhs.signature;
+}
+
+inline bool Locator::operator==(const Locator& rhs) const {
+    return (this->location == rhs.location) && (this->signature == rhs.signature);
+}
+
+inline bool Locator::operator!=(const Locator& rhs) const {
+    return (this->location != rhs.location) || (this->signature != rhs.signature);
+}
+
+inline bool Locator::operator<(const Locator& rhs) const {
+    if (this->location == rhs.location) {
+        return this->signature < rhs.signature;
+    }
+    else {
+        return this->location < rhs.location;
+    }
+}
+
+inline bool Locator::IsShared() const {
+    return NonSharedSignature != this->signature;
+}
+
+inline bool Locator::HasValidLocation() const {
+    return this->location.IsValid();
+}
+
+inline const StringAtom& Locator::Location() const {
+    return this->location;
+}
+
+inline uint32_t Locator::Signature() const {
+    return this->signature;
+}
+
+TEST(MapTest2) {
+    Locator l0("IMUIShader");
+    Locator l1("LambertShader");
+    Locator l2("model", 1);
+    Locator l3("model", 2);
+    Map<Locator, int> map;
+    map.Add(l0, 2);
+    map.Add(l1, 4);
+    map.Add(l2, 6);
+    map.Add(l3, 7);
+    CHECK(map.KeyAtIndex(0) == l0);
+    CHECK(map.KeyAtIndex(1) == l1);
+    CHECK(map.KeyAtIndex(2) == l2);
+    CHECK(map.KeyAtIndex(3) == l3);
+    CHECK(map.ValueAtIndex(0) == 2);
+    CHECK(map.ValueAtIndex(1) == 4);
+    CHECK(map.ValueAtIndex(2) == 6);
+    CHECK(map.ValueAtIndex(3) == 7);
+    map.Erase(l0);
+    CHECK(map.KeyAtIndex(0) == l1);
+    CHECK(map.KeyAtIndex(1) == l2);
+    CHECK(map.KeyAtIndex(2) == l3);
+    CHECK(map.ValueAtIndex(0) == 4);
+    CHECK(map.ValueAtIndex(1) == 6);
+    CHECK(map.ValueAtIndex(2) == 7);
+}
+
+} // namespace MapTest

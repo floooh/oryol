@@ -24,11 +24,10 @@ wait(const Ptr<IORequest>& msg) {
 TEST(LocalFileSystemTest) {
 
     Core::Setup();
-    IOSetup ioSetup;
-    ioSetup.Assigns.Add("bla:", "root:bla/");
-    ioSetup.Assigns.Add("blub:", "cwd:blub/");
-    ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
-    IO::Setup(ioSetup);
+    IO::Setup(IOSetup()
+        .Assign("bla:", "root:bla/")
+        .Assign("blub:", "cwd:blub/")
+        .FileSystem("file", LocalFileSystem::Creator()));
 
     // check whether assigns have been set
     StringBuilder strBuilder;
@@ -90,9 +89,7 @@ TEST(LocalFileSystemTest) {
 
 TEST(SameExtensionTest) {
     Core::Setup();
-    IOSetup ioSetup;
-    ioSetup.FileSystems.Add("file", LocalFileSystem::Creator());
-    IO::Setup(ioSetup);
+    IO::Setup(IOSetup().FileSystem("file", LocalFileSystem::Creator()));
 
     // write 2 files with the same extension
     const String helloJSON("Hello JSON! Bla bla bla bla");

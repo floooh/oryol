@@ -6,13 +6,13 @@ uniform vsParams {
     mat4 mvp;
     vec4 modelEyePos;
 };
-in vec4 position;
+in vec4 in_pos;
 out vec3 eyePos;
 out vec3 surfPos;
 void main() {
-    gl_Position = mvp * position;
+    gl_Position = mvp * in_pos;
     eyePos = modelEyePos.xyz + vec3(0.5, 0.5, 0.5);
-    surfPos = position.xyz + vec3(0.5, 0.5, 0.5);
+    surfPos = in_pos.xyz + vec3(0.5, 0.5, 0.5);
 }
 @end
 

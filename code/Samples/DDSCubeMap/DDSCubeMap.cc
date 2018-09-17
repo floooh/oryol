@@ -22,10 +22,9 @@ public:
     
     glm::mat4 computeMVP(const glm::vec3& pos);
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
     Shader::vsParams vsParams;
-    glm::mat4 view;
-    glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -36,24 +35,17 @@ AppState::Code
 DDSCubeMapApp::OnInit() {
 
     // setup IO system
-    IOSetup ioSetup;
-    ioSetup.FileSystems.Add("http", HTTPFileSystem::Creator());
-    ioSetup.Assigns.Add("tex:", ORYOL_SAMPLE_URL);
-    IO::Setup(ioSetup);
+    IO::Setup(IODesc()
+        .FileSystem("http", HTTPFileSystem::Creator())
+        .Assign("tex:", ORYOL_SAMPLE_URL));
 
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(600, 400, "Oryol DXT Cube Map Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400)
+        .Title("Oryol DXT Cube Map Sample")
+        .HtmlTrackElementSize(true));
 
     // create resources
-    Id shd = Gfx::CreateResource(Shader::Setup());
-
-    TextureSetup texBluePrint;
-    texBluePrint.Sampler.MinFilter = TextureFilterMode::LinearMipmapLinear;
-    texBluePrint.Sampler.MagFilter = TextureFilterMode::Linear;
-    texBluePrint.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    texBluePrint.Sampler.WrapV = TextureWrapMode::ClampToEdge;
     StringAtom texPath;
     if (Gfx::QueryFeature(GfxFeature::TextureCompressionPVRTC)) {
         texPath = "tex:romechurch_bpp2.pvr";
@@ -61,28 +53,27 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->drawState.FSTexture[Shader::tex] = Gfx::LoadResource(
-        TextureLoader::Create(TextureSetup::FromFile(texPath, texBluePrint))
-    );
-    glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Float3 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(1.0f, 36, 20);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
+        .Locator(texPath)
+        .MinFilter(TextureFilterMode::LinearMipmapLinear)
+        .MagFilter(TextureFilterMode::Linear)
+        .WrapU(TextureWrapMode::ClampToEdge)
+        .WrapV(TextureWrapMode::ClampToEdge));
 
-    // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    
+    auto shape = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Normals("in_normal", VertexFormat::Float3)
+        .Transform(glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)))
+        .Sphere(1.0f, 36, 20)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual));
+
     return App::OnInit();
 }
 
@@ -94,14 +85,11 @@ DDSCubeMapApp::OnRunning() {
     this->angleY += 0.02f;
     this->angleX += 0.01f;
     
-    Gfx::BeginPass();
-    const Id& tex = this->drawState.FSTexture[Shader::tex];
-    if (Gfx::QueryResourceInfo(tex).State == ResourceState::Valid) {
-        this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyUniformBlock(this->vsParams);
-        Gfx::Draw();
-    }
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
+    this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
+    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     
@@ -122,9 +110,10 @@ DDSCubeMapApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 DDSCubeMapApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
+    return proj * modelTform;
 }
 

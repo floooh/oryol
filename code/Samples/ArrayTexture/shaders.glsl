@@ -10,17 +10,17 @@ uniform vsParams {
     vec2 uvOffset2;
 };
 
-in vec4 position;
-in vec2 texcoord0;
+in vec4 in_pos;
+in vec2 in_uv;
 out vec3 uv0;
 out vec3 uv1;
 out vec3 uv2;
 
 void main() {
-    gl_Position = mvp * position;
-    uv0 = vec3(texcoord0 + uvOffset0, 0.0);
-    uv1 = vec3(texcoord0 + uvOffset1, 1.0);
-    uv2 = vec3(texcoord0 + uvOffset2, 2.0);
+    gl_Position = mvp * in_pos;
+    uv0 = vec3(in_uv + uvOffset0, 0.0);
+    uv1 = vec3(in_uv + uvOffset1, 1.0);
+    uv2 = vec3(in_uv + uvOffset2, 2.0);
 }
 @end
 

@@ -13,7 +13,7 @@
 
 // need to access GL API directly
 #if ORYOL_OPENGL
-#include "Gfx/private/gl/gl_impl.h"
+#include "Gfx/private/gl/gl.h"
 #endif
 
 using namespace Oryol;
@@ -27,11 +27,10 @@ public:
     AppState::Code notSupported();      // render a 'not supported' message
 
     glm::mat4 computeMVP(const glm::vec3& pos);
+    PrimitiveGroup primGroup;
     DrawState drawState;
     ResourceLabel texLabel;
     Shader::vsParams params;
-    glm::mat4 view;
-    glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;
     uint8_t counter = 0;
@@ -48,25 +47,27 @@ OryolMain(NativeTextureApp);
 AppState::Code
 NativeTextureApp::OnInit() {
 
-    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Oryol NativeTexture Sample");
-    Gfx::Setup(gfxSetup);
-    Dbg::Setup();
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400)
+        .SampleCount(4)
+        .Title("Oryol NativeTexture Sample")
+        .HtmlTrackElementSize(true));
+    Dbg::Setup(DbgDesc().SampleCount(4));
 
-    // native texture handles are currently only supported on GL, on
-    // other APIs, just display a warning
-    if (!Gfx::QueryFeature(GfxFeature::NativeTexture)) {
-        return App::OnInit();
-    }
+    // FIXME: D3D and Metal
+    #if !ORYOL_OPENGL
+    return App::OnInit();
+    #endif
 
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::TexCoord0, VertexFormat::Float2 }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
+    auto shape = ShapeBuilder()
+        .RandomColors(true)
+        .Positions("in_pos", VertexFormat::Float3)
+        .TexCoords("in_uv", VertexFormat::Float2)
+        .Box(1.0f, 1.0f, 1.0f, 4)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     #if ORYOL_OPENGL
     // the interesting part, create 2 GL textures and hand them to the
@@ -88,29 +89,26 @@ NativeTextureApp::OnInit() {
 
     // make sure that the texture creation parameters here match the OpenGL
     // creation parameters (size, texture type, pixel format etc...),
-    auto texSetup = TextureSetup::FromNativeTexture(TexWidth, TexHeight, 1,
-        TextureType::Texture2D,
-        PixelFormat::RGBA8,
-        Usage::Stream,
-        this->glTextures[0],
-        this->glTextures[1]);
     // push a new resource label and keep it for later since we'll have
     // to cleanup the resource ourselves
     Gfx::PushResourceLabel();
-    this->drawState.FSTexture[0] = Gfx::CreateResource(texSetup);
+    this->drawState.FSTexture[0] = Gfx::CreateTexture(TextureDesc()
+        .Type(TextureType::Texture2D)
+        .Width(TexWidth)
+        .Height(TexHeight)
+        .Format(PixelFormat::RGBA8)
+        .Usage(Usage::Stream)
+        .NativeTexture(0, this->glTextures[0])
+        .NativeTexture(1, this->glTextures[1]));
     this->texLabel = Gfx::PopResourceLabel();
     #endif
-    
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
+    // ...and finally the pipeline object
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(Gfx::Desc().SampleCount()));
 
     return App::OnInit();
 }
@@ -119,9 +117,9 @@ NativeTextureApp::OnInit() {
 AppState::Code
 NativeTextureApp::OnRunning() {
 
-    if (!Gfx::QueryFeature(GfxFeature::NativeTexture)) {
-        return notSupported();
-    }
+    #if !ORYOL_OPENGL
+    return notSupported();
+    #endif
     this->angleY += 0.01f;
     this->angleX += 0.02f;
 
@@ -137,18 +135,16 @@ NativeTextureApp::OnRunning() {
         }
     }
     this->counter++;
-    ImageDataAttrs updAttrs;
-    updAttrs.NumFaces = 1;
-    updAttrs.NumMipMaps = 1;
-    updAttrs.Offsets[0][0] = 0;
-    updAttrs.Sizes[0][0] = sizeof(this->Buffer);
-    Gfx::UpdateTexture(this->drawState.FSTexture[0], this->Buffer, updAttrs);
+    ImageContent imgContent;
+    imgContent.Pointer[0][0] = this->Buffer;
+    imgContent.Size[0][0] = sizeof(this->Buffer);
+    Gfx::UpdateTexture(this->drawState.FSTexture[0], imgContent);
 
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawState);
     this->params.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, -3.0f));
     Gfx::ApplyUniformBlock(this->params);
-    Gfx::Draw();
+    Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     
@@ -172,19 +168,20 @@ NativeTextureApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 NativeTextureApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
+    return proj * modelTform;
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 NativeTextureApp::notSupported() {
     const char* msg = "This demo needs GL\n";
-    int x = (Gfx::DisplayAttrs().FramebufferWidth/16 - int(std::strlen(msg)))/2;
-    int y = Gfx::DisplayAttrs().FramebufferHeight/16/2;
-    Gfx::BeginPass(PassAction::Clear(glm::vec4(0.5f, 0.0f, 0.0f, 1.0f)));
+    int x = (Gfx::DisplayAttrs().Width/16 - int(std::strlen(msg)))/2;
+    int y = (Gfx::DisplayAttrs().Height/16)/2;
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.0f, 0.0f, 1.0f));
     Dbg::TextScale(2.0f, 2.0f);
     Dbg::CursorPos(uint8_t(x), uint8_t(y));
     Dbg::Print(msg);

@@ -21,13 +21,13 @@ inputMgrBase::~inputMgrBase() {
 
 //------------------------------------------------------------------------------
 void
-inputMgrBase::setup(const InputSetup& setup) {
+inputMgrBase::setup(const InputDesc& desc) {
     o_assert_dbg(!this->isValid());
     this->singleTapDetector.numRequiredTaps = 1;
-    this->doubleTapDetector.numRequiredTaps = 2;        
+    this->doubleTapDetector.numRequiredTaps = 2;
     this->valid = true;
-    this->inputSetup = setup;
-    for (const auto& item : setup.GamepadMappings) {
+    this->inputDesc = desc;
+    for (const auto& item : desc.gamepadMappings) {
         this->addGamepadMapping(item.Key(), item.Value());
     }
 }
@@ -74,7 +74,7 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
             this->touchpad.onTouchEvent(event.type, event.points[0].pos);
         }
         // panning detection
-        if (this->inputSetup.PanEnabled) {
+        if (this->inputDesc.panEnabled) {
             switch (this->panDetector.detect(event)) {
                 case gestureState::start:
                     this->touchpad.onPanningStarted(this->panDetector.position, this->panDetector.startPosition);
@@ -93,19 +93,19 @@ inputMgrBase::onTouchEvent(const touchEvent& event) {
             }
         }
         // tapping detection
-        if (this->inputSetup.TapEnabled) {
+        if (this->inputDesc.tapEnabled) {
             if (gestureState::action == this->singleTapDetector.detect(event)) {
                 this->touchpad.onTapped(this->singleTapDetector.position);
             }
         }
         // double tap detection
-        if (this->inputSetup.DoubleTapEnabled) {
+        if (this->inputDesc.doubleTapEnabled) {
             if (gestureState::action == this->doubleTapDetector.detect(event)) {
                 this->touchpad.onDoubleTapped(this->doubleTapDetector.position);
             }
         }
         // pinc detection
-        if (this->inputSetup.PinchEnabled) {
+        if (this->inputDesc.pinchEnabled) {
             switch (this->pinchDetector.detect(event)) {
                 case gestureState::start:
                     this->touchpad.onPinchingStarted(

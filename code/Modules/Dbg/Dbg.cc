@@ -18,10 +18,10 @@ namespace {
 
 //------------------------------------------------------------------------------
 void
-Dbg::Setup(const DbgSetup& setup) {
+Dbg::Setup(const DbgDesc& desc) {
     o_assert(!IsValid());
     state = Memory::New<_state>();
-    state->debugTextRenderer.setup(setup);
+    state->debugTextRenderer.setup(desc);
 }
 
 //------------------------------------------------------------------------------
@@ -88,10 +88,10 @@ Dbg::TextColor(const float (&c)[4]) {
 }
 //------------------------------------------------------------------------------
 void
-Dbg::DrawTextBuffer() {
+Dbg::DrawTextBuffer(int width, int height) {
     o_trace_scoped(Dbg_DrawTextBuffer);
     o_assert_dbg(IsValid());
-    state->debugTextRenderer.drawTextBuffer();
+    state->debugTextRenderer.drawTextBuffer(width, height);
 }
 
 } // namespace Oryol

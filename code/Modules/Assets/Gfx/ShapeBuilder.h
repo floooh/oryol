@@ -7,7 +7,9 @@
     @todo describe ShapeBuilder
 */
 #include "Assets/Gfx/MeshBuilder.h"
+#include "Core/String/StringAtom.h"
 #include "Core/Containers/Array.h"
+#include "Core/Containers/InlineArray.h"
 #include "glm/mat4x4.hpp"
 #include "glm/vec4.hpp"
 
@@ -15,18 +17,20 @@ namespace Oryol {
     
 class ShapeBuilder {
 public:
-    /// constructor
-    ShapeBuilder();
-    
-    /// read/write access to vertex layout
-    class VertexLayout Layout;
-    /// random-vertex-colors flag
-    bool RandomColors;
-    
+    /// declare position vertex components
+    ShapeBuilder& Positions(const StringAtom& name, VertexFormat::Code fmt);
+    /// declare normal vertex components
+    ShapeBuilder& Normals(const StringAtom& name, VertexFormat::Code fmt);
+    /// declare texture coords vertex components
+    ShapeBuilder& TexCoords(const StringAtom& name, VertexFormat::Code fmt);
+    /// declare color 
+    ShapeBuilder& Colors(const StringAtom& name, VertexFormat::Code fmt);
+    /// enable random vertex colors
+    ShapeBuilder& RandomColors(bool b);
     /// put new transform
     ShapeBuilder& Transform(const glm::mat4& t);
-    /// put new color
-    ShapeBuilder& Color(const glm::vec4& c);
+    /// put a new vertex color
+    ShapeBuilder& VertexColor(const glm::vec4& c);
     /// add a box shape
     ShapeBuilder& Box(float w, float h, float d, int tiles, bool buildPrimGroup=true);
     /// add a sphere shape
@@ -37,9 +41,17 @@ public:
     ShapeBuilder& Torus(float ringRadius, float radius, int sides, int rings, bool builPrimGroup=true);
     /// add a plane
     ShapeBuilder& Plane(float w, float d, int tiles, bool buildPrimGroup=true);
-    
+
+    /// result struct
+    struct Result {
+        BufferDesc VertexBufferDesc;
+        BufferDesc IndexBufferDesc;
+        struct PipelineDesc PipelineDesc;
+        MemoryBuffer Data;
+        Array<PrimitiveGroup> PrimitiveGroups;
+    };
     /// build geometry and clear object state
-    SetupAndData<MeshSetup> Build();
+    Result Build();
     
 private:
     enum ShapeType {
@@ -63,29 +75,27 @@ private:
         int numTris;
     };
 
-    /// update number of vertices and triangles in shape
-    void UpdateNumElements(ShapeData& shapeData);
-    /// helper method: build vertex colors
-    void BuildVertexColors(const ShapeData& shape, int startVertexIndex);
-    /// build box vertices and indices
-    void BuildBox(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build sphere vertices and indices
-    void BuildSphere(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build cylinder vertices and indices
-    void BuildCylinder(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build torus vertices and indices
-    void BuildTorus(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build plane vertices and indices
-    void BuildPlane(const ShapeData& shape, int curVertexIndex, int curTriIndex);
-    /// build a primitive group
+    void updateNumElements(ShapeData& shapeData);
+    void buildVertexColors(MeshBuilder& mb, const ShapeData& shape, int startVertexIndex);
+    void buildBox(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildSphere(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildCylinder(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildTorus(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
+    void buildPlane(MeshBuilder& mb, const ShapeData& shape, int curVertexIndex, int curTriIndex);
     void buildPrimitiveGroup();
-    
-    int curPrimGroupBaseElement;
-    int curPrimGroupNumElements;
+
+    bool randomColors = false;
+    int curPrimGroupBaseElement = 0;
+    int curPrimGroupNumElements = 0;
+    int posIndex = InvalidIndex;
+    int normalIndex = InvalidIndex;
+    int texCoordIndex = InvalidIndex;
+    int colorIndex = InvalidIndex;
     glm::mat4 transform;
-    glm::vec4 color;
+    glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     Array<ShapeData> shapes;
-    MeshBuilder meshBuilder;
+    Array<PrimitiveGroup> primGroups;
+    VertexLayout layout;
 };
-    
+
 } // namespace Oryol

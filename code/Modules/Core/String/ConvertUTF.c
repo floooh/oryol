@@ -20,6 +20,10 @@
  * remains attached.
  */
 
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
+
 /* ---------------------------------------------------------------------
 
     Conversions between UTF32, UTF-16, and UTF-8. Source code file.

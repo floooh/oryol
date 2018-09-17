@@ -30,7 +30,7 @@ fips_begin_module(Core)
         Array.h
         ArrayMap.h
         Slice.h
-        Buffer.h
+        MemoryBuffer.h
         HashSet.h
         KeyValuePair.h
         Map.h
@@ -118,7 +118,7 @@ fips_begin_unittest(Core)
         SliceTest.cc
         InlineArrayTest.cc
         StackTraceTest.cc
-        BufferTest.cc
+        MemoryBufferTest.cc
         ArgsTest.cc
         ArrayTest.cc
         StaticArrayTest.cc

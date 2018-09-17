@@ -37,9 +37,7 @@ public:
     DrawState updParticles;
     DrawState drawParticles;
 
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 model;
+    PrimitiveGroup shapePrimGroup;
     int frameCount = 0;
     TimePoint lastFrameTimePoint;
     int curNumParticles = 0;
@@ -54,7 +52,10 @@ OryolMain(GPUParticlesApp);
 AppState::Code
 GPUParticlesApp::OnInit() {
     // setup rendering system
-    Gfx::Setup(GfxSetup::Window(800, 500, "Oryol GPU Particles Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(800).Height(500)
+        .Title("Oryol GPU Particles Sample")
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
 
     // check required extensions
@@ -77,70 +78,71 @@ GPUParticlesApp::OnInit() {
     // - 1 particle-rendering draw state
     
     // the 2 ping/pong particle state textures and render passes
-    auto particleTextureSetup = TextureSetup::RenderTarget2D(ParticleBufferWidth, ParticleBufferHeight, PixelFormat::RGBA32F);
-    particleTextureSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
-    particleTextureSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
     for (int i = 0; i < 2; i++) {
-        this->particleBuffer[i].texture = Gfx::CreateResource(particleTextureSetup);
-        auto particlePassSetup = PassSetup::From(this->particleBuffer[i].texture);
-        particlePassSetup.DefaultAction.DontCareColor(0);
-        this->particleBuffer[i].pass = Gfx::CreateResource(particlePassSetup);
+        this->particleBuffer[i].texture = Gfx::CreateTexture(TextureDesc()
+            .RenderTarget(true)
+            .Width(ParticleBufferWidth)
+            .Height(ParticleBufferHeight)
+            .Format(PixelFormat::RGBA32F)
+            .MinFilter(TextureFilterMode::Nearest)
+            .MagFilter(TextureFilterMode::Nearest));
+        this->particleBuffer[i].pass = Gfx::CreatePass(PassDesc()
+            .ColorAttachment(0, this->particleBuffer[i].texture));
     }
 
     // a fullscreen mesh for the particle init- and update-shaders
-    auto quadSetup = MeshSetup::FullScreenQuad(Gfx::QueryFeature(GfxFeature::OriginTopLeft));
-    Id quadMesh = Gfx::CreateResource(quadSetup);
-    this->initParticles.Mesh[0] = quadMesh;
-    this->updParticles.Mesh[0] = quadMesh;
+    const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
+    Id quadVbuf = Gfx::CreateBuffer(BufferDesc()
+        .Size(sizeof(quadVertices))
+        .Content(quadVertices));
+    this->initParticles.VertexBuffers[0] = quadVbuf;
+    this->updParticles.VertexBuffers[0] = quadVbuf;
 
     // particle initialization and update resources
-    Id initShader = Gfx::CreateResource(InitShader::Setup());
-    Id updShader = Gfx::CreateResource(UpdateShader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(quadSetup.Layout, initShader);
-    ps.BlendState.ColorFormat = particleTextureSetup.ColorFormat;
-    ps.BlendState.DepthFormat = particleTextureSetup.DepthFormat;
-    this->initParticles.Pipeline = Gfx::CreateResource(ps);
-    ps.Shader = updShader;
-    ps.RasterizerState.ScissorTestEnabled = true;
-    this->updParticles.Pipeline = Gfx::CreateResource(ps);
+    PipelineDesc particlePipDesc = PipelineDesc()
+        .Layout(0, { { "in_pos", VertexFormat::Float2 } })
+        .PrimitiveType(PrimitiveType::TriangleStrip)
+        .ColorFormat(PixelFormat::RGBA32F)
+        .DepthFormat(PixelFormat::None);
+    this->initParticles.Pipeline = Gfx::CreatePipeline(PipelineDesc(particlePipDesc)
+        .Shader(Gfx::CreateShader(InitShader::Desc())));
+    this->updParticles.Pipeline = Gfx::CreatePipeline(PipelineDesc(particlePipDesc)
+        .Shader(Gfx::CreateShader(UpdateShader::Desc())));
 
     // the static geometry of a single particle is at mesh slot 0
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->drawParticles.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
+    auto shape = ShapeBuilder()
+        .RandomColors(true)
+        .Positions("in_pos", VertexFormat::Float3)
+        .Colors("in_color", VertexFormat::Float4)
+        .Transform(rot90)
+        .Sphere(0.05f, 3, 2)
+        .Build();
+    this->shapePrimGroup = shape.PrimitiveGroups[0];
+    this->drawParticles.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawParticles.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
-    // a instancing vertex buffer with the particleIds at mesh slot 1
-    const int particleIdSize = MaxNumParticles * sizeof(float);
-    float* particleIdData = (float*) Memory::Alloc(particleIdSize);
-    for (int i = 0; i < MaxNumParticles; i++) {
-        particleIdData[i] = (float) i;
+    // a instancing vertex buffer with the particleIds at vertex buffer slot 1
+    {
+        const int particleIdSize = MaxNumParticles * sizeof(float);
+        float* particleIdData = (float*) Memory::Alloc(particleIdSize);
+        for (int i = 0; i < MaxNumParticles; i++) {
+            particleIdData[i] = (float) i;
+        }
+        this->drawParticles.VertexBuffers[1] = Gfx::CreateBuffer(BufferDesc()
+            .Size(particleIdSize)
+            .Content(particleIdData));
+        Memory::Free(particleIdData);
     }
-    auto particleIdSetup = MeshSetup::FromData(Usage::Immutable);
-    particleIdSetup.NumVertices = MaxNumParticles;
-    particleIdSetup.Layout.EnableInstancing().Add(VertexAttr::Instance0, VertexFormat::Float);
-    this->drawParticles.Mesh[1] = Gfx::CreateResource(particleIdSetup, particleIdData, particleIdSize);
-    Memory::Free(particleIdData);
-    
-    // particle rendering texture blocks and draw state
-    Id drawShader = Gfx::CreateResource(DrawShader::Setup());
-    ps = PipelineSetup::FromShader(drawShader);
-    ps.Layouts[0] = shapeBuilder.Layout;
-    ps.Layouts[1] = particleIdSetup.Layout;
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Less;
-    this->drawParticles.Pipeline = Gfx::CreateResource(ps);
 
-    // the static projection matrix
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 50.0f);
+    // ...and the pipeline object for instanced particle rendering
+    this->drawParticles.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(DrawShader::Desc()))
+        .Layout(1, VertexLayout().EnableInstancing()
+            .Add("in_particleId", VertexFormat::Float))
+        .CullFaceEnabled(true)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual));
 
     // setup initial shader params
     const glm::vec2 bufferDims(ParticleBufferWidth, ParticleBufferHeight);
@@ -150,10 +152,10 @@ GPUParticlesApp::OnInit() {
 
     // 'draw' the initial particle state (positions at origin, pseudo-random velocity)
     for (int i = 0; i < 2; i++) {
-        Gfx::BeginPass(this->particleBuffer[0].pass);
+        Gfx::BeginPass(this->particleBuffer[0].pass, PassAction().DontCare());
         Gfx::ApplyDrawState(this->initParticles);
         Gfx::ApplyUniformBlock(this->initFSParams);
-        Gfx::Draw();
+        Gfx::Draw(0, 4);
         Gfx::EndPass();
     }
 
@@ -186,11 +188,11 @@ GPUParticlesApp::OnRunning() {
     const int scissorHeight = (this->curNumParticles / NumParticlesX) + 1;
     this->updParticles.FSTexture[UpdateShader::prevState] = this->particleBuffer[readIndex].texture;
     this->updFSParams.numParticles = (float) this->curNumParticles;
-    Gfx::BeginPass(this->particleBuffer[drawIndex].pass);
+    Gfx::BeginPass(this->particleBuffer[drawIndex].pass, PassAction().DontCare());
     Gfx::ApplyScissorRect(0, 0, ParticleBufferWidth, scissorHeight, Gfx::QueryFeature(GfxFeature::OriginTopLeft));
     Gfx::ApplyDrawState(this->updParticles);
     Gfx::ApplyUniformBlock(this->updFSParams);
-    Gfx::Draw();
+    Gfx::Draw(0, 4);
     Gfx::EndPass();
     
     // now the actual particle shape rendering:
@@ -200,13 +202,13 @@ GPUParticlesApp::OnRunning() {
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->drawParticles);
     Gfx::ApplyUniformBlock(this->drawVSParams);
-    Gfx::Draw(0, this->curNumParticles);
+    Gfx::Draw(this->shapePrimGroup, this->curNumParticles);
     Dbg::DrawTextBuffer();
     Gfx::EndPass();
     Gfx::CommitFrame();
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
-    Dbg::PrintF("\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
+    Dbg::PrintF("\n\n\n\n\n %d instances\n\r frame=%.3fms", this->curNumParticles, frameTime.AsMilliSeconds());
     
     // continue running or quit?
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
@@ -217,8 +219,9 @@ void
 GPUParticlesApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->drawVSParams.mvp = this->proj * this->view * this->model;
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 50.0f);
+    glm::mat4 view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    this->drawVSParams.mvp = proj * view;
 }
 
 //------------------------------------------------------------------------------

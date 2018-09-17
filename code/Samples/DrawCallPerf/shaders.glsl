@@ -9,12 +9,12 @@ uniform perFrameParams {
 uniform perParticleParams {
     vec4 translate;
 };
-in vec4 position;
-in vec4 color0;
+in vec4 in_pos;
+in vec4 in_color;
 out vec4 color;
 void main() {
-    gl_Position = mvp * (position + translate);
-    color = color0;
+    gl_Position = mvp * (in_pos + translate);
+    color = in_color;
 }
 @end
 

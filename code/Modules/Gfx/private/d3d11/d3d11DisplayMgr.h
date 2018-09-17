@@ -5,19 +5,30 @@
     @ingroup _priv
     @brief display manager implementation for D3D11
 */
-#include "Gfx/private/win/winDisplayMgr.h"
-#include "Gfx/private/d3d11/d3d11_decl.h"
+#include "Gfx/private/d3d11/winDisplayMgr.h"
+
+// d3d11 forward declarations
+struct IDXGISwapChain;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3D11Texture2D;
+struct ID3D11RenderTargetView;
+struct ID3D11DepthStencilView;
 
 namespace Oryol {
 namespace _priv {
 
 class d3d11DisplayMgr : public winDisplayMgr {
 public:
+    /// constructor
+    d3d11DisplayMgr();
     /// destructor
     ~d3d11DisplayMgr();
+    /// static singleton ptr
+    static d3d11DisplayMgr* ptr;
 
     /// setup the display system, must happen before rendering
-    void SetupDisplay(const GfxSetup& gfxSetup, const gfxPointers& ptrs);
+    void SetupDisplay(const GfxDesc& desc);
     /// discard the display, rendering cannot happen after
     void DiscardDisplay();
     /// present the current rendered frame
@@ -37,6 +48,15 @@ public:
     ID3D11Texture2D* d3d11DepthStencilBuffer = nullptr;
     /// pointer to default default depth/stencil view
     ID3D11DepthStencilView* d3d11DepthStencilView = nullptr;
+
+    /// static callback function to get current render-target-view as void*
+    static const void* d3d11GetRenderTargetView() {
+        return d3d11DisplayMgr::ptr->d3d11RenderTargetView;
+    }
+    /// static callback function to get current depth-stencil view as void*
+    static const void* d3d11GetDepthStencilView() {
+        return d3d11DisplayMgr::ptr->d3d11DepthStencilView;
+    }
 
     /// create swap chain and d3d device
     void createDeviceAndSwapChain();

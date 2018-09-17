@@ -37,8 +37,8 @@ raspiInputMgr::~raspiInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-raspiInputMgr::setup(const InputSetup& setup) {
-    inputMgrBase::setup(setup);
+raspiInputMgr::setup(const InputDesc& desc) {
+    inputMgrBase::setup(desc);
     if (this->openDevices()) {
         if (-1 != this->kbdFd) {
             this->keyboard.attached = true;

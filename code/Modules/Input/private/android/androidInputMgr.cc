@@ -34,16 +34,16 @@ androidInputMgr::~androidInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-androidInputMgr::setup(const InputSetup& setup) {
+androidInputMgr::setup(const InputDesc& desc) {
     Log::Info("androidInputMgr::setup called!\n");
 
     if (!Gfx::IsValid()) {
         o_error("androidInputMgr: Gfx::Setup() must be called before Input::Setup!\n");
         return;
     }
-    this->highDPI = Gfx::GfxSetup().HighDPI;
+    this->highDPI = Gfx::Desc().HighDPI();
 
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->touchpad.attached = true;
     this->sensors.attached = true;
     OryolAndroidAppState->onInputEvent = androidInputMgr::onInputEvent;
@@ -128,7 +128,7 @@ androidInputMgr::onSensorEvent(const ASensorEvent* event) {
 
     switch (event->type) {
         case ASENSOR_TYPE_ACCELEROMETER:
-            if (self->inputSetup.AccelerometerEnabled) {
+            if (self->inputDesc.accelerometerEnabled) {
                 // NOTE: x and y are swapped because the default orientation is landscape
                 self->sensors.acceleration.x = event->acceleration.y;
                 self->sensors.acceleration.y = -event->acceleration.x;
@@ -141,7 +141,7 @@ androidInputMgr::onSensorEvent(const ASensorEvent* event) {
             /*
         case ASENSOR_TYPE_GAME_ROTATION_VECTOR:
             // FIXME FIXME FIXME: this doesn't seem to work!
-            if (self->inputSetup.GyrometerEnabled) {
+            if (self->inputDesc.gyrometerEnabled) {
                 glm::vec3 axis(event->vector.x, event->vector.y, event->vector.z);
                 float mag = glm::length(axis);
                 glm::quat q(glm::cos(mag), event->vector.x, event->vector.y, event->vector.z);

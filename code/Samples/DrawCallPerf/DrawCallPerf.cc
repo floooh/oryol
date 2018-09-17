@@ -25,10 +25,8 @@ public:
     void emitParticles();
     void updateParticles();
 
+    PrimitiveGroup primGroup;
     DrawState drawState;
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 model;
     Shader::perFrameParams perFrameParams;
     Shader::perParticleParams perParticleParams;
     bool updateEnabled = true;
@@ -48,35 +46,32 @@ OryolMain(DrawCallPerfApp);
 AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
-    GfxSetup gfxSetup = GfxSetup::Window(800, 500, "Oryol DrawCallPerf Sample");
-    gfxSetup.GlobalUniformBufferSize = 1024 * 1024 * 32;
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc()
+        .Width(800)
+        .Height(500)
+        .Title("Oryol DrawCallPerf Sample")
+        .GlobalUniformBufferSize(1024 * 1024 * 32)
+        .HtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
 
     // create resources
     const glm::mat4 rot90 = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.RandomColors = true;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
-    };
-    shapeBuilder.Transform(rot90).Sphere(0.05f, 3, 2);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
-    
-    // setup projection and view matrices
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::lookAt(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->model = glm::mat4();
+    auto shape = ShapeBuilder()
+        .RandomColors(true)
+        .Positions("in_pos", VertexFormat::Float3)
+        .Colors("in_color", VertexFormat::Float4)
+        .Transform(rot90)
+        .Sphere(0.05f, 3, 2)
+        .Build();
+    this->primGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .CullFaceEnabled(true)
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual));
     
     return App::OnInit();
 }
@@ -107,7 +102,7 @@ DrawCallPerfApp::OnRunning() {
     for (int i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.translate = this->particles[i].pos;
         Gfx::ApplyUniformBlock(this->perParticleParams);
-        Gfx::Draw();
+        Gfx::Draw(this->primGroup);
     }
     drawTime = Clock::Since(drawStart);
     
@@ -122,7 +117,7 @@ DrawCallPerfApp::OnRunning() {
     
     Duration frameTime = Clock::LapTime(this->lastFrameTimePoint);
     Dbg::TextColor(1.0f, 1.0f, 0.0f, 1.0f);
-    Dbg::PrintF("\n %d draws\n\r upd=%.3fms\n\r applyRt=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
+    Dbg::PrintF("\n\n\n\n\n %d draws\n\r upd=%.3fms\n\r applyRt=%.3fms\n\r draw=%.3fms\n\r frame=%.3fms\n\r"
                 " LMB/tap: toggle particle update",
                 this->curNumParticles,
                 updTime.AsMilliSeconds(),
@@ -140,8 +135,9 @@ void
 DrawCallPerfApp::updateCamera() {
     float angle = this->frameCount * 0.01f;
     glm::vec3 pos(glm::sin(angle) * 10.0f, 2.5f, glm::cos(angle) * 10.0f);
-    this->view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    this->perFrameParams.mvp = this->proj * this->view * this->model;
+    glm::mat4 view = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
+    this->perFrameParams.mvp = proj * view;
 }
 
 //------------------------------------------------------------------------------

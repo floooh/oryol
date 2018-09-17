@@ -10,7 +10,7 @@
 #include "Core/String/StringBuilder.h"
 #include "Gfx/Gfx.h"
 #include "Dbg/DbgTypes.h"
-#include <cstdarg>
+#include <stdarg.h>
 
 namespace Oryol {
 namespace _priv {
@@ -20,7 +20,7 @@ public:
     ~debugTextRenderer();
 
     /// setup the text renderer
-    void setup(const DbgSetup& setup);
+    void setup(const DbgDesc& desc);
     /// discard the text renderer
     void discard();
     /// return true if the text renderer has been setup
@@ -37,13 +37,9 @@ public:
     /// change text color
     void textColor(float r, float g, float b, float a);
     /// draw the accumulated text
-    void drawTextBuffer();
-    /// setup the font texture
-    void setupFontTexture();
+    void drawTextBuffer(int width, int height);
     /// setup the text dynamic mesh
-    void setupMesh();
-    /// setup the text pipeline state object (happens deferred)
-    void  setupPipeline();
+    void setupResources(const DbgDesc& desc);
     /// convert the provides string object into vertices, and return number of vertices
     void convertStringToVertices(const String& str);
     /// write one glyph vertex, returns next vertex index

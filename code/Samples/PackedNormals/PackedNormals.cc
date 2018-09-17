@@ -16,13 +16,11 @@ public:
     AppState::Code OnRunning();
     AppState::Code OnInit();
     AppState::Code OnCleanup();
-
     glm::mat4 computeMVP(const glm::vec3& pos);
 
+    Array<PrimitiveGroup> primGroups;
     DrawState drawState;
     Shader::params params;
-    glm::mat4 view;
-    glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -31,32 +29,31 @@ OryolMain(PackedNormalsApp);
 //------------------------------------------------------------------------------
 AppState::Code
 PackedNormalsApp::OnInit() {
-    Gfx::Setup(GfxSetup::WindowMSAA4(600, 400, "Oryol Packed Normals Sample"));
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400)
+        .SampleCount(4)
+        .Title("Oryol Packed Normals Sample")
+        .HtmlTrackElementSize(true));
 
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Normal, VertexFormat::Byte4N }
-    };
-    shapeBuilder.Box(1.0f, 1.0f, 1.0f, 4)
+    auto shapes = ShapeBuilder()
+        .Positions("position", VertexFormat::Float3)
+        .Normals("normal", VertexFormat::Byte4N)
+        .Box(1.0f, 1.0f, 1.0f, 4)
         .Sphere(0.75f, 36, 20)
         .Cylinder(0.5f, 1.5f, 36, 10)
         .Torus(0.3f, 0.5f, 20, 36)
-        .Plane(1.5f, 1.5f, 10);
-    this->drawState.Mesh[0] = Gfx::CreateResource(shapeBuilder.Build());
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(shapeBuilder.Layout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.CullFaceEnabled = true;
-    ps.RasterizerState.SampleCount = 4;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+        .Plane(1.5f, 1.5f, 10)
+        .Build();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .CullFaceEnabled(true)
+        .SampleCount(4));
+    this->primGroups = std::move(shapes.PrimitiveGroups);
 
-    float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    
     return App::OnInit();
 }
 
@@ -80,7 +77,7 @@ PackedNormalsApp::OnRunning() {
     for (const auto& pos : positions) {
         this->params.mvp = this->computeMVP(pos);
         Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw(primGroupIndex++);
+        Gfx::Draw(this->primGroups[primGroupIndex++]);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();
@@ -98,8 +95,9 @@ PackedNormalsApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 PackedNormalsApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
+    return proj * modelTform;
 }

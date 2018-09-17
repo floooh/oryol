@@ -19,7 +19,7 @@ public:
     ~iosInputMgr();
     
     /// setup the object
-    void setup(const InputSetup& setup);
+    void setup(const InputDesc& desc);
     /// discard the object
     void discard();
     

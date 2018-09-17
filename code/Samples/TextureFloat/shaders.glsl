@@ -77,12 +77,11 @@ float snoise(vec2 v)
 
 //------------------------------------------------------------------------------
 @vs offscreenVS
-in vec4 position;
-in vec2 texcoord0;
+in vec2 in_pos;
 out vec2 uv;
 void main() {
-    gl_Position = position;
-    uv = texcoord0;
+    gl_Position = vec4(in_pos*2.0-1.0, 0.5f, 1.0f);
+    uv = in_pos;
 }
 @end
 
@@ -125,12 +124,11 @@ void main() {
 //  Copy offscreen render target to back buffer
 //
 @vs copyVS
-in vec4 position;
-in vec2 texcoord0;
+in vec2 in_pos;
 out vec2 uv;
 void main() {
-    gl_Position = position;
-    uv = texcoord0;
+    gl_Position = vec4(in_pos*2.0-1.0, 0.5f, 1.0f);
+    uv = in_pos;
 }
 @end
 

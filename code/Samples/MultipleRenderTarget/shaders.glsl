@@ -4,13 +4,13 @@
 uniform vsParams {
     mat4 mvp;
 };
-in vec4 position;
-in vec4 normal;
+in vec4 in_pos;
+in vec4 in_normal;
 out vec4 nrm;
 
 void main() {
-    gl_Position = mvp * position;
-    nrm = normal;
+    gl_Position = mvp * in_pos;
+    nrm = in_normal;
 }
 @end
 
@@ -31,12 +31,11 @@ void main() {
 
 //------------------------------------------------------------------------------
 @vs quadVS
-in vec4 position;
-in vec2 texcoord0;
+in vec2 in_pos;
 out vec2 uv;
 void main() {
-    gl_Position = position;
-    uv = texcoord0;
+    gl_Position = vec4(in_pos*2.0-1.0, 0.5f, 1.0f);
+    uv = in_pos;
 }
 @end
 
@@ -58,18 +57,18 @@ uniform vsParams {
     vec2 offsets;
 };
 
-in vec4 position;
-in vec4 normal;
-in vec2 texcoord0;
+in vec4 in_pos;
+in vec4 in_normal;
+in vec2 in_uv;
 out vec2 uvRed;
 out vec2 uvGreen;
 out vec2 uvBlue;
 
 void main() {
-    gl_Position = mvp * position;
-    uvRed = texcoord0 + vec2(offsets.x, 0.0);
-    uvGreen = texcoord0 + vec2(0.0, offsets.y);
-    uvBlue = texcoord0;
+    gl_Position = mvp * in_pos;
+    uvRed = in_uv + vec2(offsets.x, 0.0);
+    uvGreen = in_uv + vec2(0.0, offsets.y);
+    uvBlue = in_uv;
 }
 @end
 

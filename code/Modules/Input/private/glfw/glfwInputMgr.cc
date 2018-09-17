@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 #include "Pre.h"
 #include "glfwInputMgr.h"
-#include "Gfx/private/glfw/glfwDisplayMgr.h"
+#include "Gfx/private/gl/glfwDisplayMgr.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
 #include "GLFW/glfw3.h"
@@ -31,10 +31,10 @@ glfwInputMgr::~glfwInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-glfwInputMgr::setup(const InputSetup& setup) {
+glfwInputMgr::setup(const InputDesc& desc) {
     
     this->setupGamepadMappings();   // must be called before parent class!
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->keyboard.attached = true;
     this->mouse.attached = true;
     

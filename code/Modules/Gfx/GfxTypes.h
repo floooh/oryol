@@ -2,16 +2,136 @@
 //------------------------------------------------------------------------------
 #include "Core/Types.h"
 #include "Core/Assertion.h"
-#include "Core/String/String.h"
 #include "Core/String/StringAtom.h"
 #include "Resource/Id.h"
 #include "Resource/Locator.h"
 #include "Core/Containers/StaticArray.h"
-#include "Gfx/GfxConfig.h"
+#include "Core/Containers/MemoryBuffer.h"
 #include "glm/vec4.hpp"
 #include <initializer_list>
+#include <functional>
 
 namespace Oryol {
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxConfig
+    @ingroup Gfx
+    @brief central configuration constants of the Gfx module
+*/
+namespace GfxConfig {
+    /// default resource pool size
+    constexpr int DefaultResourcePoolSize = 128;
+    /// default uniform buffer size (only relevant on some platforms)
+    constexpr int DefaultGlobalUniformBufferSize = 4 * 1024 * 1024;
+    /// max number of input vertex buffers
+    constexpr int MaxNumVertexBuffers = 4;
+    /// maximum number of textures on vertex shader stage
+    constexpr int MaxNumVertexTextures = 4;
+    /// maximum number of textures on fragment shader stage
+    constexpr int MaxNumFragmentTextures = 12;
+    /// max number of uniform blocks per stage
+    constexpr int MaxNumUniformBlocksPerStage = 4;
+    /// max number of textures on any stage
+    constexpr int MaxNumShaderTextures = MaxNumVertexTextures>MaxNumFragmentTextures?MaxNumVertexTextures:MaxNumFragmentTextures;
+    /// max number of texture faces
+    constexpr int MaxNumTextureFaces = 6;
+    /// max number of texture mipmaps
+    constexpr int MaxNumTextureMipMaps = 12;
+    /// maximum number of components in vertex layout
+    constexpr int MaxNumVertexLayoutComponents = 16;
+    /// maximum number of in-flight frames (not used by all platforms)
+    constexpr int MaxInflightFrames = 2;
+    /// maximum number of render pass color attachments
+    constexpr int MaxNumColorAttachments = 4;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxFeature
+    @ingroup Gfx
+    @brief optional rendering features
+*/
+struct GfxFeature {
+    enum Code {
+        TextureCompressionDXT = 0,  ///< GPU supports DXT compressed textures
+        TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
+        TextureCompressionATC,      ///< GPU supports ATC compressed textures
+        TextureCompressionETC2,     ///< GPU supports ETC2 compressed textures (OpenGLES3)
+        TextureFloat,               ///< support for float textures
+        TextureHalfFloat,           ///< support for half-float textures
+        Instancing,                 ///< supports hardware-instanced rendering
+        OriginBottomLeft,           ///< image space origin is bottom-left (GL-style)
+        OriginTopLeft,              ///< image space origin is top-left (D3D-style)
+        MSAARenderTargets,          ///< MSAA support in offscreen-render-targets
+        PackedVertexFormat_10_2,    ///< support for 10.10.10.2 bit packed vertex formats
+        MultipleRenderTarget,       ///< support for MRT offscreen rendering
+        Texture3D,                  ///< support for 3D textures
+        TextureArray,               ///< support for array textures
+
+        Num,
+        Invalid
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxResourceType
+    @ingroup Gfx
+    @brief Gfx module resource types
+
+    These types are used for the type in Id for Gfx module
+    resources.
+*/
+struct GfxResourceType {
+    enum Code {
+        Texture,            ///< a texture
+        Buffer,             ///< a vertex- or index-buffer
+        Shader,             ///< a shader
+        Pipeline,           ///< a pipeline state object
+        Pass,               ///< a render-pass object
+
+        Num,
+        Invalid,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::Usage
+    @ingroup Gfx
+    @brief graphics resource usage types
+
+    - Immutable:    requires initialization data
+    - Dynamic:      update infrequently
+    - Stream:       changed every frame
+*/
+struct Usage {
+    enum Code {
+        Immutable = 0,
+        Dynamic,
+        Stream,
+
+        Num,
+        Invalid,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::BufferType
+    @ingroup Gfx
+    @brief whether a Buffer contains vertex- or index-data
+*/
+struct BufferType {
+    enum Code {
+        VertexBuffer = 0,
+        IndexBuffer,
+
+        Num,
+        Invalid
+    };
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -19,15 +139,14 @@ namespace Oryol {
     @ingroup Gfx
     @brief selects 16- or 32-bit indices
 */
-class IndexType {
-public:
+struct IndexType {
     enum Code {
         None = 0,
-        Index16,
-        Index32,
+        UInt16,
+        UInt32,
 
-        NumIndexTypes,
-        InvalidIndexType = 0xFFFFFFFF
+        Num,
+        Invalid
     };
     /// get byte size of index type
     static int ByteSize(IndexType::Code c);
@@ -39,18 +158,17 @@ public:
     @ingroup Gfx
     @brief RGBA/Depth/Stencil channel bits and combinations
  */
-class PixelChannel {
-public:
-    typedef uint64_t Mask;
+struct PixelChannel {
+    typedef uint8_t Mask;
     enum Bits {
         None    = 0,
 
-        Stencil = (1<<5),
-        Depth   = (1<<4),
-        Red     = (1<<3),
-        Green   = (1<<2),
-        Blue    = (1<<1),
-        Alpha   = (1<<0),
+        Red     = (1<<0),
+        Green   = (1<<1),
+        Blue    = (1<<2),
+        Alpha   = (1<<3),
+        Stencil = (1<<4),
+        Depth   = (1<<5),
 
         DepthStencil = Depth|Stencil,
         DS = DepthStencil,
@@ -86,13 +204,8 @@ public:
     @ingroup Gfx
     @brief enum of pixel formats
 */
-class PixelFormat {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64_t {
-    #else
+struct PixelFormat {
     enum Code {
-    #endif
         RGBA8,          ///< 32-bit wide, 4 channels @ 8-bit
         RGB8,           ///< 24-bit wide, 3 channels @ 8-bit
         RGBA4,          ///< 16-bit wide, 4 channels @ 4-bit
@@ -117,9 +230,9 @@ public:
         ETC2_RGB8,      ///< ETC2 compressed format (RGB8)
         ETC2_SRGB8,     ///< ETC2 compressed format (SRGB8)
 
-        NumPixelFormats,            ///< number of pixel formats
-        InvalidPixelFormat,         ///< invalid pixel format value
-        None = InvalidPixelFormat,  ///< special "none" type
+        Num,            ///< number of pixel formats
+        Invalid,        ///< invalid pixel format value
+        None = Invalid,     ///< special "none" type
     };
 
     /// return true for valid render target color formats
@@ -160,8 +273,7 @@ public:
     @ingroup Gfx
     @brief primitive type enum (triangle strips, lists, etc...)
 */
-class PrimitiveType {
-public:
+struct PrimitiveType {
     /// primitive type enum (don't change order, append to end!)
     enum Code {
         Points = 0,
@@ -170,34 +282,8 @@ public:
         Triangles,
         TriangleStrip,
 
-        NumPrimitiveTypes,
-        InvalidPrimitiveType = 0xFFFFFFFF,
-    };
-    /// convert primitive type to string
-    static const char* ToString(PrimitiveType::Code c);
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::GfxResourceType
-    @ingroup Gfx
-    @brief Gfx module resource types
-
-    These types are used for the type in Id for Gfx module
-    resources.
-*/
-class GfxResourceType {
-public:
-    /// type enum
-    enum Code {
-        Texture,            ///< a texture
-        Mesh,               ///< a mesh
-        Shader,             ///< a shader
-        Pipeline,           ///< a pipeline state object
-        RenderPass,         ///< a render-pass object
-
-        NumResourceTypes,
-        InvalidResourceType = 0xFFFF,
+        Num,
+        Invalid
     };
 };
 
@@ -207,38 +293,13 @@ public:
     @ingroup Gfx
     @brief the shader stages (vertex shader, fragment shader)
 */
-class ShaderStage {
-public:
-    /// shader stages enum
+struct ShaderStage {
     enum Code {
         VS = 0,
         FS,
 
-        NumShaderStages,
-        InvalidShaderStage = 0xFFFFFFFF,
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::TextureFilterMode
-    @ingroup Gfx
-    @brief texture sampling filter mode
-*/
-class TextureFilterMode {
-public:
-    /// filtering modes
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
-    enum Code {
-    #endif
-        Nearest,
-        Linear,
-        NearestMipmapNearest,
-        NearestMipmapLinear,
-        LinearMipmapNearest,
-        LinearMipmapLinear,
+        Num,
+        Invalid
     };
 };
 
@@ -248,17 +309,35 @@ public:
     @ingroup Gfx
     @brief texture type (2D, 3D, Cube)
 */
-class TextureType {
-public:
-    /// texture type enum
+struct TextureType {
     enum Code {
         Texture2D = 0,
         TextureCube,
         Texture3D,
         TextureArray,
 
-        NumTextureTypes,
-        InvalidTextureType = 0xFFFFFFFF,
+        Num,
+        Invalid,
+    };
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::TextureFilterMode
+    @ingroup Gfx
+    @brief texture sampling filter mode
+*/
+struct TextureFilterMode {
+    enum Code {
+        Nearest = 0,
+        Linear,
+        NearestMipmapNearest,
+        NearestMipmapLinear,
+        LinearMipmapNearest,
+        LinearMipmapLinear,
+
+        Num,
+        Invalid,
     };
 };
 
@@ -268,84 +347,15 @@ public:
     @ingroup Gfx
     @brief texture coordinate wrapping modes
 */
-class TextureWrapMode {
-public:
-    /// wrap modes
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct TextureWrapMode {
     enum Code {
-    #endif
         ClampToEdge,
         Repeat,
         MirroredRepeat,
+
+        Num,
+        Invalid,
     };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::Usage
-    @ingroup Gfx
-    @brief graphics resource usage types
-
-    - Immutable:    requires initialization data
-    - Dynamic:      update infrequently
-    - Stream:       changed every frame
-*/
-class Usage {
-public:
-    /// usage enum
-    enum Code {
-        Immutable = 0,
-        Dynamic,
-        Stream,
-
-        NumUsages,
-        InvalidUsage = 0xFFFFFFFF,
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::VertexAttr
-    @ingroup Gfx
-    @brief vertex attribute enum (position, texcoord, ...)
-
-    The VertexAttr definitions don't have a hardwired meaning, they just
-    exist to make the binding of vertex components (living in vertex buffers)
-    to vertex attribute definition in vertex shaders easier to understand.
-    The maximum number of vertex attributes should not exceed 16
-    (this is the GL_MAX_VERTEX_ATTRIBS value).
-*/
-class VertexAttr {
-public:
-    /// vertex attribute enum
-    enum Code : uint8_t {
-        Position = 0,   ///< "position"
-        Normal,         ///< "normal"
-        TexCoord0,      ///< "texcoord0"
-        TexCoord1,      ///< "texcoord1"
-        TexCoord2,      ///< "texcoord2"
-        TexCoord3,      ///< "texcoord3"
-        Tangent,        ///< "tangent
-        Binormal,       ///< "binormal"
-        Weights,        ///< "weights" (skin weights)
-        Indices,        ///< "indices" (skin indices)
-        Color0,         ///< "color0"
-        Color1,         ///< "color1"
-        Instance0,      ///< "instance0"
-        Instance1,      ///< "instance1"
-        Instance2,      ///< "instance2"
-        Instance3,      ///< "instance3"
-
-        NumVertexAttrs,
-        InvalidVertexAttr,
-    };
-
-    /// convert to string
-    static const char* ToString(Code c);
-    /// convert from string
-    static Code FromString(const char* str);
 };
 
 //------------------------------------------------------------------------------
@@ -359,10 +369,9 @@ public:
     GLES2 and D3D11! GLES2 needs to read those as float vec, but D3D11 
     can only read them as int vec!
 */
-class VertexFormat {
-public:
+struct VertexFormat {
     /// format enum (don't change order, and append to end!)
-    enum Code : uint8_t {
+    enum Code {
         Float,          ///< single component float, expanded to (x, 0, 0, 1)
         Float2,         ///< 2-component float, expanded to (x, y, 0, 1)
         Float3,         ///< 3-component float, expanded to (x, y, z, 1)
@@ -377,8 +386,8 @@ public:
         Short4N,        ///< 4-component float (-1.0f..+1.0f) mapped to short (-32768..+32767)
         UInt10_2N,      ///< 4-component packed, normalized 10-bit XYZ, 2-bit W (0.0 .. 1.0)
 
-        NumVertexFormats,       ///< number of vertex formats
-        InvalidVertexFormat,    ///< the invalid vertex format value
+        Num,            ///< number of vertex formats
+        Invalid,        ///< the invalid vertex format value
     };
 
     /// get the byte size of a vertex format code
@@ -393,8 +402,7 @@ public:
     @ingroup Gfx
     @brief shader language syntax
 */
-class ShaderLang {
-public:
+struct ShaderLang {
     enum Code {
         GLSL100 = 0,    ///< OpenGLES 2.0 / WebGL 1.0
         GLSL330,        ///< OpenGL 3.3
@@ -402,38 +410,8 @@ public:
         HLSL5,          ///< D3D11 HLSL
         Metal,          ///< Metal shader language
 
-        NumShaderLangs,
-        InvalidShaderLang
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::GfxFeature
-    @ingroup Gfx
-    @brief optional rendering features
-*/
-class GfxFeature {
-public:
-    enum Code {
-        TextureCompressionDXT = 0,  ///< GPU supports DXT compressed textures
-        TextureCompressionPVRTC,    ///< GPU supports PVRTC compressed textures
-        TextureCompressionATC,      ///< GPU supports ATC compressed textures
-        TextureCompressionETC2,     ///< GPU supports ETC2 compressed textures (OpenGLES3)
-        TextureFloat,               ///< support for float textures
-        TextureHalfFloat,           ///< support for half-float textures
-        Instancing,                 ///< supports hardware-instanced rendering
-        OriginBottomLeft,           ///< image space origin is bottom-left (GL-style)
-        OriginTopLeft,              ///< image space origin is top-left (D3D-style)
-        MSAARenderTargets,          ///< MSAA support in offscreen-render-targets
-        PackedVertexFormat_10_2,    ///< support for 10.10.10.2 bit packed vertex formats
-        MultipleRenderTarget,       ///< support for MRT offscreen rendering
-        Texture3D,                  ///< support for 3D textures
-        TextureArray,               ///< support for array textures
-        NativeTexture,              ///< can work with externally created texture objects
-
-        NumFeatures,
-        InvalidFeature
+        Num,
+        Invalid
     };
 };
 
@@ -443,20 +421,13 @@ public:
     @ingroup Gfx
     @brief polygon face side (front, back, both)
 */
-class Face {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct Face {
     enum Code {
-    #endif
-        Front = 0,
-        Back,
-        Both,
+        Front = (1<<0),
+        Back  = (1<<1),
+        Both  = Front|Back
     };
-    static const int NumFaceCodes = 3;
     static const int NumSides = 2;
-    static const int InvalidFace = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -465,13 +436,8 @@ public:
     @ingroup Gfx
     @brief comparison modes for depth and stencil state
 */
-class CompareFunc {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct CompareFunc {
     enum Code {
-    #endif
         Never = 0,
         Less,
         Equal,
@@ -479,10 +445,11 @@ public:
         Greater,
         NotEqual,
         GreaterEqual,
-        Always
+        Always,
+
+        Num,
+        Invalid
     };
-    static const int NumCompareFuncs = 8;
-    static const int InvalidCompareFunc = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -491,14 +458,9 @@ public:
     @ingroup Gfx
     @brief stencil operations
 */
-class StencilOp {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint16_t {
-    #else
+struct StencilOp {
     enum Code {
-    #endif
-        Keep,
+        Keep = 0,
         Zero,
         Replace,
         IncrClamp,
@@ -506,9 +468,10 @@ public:
         Invert,
         IncrWrap,
         DecrWrap,
+
+        Num,
+        Invalid
     };
-    static const int NumStencilOperations = 8;
-    static const int InvalidStencilOperation = 0xff;
 };
 
 //------------------------------------------------------------------------------
@@ -517,13 +480,8 @@ public:
     @ingroup Gfx
     @brief blending factors
 */
-class BlendFactor {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64_t {
-    #else
+struct BlendFactor {
     enum Code {
-    #endif
         Zero = 0,
         One,
         SrcColor,
@@ -539,9 +497,10 @@ public:
         OneMinusBlendColor,
         BlendAlpha,
         OneMinusBlendAlpha,
+
+        Num,
+        Invalid
     };
-    static const int NumBlendFactors = 15;
-    static const int InvalidBlendFactor = 0xFF;
 };
 
 //------------------------------------------------------------------------------
@@ -550,19 +509,15 @@ public:
     @ingroup Gfx
     @brief blending operations
 */
-class BlendOperation {
-public:
-    #ifdef _MSC_VER // for correct bitfield packing, enum must be typed on MSVC
-    enum Code : uint64_t {
-    #else
+struct BlendOperation {
     enum Code {
-    #endif
         Add = 0,
         Subtract,
         ReverseSubtract,
+
+        Num,
+        Invalid
     };
-    static const int NumBlendOperations = 3;
-    static const int InvalidBlendOperation = 0xff;
 };
 
 //------------------------------------------------------------------------------
@@ -571,9 +526,8 @@ public:
     @ingroup Gfx
     @brief classify vertices in a buffer as per-vertex or per-instance data
 */
-class VertexStepFunction {
-public:
-    enum Code : uint8_t {
+struct VertexStepFunction {
+    enum Code {
         PerVertex = 0,
         PerInstance = 1,
     };
@@ -588,8 +542,7 @@ public:
     A PrimitiveGroup object describes a range of primitive elements in
     a mesh, where elements are either vertices or indices.
 */
-class PrimitiveGroup {
-public:
+struct PrimitiveGroup {
     int BaseElement = 0;
     int NumElements = 0;
 
@@ -603,216 +556,12 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::BlendState
-    @ingroup Gfx
-    @brief describe alpha blending state
-*/
-class BlendState {
-public:
-    union {
-        #pragma pack(push,1)
-        struct {
-            uint64_t BlendEnabled:1;
-            BlendFactor::Code SrcFactorRGB:5;
-            BlendFactor::Code DstFactorRGB:5;
-            BlendOperation::Code OpRGB:3;
-            BlendFactor::Code SrcFactorAlpha:5;
-            BlendFactor::Code DstFactorAlpha:5;
-            BlendOperation::Code OpAlpha:3;
-            PixelChannel::Mask ColorWriteMask:4;
-            PixelFormat::Code ColorFormat : 5;
-            PixelFormat::Code DepthFormat : 5;
-            uint64_t MRTCount : 3;
-        };
-        #pragma pack(pop)
-        /// hash code from merged state
-        uint64_t Hash;
-    };
-
-    /// constructor
-    BlendState();
-    /// equality
-    bool operator==(const BlendState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const BlendState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::StencilState
-    @ingroup Gfx
-    @brief holds stencil-buffer render state for one face side
-*/
-class StencilState {
-public:
-    union {
-        #pragma pack(push, 1)
-        struct {
-            StencilOp::Code FailOp : 4;
-            StencilOp::Code DepthFailOp : 4;
-            StencilOp::Code PassOp : 4;
-            CompareFunc::Code CmpFunc : 4;
-        };
-        #pragma pack(pop)
-        uint16_t Hash;
-    };
-    /// constructor
-    StencilState();
-    /// equality
-    bool operator==(const StencilState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const StencilState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::DepthStencilState
-    @ingroup Gfx
-    @brief holds the complete depth and stencil render state
-*/
-class DepthStencilState {
-public:
-    /// front-side stencil state
-    StencilState StencilFront;
-    /// back-side stencil state
-    StencilState StencilBack;
-    /// common depth-stencil state
-    union {
-        struct {
-            /// depth compare-function
-            CompareFunc::Code DepthCmpFunc:5;
-            /// depth write enabled flag
-            uint16_t DepthWriteEnabled:1;
-            /// stencil-enabled flag
-            uint16_t StencilEnabled:1;
-            /// stencil read-mask
-            uint16_t StencilReadMask : 8;
-            /// stencil write-mask
-            uint16_t StencilWriteMask : 8;
-            /// stencil-ref value
-            uint16_t StencilRef : 8;
-        };
-        uint32_t Hash;
-    };
-    /// constructor
-    DepthStencilState();
-    /// equality
-    bool operator==(const DepthStencilState& rhs) const;
-    /// inequality
-    bool operator!=(const DepthStencilState& rhs) const;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::RasterizerState
-    @ingroup Gfx
-    @brief rasterizer state flags
-*/
-class RasterizerState {
-public:
-    union {
-        #pragma pack(push,1)
-        struct {
-            uint16_t CullFaceEnabled : 1;
-            uint16_t ScissorTestEnabled : 1;
-            uint16_t DitherEnabled : 1;
-            uint16_t AlphaToCoverageEnabled : 1;
-            Face::Code CullFace : 3;
-            uint16_t SampleCount : 4;
-        };
-        #pragma pack(pop)
-        uint16_t Hash;
-    };
-    /// constructor
-    RasterizerState();
-    /// equality
-    bool operator==(const RasterizerState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const RasterizerState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::SamplerState
-    @ingroup Gfx
-    @brief wrap texture sampler state
-*/
-class SamplerState {
-public:
-    union {
-        #pragma pack(push, 1)
-        struct {
-            /// texture-wrap mode for u-axis
-            TextureWrapMode::Code WrapU : 2;
-            /// texture-wrap mode for v-axis
-            TextureWrapMode::Code WrapV : 2;
-            /// texture-wrap mode for w-axis
-            TextureWrapMode::Code WrapW : 2;
-            /// magnification filter
-            TextureFilterMode::Code MagFilter : 3;
-            /// minification filter
-            TextureFilterMode::Code MinFilter : 3;
-        };
-        #pragma pack(pop)
-        uint16_t Hash;
-    };
-    /// constructor
-    SamplerState();
-    /// equality
-    bool operator==(const SamplerState& rhs) const {
-        return this->Hash == rhs.Hash;
-    };
-    /// inequality
-    bool operator!=(const SamplerState& rhs) const {
-        return this->Hash != rhs.Hash;
-    };
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::PassAction
     @ingroup Gfx
     @brief what happens at BeginPass() 
 */
 class PassAction {
 public:
-    /// default constructor, set all actions to 'clear with default values'
-    PassAction();
-    /// clear all surfaces with given values
-    static PassAction Clear(const glm::vec4& color=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), float depth=1.0f, uint8_t stencil=0);
-    /// clear all surfaces with individual colors
-    static PassAction Clear(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
-    /// load previous content
-    static PassAction Load();
-    /// discard previous content
-    static PassAction DontCare();
-
-    /// FIXME: these methods are confusing, since some are static, some are not!
-    /// clear a single surface to a color
-    PassAction& ClearColor(int index, const glm::vec4& color);
-    /// clear depth-stencil surface  
-    PassAction& ClearDepthStencil(float depth=1.0f, uint8_t stencil=0); 
-    /// set a color surface to 'dont care' (initial content is undefined)
-    PassAction& DontCareColor(int index);
-    /// set depth-stencil initial state to 'dont care'
-    PassAction& DontCareDepthStencil();
-    /// initialize color surface with its previus content
-    PassAction& LoadColor(int index);
-    /// initialize depth-stencil surface with its previous content
-    PassAction& LoadDepthStencil();
-
     /// override clear colors
     StaticArray<glm::vec4, GfxConfig::MaxNumColorAttachments> Color;
     /// override clear depth value
@@ -836,6 +585,42 @@ public:
         LoadDS  = (1<<9),
     };
     uint16_t Flags = ClearC0|ClearC1|ClearC2|ClearC3|ClearDS;
+
+    /// default constructor
+    PassAction();
+    /// clear all attachments
+    PassAction& Clear(float r, float g, float b, float a, float depth=1.0f, uint8_t stencil=0);
+    /// clear all attachments with color as glm::vec4
+    PassAction& Clear(const glm::vec4& color, float depth=1.0f, uint8_t stencil=0);
+    /// clear all attachments with separate colors
+    PassAction& Clear(std::initializer_list<glm::vec4> colors, float depth=1.0f, uint8_t stencil=0);
+    /// load all attachments with previous content
+    PassAction& Load();
+    /// leave content of all attachments undefined
+    PassAction& DontCare();
+    /// clear all color attachments with the same color
+    PassAction& ClearColor(float r, float g, float b, float a);
+    /// clear all color attachments with the same color as glm::vec4
+    PassAction& ClearColor(const glm::vec4& color);
+    /// clear one of the color attachments
+    PassAction& ClearColor(int index, float r, float g, float b, float a);
+    /// clear of of the color attachments with color as glm::vec4
+    PassAction& ClearColor(int index, const glm::vec4& c);
+    /// load all color attachments with previous content
+    PassAction& LoadColor();
+    /// load one of the color attachments with previous content
+    PassAction& LoadColor(int index);
+    /// leave all color attachments at undefined state
+    PassAction& DontCareColor();
+    /// leave one of the color attachments at undefined state
+    PassAction& DontCareColor(int index);
+
+    /// clear the depth-stencil attachment
+    PassAction& ClearDepthStencil(float depth=1.0f, uint8_t stencil=0);
+    /// load the depth-stencil attachment with previous content
+    PassAction& LoadDepthStencil();
+    /// leave content of depth-stencil attachment undefined
+    PassAction& DontCareDepthStencil(); 
 };
 
 //------------------------------------------------------------------------------
@@ -847,15 +632,18 @@ public:
     with the exception of shader uniforms:
     
     - 1 pipeline state object
-    - 1..4 mesh objects
+    - 1..4 vertex buffers
+    - 0..1 index buffer
     - 0..N textures for the vertex shader stage
     - 0..N textures for the fragment shader stage
 */
 struct DrawState {
     /// the pipeline state object
     Id Pipeline;
-    /// input meshes
-    StaticArray<Id, GfxConfig::MaxNumInputMeshes> Mesh;
+    /// vertex buffers
+    StaticArray<Id, GfxConfig::MaxNumVertexBuffers> VertexBuffers;
+    /// optional index buffer
+    Id IndexBuffer;
     /// vertex shader stage textures
     StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
     /// fragment shader stage textures
@@ -864,49 +652,40 @@ struct DrawState {
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::GfxFrameInfo
-    @brief per-frame stats of the Gfx module
-*/
-struct GfxFrameInfo {
-    int NumPasses = 0;
-    int NumApplyViewPort = 0;
-    int NumApplyScissorRect = 0;
-    int NumApplyDrawState = 0;
-    int NumApplyUniformBlock = 0;
-    int NumUpdateVertices = 0;
-    int NumUpdateIndices = 0;
-    int NumUpdateTextures = 0;
-    int NumDraw = 0;
-    int NumDrawInstanced = 0;
-};
-
-//------------------------------------------------------------------------------
-/**
     @class Oryol::VertexLayout
     @ingroup Gfx
     @brief describes the data layout of a vertex in a vertex buffer
+
+    FIXME: support vertex components with gaps (manually defined offset and stride)
 */
 class VertexLayout {
 public:
     /// a component in a vertex layout
-    #pragma pack(push,1)
     class Component {
     public:
         /// default constructor
-        Component() {};
-        /// construct from vertex attr and format
-        Component(VertexAttr::Code attr, VertexFormat::Code fmt) : Attr(attr), Format(fmt) { }
+        Component() { }
+        /// construct from format (no attr name)
+        Component(VertexFormat::Code fmt): Format(fmt) { }
+        /// construct from vertex attr name and format
+        Component(const StringAtom& name, VertexFormat::Code fmt): Name(name), Format(fmt) { }
         /// return true if valid (attr and format set)
-        bool IsValid() const;
+        bool IsValid() const {
+            return this->Format != VertexFormat::Invalid;
+        }
         /// clear the component (unset attr and format)
-        void Clear();
+        void Clear() {
+            *this = Component();
+        }
         /// get byte size of component
-        int ByteSize() const;
+        int ByteSize() const {
+            return VertexFormat::ByteSize(this->Format);
+        }
 
-        VertexAttr::Code Attr = VertexAttr::InvalidVertexAttr;
-        VertexFormat::Code Format = VertexFormat::InvalidVertexFormat;
+        StringAtom Name;
+        VertexFormat::Code Format = VertexFormat::Invalid;
+        int Offset = 0;     // offset will be written in VertexLayout::Add
     };
-    #pragma pack(pop)
 
     /// the vertex step function, used for instancing, default is 'PerVertex'
     VertexStepFunction::Code StepFunction = VertexStepFunction::PerVertex;
@@ -923,8 +702,10 @@ public:
     bool Empty() const;
     /// add a component
     VertexLayout& Add(const Component& comp);
-    /// add component by name and format
-    VertexLayout& Add(VertexAttr::Code attr, VertexFormat::Code format);
+    /// add an unnamed component
+    VertexLayout& Add(VertexFormat::Code format);
+    /// add a named component
+    VertexLayout& Add(const StringAtom& name, VertexFormat::Code format);
     /// add multiple components via initializer list
     VertexLayout& Add(std::initializer_list<Component> l);
     /// enable layout for instancing, set StepFunction to PerInstance and StepRate to 1
@@ -933,55 +714,18 @@ public:
     int NumComponents() const;
     /// get component at index
     const Component& ComponentAt(int index) const;
-    /// get component index by vertex attribute, return InvalidIndex if layout doesn't include attr
-    int ComponentIndexByVertexAttr(VertexAttr::Code attr) const;
+    /// find component index by name, return InvalidIndex if not found
+    int ComponentIndexByName(const StringAtom& name) const;
+    /// test if the layout contains a specific vertex attribute by name
+    bool Contains(const StringAtom& name) const;
     /// get byte size of vertex (aka stride)
     int ByteSize() const;
     /// get byte offset of a component
     int ComponentByteOffset(int componentIndex) const;
-    /// test if the layout contains a specific vertex attribute
-    bool Contains(VertexAttr::Code attr) const;
 private:
     StaticArray<Component, GfxConfig::MaxNumVertexLayoutComponents> comps;
-    StaticArray<uint8_t, GfxConfig::MaxNumVertexLayoutComponents> byteOffsets;
-    StaticArray<int8_t, VertexAttr::NumVertexAttrs> attrCompIndices;  // maps vertex attributes to component indices
-    int8_t numComps = 0;
-    uint8_t byteSize = 0;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::TextureAttrs
-    @ingroup Gfx
-    @brief holds the public attributes of a Texture object
-    
-    @todo: describe TextureAttrs
-*/
-struct TextureAttrs {
-    /// texture locator (usually the URL of the texture file)
-    class Locator Locator;
-    /// the texture type (2D, 3D, cube...)
-    TextureType::Code Type = TextureType::InvalidTextureType;
-    /// the RGBA pixel format of texture data
-    PixelFormat::Code ColorFormat = PixelFormat::InvalidPixelFormat;
-    /// optional depth format (only used for render target textures)
-    PixelFormat::Code DepthFormat = PixelFormat::InvalidPixelFormat;
-    /// optional sample count (only used for MSAA render target textures)
-    int SampleCount = 1;
-    /// texture usage hint
-    Usage::Code TextureUsage = Usage::InvalidUsage;
-    /// width of top-level mipmap in pixels
-    int Width = 0;
-    /// height of top-level mipmap in pixels
-    int Height = 0;
-    /// depth of top-level mipmap in pixels (only used for 3D textures)
-    int Depth = 0;
-    /// number of mipmaps (1 for 'no child mipmaps')
-    int NumMipMaps = 1;
-    /// true if this is a render target texture
-    bool IsRenderTarget = false;
-    /// true if this render target texture has an attached depth buffer
-    bool HasDepthBuffer = false;
+    int numComps = 0;
+    int byteSize = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -994,33 +738,20 @@ struct TextureAttrs {
     different from the display setup parameters.
 */
 struct DisplayAttrs {
-    /// window width (including window chrome)
-    int WindowWidth = 0;
-    /// window height (including window chrome)
-    int WindowHeight = 0;
-    /// x-position of window
-    int WindowPosX = 0;
-    /// y-position of window
-    int WindowPosY = 0;
     /// width of framebuffer associated with window
-    int FramebufferWidth = 0;
+    int Width = 0;
     /// height of framebuffer associated with window
-    int FramebufferHeight = 0;
+    int Height = 0;
     /// framebuffer pixel format
-    PixelFormat::Code ColorPixelFormat = PixelFormat::RGBA8;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
     /// depth buffer pixel format (PixelFormat::None if no depth buffer)
-    PixelFormat::Code DepthPixelFormat = PixelFormat::DEPTHSTENCIL;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
     /// number of multisample-anti-aliasing samples
     int SampleCount = 1;
     /// indicates windowed or fullscreen mode
     bool Windowed = true;
     /// vsync swap interval (0 means: no vsync)
     int SwapInterval = 1;
-    /// window title as UTF-8
-    String WindowTitle;
-
-    /// init a DisplayAttrs object from a TextureAttrs object
-    static DisplayAttrs FromTextureAttrs(const TextureAttrs& texAttrs);
 };
 
 //------------------------------------------------------------------------------
@@ -1032,6 +763,10 @@ struct DisplayAttrs {
 */
 class GfxEvent {
 public:
+    /// handler function typedef
+    typedef std::function<void(const GfxEvent&)> Handler;
+    /// id for an event handler subscription
+    typedef uint32_t HandlerId;
     /// event types
     enum Type {
         DisplayModified,
@@ -1050,60 +785,22 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ImageDataAttrs
-    @brief describe offsets and sizes of image surfaces
+    @class Oryol::ImageContent
+    @brief describe content of image surfaces
 */
-class ImageDataAttrs {
+class ImageContent {
 public:
     /// constructor
-    ImageDataAttrs();
-    /// number of faces
-    int NumFaces = 0;
-    /// number of mipmaps
-    int NumMipMaps = 0;
+    ImageContent();
     /// pixel data mipmap image offsets
-    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Offsets;
+    StaticArray<StaticArray<const void*, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Pointer;
     /// pixel data mipmap image sizes
-    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Sizes;
+    StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Size;
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::IndexBufferAttrs
-    @ingroup Gfx
-    @brief attributes of an index buffer
-*/
-struct IndexBufferAttrs {
-    /// number of indices in the index buffer
-    int NumIndices = 0;
-    /// type of indices (16-bit or 32-bit)
-    IndexType::Code Type = IndexType::InvalidIndexType;
-    /// buffer usage hint
-    Usage::Code BufferUsage = Usage::InvalidUsage;
-    /// computes the byte size of index buffer data
-    int ByteSize() const;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::VertexBufferAttrs
-    @ingroup Gfx
-    @brief attributes of one vertex buffer
-*/
-struct VertexBufferAttrs {
-    /// number of vertices in the vertex buffer
-    int NumVertices = 0;
-    /// describes the vertex layout of a vertex in the buffer
-    VertexLayout Layout;
-    /// buffer usage hint
-    Usage::Code BufferUsage = Usage::InvalidUsage;
-    /// computes the byte size of the contained vertex buffer data
-    int ByteSize() const;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::GfxSetup
+    @class Oryol::GfxDesc
     @ingroup Gfx
     @brief Gfx module setup parameters
     
@@ -1114,370 +811,791 @@ struct VertexBufferAttrs {
  
     @see Gfx, DisplayAttrs
 */
-class GfxSetup {
-public:
-    /// shortcut for windowed mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Window(int width, int height, String windowTitle);
-    /// shortcut for fullscreen mode (with RGBA8, 24+8 stencil/depth, no MSAA)
-    static GfxSetup Fullscreen(int width, int height, String windowTitle);
-    /// shortcut for windowed mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup WindowMSAA4(int width, int height, String windowTitle);
-    /// shortcut for fullscreen mode with 4xMSAA (with RGBA8, 24+8 stencil/depth)
-    static GfxSetup FullscreenMSAA4(int width, int height, String windowTitle);
-    /// canvas width
-    int Width = 640;
-    /// canvas height
-    int Height = 400;
-    /// color pixel format
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
-    /// depth pixel format
-    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
-    /// MSAA samples (2, 4, 8... no MSAA: 1)
-    int SampleCount = 1;
-    /// windowed vs Fullscreen
-    bool Windowed = true;
-    /// swap interval (0 => no vsync, default is 1)
-    int SwapInterval = 1;
-    /// window title
-    String Title = "Oryol";
-    /// enable to render full-res on HighDPI displays (not supported on all platforms)
-    bool HighDPI = false;
-    /// default clear values (or dont care)
-    PassAction DefaultPassAction;
-    /// if true, ignore own size and instead track size of an HTML element (emscripten only)
-    bool HtmlTrackElementSize = false;
-    /// name of the HTML element to track (default: #canvas)
-    String HtmlElement = "#canvas";
-    /// resource pool size by resource type
-    StaticArray<int,GfxResourceType::NumResourceTypes> ResourcePoolSize;
-    /// resource creation throttling (max resources created async per frame)
-    StaticArray<int,GfxResourceType::NumResourceTypes> ResourceThrottling;
-    /// initial resource label stack capacity
-    int ResourceLabelStackCapacity = 256;
-    /// initial resource registry capacity
-    int ResourceRegistryCapacity = 256;
-    /// size of the global uniform buffer (only relevant on some platforms)
-    int GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
-    /// max number of drawcalls per frame (only relevant on some platforms)
-    int MaxDrawCallsPerFrame = GfxConfig::DefaultMaxDrawCallsPerFrame;
-    /// max number of ApplyDrawState per frame (only relevant on some platforms)
-    int MaxApplyDrawStatesPerFrame = GfxConfig::DefaultMaxApplyDrawStatesPerFrame;
-    /// get DisplayAttrs object initialized to setup values
-    DisplayAttrs GetDisplayAttrs() const;
-    /// default constructor
-    GfxSetup();
+struct GfxDesc {
+    GfxDesc() {
+        for (int i = 0; i < GfxResourceType::Num; i++) {
+            resourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
+        }
+    }
+    GfxDesc(const GfxDesc& rhs) {
+        *this = rhs;
+    }
+    GfxDesc& Width(int w) {
+        width = w; return *this; 
+    }
+    int Width() const {
+        return width;
+    }
+    GfxDesc& Height(int h) {
+        height = h; return *this;
+    }
+    int Height() const {
+        return height;
+    }
+    GfxDesc& ColorFormat(PixelFormat::Code fmt) {
+        colorFormat = fmt; return *this;
+    }
+    PixelFormat::Code ColorFormat() const {
+        return colorFormat;
+    }
+    GfxDesc& DepthFormat(PixelFormat::Code fmt) {
+        depthFormat = fmt; return *this;
+    }
+    PixelFormat::Code DepthFormat() const {
+        return depthFormat;
+    }
+    GfxDesc& SampleCount(int c) {
+        sampleCount = c; return *this;
+    }
+    int SampleCount() const {
+        return sampleCount;
+    }
+    GfxDesc& Windowed(bool b) {
+        windowed = b; return *this;
+    }
+    bool Windowed() const {
+        return windowed;
+    }
+    GfxDesc& SwapInterval(int i) {
+        swapInterval = i; return *this;
+    }
+    int SwapInterval() const {
+        return swapInterval;
+    }
+    GfxDesc& Title(const StringAtom& t) {
+        title = t; return *this;
+    }
+    const StringAtom& Title() const {
+        return title;
+    }
+    GfxDesc& HighDPI(bool b) {
+        highDPI = b; return *this;
+    }
+    bool HighDPI() const {
+        return highDPI;
+    }
+    GfxDesc& HtmlTrackElementSize(bool b) {
+        htmlTrackElementSize = b; return *this;
+    }
+    bool HtmlTrackElementSize() const {
+        return htmlTrackElementSize;
+    }
+    GfxDesc& HtmlElement(const StringAtom& e) {
+        htmlElement = e; return *this;
+    }
+    const StringAtom& HtmlElement() const {
+        return htmlElement;
+    }
+    GfxDesc& ResourcePoolSize(GfxResourceType::Code type, int size) {
+        resourcePoolSize[type] = size; return *this;
+    }
+    int ResourcePoolSize(GfxResourceType::Code type) const {
+        return resourcePoolSize[type];
+    }
+    GfxDesc& ResourceLabelStackCapacity(int c) {
+        resourceLabelStackCapacity = c; return *this;
+    }
+    int ResourceLabelStackCapacity() const {
+        return resourceLabelStackCapacity;
+    }
+    GfxDesc& ResourceRegistryCapacity(int c) {
+        resourceRegistryCapacity = c; return *this;
+    }
+    int ResourceRegistryCapacity() const {
+        return resourceRegistryCapacity;
+    }
+    GfxDesc& GlobalUniformBufferSize(int s) {
+        globalUniformBufferSize = s; return *this;
+    }
+    int GlobalUniformBufferSize() const {
+        return globalUniformBufferSize;
+    }
+
+    int width = 640;
+    int height = 400;
+    PixelFormat::Code colorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code depthFormat = PixelFormat::DEPTHSTENCIL;
+    int sampleCount = 1;
+    bool windowed = true;
+    int swapInterval = 1;
+    StringAtom title = "Oryol";
+    bool highDPI = false;
+    bool htmlTrackElementSize = false;
+    StringAtom htmlElement = "#canvas";
+    StaticArray<int,GfxResourceType::Num> resourcePoolSize;
+    int resourceLabelStackCapacity = 256;
+    int resourceRegistryCapacity = 256;
+    int globalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::MeshSetup
+    @class Oryol::BufferDesc
     @ingroup Gfx
-    @brief setup attributes for meshes
+    @brief creation attributes for vertex- and index-buffers
 */
-class MeshSetup {
-public:
-    /// asynchronously load from file
-    static MeshSetup FromFile(const class Locator& loc, Id placeholder=Id::InvalidId());
-    /// setup from from data in memory
-    static MeshSetup FromData(Usage::Code vertexUsage=Usage::Immutable, Usage::Code indexUsage=Usage::Immutable);
-    /// setup from data in memory with blueprint
-    static MeshSetup FromData(const MeshSetup& blueprint);
-    /// setup empty mesh (mostly for dynamic streaming)
-    static MeshSetup Empty(int numVertices, Usage::Code vertexUsage, IndexType::Code indexType=IndexType::None, int numIndices=0, Usage::Code indexUsage=Usage::InvalidUsage);
-    /// setup a fullscreen quad mesh
-    static MeshSetup FullScreenQuad(bool flipV=false);
-    /// check if should load asynchronously
-    bool ShouldSetupFromFile() const;
-    /// check if should setup from data in memory
-    bool ShouldSetupFromData() const;
-    /// check if should setup empty mesh
-    bool ShouldSetupEmpty() const;
-    /// check if should setup fullscreen quad mesh
-    bool ShouldSetupFullScreenQuad() const;
-    /// add a primitive group (required for CreateEmpty)
-    void AddPrimitiveGroup(const PrimitiveGroup& primGroup);
-    /// get number of primitive groups
-    int NumPrimitiveGroups() const;
-    /// get primitive group at index
-    const class PrimitiveGroup& PrimitiveGroup(int index) const;
-    /// vertex-data usage
-    Usage::Code VertexUsage = Usage::InvalidUsage;
-    /// index-data usage
-    Usage::Code IndexUsage = Usage::InvalidUsage;
-    /// vertex layout
-    VertexLayout Layout;
-    /// number of vertices
-    int NumVertices = 0;
-    /// number of indices
-    int NumIndices = 0;
-    /// index type 
-    IndexType::Code IndicesType = IndexType::None;
-    /// flip v coordinates for fullscreen quad (so that origin is top-left)
-    bool FullScreenQuadFlipV = false;
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// placeholder Id
-    Id Placeholder;
-    /// vertex data byte offset in data (default: 0, set to InvalidIndex if no vertex data provided)
-    int VertexDataOffset = 0;
-    /// index data byte offset in data (default: InvalidIndex, no index data provided)
-    int IndexDataOffset = 0;
-private:
-    int numPrimGroups = 0;
-    class PrimitiveGroup primGroups[GfxConfig::MaxNumPrimGroups];
-    bool setupFromFile = false;
-    bool setupFromData = false;
-    bool setupEmpty = false;
-    bool setupFullScreenQuad = false;
+struct BufferDesc {
+    BufferDesc() {
+        nativeBuffers.Fill(0);
+    }
+    BufferDesc(const BufferDesc& rhs) {
+        *this = rhs;
+    }
+    BufferDesc& Locator(const class Locator& l) {
+        locator = l; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    BufferDesc& Type(BufferType::Code t) {
+        type = t; return *this;
+    }
+    BufferType::Code Type() const {
+        return type;
+    }
+    BufferDesc& Usage(Usage::Code u) {
+        usage = u; return *this;
+    }
+    Usage::Code Usage() const {
+        return usage;
+    }
+    BufferDesc& Size(int s) {
+        size = s; return *this;
+    }
+    int Size() const {
+        return size;
+    }
+    BufferDesc& Content(const void* c) {
+        content = c; return *this;
+    }
+    const void* Content() const {
+        return content;
+    }
+    BufferDesc& NativeBuffer(int index, intptr_t buf) {
+        nativeBuffers[index] = buf; return *this;
+    }
+    intptr_t NativeBuffer(int index) const {
+        return nativeBuffers[index];
+    }
+
+    class Locator locator = Locator::NonShared();
+    BufferType::Code type = BufferType::VertexBuffer;
+    Oryol::Usage::Code usage = Usage::Immutable;
+    int size = 0;
+    const void* content = nullptr;
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> nativeBuffers;
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::PipelineSetup
+    @class Oryol::PipelineDesc
     @ingroup Gfx
-    @brief setup object for pipeline resources
+    @brief creation attribute for pipeline state objects
 */
-class PipelineSetup {
-public:
-    /// construct from shader
-    static PipelineSetup FromShader(const Id& shd);
-    /// construct from vertex layout and shader
-    static PipelineSetup FromLayoutAndShader(const VertexLayout& layout, const Id& shd);
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// blend state (GLES3.0 doesn't allow separate MRT blend state
-    class BlendState BlendState;
-    /// blend color
-    glm::vec4 BlendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    /// depth-stencil state
-    class DepthStencilState DepthStencilState;
-    /// rasterizer state
-    class RasterizerState RasterizerState;
-    /// input vertex layouts (one per mesh slot)
-    StaticArray<VertexLayout, GfxConfig::MaxNumInputMeshes> Layouts;
-    /// primitive type 
-    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
-    /// shader 
-    Id Shader;
+struct PipelineDesc {
+    PipelineDesc() { };
+    PipelineDesc(const PipelineDesc& rhs) {
+        *this = rhs;
+    }
+    PipelineDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    PipelineDesc& Shader(const Id& shd) {
+        shader = shd; return *this;
+    }
+    const Id& Shader() const {
+        return shader;
+    }
+    PipelineDesc& Layout(int slotIndex, const VertexLayout& layout) {
+        layouts[slotIndex] = layout; return *this;
+    }
+    const VertexLayout& Layout(int slotIndex) const {
+        return layouts[slotIndex];
+    }
+    PipelineDesc& PrimitiveType(PrimitiveType::Code t) {
+        primType = t; return *this;
+    }
+    PrimitiveType::Code PrimitiveType() const {
+        return primType;
+    }
+    PipelineDesc& IndexType(IndexType::Code t) {
+        indexType = t; return *this;
+    }
+    IndexType::Code IndexType() const {
+        return indexType;
+    }
+    PipelineDesc& DepthCmpFunc(CompareFunc::Code f) {
+        depthCmpFunc = f; return *this;
+    }
+    CompareFunc::Code DepthCmpFunc() const {
+        return depthCmpFunc;
+    }
+    PipelineDesc& DepthWriteEnabled(bool b) {
+        depthWriteEnabled = b; return *this;
+    }
+    bool DepthWriteEnabled() const {
+        return depthWriteEnabled;
+    }
+    PipelineDesc& StencilEnabled(bool b) {
+        stencilEnabled = b; return *this;
+    }
+    bool StencilEnabled() const {
+        return stencilEnabled;
+    }
+    PipelineDesc& StencilReadMask(uint8_t m) {
+        stencilReadMask = m; return *this;
+    }
+    uint8_t StencilReadMask() const {
+        return stencilReadMask;
+    }
+    PipelineDesc& StencilWriteMask(uint8_t m) {
+        stencilWriteMask = m; return *this;
+    }
+    uint8_t StencilWriteMask() const {
+        return stencilWriteMask;
+    }
+    PipelineDesc& StencilRef(uint8_t r) {
+        stencilRef = r; return *this;
+    }
+    uint8_t StencilRef() const {
+        return stencilRef;
+    }
+    PipelineDesc& StencilFailOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            stencilFrontFailOp = op;
+        }
+        if (Face::Back & face) {
+            stencilBackFailOp = op;
+        }
+        return *this;
+    }
+    StencilOp::Code StencilFailOp(Face::Code face) const {
+        if (Face::Front & face) {
+            return stencilFrontFailOp;
+        }
+        else {
+            return stencilBackFailOp;
+        }
+    }
+    PipelineDesc& StencilDepthFailOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            stencilFrontDepthFailOp = op;
+        }
+        if (Face::Back & face) {
+            stencilBackDepthFailOp = op;
+        }
+        return *this;
+    }
+    StencilOp::Code StencilDepthFailOp(Face::Code face) {
+        if (Face::Front & face) {
+            return stencilFrontDepthFailOp;
+        }
+        else {
+            return stencilBackDepthFailOp;
+        }
+    }
+    PipelineDesc& StencilPassOp(Face::Code face, StencilOp::Code op) {
+        if (Face::Front & face) {
+            stencilFrontPassOp = op;
+        }
+        if (Face::Back & face) {
+            stencilBackPassOp = op;
+        }
+        return *this;
+    }
+    StencilOp::Code StencilPassOp(Face::Code face) {
+        if (Face::Front & face) {
+            return stencilFrontPassOp;
+        }
+        else {
+            return stencilBackPassOp;
+        }
+    }
+    PipelineDesc& StencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
+        if (Face::Front & face) {
+            stencilFrontCmpFunc = fn;
+        }
+        if (Face::Back & face) {
+            stencilBackCmpFunc = fn;
+        }
+        return *this;
+    }
+    CompareFunc::Code StencilCmpFunc(Face::Code face) {
+        if (Face::Front & face) {
+            return stencilFrontCmpFunc;
+        }
+        else {
+            return stencilBackCmpFunc;
+        }
+    }
+    PipelineDesc& BlendEnabled(bool b) {
+        blendEnabled = b; return *this;
+    }
+    bool BlendEnabled() const {
+        return blendEnabled;
+    }
+    PipelineDesc& BlendSrcFactor(BlendFactor::Code f) {
+        blendSrcFactorRGB = f;
+        blendSrcFactorAlpha = f;
+        return *this;
+    }
+    PipelineDesc& BlendSrcFactorRGB(BlendFactor::Code f) {
+        blendSrcFactorRGB = f; return *this;
+    }
+    BlendFactor::Code BlendSrcFactorRGB() const {
+        return blendSrcFactorRGB;
+    }
+    PipelineDesc& BlendSrcFactorAlpha(BlendFactor::Code f) {
+        blendSrcFactorAlpha = f; return *this;
+    }
+    BlendFactor::Code BlendSrcFactorAlpha() const {
+        return blendSrcFactorAlpha;
+    }
+    PipelineDesc& BlendDstFactor(BlendFactor::Code f) {
+        blendDstFactorRGB = f;
+        blendDstFactorAlpha = f;
+        return *this;
+    }
+    PipelineDesc& BlendDstFactorRGB(BlendFactor::Code f) {
+        blendDstFactorRGB = f; return *this;
+    }
+    BlendFactor::Code BlendDstFactorRGB() const {
+        return blendDstFactorRGB;
+    }
+    PipelineDesc& BlendDstFactorAlpha(BlendFactor::Code f) {
+        blendDstFactorAlpha = f; return *this;
+    }
+    BlendFactor::Code BlendDstFactorAlpha() const {
+        return blendDstFactorAlpha;
+    }
+    PipelineDesc& BlendOp(BlendOperation::Code op) {
+        blendOpRGB = op;
+        blendOpAlpha = op;
+        return *this;
+    }
+    PipelineDesc& BlendOpRGB(BlendOperation::Code op) {
+        blendOpRGB = op; return *this;
+    }
+    BlendOperation::Code BlendOpRGB() const {
+        return blendOpRGB;
+    }
+    PipelineDesc& BlendOpAlpha(BlendOperation::Code op) {
+        blendOpAlpha = op; return *this;
+    }
+    BlendOperation::Code BlendOpAlpha() const {
+        return blendOpAlpha;
+    }
+    PipelineDesc& ColorWriteMask(PixelChannel::Mask m) {
+        colorWriteMask = m; return *this;
+    }
+    PixelChannel::Mask ColorWriteMask() const {
+        return colorWriteMask;
+    }
+    PipelineDesc& ColorFormat(PixelFormat::Code fmt) {
+        colorFormat = fmt; return *this;
+    }
+    PixelFormat::Code ColorFormat() const {
+        return colorFormat;
+    }
+    PipelineDesc& DepthFormat(PixelFormat::Code fmt) {
+        depthFormat = fmt; return *this;
+    }
+    PixelFormat::Code DepthFormat() const {
+        return depthFormat;
+    }
+    PipelineDesc& SampleCount(int c) {
+        sampleCount = c; return *this;
+    }
+    int SampleCount() const {
+        return sampleCount;
+    }
+    PipelineDesc& MRTCount(int c) {
+        mrtCount = c; return *this;
+    }
+    int MRTCount() const {
+        return mrtCount;
+    }
+    PipelineDesc& BlendColor(const glm::vec4& c) {
+        blendColor = c; return *this;
+    }
+    const glm::vec4& BlendColor() const {
+        return blendColor;
+    }
+    PipelineDesc& CullFaceEnabled(bool b) {
+        cullFaceEnabled = b; return *this;
+    }
+    bool CullFaceEnabled() const {
+        return cullFaceEnabled;
+    }
+    PipelineDesc& CullFace(Face::Code f) {
+        cullFace = f; return *this;
+    }
+    Face::Code CullFace() const {
+        return cullFace;
+    }
+    PipelineDesc& AlphaToCoverageEnabled(bool b) {
+        alphaToCoverageEnabled = b; return *this;
+    }
+    bool AlphaToCoverageEnabled() const {
+        return alphaToCoverageEnabled;
+    }
+    PipelineDesc& DepthBias(float f) {
+        depthBias = f; return *this;
+    }
+    float DepthBias() const {
+        return depthBias;
+    }
+    PipelineDesc& DepthBiasSlopeScale(float f) {
+        depthBiasSlopeScale = f; return *this;
+    }
+    float DepthBiasSlopeScale() const {
+        return depthBiasSlopeScale;
+    }
+    PipelineDesc& DepthBiasClamp(float f) {
+        depthBiasClamp = f; return *this;
+    }
+    float DepthBiasClamp() const {
+        return depthBiasClamp;
+    }
+
+    class Locator locator = Locator::NonShared();
+    Id shader;
+    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> layouts;
+    PrimitiveType::Code primType = PrimitiveType::Triangles;
+    Oryol::IndexType::Code indexType = IndexType::None;
+
+    CompareFunc::Code depthCmpFunc = CompareFunc::Always;
+    bool depthWriteEnabled = false;
+    bool stencilEnabled = false;
+    uint8_t stencilReadMask = 0xFF;
+    uint8_t stencilWriteMask = 0xFF;
+    uint8_t stencilRef = 0x00;
+    StencilOp::Code stencilFrontFailOp = StencilOp::Keep;
+    StencilOp::Code stencilFrontDepthFailOp = StencilOp::Keep;
+    StencilOp::Code stencilFrontPassOp = StencilOp::Keep;
+    CompareFunc::Code stencilFrontCmpFunc = CompareFunc::Always;
+    StencilOp::Code stencilBackFailOp = StencilOp::Keep;
+    StencilOp::Code stencilBackDepthFailOp = StencilOp::Keep;
+    StencilOp::Code stencilBackPassOp = StencilOp::Keep;
+    CompareFunc::Code stencilBackCmpFunc = CompareFunc::Always;
+
+    bool blendEnabled = false;
+    BlendFactor::Code blendSrcFactorRGB = BlendFactor::One;
+    BlendFactor::Code blendDstFactorRGB = BlendFactor::Zero;
+    BlendOperation::Code blendOpRGB = BlendOperation::Add;
+    BlendFactor::Code blendSrcFactorAlpha = BlendFactor::One;
+    BlendFactor::Code blendDstFactorAlpha = BlendFactor::Zero;
+    BlendOperation::Code blendOpAlpha = BlendOperation::Add;
+    PixelChannel::Mask colorWriteMask = PixelChannel::RGBA;
+    PixelFormat::Code colorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code depthFormat = PixelFormat::DEPTHSTENCIL;
+    int mrtCount = 1;
+    glm::vec4 blendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    bool cullFaceEnabled = false;
+    bool alphaToCoverageEnabled = false;
+    Face::Code cullFace = Face::Back;
+    int sampleCount = 1;
+    float depthBias = 0.0f;
+    float depthBiasSlopeScale = 0.0f;
+    float depthBiasClamp = 0.0f;
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::PassSetup
+    @class Oryol::ShaderDesc
     @ingroup Gfx
-    @brief setup attributes for render pass resource
+    @brief creation attributes for shaders
 */
-class PassSetup {
-public:
-    /// construct from single render target textures, and option depth-stencil texture
-    static PassSetup From(Id colorTexture, Id depthStencilTexture=Id::InvalidId());
-    /// construct from MRT render target textures, and option depth-stencil texture
-    static PassSetup From(std::initializer_list<Id> colorTextures, Id depthStencilTexture=Id::InvalidId());
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// 1..N color attachments
-    struct ColorAttachment {
-        Id Texture;
-        uint16_t MipLevel = 0;  ///< mipmap-level
-        uint16_t Slice = 0;     ///< 2D-array-slice, 3D-depth-slice or cubemap face
+struct ShaderDesc {
+    ShaderDesc() { };
+    ShaderDesc(const ShaderDesc& rhs) {
+        *this = rhs;
+    }
+    ShaderDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    ShaderDesc& Source(ShaderStage::Code stg, const char* src) {
+        stage[stg].Source = src; return *this;
+    }
+    const char* Source(ShaderStage::Code stg) {
+        return stage[stg].Source;
+    }
+    ShaderDesc& ByteCode(ShaderStage::Code stg, const uint8_t* ptr, int size) {
+        stage[stg].ByteCode = ptr;
+        stage[stg].ByteCodeSize = size;
+        return *this;
+    }
+    const uint8_t* ByteCodePtr(ShaderStage::Code stg) const {
+        return stage[stg].ByteCode;
+    }
+    int ByteCodeSize(ShaderStage::Code stg) const {
+        return stage[stg].ByteCodeSize;
+    }
+    ShaderDesc& Entry(ShaderStage::Code stg, const char* entry) {
+        stage[stg].Entry = entry; return *this;
+    }
+    const char* Entry(ShaderStage::Code stg) const {
+        return stage[stg].Entry;
+    }
+    ShaderDesc& Attr(const StringAtom& name, VertexFormat::Code fmt) {
+        layout.Add(name, fmt); return *this;
+    }
+    const VertexLayout& Layout() const {
+        return layout;
+    }
+    ShaderDesc& UniformBlock(ShaderStage::Code stg, int slot, const char* name, const char* type, int size) {
+        auto& ubSlot = stage[stg].UniformBlocks[slot];
+        ubSlot.Name = name;
+        ubSlot.Type = type;
+        ubSlot.Size = size;
+        return *this;
+    }
+    ShaderDesc& Texture(ShaderStage::Code stg, int slot, const char* name, TextureType::Code type) {
+        auto& texSlot = stage[stg].Textures[slot];
+        texSlot.Name = name;
+        texSlot.Type = type;
+        return *this;
+    }
+
+    class Locator locator = Locator::NonShared();
+    VertexLayout layout;
+    struct UniformBlockDesc {
+        const char* Name = nullptr;
+        const char* Type = nullptr;
+        int Size = 0;
     };
-    StaticArray<ColorAttachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
-    /// optional depth-stencil attachment
-    Id DepthStencilTexture;
-    /// default pass action, if no PassAction provided in BeginPass
-    PassAction DefaultAction;
+    struct TextureDesc {
+        const char* Name = nullptr;
+        TextureType::Code Type = TextureType::Invalid;
+    };
+    struct StageDesc {
+        const char* Source = nullptr;
+        const uint8_t* ByteCode = nullptr;
+        int ByteCodeSize = 0;
+        const char* Entry = nullptr;
+        StaticArray<UniformBlockDesc, GfxConfig::MaxNumUniformBlocksPerStage> UniformBlocks;
+        StaticArray<TextureDesc, GfxConfig::MaxNumShaderTextures> Textures;
+    };
+    StaticArray<StageDesc, ShaderStage::Num> stage;
 };
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::ShaderSetup
-    @ingroup Gfx
-    @brief setup class for shaders
-*/
-class ShaderSetup {
-public:
-    /// default constructor
-    ShaderSetup() { }
-    /// construct with resource locator
-    ShaderSetup(const Locator& loc) : Locator(loc) { }
-    /// the resource locator
-    class Locator Locator = Locator::NonShared();
-    /// set shader program from vertex- and fragment-shader sources
-    void SetProgramFromSources(ShaderLang::Code slang, const String& vsSource, const String& fsSource);
-    /// set shader program from precompiled shader byte code
-    void SetProgramFromByteCode(ShaderLang::Code slang, const uint8_t* vsByteCode, uint32_t vsNumBytes, const uint8_t* fsByteCode, uint32_t fsNumBytes, const char* vsFunc=nullptr, const char* fsFunc=nullptr);
-    /// set vertex shader input layout
-    void SetInputLayout(const VertexLayout& vsInputLayout);
-    /// add a uniform block
-    void AddUniformBlock(const StringAtom& type, const StringAtom& name, uint32_t typeHash, uint32_t byteSize, ShaderStage::Code bindStage, int32_t bindSlot);
-    /// add a texture declaration
-    void AddTexture(const StringAtom& name, TextureType::Code type, ShaderStage::Code bindStage, int32_t bindSlot);
-    /// get the vertex shader input layout
-    const VertexLayout& InputLayout() const;
-    /// get program vertex shader source (only valid if setup from sources)
-    const String& VertexShaderSource(ShaderLang::Code slang) const;
-    /// get program fragment shader source (only valid if setup from sources)
-    const String& FragmentShaderSource(ShaderLang::Code slang) const;
-    /// get program vertex shader byte code, returns nullptr if no byte code exists
-    void VertexShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
-    /// get program fragment shader byte code, returns nullptr if no byte code exists
-    void FragmentShaderByteCode(ShaderLang::Code slang, const void*& outPtr, uint32_t& outSize) const;
-    /// get vertex shader name (if using metal-style shader library
-    const StringAtom& VertexShaderFunc(ShaderLang::Code slang) const;
-    /// get fragment shader name (if using metal-style shader library
-    const StringAtom& FragmentShaderFunc(ShaderLang::Code slang) const;
-    /// get number of uniform blocks
-    int NumUniformBlocks() const;
-    /// find uniform block index by bind stage and slot (return InvalidIndex if not found)
-    int UniformBlockIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
-    /// get uniform block type at index
-    const StringAtom& UniformBlockType(int index) const;
-    /// get uniform block name at index
-    const StringAtom& UniformBlockName(int index) const;
-    /// get uniform block type hash
-    uint32_t UniformBlockTypeHash(int index) const;
-    /// get uniform block byte size
-    uint32_t UniformBlockByteSize(int index) const;
-    /// get uniform block shader stage at index
-    ShaderStage::Code UniformBlockBindStage(int index) const;
-    /// get uniform block bind slot at index
-    int UniformBlockBindSlot(int index) const;
-    /// get number of textures
-    int NumTextures() const;
-    /// find texture index by bind stage and slot (return InvalidIndex if not found)
-    int TextureIndexByStageAndSlot(ShaderStage::Code bindStage, int bindSlot) const;
-    /// get texture name at index
-    const StringAtom& TexName(int index) const;
-    /// get texture type at index 
-    TextureType::Code TexType(int index) const;
-    /// get texture bind stage
-    ShaderStage::Code TexBindStage(int index) const;
-    /// get texture bind slot
-    int TexBindSlot(int index) const;
-private:
-    struct programEntry {
-        StaticArray<String, ShaderLang::NumShaderLangs> vsSources;
-        StaticArray<String, ShaderLang::NumShaderLangs> fsSources;
-        StaticArray<StringAtom, ShaderLang::NumShaderLangs> vsFuncs;
-        StaticArray<StringAtom, ShaderLang::NumShaderLangs> fsFuncs;
-        struct byteCodeEntry {
-            const void* ptr = nullptr;
-            uint32_t size = 0;
-        };
-        StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> vsByteCode;
-        StaticArray<byteCodeEntry, ShaderLang::NumShaderLangs> fsByteCode;
-        VertexLayout vsInputLayout;
-    };
-    struct uniformBlockEntry {
-        StringAtom type;
-        StringAtom name;
-        uint32_t typeHash = 0;
-        uint32_t byteSize = 0;
-        ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
-        int bindSlot = InvalidIndex;
-    };
-    struct textureEntry {
-        StringAtom name;
-        TextureType::Code type = TextureType::InvalidTextureType;
-        ShaderStage::Code bindStage = ShaderStage::InvalidShaderStage;
-        int bindSlot = InvalidIndex;
-    };
-    static const int MaxNumUniformBlocks = ShaderStage::NumShaderStages * GfxConfig::MaxNumUniformBlocksPerStage;
-    static const int MaxNumTextures = GfxConfig::MaxNumVertexTextures + GfxConfig::MaxNumFragmentTextures;
-    programEntry program;
-    int numUniformBlocks = 0;
-    StaticArray<uniformBlockEntry, MaxNumUniformBlocks> uniformBlocks;
-    int numTextures = 0;
-    StaticArray<textureEntry, MaxNumTextures> textures;
-};
-
-//------------------------------------------------------------------------------
-/**
-    @class Oryol::TextureSetup
+    @class Oryol::TextureDesc
     @ingroup Gfx
     @brief setup object for textures and render targets
 */
-class TextureSetup {
-public:
-    /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, Id placeholder=Id::InvalidId());
-    /// asynchronously load from file
-    static TextureSetup FromFile(const Locator& loc, const TextureSetup& blueprint=TextureSetup(), Id placeholder=Id::InvalidId());
-    /// setup 2D texture from raw pixel data
-    static TextureSetup FromPixelData2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
-    /// setup cube texture from raw pixel data
-    static TextureSetup FromPixelDataCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
-    //// setup 3D texture from raw pixel data
-    static TextureSetup FromPixelData3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
-    /// setup array texture from raw pixel data
-    static TextureSetup FromPixelDataArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, const TextureSetup& blueprint=TextureSetup());
-    /// setup empty 2D texture
-    static TextureSetup Empty2D(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
-    /// setup empty cube texture
-    static TextureSetup EmptyCube(int w, int h, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
-    /// setup empty 3D texture
-    static TextureSetup Empty3D(int w, int h, int d, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
-    /// setup empty array texture
-    static TextureSetup EmptyArray(int w, int h, int layers, int numMipMaps, PixelFormat::Code fmt, Usage::Code usage, const TextureSetup& blueprint=TextureSetup());
-    /// setup as 2D render target
-    static TextureSetup RenderTarget2D(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
-    /// setup as cube render target
-    static TextureSetup RenderTargetCube(int w, int h, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
-    /// setup as 3D render target
-    static TextureSetup RenderTarget3D(int w, int h, int d, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
-    /// setup as array render target
-    static TextureSetup RenderTargetArray(int w, int h, int layers, PixelFormat::Code colorFmt=PixelFormat::RGBA8, PixelFormat::Code depthFmt=PixelFormat::None);
-    /// setup texture from existing native texture(s) (needs GfxFeature::NativeTexture)
-    static TextureSetup FromNativeTexture(int w, int h, int numMipMaps, TextureType::Code type, PixelFormat::Code fmt, Usage::Code usage, intptr_t h0, intptr_t h1=0);
-    /// return true if texture should be setup from a file
-    bool ShouldSetupFromFile() const;
-    /// return true if texture should be setup from raw pixel data
-    bool ShouldSetupFromPixelData() const;
-    /// return true if texture should be setup from native texture handles
-    bool ShouldSetupFromNativeTexture() const;
-    /// return true if texture should be created empty
-    bool ShouldSetupEmpty() const;
-    /// return true if render target has depth
-    bool HasDepth() const;
-    /// intended usage
-    Usage::Code TextureUsage = Usage::Immutable;
-    /// texture type
-    TextureType::Code Type = TextureType::Texture2D;
-    /// use as render target?
-    bool IsRenderTarget = false;
-    /// width in pixels
-    int Width = 1;
-    /// height in pixels
-    int Height = 1;
-    /// depth/layers in pixels (for 3D and Array textures)
-    int Depth = 1;
-    /// number of mipmaps (default is 1, only for FromPixelData)
-    int NumMipMaps = 1;
-    /// the color pixel format
-    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
-    /// the depth pixel format (only if render target, PixelFormat::None if render target should not have depth buffer)
-    PixelFormat::Code DepthFormat = PixelFormat::None;
-    /// MSAA samples (2, 4, 8... no MSAA: 1), check MSAARenderTargets feature availability!
-    int SampleCount = 1;
-    /// sampler state
-    SamplerState Sampler;
-    /// resource locator
-    class Locator Locator = Locator::NonShared();
-    /// resource placeholder
-    Id Placeholder;
-    /// optional: native texture handle (only on platforms which support GfxFeature::NativeTextures)
-    static const int MaxNumNativeHandles = 2;
-    StaticArray<intptr_t, MaxNumNativeHandles> NativeHandle;
-    /// optional image surface offsets and sizes
-    ImageDataAttrs ImageData;
-    /// default constructor 
-    TextureSetup();
-private:
-    bool setupFromFile = false;
-    bool setupFromPixelData = false;
-    bool setupFromNativeHandle = false;
-    bool setupEmpty = false;
-    bool hasMipMaps = false;
+struct TextureDesc {
+    TextureDesc() {
+        nativeTextures.Fill(0);
+    }
+    TextureDesc(const TextureDesc& rhs) {
+        *this = rhs;
+    }
+    TextureDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    TextureDesc& Type(TextureType::Code t) {
+        type = t; return *this;
+    }
+    TextureType::Code Type() const {
+        return type;
+    }
+    TextureDesc& RenderTarget(bool b) {
+        renderTarget = b; return *this;
+    }
+    bool RenderTarget() const {
+        return renderTarget;
+    }
+    TextureDesc& Width(int w) {
+        width = w; return *this;
+    }
+    int Width() const {
+        return width;
+    }
+    TextureDesc& Height(int h) {
+        height = h; return *this;
+    }
+    int Height() const {
+        return height;
+    }
+    TextureDesc& Depth(int d) {
+        depth = d; return *this;
+    }
+    int Depth() const {
+        return depth;
+    }
+    TextureDesc& Layers(int l) {
+        depth = l; return *this;
+    }
+    int Layers() const {
+        return depth;
+    }
+    TextureDesc& NumMipMaps(int n) {
+        numMipMaps = n; return *this;
+    }
+    int NumMipMaps() const {
+        return numMipMaps;
+    }
+    TextureDesc& Usage(Usage::Code u) {
+        usage = u; return *this;
+    }
+    Usage::Code Usage() const {
+        return usage;
+    }
+    TextureDesc& Format(PixelFormat::Code fmt) {
+        format = fmt; return *this;
+    }
+    PixelFormat::Code Format() const {
+        return format;
+    }
+    TextureDesc& SampleCount(int c) {
+        sampleCount = c; return *this;
+    }
+    int SampleCount() const {
+        return sampleCount;
+    }
+    TextureDesc& MagFilter(TextureFilterMode::Code f) {
+        magFilter = f; return *this;
+    }
+    TextureFilterMode::Code MagFilter() const {
+        return magFilter;
+    }
+    TextureDesc& MinFilter(TextureFilterMode::Code f) {
+        minFilter = f; return *this;
+    }
+    TextureFilterMode::Code MinFilter() const {
+        return minFilter;
+    }
+    TextureDesc& WrapU(TextureWrapMode::Code m) {
+        wrapU = m; return *this;
+    }
+    TextureWrapMode::Code WrapU() const {
+        return wrapU;
+    }
+    TextureDesc& WrapV(TextureWrapMode::Code m) {
+        wrapV = m; return *this;
+    }
+    TextureWrapMode::Code WrapV() const {
+        return wrapV;
+    }
+    TextureDesc& WrapW(TextureWrapMode::Code m) {
+        wrapW = m; return *this;
+    }
+    TextureWrapMode::Code WrapW() const {
+        return wrapW;
+    }
+    TextureDesc& NativeTexture(int index, intptr_t tex) {
+        nativeTextures[index] = tex; return *this;
+    }
+    intptr_t NativeTexture(int index) const {
+        return nativeTextures[index];
+    }
+    TextureDesc& MipSize(int faceIndex, int mipIndex, int size) {
+        content.Size[faceIndex][mipIndex] = size;
+        return *this;
+    }
+    int MipSize(int faceIndex, int mipIndex) const {
+        return content.Size[faceIndex][mipIndex];
+    }
+    TextureDesc& MipContent(int faceIndex, int mipIndex, const void* ptr) {
+        content.Pointer[faceIndex][mipIndex] = ptr;
+        return *this;
+    }
+    const void* MipContent(int faceIndex, int mipIndex) const {
+        return content.Pointer[faceIndex][mipIndex];
+    }
+
+    class Locator locator = Locator::NonShared();
+    TextureType::Code type = TextureType::Texture2D;
+    bool renderTarget = false;
+    int width = 1;
+    int height = 1;
+    int depth = 1;
+    int numMipMaps = 1;
+    Oryol::Usage::Code usage = Usage::Immutable;
+    PixelFormat::Code format = PixelFormat::RGBA8;
+    int sampleCount = 1;
+    TextureFilterMode::Code magFilter = TextureFilterMode::Nearest;
+    TextureFilterMode::Code minFilter = TextureFilterMode::Nearest;
+    TextureWrapMode::Code wrapU = TextureWrapMode::Repeat;
+    TextureWrapMode::Code wrapV = TextureWrapMode::Repeat;
+    TextureWrapMode::Code wrapW = TextureWrapMode::Repeat;
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> nativeTextures;
+    ImageContent content;
 };
-    
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::PassDesc
+    @ingroup Gfx
+    @brief creation attributes for render pass resource
+*/
+struct PassDesc {
+    PassDesc() { };
+    PassDesc(const PassDesc& rhs) {
+        *this = rhs;
+    }
+    PassDesc& Locator(const class Locator& loc) {
+        locator = loc; return *this;
+    }
+    const class Locator& Locator() const {
+        return locator;
+    }
+    PassDesc& ColorAttachment(int slotIndex, const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
+        auto& att = colorAttachments[slotIndex];
+        att.Texture = tex;
+        att.MipLevel = mipLevel;
+        att.Face = faceLayerSlice;
+        return *this;
+    }
+    PassDesc& DepthStencilAttachment(const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
+        auto& att = depthStencilAttachment;
+        att.Texture = tex;
+        att.MipLevel = mipLevel;
+        att.Face = faceLayerSlice;
+        return *this;
+    }
+
+    class Locator locator = Locator::NonShared();
+    struct Attachment {
+        Id Texture;
+        int MipLevel = 0;
+        union {
+            int Face = 0;
+            int Layer;
+            int Slice;
+        };
+    };
+    StaticArray<Attachment, GfxConfig::MaxNumColorAttachments> colorAttachments;
+    Attachment depthStencilAttachment;
+};
+
+//------------------------------------------------------------------------------
+/**
+    @class Oryol::GfxFrameInfo
+    @brief per-frame stats of the Gfx module
+*/
+struct GfxFrameInfo {
+    int NumPasses = 0;
+    int NumApplyViewPort = 0;
+    int NumApplyScissorRect = 0;
+    int NumApplyDrawState = 0;
+    int NumApplyUniformBlock = 0;
+    int NumUpdateBuffers = 0;
+    int NumUpdateTextures = 0;
+    int NumDraw = 0;
+    int NumDrawInstanced = 0;
+};
+
 } // namespace Oryol

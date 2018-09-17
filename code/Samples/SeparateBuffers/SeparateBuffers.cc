@@ -27,12 +27,11 @@ public:
     AppState::Code OnCleanup();
 
     glm::mat4 computeMVP(const glm::vec3& pos);
-    static const int NumColorMeshes = 3;
-    StaticArray<Id, NumColorMeshes> colorMesh;
+    static const int NumColorBuffer = 3;
+    PrimitiveGroup cubePrimGroup;
+    StaticArray<Id, NumColorBuffer> colorBuffers;
     DrawState drawState;
     Shader::params params;
-    glm::mat4 view;
-    glm::mat4 proj;
     float angleX = 0.0f;
     float angleY = 0.0f;
 };
@@ -42,50 +41,44 @@ OryolMain(SeparateBuffersApp);
 AppState::Code
 SeparateBuffersApp::OnInit() {
 
-    auto gfxSetup = GfxSetup::WindowMSAA4(600, 400, "Separate Buffers");
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc()
+        .Width(600).Height(400)
+        .SampleCount(4)
+        .Title("Separate Buffers")
+        .HtmlTrackElementSize(true));
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
-    ShapeBuilder shapeBuilder;
-    shapeBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-    };
-    auto cubeSetupAndData = shapeBuilder.Box(1.0f, 1.0f, 1.0f, 1).Build();
-    this->drawState.Mesh[0] = Gfx::CreateResource(cubeSetupAndData);
+    auto shape = ShapeBuilder()
+        .Positions("in_pos", VertexFormat::Float3)
+        .Box(1.0f, 1.0f, 1.0f, 1)
+        .Build();
+    this->cubePrimGroup = shape.PrimitiveGroups[0];
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // create 3 meshes with only color data
-    auto colorSetup = MeshSetup::FromData();
-    colorSetup.Layout = { 
-        { VertexAttr::Color0, VertexFormat::Float3 } 
-    };
     static const int NumVertices = 24;
-    o_assert(cubeSetupAndData.Setup.NumVertices == NumVertices);
-    colorSetup.NumVertices = NumVertices;
-    for (int i = 0; i < NumColorMeshes; i++) {
-        float colorVertices[NumVertices][NumColorMeshes] = { };
+    static const int NumColorChannels = 3;
+    float colorVertices[NumVertices][NumColorChannels]= { };
+    for (int i = 0; i < NumColorChannels; i++) {
         for (int vi = 0; vi < NumVertices; vi++) {
             colorVertices[vi][i] = glm::linearRand(0.5f, 1.0f);
         }
-        this->colorMesh[i] = Gfx::CreateResource(colorSetup, colorVertices, sizeof(colorVertices));
+        this->colorBuffers[i] = Gfx::CreateBuffer(BufferDesc()
+            .Size(sizeof(colorVertices))
+            .Content(colorVertices));
     }
 
     // create shader and pipeline, the position data vertex Layout
-    // goes into the first slot, and the color data vertex layout into the second slot
-    Id shd = Gfx::CreateResource(Shader::Setup());
-    auto ps = PipelineSetup::FromShader(shd);
-    ps.Layouts[0] = cubeSetupAndData.Setup.Layout;
-    ps.Layouts[1] = colorSetup.Layout;
-    ps.DepthStencilState.DepthWriteEnabled = true;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::LessEqual;
-    ps.RasterizerState.SampleCount = gfxSetup.SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    // goes into the first layout slot, and the color data vertex layout into the second slot
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .Shader(Gfx::CreateShader(Shader::Desc()))
+        .Layout(1, { { "in_color", VertexFormat::Float3 } })
+        .DepthWriteEnabled(true)
+        .DepthCmpFunc(CompareFunc::LessEqual)
+        .SampleCount(Gfx::Desc().SampleCount()));
 
-    const float fbWidth = (const float) Gfx::DisplayAttrs().FramebufferWidth;
-    const float fbHeight = (const float) Gfx::DisplayAttrs().FramebufferHeight;
-    this->proj = glm::perspectiveFov(glm::radians(45.0f), fbWidth, fbHeight, 0.01f, 100.0f);
-    this->view = glm::mat4();
-    
     return App::OnInit();
 }
 
@@ -105,11 +98,11 @@ SeparateBuffersApp::OnRunning() {
     for (int i = 0; i < 3; i++) {
         // switch to the next color data buffer, but keep the
         // same position data buffer
-        this->drawState.Mesh[1] = this->colorMesh[i];
+        this->drawState.VertexBuffers[1] = this->colorBuffers[i];
         Gfx::ApplyDrawState(this->drawState);
         this->params.mvp = this->computeMVP(positions[i]);
         Gfx::ApplyUniformBlock(this->params);
-        Gfx::Draw();
+        Gfx::Draw(this->cubePrimGroup);
     }
     Gfx::EndPass();
     Gfx::CommitFrame();
@@ -127,9 +120,10 @@ SeparateBuffersApp::OnCleanup() {
 //------------------------------------------------------------------------------
 glm::mat4
 SeparateBuffersApp::computeMVP(const glm::vec3& pos) {
+    glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     glm::mat4 modelTform = glm::translate(glm::mat4(), pos);
     modelTform = glm::rotate(modelTform, this->angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     modelTform = glm::rotate(modelTform, this->angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    return this->proj * this->view * modelTform;
+    return proj * modelTform;
 }
 

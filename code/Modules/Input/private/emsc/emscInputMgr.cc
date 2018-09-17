@@ -27,9 +27,9 @@ emscInputMgr::~emscInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-emscInputMgr::setup(const InputSetup& setup) {
+emscInputMgr::setup(const InputDesc& desc) {
     this->setupGamepadMappings();   // needs to happen before calling base class
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->setupKeyTable();
     this->keyboard.attached = true;
     this->mouse.attached = true;
@@ -64,10 +64,10 @@ emscInputMgr::setupCallbacks() {
     emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
     emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
-    if (this->inputSetup.AccelerometerEnabled) {
+    if (this->inputDesc.accelerometerEnabled) {
         emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
     }
-    if (this->inputSetup.GyrometerEnabled) {
+    if (this->inputDesc.gyrometerEnabled) {
         emscripten_set_deviceorientation_callback(this, true, emscDeviceOrientation);
     }
 }

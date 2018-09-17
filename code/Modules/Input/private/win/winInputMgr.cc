@@ -5,7 +5,7 @@
 #include "winInputMgr.h"
 #include "Core/Core.h"
 #include "Core/RunLoop.h"
-#include "Gfx/private/win/winDisplayMgr.h"
+#include "Gfx/private/d3d11/winDisplayMgr.h"
 
 namespace Oryol {
 namespace _priv {
@@ -29,9 +29,9 @@ winInputMgr::~winInputMgr() {
 
 //------------------------------------------------------------------------------
 void
-winInputMgr::setup(const InputSetup& setup) {
+winInputMgr::setup(const InputDesc& desc) {
 
-    inputMgrBase::setup(setup);
+    inputMgrBase::setup(desc);
     this->keyboard.attached = true;
     this->mouse.attached = true;
 

@@ -9,7 +9,7 @@
 
 #define ORYOL_TRAP() abort()
 
-#if !(__GNUC__ || __GNUC__)
+#if !__GNUC__
 // on Visual Studio, replace __PRETTY_FUNCTION__ with __FUNCSIG__
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif

@@ -2,13 +2,12 @@
 //  background shader
 //
 @vs backgroundVS
-in vec4 position;
-in vec2 texcoord0;
+in vec2 in_pos;
 out vec2 uv0;
 
 void main() {
-    gl_Position = position;
-    uv0 = texcoord0;
+    gl_Position = vec4(in_pos*2.0-1.0, 0.5f, 1.0f);
+    uv0 = in_pos;
 }
 @end
 
@@ -30,13 +29,13 @@ void main() {
 uniform params {
     vec4 translate;
 };
-in vec4 position;
-in vec4 color0;
+in vec4 in_pos;
+in vec4 in_color;
 out vec4 color;
 
 void main() {
-    gl_Position = position + translate;
-    color = color0;
+    gl_Position = in_pos + translate;
+    color = in_color;
 }
 @end
 

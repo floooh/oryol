@@ -28,22 +28,21 @@ debugTextRenderer::~debugTextRenderer() {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setup(const DbgSetup& s) {
+debugTextRenderer::setup(const DbgDesc& desc) {
     o_assert_dbg(!this->valid);
     o_assert_dbg(nullptr == this->vertexData);
 
-    this->numColumns = s.NumTextColumns;
-    this->numRows = s.NumTextRows;
-    this->maxNumChars = s.NumTextColumns * s.NumTextRows;
-    this->textScaleX = s.TextScaleX;
-    this->textScaleY = s.TextScaleY;
+    this->numColumns = desc.numTextColumns;
+    this->numRows = desc.numTextRows;
+    this->maxNumChars = desc.numTextColumns * desc.numTextRows;
+    this->textScaleX = desc.textScaleX;
+    this->textScaleY = desc.textScaleY;
     this->maxNumVertices = this->maxNumChars * 6;
     this->stringBuilder.Reserve(this->maxNumChars * 2);
     this->curNumVertices = 0;
     this->vertexData = (Vertex*) Memory::Alloc(this->maxNumVertices * sizeof(Vertex));
     Gfx::PushResourceLabel();
-    this->setupMesh();
-    this->setupFontTexture();
+    this->setupResources(desc);
     this->resourceLabel = Gfx::PopResourceLabel();
     this->valid = true;
 }
@@ -83,8 +82,8 @@ debugTextRenderer::printf(const char* text, std::va_list args) {
 void
 debugTextRenderer::cursorPos(uint8_t x, uint8_t y) {
     SCOPED_LOCK;
-    this->stringBuilder.Append((char) 0x1B);   // start ESC control sequence
-    this->stringBuilder.Append((char) 0x01);   // set cursor
+    this->stringBuilder.Append(0x1B);   // start ESC control sequence
+    this->stringBuilder.Append(0x01);   // set cursor
     this->stringBuilder.Append((char)x);
     this->stringBuilder.Append((char)y);
 }
@@ -103,15 +102,7 @@ debugTextRenderer::textColor(float r, float g, float b, float a) {
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::drawTextBuffer() {
-    
-    // lazy-setup the pipeline-state-object (this is done deferred to 
-    // initialize the pipeline with the right render pass params
-    if (!this->drawState.Pipeline.IsValid()) {
-        Gfx::PushResourceLabel(this->resourceLabel);
-        this->setupPipeline();
-        Gfx::PopResourceLabel();
-    }
+debugTextRenderer::drawTextBuffer(int width, int height) {
     
     // get the currently accumulated string
     String str;
@@ -130,21 +121,55 @@ debugTextRenderer::drawTextBuffer() {
         // FIXME: this would be wrong if rendering to a render target which
         // isn't the same size as the back buffer, there's no method yet
         // to query the current render target width/height
-        Gfx::UpdateVertices(this->drawState.Mesh[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
+        if (0 == width) {
+            width = Gfx::DisplayAttrs().Width;
+        }
+        if (0 == height) {
+            height = Gfx::DisplayAttrs().Height;
+        }
+        Gfx::UpdateBuffer(this->drawState.VertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyDrawState(this->drawState);
         DbgTextShader::vsParams vsParams;
-        const float w = 8.0f / Gfx::PassAttrs().FramebufferWidth;   // glyph is 8 pixels wide
-        const float h = 8.0f / Gfx::PassAttrs().FramebufferHeight;  // glyph is 8 pixel tall
+        const float w = 8.0f / width;   // glyph is 8 pixels wide
+        const float h = 8.0f / height;  // glyph is 8 pixel tall
         vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
         Gfx::ApplyUniformBlock(vsParams);
-        Gfx::Draw(PrimitiveGroup(0, this->curNumVertices));
+        Gfx::Draw(0, this->curNumVertices);
         this->curNumVertices = 0;
     }
 }
 
 //------------------------------------------------------------------------------
 void
-debugTextRenderer::setupFontTexture() {
+debugTextRenderer::setupResources(const DbgDesc& desc) {
+    o_assert_dbg(this->vertexLayout.Empty());
+    o_assert_dbg((this->maxNumVertices > 0) && (this->maxNumVertices == this->maxNumChars*6));
+    
+    // setup an empty mesh, only vertices
+    this->vertexLayout = {
+        { "position", VertexFormat::Float4 },
+        { "color0", VertexFormat::UByte4N }
+    };
+    const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
+    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
+        .Size(vbufSize)
+        .Type(BufferType::VertexBuffer)
+        .Usage(Usage::Stream));
+    o_assert_dbg(this->drawState.VertexBuffers[0].IsValid());
+
+    // create pipeline object
+    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
+        .Shader(Gfx::CreateShader(DbgTextShader::Desc()))
+        .Layout(0, this->vertexLayout)
+        .DepthWriteEnabled(false)
+        .DepthCmpFunc(CompareFunc::Always)
+        .BlendEnabled(true)
+        .BlendSrcFactorRGB(BlendFactor::SrcAlpha)
+        .BlendDstFactorRGB(BlendFactor::OneMinusSrcAlpha)
+        .ColorWriteMask(PixelChannel::RGB)
+        .ColorFormat(desc.colorFormat)
+        .DepthFormat(desc.depthFormat)
+        .SampleCount(desc.sampleCount));
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;
@@ -155,9 +180,9 @@ debugTextRenderer::setupFontTexture() {
     const int bytesPerChar = charWidth * charHeight;
     const int imgDataSize = numChars * bytesPerChar;
     o_assert_dbg((imgWidth * imgHeight) == imgDataSize);
-    
+
     // setup a memory buffer and write font image data to it
-    Buffer data;
+    MemoryBuffer data;
     uint8_t* dstPtr = data.Add(imgDataSize);
     const char* srcPtr = kc85_4_Font;
     for (int charIndex = 0; charIndex < numChars; charIndex++) {
@@ -171,56 +196,19 @@ debugTextRenderer::setupFontTexture() {
             }
         }
     }
-    
+
     // setup texture, pixel format is 8bpp uncompressed
-    auto texSetup = TextureSetup::FromPixelData2D(imgWidth, imgHeight, 1, PixelFormat::L8);
-    texSetup.Sampler.MinFilter = TextureFilterMode::Nearest;
-    texSetup.Sampler.MagFilter = TextureFilterMode::Nearest;
-    texSetup.Sampler.WrapU = TextureWrapMode::ClampToEdge;
-    texSetup.Sampler.WrapV = TextureWrapMode::ClampToEdge;
-    texSetup.ImageData.Sizes[0][0] = imgDataSize;
-    Id tex = Gfx::CreateResource(texSetup, data);
-    o_assert_dbg(tex.IsValid());
-    o_assert_dbg(Gfx::QueryResourceInfo(tex).State == ResourceState::Valid);
-    this->drawState.FSTexture[DbgTextShader::tex] = tex;
-}
-
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setupMesh() {
-    o_assert_dbg(this->vertexLayout.Empty());
-    o_assert_dbg((this->maxNumVertices > 0) && (this->maxNumVertices == this->maxNumChars*6));
-    
-    // setup an empty mesh, only vertices
-    this->vertexLayout = {
-        { VertexAttr::Position, VertexFormat::Float4 },
-        { VertexAttr::Color0, VertexFormat::UByte4N }
-    };
-    MeshSetup setup = MeshSetup::Empty(this->maxNumVertices, Usage::Stream);
-    setup.Layout = this->vertexLayout;
-    this->drawState.Mesh[0] = Gfx::CreateResource(setup);
-    o_assert_dbg(this->drawState.Mesh[0].IsValid());
-}
-
-//------------------------------------------------------------------------------
-void
-debugTextRenderer::setupPipeline() {
-    // finally create pipeline object
-    Id shd = Gfx::CreateResource(DbgTextShader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(this->vertexLayout, shd);
-    ps.DepthStencilState.DepthWriteEnabled = false;
-    ps.DepthStencilState.DepthCmpFunc = CompareFunc::Always;
-    ps.BlendState.BlendEnabled = true;
-    ps.BlendState.SrcFactorRGB = BlendFactor::SrcAlpha;
-    ps.BlendState.DstFactorRGB = BlendFactor::OneMinusSrcAlpha;
-    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
-    // NOTE: this is a bit naughty, we actually want 'dbg render contexts'
-    // for different render targets and quickly select them before
-    // text rendering
-    ps.BlendState.ColorFormat = Gfx::PassAttrs().ColorPixelFormat;
-    ps.BlendState.DepthFormat = Gfx::PassAttrs().DepthPixelFormat;
-    ps.RasterizerState.SampleCount = Gfx::PassAttrs().SampleCount;
-    this->drawState.Pipeline = Gfx::CreateResource(ps);
+    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::CreateTexture(TextureDesc()
+        .Type(TextureType::Texture2D)
+        .Width(imgWidth)
+        .Height(imgHeight)
+        .Format(PixelFormat::L8)
+        .MinFilter(TextureFilterMode::Nearest)
+        .MagFilter(TextureFilterMode::Nearest)
+        .WrapU(TextureWrapMode::ClampToEdge)
+        .WrapV(TextureWrapMode::ClampToEdge)
+        .MipContent(0, 0, data.Data())
+        .MipSize(0, 0, data.Size()));
 }
 
 //------------------------------------------------------------------------------

@@ -30,16 +30,11 @@ OryolMain(DebugTextApp);
 //------------------------------------------------------------------------------
 AppState::Code
 DebugTextApp::OnInit() {
-    auto gfxSetup = GfxSetup::Window(800, 600, "Oryol DebugText Sample");
-    gfxSetup.DefaultPassAction = PassAction::Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    Gfx::Setup(gfxSetup);
-    DbgSetup dbgSetup;
-    dbgSetup.TextScaleX = 2.0f;
-    dbgSetup.TextScaleY = 2.0f;
-    Dbg::Setup(dbgSetup);
+    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("Oryol DebugText Sample"));
+    Dbg::Setup(DbgDesc().TextScaleX(2.0f).TextScaleY(2.0f));
     
-    this->width = Gfx::DisplayAttrs().FramebufferWidth / 16;
-    this->height = Gfx::DisplayAttrs().FramebufferHeight / 16;
+    this->width = Gfx::DisplayAttrs().Width / 16;
+    this->height = Gfx::DisplayAttrs().Height / 16;
     this->buffer = (uint8_t*) Memory::Alloc(this->width * this->height);
     Memory::Clear(this->buffer, this->width * this->height);
 
@@ -56,7 +51,7 @@ DebugTextApp::OnRunning() {
     this->moveChars();
     this->drawText();
     
-    Gfx::BeginPass();
+    Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
     Dbg::DrawTextBuffer();
     Gfx::EndPass();
     Gfx::CommitFrame();

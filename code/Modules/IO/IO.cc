@@ -29,7 +29,7 @@ namespace {
 
 //------------------------------------------------------------------------------
 void
-IO::Setup(const IOSetup& setup) {
+IO::Setup(const IODesc& desc) {
     o_assert(!IsValid());
 
     state = Memory::New<_state>();
@@ -39,12 +39,12 @@ IO::Setup(const IOSetup& setup) {
     state->router.setup(ptrs);
 
     // setup initial assigns
-    for (const auto& assign : setup.Assigns) {
+    for (const auto& assign : desc.assigns) {
         SetAssign(assign.Key(), assign.Value());
     }
     
     // setup initial filesystems
-    for (const auto& fs : setup.FileSystems) {
+    for (const auto& fs : desc.fileSystems) {
         RegisterFileSystem(fs.Key(), fs.Value());
     }
 
@@ -171,7 +171,7 @@ IO::LoadFile(const URL& url) {
 
 //------------------------------------------------------------------------------
 Ptr<IOWrite>
-IO::WriteFile(const URL& url, const Buffer& data) {
+IO::WriteFile(const URL& url, const MemoryBuffer& data) {
     o_assert_dbg(IsValid());
     Ptr<IOWrite> ioReq = IOWrite::Create();
     ioReq->Url = url;

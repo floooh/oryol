@@ -18,7 +18,7 @@ public:
     inputMgrBase();
     ~inputMgrBase();
     
-    void setup(const InputSetup& setup);
+    void setup(const InputDesc& desc);
     void discard();
     bool isValid() const;
     void reset();
@@ -34,7 +34,7 @@ public:
 
 
     bool valid = false;
-    InputSetup inputSetup;
+    InputDesc inputDesc;
     inputDispatcher dispatcher;
     tapDetector singleTapDetector;
     tapDetector doubleTapDetector;

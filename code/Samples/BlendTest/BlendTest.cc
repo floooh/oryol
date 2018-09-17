@@ -4,7 +4,6 @@
 #include "Pre.h"
 #include "Core/Main.h"
 #include "Gfx/Gfx.h"
-#include "Assets/Gfx/MeshBuilder.h"
 #include "shaders.h"
 
 using namespace Oryol;
@@ -16,8 +15,8 @@ public:
     AppState::Code OnCleanup();
 
     DrawState bgDrawState;
-    Id triMesh;
-    Id pipelines[BlendFactor::NumBlendFactors][BlendFactor::NumBlendFactors];
+    Id triVBuf;
+    Id pipelines[BlendFactor::Num][BlendFactor::Num];
     TriShader::params params;
 };
 OryolMain(BlendTestApp);
@@ -26,49 +25,53 @@ OryolMain(BlendTestApp);
 AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
-    auto gfxSetup = GfxSetup::Window(1024, 768, "Oryol Blend Sample");
-    gfxSetup.ResourcePoolSize[GfxResourceType::Pipeline] =  512;
-    Gfx::Setup(gfxSetup);
+    Gfx::Setup(GfxDesc()
+        .Width(1024)
+        .Height(768)
+        .Title("Oryol Blend Sample")
+        .HtmlTrackElementSize(true)
+        .ResourcePoolSize(GfxResourceType::Pipeline, 512));
 
     // create pipeline object for a patterned background
-    auto ms = MeshSetup::FullScreenQuad();
-    this->bgDrawState.Mesh[0] = Gfx::CreateResource(ms);
-    Id bgShd = Gfx::CreateResource(BGShader::Setup());
-    auto ps = PipelineSetup::FromLayoutAndShader(ms.Layout, bgShd);
-    this->bgDrawState.Pipeline = Gfx::CreateResource(ps);
+    const float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
+    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
+        .Size(sizeof(bgVertices))
+        .Content(bgVertices));
+    this->bgDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
+        .Shader(Gfx::CreateShader(BGShader::Desc()))
+        .Layout(0, {
+            { "in_pos", VertexFormat::Float2 }
+        })
+        .PrimitiveType(PrimitiveType::TriangleStrip));
 
     // setup a triangle mesh and shader
-    MeshBuilder meshBuilder;
-    meshBuilder.NumVertices = 3;
-    meshBuilder.IndicesType = IndexType::None;
-    meshBuilder.Layout = {
-        { VertexAttr::Position, VertexFormat::Float3 },
-        { VertexAttr::Color0, VertexFormat::Float4 }
+    float triVertices[] = {
+          // pos                color
+          0.0f, 0.05f, 0.5f,    0.7f, 0.0f, 0.0f, 0.75f,
+          0.05f, -0.05f, 0.5f,  0.0f, 0.75f, 0.0f, 0.75f,
+          -0.05f, -0.05f, 0.5f, 0.0f, 0.0f, 0.75f, 0.75f
     };
-    meshBuilder.PrimitiveGroups.Add(0, 3);
-    meshBuilder.Begin()
-        .Vertex(0, VertexAttr::Position, 0.0f, 0.05f, 0.5f)
-        .Vertex(0, VertexAttr::Color0, 0.75f, 0.0f, 0.0f, 0.75f)
-        .Vertex(1, VertexAttr::Position, 0.05f, -0.05f, 0.5f)
-        .Vertex(1, VertexAttr::Color0, 0.0f, 0.75f, 0.0f, 0.75f)
-        .Vertex(2, VertexAttr::Position, -0.05f, -0.05f, 0.5f)
-        .Vertex(2, VertexAttr::Color0, 0.0f, 0.0f, 0.75f, 0.75f);
-    this->triMesh = Gfx::CreateResource(meshBuilder.Build());
-    Id shd = Gfx::CreateResource(TriShader::Setup());
-    
+    this->triVBuf = Gfx::CreateBuffer(BufferDesc()
+        .Size(sizeof(triVertices))
+        .Content(triVertices));
+
     // setup one draw state for each blend factor combination
-    ps = PipelineSetup::FromLayoutAndShader(meshBuilder.Layout, shd);
-    ps.BlendState.BlendEnabled = true;
-    ps.BlendColor = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-    ps.BlendState.ColorWriteMask = PixelChannel::RGB;
-    for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            ps.BlendState.SrcFactorRGB = (BlendFactor::Code) x;
-            ps.BlendState.DstFactorRGB = (BlendFactor::Code) y;
-            this->pipelines[y][x] = Gfx::CreateResource(ps);
+    auto ps = PipelineDesc()
+        .Shader(Gfx::CreateShader(TriShader::Desc()))
+        .Layout(0, {
+            { "in_pos", VertexFormat::Float3 },
+            { "in_color", VertexFormat::Float4 }
+        })
+        .BlendEnabled(true)
+        .BlendColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
+        .ColorWriteMask(PixelChannel::RGB);
+    for (uint32_t y = 0; y < BlendFactor::Num; y++) {
+        for (uint32_t x = 0; x < BlendFactor::Num; x++) {
+            ps.BlendSrcFactorRGB((BlendFactor::Code)x);
+            ps.BlendDstFactorRGB((BlendFactor::Code)y);
+            this->pipelines[y][x] = Gfx::CreatePipeline(ps);
         }
     }
-
     return App::OnInit();
 }
 
@@ -79,20 +82,43 @@ BlendTestApp::OnRunning() {
     // draw checkboard background
     Gfx::BeginPass();
     Gfx::ApplyDrawState(this->bgDrawState);
-    Gfx::Draw();
+    Gfx::Draw(0, 4);
 
     // draw blended triangles
     DrawState triDrawState;
-    triDrawState.Mesh[0] = this->triMesh;
-    float d = 1.0f / BlendFactor::NumBlendFactors;
-    for (uint32_t y = 0; y < BlendFactor::NumBlendFactors; y++) {
-        for (uint32_t x = 0; x < BlendFactor::NumBlendFactors; x++) {
-            this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
-            this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-            triDrawState.Pipeline = this->pipelines[y][x];
-            Gfx::ApplyDrawState(triDrawState);
-            Gfx::ApplyUniformBlock(this->params);
-            Gfx::Draw();
+    triDrawState.VertexBuffers[0] = this->triVBuf;
+    float d = 1.0f / BlendFactor::Num;
+    for (uint32_t y = 0; y < BlendFactor::Num; y++) {
+        for (uint32_t x = 0; x < BlendFactor::Num; x++) {
+            bool valid = true;
+            /* WebGL exceptions: 
+                - "GL_SRC_ALPHA_SATURATE as a destination blend function is disallowed in WebGL 1"
+                - "constant color and constant alpha cannot be used together as source and 
+                    destination factors in the blend function"
+            */
+            const BlendFactor::Code src = (BlendFactor::Code) x;
+            const BlendFactor::Code dst = (BlendFactor::Code) y;
+            if (dst == BlendFactor::SrcAlphaSaturated) {
+                valid = false;
+            }
+            else if (((src == BlendFactor::BlendColor) || (src == BlendFactor::OneMinusBlendColor)) &&
+                     ((dst == BlendFactor::BlendAlpha) || (dst == BlendFactor::OneMinusBlendAlpha)))
+            {
+                valid = false;
+            }
+            else if (((src == BlendFactor::BlendAlpha) || (src == BlendFactor::OneMinusBlendAlpha)) &&
+                     ((dst == BlendFactor::BlendColor) || (dst == BlendFactor::OneMinusBlendColor)))
+            {
+                valid = false;
+            }
+            if (valid) {
+                this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
+                this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
+                triDrawState.Pipeline = this->pipelines[y][x];
+                Gfx::ApplyDrawState(triDrawState);
+                Gfx::ApplyUniformBlock(this->params);
+                Gfx::Draw(0, 3);
+            }
         }
     }
     Gfx::EndPass();
