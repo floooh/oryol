@@ -238,6 +238,72 @@ emscInputMgr::updateGamepads() {
 }
 
 //------------------------------------------------------------------------------
+static bool
+shouldConsumeKey(Key::Code key) {
+    switch (key) {
+        case Key::World1:
+        case Key::World2:
+        case Key::Escape:
+        case Key::Enter:
+        case Key::Tab:
+        case Key::BackSpace:
+        case Key::Insert:
+        case Key::Delete:
+        case Key::Right:
+        case Key::Left:
+        case Key::Down:
+        case Key::Up:
+        case Key::PageUp:
+        case Key::PageDown:
+        case Key::Home:
+        case Key::End:
+        case Key::CapsLock:
+        case Key::ScrollLock:
+        case Key::NumLock:
+        case Key::PrintScreen:
+        case Key::Pause:
+        case Key::F1:
+        case Key::F2:
+        case Key::F3:
+        case Key::F4:
+        case Key::F5:
+        case Key::F6:
+        case Key::F7:
+        case Key::F8:
+        case Key::F9:
+        case Key::F10:
+        case Key::F11:
+        case Key::F12:
+        case Key::F13:
+        case Key::F14:
+        case Key::F15:
+        case Key::F16:
+        case Key::F17:
+        case Key::F18:
+        case Key::F19:
+        case Key::F20:
+        case Key::F21:
+        case Key::F22:
+        case Key::F23:
+        case Key::F24:
+        case Key::F25:
+        case Key::NumEnter:
+        case Key::LeftShift:
+        case Key::LeftControl:
+        case Key::LeftAlt:
+        case Key::LeftSuper:
+        case Key::RightShift:
+        case Key::RightControl:
+        case Key::RightAlt:
+        case Key::RightSuper:
+        case Key::Menu:
+            return true;
+        default:
+            return false;
+    }
+}
+
+//------------------------------------------------------------------------------
 EM_BOOL
 emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void* userData) {
     emscInputMgr* self = (emscInputMgr*) userData;
@@ -250,17 +316,8 @@ emscInputMgr::emscKeyDown(int eventType, const EmscriptenKeyboardEvent* e, void*
         else {
             self->keyboard.onKeyDown(key);
         }
-        // returning false enabled keypress (WChar) events, but
-        // also makes the browser react to Tab, Backspace, etc...
-        // thus we need to filter those out
-        switch (key) {
-            case Key::Tab:
-            case Key::BackSpace:
-            case Key::Enter:
-                return true;
-            default:
-                return false;
-        }
+        // consume or forward the event ("printable" keys need to be forwarded)
+        return shouldConsumeKey(key);
     }
     return false;
 }
@@ -273,7 +330,8 @@ emscInputMgr::emscKeyUp(int eventType, const EmscriptenKeyboardEvent* e, void* u
     const Key::Code key = self->mapKey(e->keyCode);
     if (Key::InvalidKey != key) {
         self->keyboard.onKeyUp(key);
-        return true;
+        // consume or forward the event ("printable" keys need to be forwarded)
+        return shouldConsumeKey(key);
     }
     return false;
 }
