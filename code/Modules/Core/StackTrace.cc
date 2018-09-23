@@ -74,21 +74,21 @@ StackTrace::Dump(char* buf, int bufSize) {
     char* dstPtr = buf;
     const char* dstEndPtr = buf + bufSize;
     for (unsigned int i = 0; i < numFrames; i++) {
-		StringBuilder s = symbols[i];
-		int first_part = s.FindFirstOf(0, EndOfString, "(");
-		int mangled = s.FindFirstOf(first_part, EndOfString, "+");
-		int status;
-		char *demangled_symbol = abi::__cxa_demangle(s.GetSubString(first_part + 1, mangled).AsCStr(), NULL, NULL, &status);
-		StringBuilder demangled = s.GetSubString(0, first_part);
-		demangled.Append(": ");
-		demangled.Append(demangled_symbol);
-		demangled.Append(s.GetSubString(s.FindFirstOf(first_part, EndOfString, ")") + 1, EndOfString));
-		if (status == 0) {
-			dstPtr = appendString((char*)demangled.GetString().AsCStr(), dstPtr, dstEndPtr, true);
-		}
-		else {
-			dstPtr = appendString(symbols[i], dstPtr, dstEndPtr, true);
-		}
+        StringBuilder s = symbols[i];
+        int first_part = s.FindFirstOf(0, EndOfString, "(");
+        int mangled = s.FindFirstOf(first_part, EndOfString, "+");
+        int status;
+        char *demangled_symbol = abi::__cxa_demangle(s.GetSubString(first_part + 1, mangled).AsCStr(), NULL, NULL, &status);
+        StringBuilder demangled = s.GetSubString(0, first_part);
+        demangled.Append(": ");
+        demangled.Append(demangled_symbol);
+        demangled.Append(s.GetSubString(s.FindFirstOf(first_part, EndOfString, ")") + 1, EndOfString));
+        if (status == 0) {
+            dstPtr = appendString((char*)demangled.GetString().AsCStr(), dstPtr, dstEndPtr, true);
+        }
+        else {
+            dstPtr = appendString(symbols[i], dstPtr, dstEndPtr, true);
+        }
     }
     std::free(symbols);
 }
