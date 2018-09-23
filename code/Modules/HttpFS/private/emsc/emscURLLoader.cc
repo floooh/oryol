@@ -34,12 +34,12 @@ emscURLLoader::startRequest(const Ptr<IORead>& req) {
     // NOTE: we can only load from our own HTTP server, so the host part of 
     // the URL is completely irrelevant...
     String urlPath = req->Url.PathToEnd();
-    emscripten_async_wget_data(urlPath.AsCStr(), (void*) reqPtr, emscURLLoader::onLoaded, emscURLLoader::onFailed);
+    emscripten_async_wget2_data(urlPath.AsCStr(), "GET", NULL, (void*) reqPtr, true, emscURLLoader::onLoaded, emscURLLoader::onFailed, NULL);
 }
 
 //------------------------------------------------------------------------------
 void
-emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
+emscURLLoader::onLoaded(unsigned int handle, void* userData, void* buffer, unsigned int size) {
     o_assert(0 != userData);
     o_assert(0 != buffer);
     o_assert(size > 0);
@@ -53,18 +53,15 @@ emscURLLoader::onLoaded(void* userData, void* buffer, int size) {
 
 //------------------------------------------------------------------------------
 void
-emscURLLoader::onFailed(void* userData) {
+emscURLLoader::onFailed(unsigned int handle, void* userData, int errorCode, const char *statusDescription) {
     o_assert(0 != userData);
 
     // user data is a HTTPRequest ptr, put it back into a smart pointer
     Ptr<IORead> req((IORead*)userData);
     req->release();
-    Log::Dbg("emscURLLoader::onFailed(url=%s)\n", req->Url.AsCStr());
+    Log::Dbg("emscURLLoader::onFailed(url=%s, code=%d, message=%s)\n", req->Url.AsCStr(), errorCode, statusDescription);
 
-    // hmm we don't know why it failed, so make something up, we should definitely
-    // fix this somehow (looks like the wget2 functions also pass a HTTP status code)
-    const IOStatus::Code ioStatus = IOStatus::NotFound;
-    req->Status = ioStatus;
+    req->Status = (IOStatus::Code)errorCode;
     req->Handled = true;
 }
 

@@ -19,9 +19,9 @@ public:
     /// start the next, called from doWork
     void startRequest(const Ptr<IORead>& req);
     /// success callback
-    static void onLoaded(void* userData, void* buffer, int size);
+    static void onLoaded(unsigned int handle, void* userData, void* buffer, unsigned int size);
     /// failure callback
-    static void onFailed(void* userData);
+    static void onFailed(unsigned int handle, void* userData, int errorCode, const char *statusDescription);
 };
 
 } // namespace _priv 
