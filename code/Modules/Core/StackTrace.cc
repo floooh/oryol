@@ -14,6 +14,7 @@
 #include "Pre.h"
 #include "StackTrace.h"
 #if HAVE_BACKTRACE
+#include <cxxabi.h>
 #include <execinfo.h>
 #include "String/StringBuilder.h"
 #endif
@@ -23,8 +24,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-
-#include <cxxabi.h>
 
 /*
     NOTE: The code in StackTrace might be called from signal handlers,
