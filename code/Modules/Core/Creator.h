@@ -11,7 +11,7 @@
 #include "Core/Ptr.h"
 #include <functional>
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 7 || (__GNUC__ == 7 && __GNUC_MINOR__ < 4) || (__GNUC__ == 8 && __GNUC_MINOR__ <1))
 /** WORKAROUND for GCC bug 'lambda argument pack' **/
 #define OryolClassCreator(TYPE) \
 public:\
