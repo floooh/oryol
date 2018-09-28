@@ -214,6 +214,8 @@ glFactory::initTexture(texture& tex, const void* data, int size) {
         tex.glTextures[1] = (GLuint) tex.Setup.NativeHandle[1];
     }
     else {
+        tex.nativeHandles = false;
+
         // create GL texture objects
         const GLenum glTexImageFormat = glTypes::asGLTexImageFormat(setup.ColorFormat);
         const bool isCompressed = PixelFormat::IsCompressedFormat(setup.ColorFormat);
