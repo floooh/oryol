@@ -163,9 +163,9 @@ template<class KEY, class VALUE>
 Map<KEY, VALUE>::Map(std::initializer_list<KeyValuePair<KEY,VALUE>> rhs) :
 minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW) {
-	for (const KeyValuePair<KEY,VALUE> &kvp : rhs) {
-		this->Add(kvp);
-	}
+    for (const KeyValuePair<KEY,VALUE> &kvp : rhs) {
+        this->Add(kvp);
+    }
 }
 
 //------------------------------------------------------------------------------
