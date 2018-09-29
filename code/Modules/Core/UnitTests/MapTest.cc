@@ -158,9 +158,9 @@ TEST(MapTest) {
     
     // initializer_list
     Map<String, String> map_il = {
-		{"Wittiness Level", "Not very high"},
-		{"Test Effectiveness", "Pretty Meh"}
-	};
-	CHECK(map_il["Wittiness Level"] == "Not very high");
-	CHECK(map_il["Test Effectiveness"] == "Pretty Meh");
+        {"Wittiness Level", "Not very high"},
+        {"Test Effectiveness", "Pretty Meh"}
+    };
+    CHECK(map_il["Wittiness Level"] == "Not very high");
+    CHECK(map_il["Test Effectiveness"] == "Pretty Meh");
 }
