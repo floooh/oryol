@@ -33,6 +33,7 @@
     @see KeyValuePair, Set
 */
 #include <algorithm>
+#include <initializer_list>
 #include "Core/Config.h"
 #include "Core/Containers/elementBuffer.h"
 #include "Core/Containers/KeyValuePair.h"
@@ -47,6 +48,8 @@ public:
     Map(const Map& rhs);
     /// move constructor (same capacity and size)
     Map(Map&& rhs);
+    /// construct from initializer list
+    Map(std::initializer_list<KeyValuePair<KEY,VALUE>> rhs);
     /// destructor
     ~Map();
     
@@ -154,6 +157,18 @@ minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
 maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW),
 inBulkMode(false) {
     // empty
+}
+
+template<class KEY, class VALUE>
+Map<KEY, VALUE>::Map(std::initializer_list<KeyValuePair<KEY,VALUE>> rhs) :
+minGrow(ORYOL_CONTAINER_DEFAULT_MIN_GROW),
+maxGrow(ORYOL_CONTAINER_DEFAULT_MAX_GROW),
+inBulkMode(false) {
+	this->BeginBulk();
+	for (const KeyValuePair<KEY,VALUE> &kvp : rhs) {
+		this->AddBulk(kvp);
+	}
+	this->EndBulk();
 }
 
 //------------------------------------------------------------------------------
