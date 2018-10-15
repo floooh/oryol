@@ -839,6 +839,12 @@ glRenderer::invalidateMeshState() {
     this->vertexBuffer = 0;
     this->indexBuffer = 0;
     for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
+        auto& attr = this->glAttrs[i];
+        if (attr.enabled) {
+            ::glDisableVertexAttribArray(attr.index);
+            ORYOL_GL_CHECK_ERROR();
+        }
+        
         this->glAttrs[i] = pipeline::vertexAttr();
         this->glAttrVBs[i] = 0;
     }
