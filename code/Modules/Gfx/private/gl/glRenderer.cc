@@ -833,21 +833,18 @@ glRenderer::updateTexture(texture* tex, const void* data, const ImageDataAttrs& 
 void
 glRenderer::invalidateMeshState() {
     o_assert_dbg(this->valid);
-
+    
+    ORYOL_GL_CHECK_ERROR();
     ::glBindBuffer(GL_ARRAY_BUFFER, 0);
     ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     this->vertexBuffer = 0;
     this->indexBuffer = 0;
     for (int i = 0; i < VertexAttr::NumVertexAttrs; i++) {
-        auto& attr = this->glAttrs[i];
-        if (attr.enabled) {
-            ::glDisableVertexAttribArray(attr.index);
-            ORYOL_GL_CHECK_ERROR();
-        }
-        
+        ::glDisableVertexAttribArray(i);
         this->glAttrs[i] = pipeline::vertexAttr();
         this->glAttrVBs[i] = 0;
     }
+    ORYOL_GL_CHECK_ERROR();
 }
 
 //------------------------------------------------------------------------------
