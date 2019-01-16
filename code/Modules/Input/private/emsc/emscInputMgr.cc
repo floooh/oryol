@@ -191,6 +191,10 @@ emscInputMgr::setupGamepadMappings() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::updateGamepads() {
+    if (emscripten_sample_gamepad_data() != EMSCRIPTEN_RESULT_SUCCESS) {
+        // no gamepad API support in browser
+        return;
+    }
     for (int padIndex = 0; padIndex < inputDefs::maxNumGamepads; padIndex++) {
         EmscriptenGamepadEvent state = { };
         EMSCRIPTEN_RESULT result = emscripten_get_gamepad_status(padIndex, &state);
