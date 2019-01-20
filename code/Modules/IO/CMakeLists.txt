@@ -21,7 +21,7 @@ fips_begin_module(IO)
     fips_deps(Core)
 fips_end_module()
 
-fips_begin_unittest(IO)
+oryol_begin_unittest(IO)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
@@ -33,4 +33,4 @@ fips_begin_unittest(IO)
         schemeRegistryTest.cc
     )
     fips_deps(IO Core)
-fips_end_unittest()
+oryol_end_unittest()

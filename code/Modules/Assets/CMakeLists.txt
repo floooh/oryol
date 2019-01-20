@@ -11,7 +11,7 @@ fips_begin_module(Assets)
     )
 fips_end_module()
 
-fips_begin_unittest(Assets)
+oryol_begin_unittest(Assets)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
@@ -20,6 +20,6 @@ fips_begin_unittest(Assets)
         VertexWriterTest.cc
     )
     fips_deps(Gfx Assets)
-fips_end_unittest()
+oryol_end_unittest()
 
 

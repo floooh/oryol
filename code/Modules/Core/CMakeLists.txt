@@ -110,7 +110,7 @@ if (FIPS_USE_VLD)
     add_dependencies(Core vld_copy_dlls)
 endif()
 
-fips_begin_unittest(Core)
+oryol_begin_unittest(Core)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
@@ -144,5 +144,5 @@ fips_begin_unittest(Core)
         LogTest.cc
     )
     fips_deps(Core)
-fips_end_unittest()
+oryol_end_unittest()
 

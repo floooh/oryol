@@ -125,7 +125,7 @@ if (FIPS_MSVC)
     target_compile_options(Gfx PRIVATE "/wd4800")
 endif()
 
-fips_begin_unittest(Gfx)
+oryol_begin_unittest(Gfx)
     fips_vs_warning_level(3)
     fips_dir(UnitTests)
     fips_files(
@@ -141,5 +141,5 @@ fips_begin_unittest(Gfx)
     )
     oryol_shader(TestShaderLibrary.glsl)
     fips_deps(HttpFS Gfx Assets)
-fips_end_unittest()
+oryol_end_unittest()
 

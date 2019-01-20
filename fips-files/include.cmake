@@ -9,6 +9,8 @@ if (FIPS_UWP)
 endif()
 
 # cmake options
+option(FIPS_UNITTESTS "Enable unit tests" OFF)
+option(FIPS_UNITTESTS_HEADLESS "If enabled don't run tests which require a display" OFF)
 option(ORYOL_SAMPLES "Build Oryol samples" ON)
 set(ORYOL_SAMPLE_URL "http://floooh.github.com/oryol/data/" CACHE STRING "Sample data URL")
 option(ORYOL_DEBUG_SHADERS "Enable/disable debug info for shaders" OFF)
@@ -208,3 +210,62 @@ file(REMOVE ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml)
 macro(oryol_add_web_sample name desc type image src)
     file(APPEND ${FIPS_DEPLOY_DIR}/oryol-webpage/websamples.yml "- name: ${name}\n  desc: ${desc}\n  type: ${type}\n  image: ${CMAKE_CURRENT_LIST_DIR}/${image}\n  src: ${src}\n")
 endmacro()
+
+#-------------------------------------------------------------------------------
+#   Unittesting support macros (these were previously in fips)
+#
+macro(oryol_begin_unittest name)
+    if (FIPS_UNITTESTS)
+        set(FipsAddFilesEnabled 1)
+        fips_reset(${CurTargetName}Test)
+        if (FIPS_OSX)
+            set(CurAppType "windowed")
+        else()
+            set(CurAppType "cmdline")
+        endif()
+    else()
+        set(FipsAddFilesEnabled)
+    endif()
+endmacro()
+
+macro(oryol_end_unittest)
+    
+    if (FIPS_UNITTESTS)
+
+        if (FIPS_CMAKE_VERBOSE)
+            message("Unit Test: name=" ${CurTargetName})
+        endif()
+    
+        # add unittestpp lib dependency
+        fips_deps(unittestpp)
+
+        # FIXME: generate a scratch main-source-file
+        set(main_path ${CMAKE_CURRENT_BINARY_DIR}/${CurTargetName}_main.cc)
+        file(WRITE ${main_path}
+            "// machine generated, do not edit\n"
+            "#include \"UnitTest++/src/UnitTest++.h\"\n"
+            "int main(void) {\n"
+            "    return UnitTest::RunAllTests();\n"
+            "}\n"
+        )
+
+        # generate a command line app
+        list(APPEND CurSources ${main_path})
+        fips_end_app()
+        set_target_properties(${CurTargetName} PROPERTIES FOLDER "UnitTests")
+
+        # add as cmake unit test
+        add_test(NAME ${CurTargetName} COMMAND ${CurTargetName})
+
+        # if configured, start the app as post-build-step
+        if (FIPS_UNITTESTS_RUN_AFTER_BUILD)
+            add_custom_command (TARGET ${CurTargetName} POST_BUILD COMMAND ${CurTargetName})
+        endif()
+    endif()
+    set(FipsAddFilesEnabled 1)
+endmacro()
+
+# turn some dependent options on/off
+if (FIPS_UNITTESTS)
+    enable_testing()
+endif()

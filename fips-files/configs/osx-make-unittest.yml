@@ -1,10 +1,10 @@
-# a head-less OSX Xcode unittest config for travis-ci
 ---
 platform: osx
-generator: Xcode
-build_tool: xcodebuild
+generator: Unix Makefiles
+build_tool: make
 build_type: Debug
 defines:
     FIPS_EXCEPTIONS: ON
     FIPS_UNITTESTS: ON
     FIPS_UNITTESTS_HEADLESS: ON
+
