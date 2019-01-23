@@ -1477,7 +1477,6 @@ private:
     bool setupFromPixelData = false;
     bool setupFromNativeHandle = false;
     bool setupEmpty = false;
-    bool hasMipMaps = false;
 };
     
 } // namespace Oryol
