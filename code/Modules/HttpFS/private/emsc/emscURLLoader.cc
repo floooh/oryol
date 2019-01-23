@@ -33,8 +33,7 @@ emscURLLoader::startRequest(const Ptr<IORead>& req) {
     // start the asynchronous XHR
     // NOTE: we can only load from our own HTTP server, so the host part of 
     // the URL is completely irrelevant...
-    StringBuilder urlPath = "/";
-    urlPath.Append(req->Url.PathToEnd());
+    String urlPath = req->Url.PathToEnd();
     emscripten_async_wget2_data(urlPath.AsCStr(), "GET", NULL, (void*) reqPtr, true, emscURLLoader::onLoaded, emscURLLoader::onFailed, NULL);
 }
 
