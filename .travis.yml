@@ -1,6 +1,4 @@
-# force old non-container infrastructure, to see whether this
-# is the reason why the IO test hangs
-sudo:   true
+dist: xenial
 git:
   depth: 3
 language: cpp
@@ -10,14 +8,7 @@ os:
   - linux
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - george-edison55-precise-backports # cmake 3.x
     packages:
-      - cmake
-      - cmake-data
-      - gcc-4.8
-      - g++-4.8
       - libglu1-mesa-dev
       - xorg-dev
       - libasound2-dev
