@@ -214,15 +214,9 @@ endmacro()
 #-------------------------------------------------------------------------------
 #   Unittesting support macros (these were previously in fips)
 #
-macro(oryol_begin_unittest name)
+macro(oryol_begin_unittest target)
     if (FIPS_UNITTESTS)
-        set(FipsAddFilesEnabled 1)
-        fips_reset(${CurTargetName}Test)
-        if (FIPS_OSX)
-            set(CurAppType "windowed")
-        else()
-            set(CurAppType "cmdline")
-        endif()
+        fips_begin_app("${target}Test" "cmdline")
     else()
         set(FipsAddFilesEnabled)
     endif()
@@ -250,12 +244,13 @@ macro(oryol_end_unittest)
         )
 
         # generate a command line app
-        list(APPEND CurSources ${main_path})
-        fips_end_app()
+        target_sources(${CurTargetName} PRIVATE ${main_path})
         set_target_properties(${CurTargetName} PROPERTIES FOLDER "UnitTests")
 
         # add as cmake unit test
         add_test(NAME ${CurTargetName} COMMAND ${CurTargetName})
+
+        fips_end_app()
 
         # if configured, start the app as post-build-step
         if (FIPS_UNITTESTS_RUN_AFTER_BUILD)
