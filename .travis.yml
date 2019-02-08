@@ -15,8 +15,6 @@ addons:
 
 install:
   - echo $TRAVIS_OS_NAME
-  # LINUX
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50; fi
 
 script:
   - echo $TRAVIS_OS_NAME
