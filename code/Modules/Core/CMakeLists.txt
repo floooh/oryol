@@ -110,39 +110,39 @@ if (FIPS_USE_VLD)
     add_dependencies(Core vld_copy_dlls)
 endif()
 
-fips_begin_unittest(Core)
-    fips_vs_warning_level(3)
-    fips_dir(UnitTests)
-    fips_files(
-        PtrTest.cc
-        SliceTest.cc
-        InlineArrayTest.cc
-        StackTraceTest.cc
-        MemoryBufferTest.cc
-        ArgsTest.cc
-        ArrayTest.cc
-        StaticArrayTest.cc
-        ArrayMapTest.cc
-        CreationTest.cc
-        CreatorTest.cc
-        HashSetTest.cc
-        MapTest.cc
-        MemoryTest.cc
-        QueueTest.cc
-        RttiTest.cc
-        RunLoopTest.cc
-        SetTest.cc
-        StringAtomTest.cc
-        StringBuilderTest.cc
-        StringConverterTest.cc
-        StringTest.cc
-        WideStringTest.cc
-        elementBufferTest.cc
-        ClockTest.cc
-        DurationTest.cc
-        TimePointTest.cc
-        LogTest.cc
-    )
-    fips_deps(Core)
-fips_end_unittest()
+#fips_begin_unittest(Core)
+#    fips_vs_warning_level(3)
+#    fips_dir(UnitTests)
+#    fips_files(
+#        PtrTest.cc
+#        SliceTest.cc
+#        InlineArrayTest.cc
+#        StackTraceTest.cc
+#        MemoryBufferTest.cc
+#        ArgsTest.cc
+#        ArrayTest.cc
+#        StaticArrayTest.cc
+#        ArrayMapTest.cc
+#        CreationTest.cc
+#        CreatorTest.cc
+#        HashSetTest.cc
+#        MapTest.cc
+#        MemoryTest.cc
+#        QueueTest.cc
+#        RttiTest.cc
+#        RunLoopTest.cc
+#        SetTest.cc
+#        StringAtomTest.cc
+#        StringBuilderTest.cc
+#        StringConverterTest.cc
+#        StringTest.cc
+#        WideStringTest.cc
+#        elementBufferTest.cc
+#        ClockTest.cc
+#        DurationTest.cc
+#        TimePointTest.cc
+#        LogTest.cc
+#    )
+#    fips_deps(Core)
+#fips_end_unittest()
 

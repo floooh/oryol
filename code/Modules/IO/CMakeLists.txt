@@ -21,16 +21,16 @@ fips_begin_module(IO)
     fips_deps(Core)
 fips_end_module()
 
-fips_begin_unittest(IO)
-    fips_vs_warning_level(3)
-    fips_dir(UnitTests)
-    fips_files(
-        IOFacadeTest.cc
-        IOStatusTest.cc
-        URLBuilderTest.cc
-        URLTest.cc
-        assignRegistryTest.cc
-        schemeRegistryTest.cc
-    )
-    fips_deps(IO Core)
-fips_end_unittest()
+#fips_begin_unittest(IO)
+#    fips_vs_warning_level(3)
+#    fips_dir(UnitTests)
+#    fips_files(
+#        IOFacadeTest.cc
+#        IOStatusTest.cc
+#        URLBuilderTest.cc
+#        URLTest.cc
+#        assignRegistryTest.cc
+#        schemeRegistryTest.cc
+#    )
+#    fips_deps(IO Core)
+#fips_end_unittest()
