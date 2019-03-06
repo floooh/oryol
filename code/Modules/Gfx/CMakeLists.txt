@@ -15,7 +15,7 @@ fips_begin_module(Gfx)
         displayMgr.h
     )
     fips_dir(private/sokol)
-    fips_files(sokolGfxBackend.cc sokolGfxBackend.h)
+    fips_files(sokolGfxBackend.cc sokolGfxBackend.h sokol_gfx.h)
     if (ORYOL_METAL)
         fips_files(sokolImpl.mm)
     else()
