@@ -127,13 +127,14 @@ debugTextRenderer::drawTextBuffer(int width, int height) {
         if (0 == height) {
             height = Gfx::DisplayAttrs().Height;
         }
-        Gfx::UpdateBuffer(this->drawState.VertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
-        Gfx::ApplyDrawState(this->drawState);
+        Gfx::UpdateBuffer(this->bind.vertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
+        Gfx::ApplyPipeline(this->pipeline);
+        Gfx::ApplyBindings(this->bind);
         DbgTextShader::vsParams vsParams;
         const float w = 8.0f / width;   // glyph is 8 pixels wide
         const float h = 8.0f / height;  // glyph is 8 pixel tall
         vsParams.glyphSize = glm::vec2(w * this->textScaleX * 2.0f, h * this->textScaleY * 2.0f);
-        Gfx::ApplyUniformBlock(vsParams);
+        Gfx::ApplyUniforms(vsParams);
         Gfx::Draw(0, this->curNumVertices);
         this->curNumVertices = 0;
     }
@@ -151,14 +152,14 @@ debugTextRenderer::setupResources(const DbgDesc& desc) {
         { "color0", VertexFormat::UByte4N }
     };
     const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
+    Id vbuf = Gfx::CreateBuffer(BufferDesc()
         .Size(vbufSize)
         .Type(BufferType::VertexBuffer)
         .Usage(Usage::Stream));
-    o_assert_dbg(this->drawState.VertexBuffers[0].IsValid());
+    o_assert_dbg(vbuf.IsValid());
 
     // create pipeline object
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
+    this->pipeline = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(DbgTextShader::Desc()))
         .Layout(0, this->vertexLayout)
         .DepthWriteEnabled(false)
@@ -198,7 +199,7 @@ debugTextRenderer::setupResources(const DbgDesc& desc) {
     }
 
     // setup texture, pixel format is 8bpp uncompressed
-    this->drawState.FSTexture[DbgTextShader::tex] = Gfx::CreateTexture(TextureDesc()
+    Id tex = Gfx::CreateTexture(TextureDesc()
         .Type(TextureType::Texture2D)
         .Width(imgWidth)
         .Height(imgHeight)
@@ -209,6 +210,11 @@ debugTextRenderer::setupResources(const DbgDesc& desc) {
         .WrapV(TextureWrapMode::ClampToEdge)
         .MipContent(0, 0, data.Data())
         .MipSize(0, 0, data.Size()));
+
+    // setup the resource bindings
+    this->bind = Bindings()
+        .VertexBuffer(0, vbuf)
+        .FSTexture(DbgTextShader::tex, tex);
 }
 
 //------------------------------------------------------------------------------

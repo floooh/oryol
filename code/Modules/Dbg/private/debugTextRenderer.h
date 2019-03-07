@@ -49,7 +49,8 @@ public:
 
     bool valid = false;
     VertexLayout vertexLayout;
-    DrawState drawState;
+    Id pipeline;
+    Bindings bind;
     StringBuilder stringBuilder;
     ResourceLabel resourceLabel;
     int numColumns = 0;
