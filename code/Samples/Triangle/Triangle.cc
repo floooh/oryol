@@ -14,7 +14,8 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
 };
 OryolMain(TriangleApp);
 
@@ -34,12 +35,13 @@ TriangleApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f , 1.0f,
         -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
     };
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
-        .Size(sizeof(vertices))
-        .Content(vertices));
+    this->bind = Bindings()
+        .VertexBuffer(0, Gfx::CreateBuffer(BufferDesc()
+            .Size(sizeof(vertices))
+            .Content(vertices)));
 
     // create shader and pipeline-state-object
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
+    this->pip = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, {
             { "position", VertexFormat::Float3 },
@@ -54,7 +56,8 @@ AppState::Code
 TriangleApp::OnRunning() {
     
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
     Gfx::Draw(0, 3);
     Gfx::EndPass();
     Gfx::CommitFrame();

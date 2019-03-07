@@ -19,7 +19,8 @@ public:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     Array<PrimitiveGroup> primGroups;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::params params;
     float angleX = 0.0f;
     float angleY = 0.0f;
@@ -44,9 +45,10 @@ PackedNormalsApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shapes.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+    this->bind = Bindings()
+        .VertexBuffer(0, Gfx::CreateBuffer(shapes.VertexBufferDesc))
+        .IndexBuffer(Gfx::CreateBuffer(shapes.IndexBufferDesc));
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .DepthWriteEnabled(true)
         .DepthCmpFunc(CompareFunc::LessEqual)
@@ -65,7 +67,8 @@ PackedNormalsApp::OnRunning() {
     this->angleX += 0.02f;
     
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
     static const glm::vec3 positions[] = {
         glm::vec3(-1.0, 1.0f, -6.0f),
         glm::vec3(1.0f, 1.0f, -6.0f),
@@ -76,7 +79,7 @@ PackedNormalsApp::OnRunning() {
     int primGroupIndex = 0;
     for (const auto& pos : positions) {
         this->params.mvp = this->computeMVP(pos);
-        Gfx::ApplyUniformBlock(this->params);
+        Gfx::ApplyUniforms(this->params);
         Gfx::Draw(this->primGroups[primGroupIndex++]);
     }
     Gfx::EndPass();

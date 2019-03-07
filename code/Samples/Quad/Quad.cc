@@ -14,7 +14,8 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
 };
 OryolMain(QuadApp);
 
@@ -26,7 +27,7 @@ QuadApp::OnInit() {
         .Title("Oryol Quad Sample")
         .HtmlTrackElementSize(true));
     
-    // create vertex buffer
+    // create vertex and index buffers
     const float vertices[4 * 7] = {
         // positions            colors
         -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
@@ -34,23 +35,22 @@ QuadApp::OnInit() {
          0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
         -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
     };
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
-        .Type(BufferType::VertexBuffer)
-        .Size(sizeof(vertices))
-        .Content(vertices));
-
-    // create index buffer
     const uint16_t indices[2 * 3] = {
         0, 1, 2,    // first triangle
         0, 2, 3,    // second triangle
     };
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(BufferDesc()
-        .Type(BufferType::IndexBuffer)
-        .Size(sizeof(indices))
-        .Content(indices));
+    this->bind = Bindings()
+        .VertexBuffer(0, Gfx::CreateBuffer(BufferDesc()
+            .Type(BufferType::VertexBuffer)
+            .Size(sizeof(vertices))
+            .Content(vertices)))
+        .IndexBuffer(Gfx::CreateBuffer(BufferDesc()
+            .Type(BufferType::IndexBuffer)
+            .Size(sizeof(indices))
+            .Content(indices)));
 
     // create shader and pipeline-state-object
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
+    this->pip = Gfx::CreatePipeline(PipelineDesc()
         .Shader(Gfx::CreateShader(Shader::Desc()))
         .Layout(0, {
             { "in_pos", VertexFormat::Float3 },
@@ -67,7 +67,8 @@ AppState::Code
 QuadApp::OnRunning() {
     
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
     Gfx::Draw(0, 6);
     Gfx::EndPass();
     Gfx::CommitFrame();
