@@ -947,46 +947,55 @@ sokolGfxBackend::ApplyScissorRect(int x, int y, int w, int h, bool originTopLeft
 }
 
 //------------------------------------------------------------------------------
-void sokolGfxBackend::ApplyDrawState(const DrawState& drawState) {
+void
+sokolGfxBackend::ApplyPipeline(const Id& pipId) {
+    o_assert_dbg(this->isValid);
+    sg_apply_pipeline(makePipelineId(pipId));
+}
+
+//------------------------------------------------------------------------------
+void
+sokolGfxBackend::ApplyBindings(const Bindings& bindings) {
     o_assert_dbg(this->isValid);
     o_assert_dbg(SG_MAX_SHADERSTAGE_BUFFERS >= GfxConfig::MaxNumVertexBuffers);
     o_assert_dbg(SG_MAX_SHADERSTAGE_IMAGES >= GfxConfig::MaxNumVertexTextures);
     o_assert_dbg(SG_MAX_SHADERSTAGE_IMAGES >= GfxConfig::MaxNumFragmentTextures);
-    sg_draw_state sgDrawState = { };
-    sgDrawState.pipeline = makePipelineId(drawState.Pipeline);
+    sg_bindings sgBindings = { };
     for (int i = 0; i < GfxConfig::MaxNumVertexBuffers; i++) {
-        if (drawState.VertexBuffers[i].IsValid()) {
-            sgDrawState.vertex_buffers[i] = makeBufferId(drawState.VertexBuffers[i]);
+        if (bindings.vertexBuffers[i].IsValid()) {
+            sgBindings.vertex_buffers[i] = makeBufferId(bindings.vertexBuffers[i]);
+            sgBindings.vertex_buffer_offsets[i] = bindings.vertexBufferOffsets[i];
         }
         else {
             break;
         }
     }
-    if (drawState.IndexBuffer.IsValid()) {
-        sgDrawState.index_buffer = makeBufferId(drawState.IndexBuffer);
+    if (bindings.indexBuffer.IsValid()) {
+        sgBindings.index_buffer = makeBufferId(bindings.indexBuffer);
+        sgBindings.index_buffer_offset = bindings.indexBufferOffset;
     }
     for (int i = 0; i < GfxConfig::MaxNumVertexTextures; i++) {
-        if (drawState.VSTexture[i].IsValid()) {
-            sgDrawState.vs_images[i] = makeImageId(drawState.VSTexture[i]);
+        if (bindings.vsTexture[i].IsValid()) {
+            sgBindings.vs_images[i] = makeImageId(bindings.vsTexture[i]);
         }
         else {
             break;
         }
     }
     for (int i = 0; i < GfxConfig::MaxNumFragmentTextures; i++) {
-        if (drawState.FSTexture[i].IsValid()) {
-            sgDrawState.fs_images[i] = makeImageId(drawState.FSTexture[i]);
+        if (bindings.fsTexture[i].IsValid()) {
+            sgBindings.fs_images[i] = makeImageId(bindings.fsTexture[i]);
         }
         else {
             break;
         }
     }
-    sg_apply_draw_state(&sgDrawState);
+    sg_apply_bindings(&sgBindings);
 }
 
 //------------------------------------------------------------------------------
 void
-sokolGfxBackend::ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes) {
+sokolGfxBackend::ApplyUniforms(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes) {
     o_assert_dbg(this->isValid);
     sg_shader_stage sgStage = (stage==ShaderStage::VS) ? SG_SHADERSTAGE_VS : SG_SHADERSTAGE_FS;
     sg_apply_uniform_block(sgStage, ubIndex, data, numBytes);

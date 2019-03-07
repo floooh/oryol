@@ -93,10 +93,12 @@ public:
     void ApplyViewPort(int x, int y, int w, int h, bool originTopLeft);
     /// apply scissor rect
     void ApplyScissorRect(int x, int y, int w, int h, bool originTopLeft);
-    /// apply a draw state
-    void ApplyDrawState(const DrawState& drawState);
-    /// apply a uniform block
-    void ApplyUniformBlock(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes);
+    /// apply pipeline state
+    void ApplyPipeline(const Id& pipId);
+    /// apply resource bindings
+    void ApplyBindings(const Bindings& binding);
+    /// apply shader uniforms
+    void ApplyUniforms(ShaderStage::Code stage, int ubIndex, const void* data, int numBytes);
 
     /// issue a draw call
     void Draw(int baseElement, int numElements, int numInstances);

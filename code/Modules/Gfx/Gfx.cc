@@ -140,12 +140,22 @@ Gfx::EndPass() {
 
 //------------------------------------------------------------------------------
 void
-Gfx::ApplyDrawState(const DrawState& drawState) {
-    o_trace_scoped(Gfx_ApplyDrawState);
+Gfx::ApplyPipeline(const Id& pipId) {
+    o_trace_scoped(Gfx_ApplyPipeline);
     o_assert_dbg(IsValid());
     o_assert_dbg(state->inPass);
-    state->gfxFrameInfo.NumApplyDrawState++;
-    state->backend.ApplyDrawState(drawState);
+    state->gfxFrameInfo.NumApplyPipeline++;
+    state->backend.ApplyPipeline(pipId);
+}
+
+//------------------------------------------------------------------------------
+void
+Gfx::ApplyBindings(const Bindings& bindings) {
+    o_trace_scoped(Gfx_ApplyBindings);
+    o_assert_dbg(IsValid());
+    o_assert_dbg(state->inPass);
+    state->gfxFrameInfo.NumApplyBindings++;
+    state->backend.ApplyBindings(bindings);
 }
 
 //------------------------------------------------------------------------------
@@ -245,7 +255,7 @@ void
 Gfx::UpdateBuffer(const Id& id, const void* data, int numBytes) {
     o_trace_scoped(Gfx_UpdateBuffer);
     o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumUpdateBuffers++;
+    state->gfxFrameInfo.NumUpdateBuffer++;
     state->backend.UpdateBuffer(id, data, numBytes);
 }
 
@@ -254,7 +264,7 @@ void
 Gfx::UpdateTexture(const Id& id, const ImageContent& content) {
     o_trace_scoped(Gfx_UpdateTexture);
     o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumUpdateTextures++;
+    state->gfxFrameInfo.NumUpdateTexture++;
     state->backend.UpdateTexture(id, content);
 }
 
@@ -392,10 +402,10 @@ Gfx::FailTexture(const Id& id) {
 
 //------------------------------------------------------------------------------
 void
-Gfx::applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, const uint8_t* ptr, int byteSize) {
+Gfx::ApplyUniforms(ShaderStage::Code bindStage, int bindSlot, const void* ptr, int byteSize) {
     o_assert_dbg(IsValid());
-    state->gfxFrameInfo.NumApplyUniformBlock++;
-    state->backend.ApplyUniformBlock(bindStage, bindSlot, ptr, byteSize);
+    state->gfxFrameInfo.NumApplyUniforms++;
+    state->backend.ApplyUniforms(bindStage, bindSlot, ptr, byteSize);
 }
 
 } // namespace Oryol

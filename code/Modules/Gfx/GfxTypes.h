@@ -625,29 +625,48 @@ public:
 
 //------------------------------------------------------------------------------
 /**
-    @class Oryol::DrawState
-    @brief state required to issue draw calls
+    @class Oryol::Bindings
+    @brief describe resource bindings for the next draw call
     
-    The DrawState struct contains state required to issue draw calls
-    with the exception of shader uniforms:
-    
-    - 1 pipeline state object
-    - 1..4 vertex buffers
-    - 0..1 index buffer
+    The Bindings struct describes the resource bindings for the
+    next draw calls:
+
+    - 1..4 vertex buffers (and optional offsets into those buffers)
+    - 1..4 byte-offsets into vertex buffers
+    - 0..1 index buffer (and optional offset)
+    - optional start-offset into index buffer
     - 0..N textures for the vertex shader stage
     - 0..N textures for the fragment shader stage
 */
-struct DrawState {
-    /// the pipeline state object
-    Id Pipeline;
-    /// vertex buffers
-    StaticArray<Id, GfxConfig::MaxNumVertexBuffers> VertexBuffers;
+struct Bindings {
+    /// default constructor to init VertexBufferOffsets to 0
+    Bindings();
+    
+    /// set a vertex buffer slot
+    Bindings& VertexBuffer(int slot, const Id& bufId);
+    /// set vertex buffer offset
+    Bindings& VertexBufferOffset(int slot, int offset);
+    /// set index buffer slot
+    Bindings& IndexBuffer(const Id& bufId);
+    /// set index buffer offset
+    Bindings& IndexBufferOffset(int offset);
+    /// set a vertex texture slot
+    Bindings& VSTexture(int slot, const Id& texId);
+    /// set a fragment texture slot
+    Bindings& FSTexture(int slot, const Id& texId);
+
+    /// vertex buffer slots
+    StaticArray<Id, GfxConfig::MaxNumVertexBuffers> vertexBuffers;
+    /// optional vertex buffer offsets
+    StaticArray<int, GfxConfig::MaxNumVertexBuffers> vertexBufferOffsets;
     /// optional index buffer
-    Id IndexBuffer;
+    Id indexBuffer;
+    /// optional index buffer offsets
+    int indexBufferOffset = 0;
     /// vertex shader stage textures
-    StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
+    StaticArray<Id, GfxConfig::MaxNumVertexTextures> vsTexture;
     /// fragment shader stage textures
-    StaticArray<Id, GfxConfig::MaxNumFragmentTextures> FSTexture;
+    StaticArray<Id, GfxConfig::MaxNumFragmentTextures> fsTexture;
 };
 
 //------------------------------------------------------------------------------
@@ -1590,10 +1609,11 @@ struct GfxFrameInfo {
     int NumPasses = 0;
     int NumApplyViewPort = 0;
     int NumApplyScissorRect = 0;
-    int NumApplyDrawState = 0;
-    int NumApplyUniformBlock = 0;
-    int NumUpdateBuffers = 0;
-    int NumUpdateTextures = 0;
+    int NumApplyPipeline = 0;
+    int NumApplyBindings = 0;
+    int NumApplyUniforms = 0;
+    int NumUpdateBuffer = 0;
+    int NumUpdateTexture = 0;
     int NumDraw = 0;
     int NumDrawInstanced = 0;
 };

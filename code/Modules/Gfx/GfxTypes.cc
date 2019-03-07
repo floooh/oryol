@@ -489,6 +489,51 @@ PassAction& PassAction::DontCareDepthStencil() {
 }
 
 //------------------------------------------------------------------------------
+Bindings::Bindings() {
+    this->vertexBufferOffsets.Fill(0);
+}
+
+//------------------------------------------------------------------------------
+Bindings& Bindings::VertexBuffer(int slot, const Id& bufId) {
+    o_assert_dbg(!bufId.IsValid() || (bufId.Type == GfxResourceType::Buffer));
+    this->vertexBuffers[slot] = bufId;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Bindings& Bindings::VertexBufferOffset(int slot, int offset) {
+    this->vertexBufferOffsets[slot] = offset;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Bindings& Bindings::IndexBuffer(const Id& bufId) {
+    o_assert_dbg(!bufId.IsValid() || (bufId.Type == GfxResourceType::Buffer));
+    this->indexBuffer = bufId;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Bindings& Bindings::IndexBufferOffset(int offset) {
+    this->indexBufferOffset = offset;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Bindings& Bindings::VSTexture(int slot, const Id& texId) {
+    o_assert_dbg(!texId.IsValid() || (texId.Type == GfxResourceType::Texture));
+    this->vsTexture[slot] = texId;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Bindings& Bindings::FSTexture(int slot, const Id& texId) {
+    o_assert_dbg(!texId.IsValid() || (texId.Type == GfxResourceType::Texture));
+    this->fsTexture[slot] = texId;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
 VertexLayout::VertexLayout() {
     this->Clear();
 }

@@ -98,10 +98,14 @@ public:
     static void ApplyViewPort(int x, int y, int width, int height, bool originTopLeft=false);
     /// apply scissor rect (must also be enabled in Pipeline object)
     static void ApplyScissorRect(int x, int y, int width, int height, bool originTopLeft=false);
-    /// apply draw state (Pipeline, Meshes and Textures)
-    static void ApplyDrawState(const DrawState& drawState);
-    /// apply a uniform block (call between ApplyDrawState and Draw)
-    template<class T> static void ApplyUniformBlock(const T& ub);
+    /// apply pipeline state
+    static void ApplyPipeline(const Id& pipId);
+    /// apply resource bindings for next draw call (call between ApplyPipeline and Draw)
+    static void ApplyBindings(const Bindings& binding);
+    /// apply shader uniforms for next draw call (call between ApplyPipeline and Draw)
+    template<class T> static void ApplyUniforms(const T& ub);
+    /// 'raw form' of ApplyUniforms, with explicit shader state, uniform buffer slot and data ptr/size
+    static void ApplyUniforms(ShaderStage::Code stage, int slot, const void* data, int numBytes);
 
     /// update dynamic vertex or index data (complete replace)
     static void UpdateBuffer(const Id& id, const void* data, int numBytes);
@@ -117,16 +121,12 @@ public:
     static void CommitFrame();
     /// reset the native 3D-API state-cache
     static void ResetStateCache();
-
-private:
-    /// apply uniform block, non-template version
-    static void applyUniformBlock(ShaderStage::Code bindStage, int bindSlot, const uint8_t* ptr, int byteSize);
 };
 
 //------------------------------------------------------------------------------
 template<class T> inline void
-Gfx::ApplyUniformBlock(const T& ub) {
-    applyUniformBlock(T::_bindShaderStage, T::_bindSlotIndex, (const uint8_t*)&ub, sizeof(ub));
+Gfx::ApplyUniforms(const T& ub) {
+    ApplyUniforms(T::_bindShaderStage, T::_bindSlotIndex, (const uint8_t*)&ub, sizeof(ub));
 }
 
 } // namespace Oryol
