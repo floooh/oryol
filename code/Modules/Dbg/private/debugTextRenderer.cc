@@ -32,11 +32,11 @@ debugTextRenderer::setup(const DbgDesc& desc) {
     o_assert_dbg(!this->valid);
     o_assert_dbg(nullptr == this->vertexData);
 
-    this->numColumns = desc.numTextColumns;
-    this->numRows = desc.numTextRows;
-    this->maxNumChars = desc.numTextColumns * desc.numTextRows;
-    this->textScaleX = desc.textScaleX;
-    this->textScaleY = desc.textScaleY;
+    this->numColumns = desc.NumTextColumns;
+    this->numRows = desc.NumTextRows;
+    this->maxNumChars = desc.NumTextColumns * desc.NumTextRows;
+    this->textScaleX = desc.TextScaleX;
+    this->textScaleY = desc.TextScaleY;
     this->maxNumVertices = this->maxNumChars * 6;
     this->stringBuilder.Reserve(this->maxNumChars * 2);
     this->curNumVertices = 0;
@@ -127,7 +127,7 @@ debugTextRenderer::drawTextBuffer(int width, int height) {
         if (0 == height) {
             height = Gfx::DisplayAttrs().Height;
         }
-        Gfx::UpdateBuffer(this->bind.vertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
+        Gfx::UpdateBuffer(this->bind.VertexBuffers[0], this->vertexData, this->curNumVertices * this->vertexLayout.ByteSize());
         Gfx::ApplyPipeline(this->pipeline);
         Gfx::ApplyBindings(this->bind);
         DbgTextShader::vsParams vsParams;
@@ -153,24 +153,24 @@ debugTextRenderer::setupResources(const DbgDesc& desc) {
     };
     const int vbufSize = this->maxNumVertices * this->vertexLayout.ByteSize();
     Id vbuf = Gfx::CreateBuffer(BufferDesc()
-        .Size(vbufSize)
-        .Type(BufferType::VertexBuffer)
-        .Usage(Usage::Stream));
+        .SetSize(vbufSize)
+        .SetType(BufferType::VertexBuffer)
+        .SetUsage(Usage::Stream));
     o_assert_dbg(vbuf.IsValid());
 
     // create pipeline object
     this->pipeline = Gfx::CreatePipeline(PipelineDesc()
-        .Shader(Gfx::CreateShader(DbgTextShader::Desc()))
-        .Layout(0, this->vertexLayout)
-        .DepthWriteEnabled(false)
-        .DepthCmpFunc(CompareFunc::Always)
-        .BlendEnabled(true)
-        .BlendSrcFactorRGB(BlendFactor::SrcAlpha)
-        .BlendDstFactorRGB(BlendFactor::OneMinusSrcAlpha)
-        .ColorWriteMask(PixelChannel::RGB)
-        .ColorFormat(desc.colorFormat)
-        .DepthFormat(desc.depthFormat)
-        .SampleCount(desc.sampleCount));
+        .SetShader(Gfx::CreateShader(DbgTextShader::Desc()))
+        .SetLayout(0, this->vertexLayout)
+        .SetDepthWriteEnabled(false)
+        .SetDepthCmpFunc(CompareFunc::Always)
+        .SetBlendEnabled(true)
+        .SetBlendSrcFactorRGB(BlendFactor::SrcAlpha)
+        .SetBlendDstFactorRGB(BlendFactor::OneMinusSrcAlpha)
+        .SetColorWriteMask(PixelChannel::RGB)
+        .SetColorFormat(desc.ColorFormat)
+        .SetDepthFormat(desc.DepthFormat)
+        .SetSampleCount(desc.SampleCount));
 
     // convert the KC85/4 font into 8bpp image data
     const int numChars = 128;
@@ -200,21 +200,21 @@ debugTextRenderer::setupResources(const DbgDesc& desc) {
 
     // setup texture, pixel format is 8bpp uncompressed
     Id tex = Gfx::CreateTexture(TextureDesc()
-        .Type(TextureType::Texture2D)
-        .Width(imgWidth)
-        .Height(imgHeight)
-        .Format(PixelFormat::L8)
-        .MinFilter(TextureFilterMode::Nearest)
-        .MagFilter(TextureFilterMode::Nearest)
-        .WrapU(TextureWrapMode::ClampToEdge)
-        .WrapV(TextureWrapMode::ClampToEdge)
-        .MipContent(0, 0, data.Data())
-        .MipSize(0, 0, data.Size()));
+        .SetType(TextureType::Texture2D)
+        .SetWidth(imgWidth)
+        .SetHeight(imgHeight)
+        .SetFormat(PixelFormat::L8)
+        .SetMinFilter(TextureFilterMode::Nearest)
+        .SetMagFilter(TextureFilterMode::Nearest)
+        .SetWrapU(TextureWrapMode::ClampToEdge)
+        .SetWrapV(TextureWrapMode::ClampToEdge)
+        .SetMipContent(0, 0, data.Data())
+        .SetMipSize(0, 0, data.Size()));
 
     // setup the resource bindings
     this->bind = Bindings()
-        .VertexBuffer(0, vbuf)
-        .FSTexture(DbgTextShader::tex, tex);
+        .SetVertexBuffer(0, vbuf)
+        .SetFSTexture(DbgTextShader::tex, tex);
 }
 
 //------------------------------------------------------------------------------

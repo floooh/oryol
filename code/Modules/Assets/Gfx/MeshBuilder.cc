@@ -34,16 +34,16 @@ MeshBuilder::Build(std::function<void(MeshBuilder& mb)> func) {
     res.Layout = this->layout;
     res.IndexType = this->indexType;
     res.VertexBufferDesc = BufferDesc()
-        .Size(vbSize)
-        .Type(BufferType::VertexBuffer)
-        .Usage(this->vertexUsage)
-        .Content(this->vertexPointer);
+        .SetSize(vbSize)
+        .SetType(BufferType::VertexBuffer)
+        .SetUsage(this->vertexUsage)
+        .SetContent(this->vertexPointer);
     if (ibSize > 0) {
         res.IndexBufferDesc = BufferDesc()
-            .Size(ibSize)
-            .Type(BufferType::IndexBuffer)
-            .Usage(this->indexUsage)
-            .Content(this->indexPointer);
+            .SetSize(ibSize)
+            .SetType(BufferType::IndexBuffer)
+            .SetUsage(this->indexUsage)
+            .SetContent(this->indexPointer);
     }
     else {
         res.IndexBufferDesc = BufferDesc();

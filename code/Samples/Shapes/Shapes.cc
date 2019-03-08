@@ -31,10 +31,11 @@ OryolMain(ShapeApp);
 AppState::Code
 ShapeApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(400)
-        .SampleCount(4)
-        .Title("Oryol Shapes Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(600)
+        .SetHeight(400)
+        .SetSampleCount(4)
+        .SetTitle("Oryol Shapes Sample")
+        .SetHtmlTrackElementSize(true));
     auto shapes = ShapeBuilder()
         .RandomColors(true)
         .Positions("position", VertexFormat::Float3)
@@ -45,14 +46,13 @@ ShapeApp::OnInit() {
         .Torus(0.3f, 0.5f, 20, 36)
         .Plane(1.5f, 1.5f, 10)
         .Build();
-    this->bind = Bindings()
-        .VertexBuffer(0, Gfx::CreateBuffer(shapes.VertexBufferDesc))
-        .IndexBuffer(Gfx::CreateBuffer(shapes.IndexBufferDesc));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shapes.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shapes.IndexBufferDesc);
     this->pip = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount()));
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(Gfx::Desc().SampleCount));
     this->primGroups = std::move(shapes.PrimitiveGroups);
 
     return App::OnInit();

@@ -22,9 +22,10 @@ OryolMain(ClearApp);
 AppState::Code
 ClearApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(400).Height(300)
-        .Title("Oryol Clear Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(400)
+        .SetHeight(300)
+        .SetTitle("Oryol Clear Sample")
+        .SetHtmlTrackElementSize(true));
     return App::OnInit();
 }
 

@@ -26,15 +26,15 @@ FullscreenQuadBuilder::Result
 FullscreenQuadBuilder::Build() {
     Result res;
     res.VertexBufferDesc
-        .Type(BufferType::VertexBuffer)
-        .Size(sizeof(vertsNoFlip))
-        .Content(this->flipV ? vertsFlip : vertsNoFlip);
+        .SetType(BufferType::VertexBuffer)
+        .SetSize(sizeof(vertsNoFlip))
+        .SetContent(this->flipV ? vertsFlip : vertsNoFlip);
     res.PipelineDesc
-        .Layout(0, {
+        .SetLayout(0, {
             { "position", VertexFormat::Float3 },
             { "texcoord0", VertexFormat::Float2 }
         })
-        .PrimitiveType(PrimitiveType::TriangleStrip);
+        .SetPrimitiveType(PrimitiveType::TriangleStrip);
     return res;
 }
 

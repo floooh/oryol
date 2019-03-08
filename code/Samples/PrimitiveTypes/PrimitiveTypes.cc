@@ -41,34 +41,35 @@ OryolMain(PrimitiveTypesApp);
 Id
 createIndexBuffer(const uint16_t* data, int dataSize) {
     return Gfx::CreateBuffer(BufferDesc()
-        .Size(dataSize)
-        .Content(data)
-        .Type(BufferType::IndexBuffer)
-        .Usage(Usage::Immutable));
+        .SetSize(dataSize)
+        .SetContent(data)
+        .SetType(BufferType::IndexBuffer)
+        .SetUsage(Usage::Immutable));
 }
 
 //------------------------------------------------------------------------------
 Id
 createPipeline(PrimitiveType::Code primType, IndexType::Code indexType, const VertexLayout& layout, Id shd, int sampleCount) {
     return Gfx::CreatePipeline(PipelineDesc()
-        .Shader(shd)
-        .Layout(0, layout)
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(sampleCount)
-        .IndexType(indexType)
-        .PrimitiveType(primType));
+        .SetShader(shd)
+        .SetLayout(0, layout)
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(sampleCount)
+        .SetIndexType(indexType)
+        .SetPrimitiveType(primType));
 }
 
 //------------------------------------------------------------------------------
 AppState::Code
 PrimitiveTypesApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(640).Height(480)
-        .SampleCount(4)
-        .Title("Oryol PrimitiveTypes Test")
-        .HtmlTrackElementSize(true));
-    Dbg::Setup(DbgDesc().SampleCount(4));
+        .SetWidth(640)
+        .SetHeight(480)
+        .SetSampleCount(4)
+        .SetTitle("Oryol PrimitiveTypes Test")
+        .SetHtmlTrackElementSize(true));
+    Dbg::Setup(DbgDesc().SetSampleCount(4));
     Input::Setup();
 
     // create a 2D vertex grid mesh, the same vertex data is combined
@@ -109,7 +110,7 @@ PrimitiveTypesApp::OnInit() {
         IndexType::None,
         mesh.Layout,
         shd,
-        Gfx::Desc().SampleCount());
+        Gfx::Desc().SampleCount);
 
     // line list index buffer mesh and pipeline state
     {
@@ -130,7 +131,7 @@ PrimitiveTypesApp::OnInit() {
             IndexType::UInt16,
             mesh.Layout,
             shd,
-            Gfx::Desc().SampleCount());
+            Gfx::Desc().SampleCount);
         this->indexBuffers[PrimitiveType::Lines] = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
 
@@ -151,7 +152,7 @@ PrimitiveTypesApp::OnInit() {
             IndexType::UInt16,
             mesh.Layout,
             shd,
-            Gfx::Desc().SampleCount());
+            Gfx::Desc().SampleCount);
         this->indexBuffers[PrimitiveType::LineStrip] = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
 
@@ -176,7 +177,7 @@ PrimitiveTypesApp::OnInit() {
             IndexType::UInt16,
             mesh.Layout,
             shd,
-            Gfx::Desc().SampleCount());
+            Gfx::Desc().SampleCount);
         this->indexBuffers[PrimitiveType::Triangles] = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
 
@@ -203,7 +204,7 @@ PrimitiveTypesApp::OnInit() {
             IndexType::UInt16,
             mesh.Layout,
             shd,
-            Gfx::Desc().SampleCount());
+            Gfx::Desc().SampleCount);
         this->indexBuffers[PrimitiveType::TriangleStrip] = createIndexBuffer(&indices[0], indices.Size()*sizeof(uint16_t));
     }
     this->params.psize = 4.0f;
@@ -250,8 +251,8 @@ PrimitiveTypesApp::OnRunning() {
     if (num > 0) {
         Gfx::ApplyPipeline(this->pipelines[this->curPrimType]);
         Gfx::ApplyBindings(Bindings()
-            .VertexBuffer(0, this->vertexBuffer)
-            .IndexBuffer(this->indexBuffers[this->curPrimType]));
+            .SetVertexBuffer(0, this->vertexBuffer)
+            .SetIndexBuffer(this->indexBuffers[this->curPrimType]));
         Gfx::ApplyUniforms(this->params);
         Gfx::Draw(0, num);
     }

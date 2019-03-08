@@ -76,19 +76,20 @@ static TextureDesc buildDesc(const TextureDesc& blueprint, const gliml::context&
     }
     o_assert(PixelFormat::Invalid != pixelFormat);
     auto desc = TextureDesc(blueprint)
-        .Width(w)
-        .Height(h)
-        .NumMipMaps(numMips)
-        .Format(pixelFormat);
+        .SetWidth(w)
+        .SetHeight(h)
+        .SetNumMipMaps(numMips)
+        .SetFormat(pixelFormat);
     switch (ctx.texture_target()) {
         case GLIML_GL_TEXTURE_2D:
-            desc.Type(TextureType::Texture2D);
+            desc.SetType(TextureType::Texture2D);
             break;
         case GLIML_GL_TEXTURE_3D:
-            desc.Type(TextureType::Texture3D).Depth(d);
+            desc.SetType(TextureType::Texture3D)
+                .SetDepth(d);
             break;
         case GLIML_GL_TEXTURE_CUBE_MAP:
-            desc.Type(TextureType::TextureCube);
+            desc.SetType(TextureType::TextureCube);
             break;
         default:
             o_error("Unknown texture type!\n");
@@ -99,8 +100,8 @@ static TextureDesc buildDesc(const TextureDesc& blueprint, const gliml::context&
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps >= ctx.num_mipmaps(0));
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex++) {
         for (int mipIndex = 0; mipIndex < numMips; mipIndex++) {
-            desc.MipContent(faceIndex, mipIndex, ctx.image_data(faceIndex, mipIndex));
-            desc.MipSize(faceIndex, mipIndex, ctx.image_size(faceIndex, mipIndex));
+            desc.SetMipContent(faceIndex, mipIndex, ctx.image_data(faceIndex, mipIndex));
+            desc.SetMipSize(faceIndex, mipIndex, ctx.image_size(faceIndex, mipIndex));
         }
     }
     return desc;
@@ -109,8 +110,8 @@ static TextureDesc buildDesc(const TextureDesc& blueprint, const gliml::context&
 //------------------------------------------------------------------------------
 Id
 TextureLoader::Load(const TextureDesc& desc) {
-    Id resId = Gfx::AllocTexture(desc.locator);
-    IO::Load(URL(desc.locator.Location()), [resId, desc](IO::LoadResult result) {
+    Id resId = Gfx::AllocTexture(desc.Locator);
+    IO::Load(URL(desc.Locator.Location()), [resId, desc](IO::LoadResult result) {
         const uint8_t* data = result.Data.Data();
         const int dataSize = result.Data.Size();
         gliml::context ctx;
