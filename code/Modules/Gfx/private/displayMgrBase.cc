@@ -25,13 +25,13 @@ displayMgrBase::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->displayValid);
     this->displayValid = true;
     this->gfxDesc = desc;
-    this->displayAttrs.Width = desc.width;
-    this->displayAttrs.Height = desc.height;
-    this->displayAttrs.ColorFormat = desc.colorFormat;
-    this->displayAttrs.DepthFormat = desc.depthFormat;
-    this->displayAttrs.SampleCount = desc.sampleCount;
-    this->displayAttrs.Windowed = desc.windowed;
-    this->displayAttrs.SwapInterval = desc.swapInterval;
+    this->displayAttrs.Width = desc.Width;
+    this->displayAttrs.Height = desc.Height;
+    this->displayAttrs.ColorFormat = desc.ColorFormat;
+    this->displayAttrs.DepthFormat = desc.DepthFormat;
+    this->displayAttrs.SampleCount = desc.SampleCount;
+    this->displayAttrs.Windowed = desc.Windowed;
+    this->displayAttrs.SwapInterval = desc.SwapInterval;
     this->curFramebufferWidth = this->displayAttrs.Width;
     this->curFramebufferHeight = this->displayAttrs.Height;
 }

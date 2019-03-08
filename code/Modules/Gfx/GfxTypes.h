@@ -427,7 +427,7 @@ struct Face {
         Back  = (1<<1),
         Both  = Front|Back
     };
-    static const int NumSides = 2;
+    static constexpr int NumSides = 2;
 };
 
 //------------------------------------------------------------------------------
@@ -543,15 +543,16 @@ struct VertexStepFunction {
     a mesh, where elements are either vertices or indices.
 */
 struct PrimitiveGroup {
+    /// index of first vertex or index
     int BaseElement = 0;
+    /// number of vertices or indices
     int NumElements = 0;
 
-    /// default constructor
+    /// setters with chaining
     PrimitiveGroup() {};
-    /// construct for indexed or non-indexed
-    PrimitiveGroup(int baseElement, int numElements) :
-        BaseElement(baseElement),
-        NumElements(numElements) { }
+    PrimitiveGroup(int baseElement, int numElements);
+    PrimitiveGroup& SetBaseElement(int val);
+    PrimitiveGroup& SetNumElements(int val);
 };
 
 //------------------------------------------------------------------------------
@@ -639,34 +640,27 @@ public:
     - 0..N textures for the fragment shader stage
 */
 struct Bindings {
-    /// default constructor to init VertexBufferOffsets to 0
-    Bindings();
-    
-    /// set a vertex buffer slot
-    Bindings& VertexBuffer(int slot, const Id& bufId);
-    /// set vertex buffer offset
-    Bindings& VertexBufferOffset(int slot, int offset);
-    /// set index buffer slot
-    Bindings& IndexBuffer(const Id& bufId);
-    /// set index buffer offset
-    Bindings& IndexBufferOffset(int offset);
-    /// set a vertex texture slot
-    Bindings& VSTexture(int slot, const Id& texId);
-    /// set a fragment texture slot
-    Bindings& FSTexture(int slot, const Id& texId);
-
     /// vertex buffer slots
-    StaticArray<Id, GfxConfig::MaxNumVertexBuffers> vertexBuffers;
+    StaticArray<Id, GfxConfig::MaxNumVertexBuffers> VertexBuffers;
     /// optional vertex buffer offsets
-    StaticArray<int, GfxConfig::MaxNumVertexBuffers> vertexBufferOffsets;
+    StaticArray<int, GfxConfig::MaxNumVertexBuffers> VertexBufferOffsets;
     /// optional index buffer
-    Id indexBuffer;
+    Id IndexBuffer;
     /// optional index buffer offsets
-    int indexBufferOffset = 0;
+    int IndexBufferOffset = 0;
     /// vertex shader stage textures
-    StaticArray<Id, GfxConfig::MaxNumVertexTextures> vsTexture;
+    StaticArray<Id, GfxConfig::MaxNumVertexTextures> VSTexture;
     /// fragment shader stage textures
-    StaticArray<Id, GfxConfig::MaxNumFragmentTextures> fsTexture;
+    StaticArray<Id, GfxConfig::MaxNumFragmentTextures> FSTexture;
+
+    /// setters with chaining
+    Bindings();
+    Bindings& SetVertexBuffer(int slot, const Id& bufId);
+    Bindings& SetVertexBufferOffset(int slot, int offset);
+    Bindings& SetIndexBuffer(const Id& bufId);
+    Bindings& SetIndexBufferOffset(int offset);
+    Bindings& SetVSTexture(int slot, const Id& texId);
+    Bindings& SetFSTexture(int slot, const Id& texId);
 };
 
 //------------------------------------------------------------------------------
@@ -787,19 +781,19 @@ public:
     /// id for an event handler subscription
     typedef uint32_t HandlerId;
     /// event types
-    enum Type {
+    enum EventType {
         DisplayModified,
 
         NumTypes,
         InvalidType
     };
+    enum EventType Type = InvalidType;
+    struct DisplayAttrs DisplayAttrs;
+
     /// default constructor
     GfxEvent();
     /// constructor with arguments
-    GfxEvent(Type type, const DisplayAttrs& attrs) : Type(type), DisplayAttrs(attrs) { }
-
-    enum Type Type = InvalidType;
-    struct DisplayAttrs DisplayAttrs;
+    GfxEvent(EventType type, const struct DisplayAttrs& attrs) : Type(type), DisplayAttrs(attrs) { }
 };
 
 //------------------------------------------------------------------------------
@@ -809,12 +803,15 @@ public:
 */
 class ImageContent {
 public:
-    /// constructor
-    ImageContent();
-    /// pixel data mipmap image offsets
+    /// mipmap surface data pointers
     StaticArray<StaticArray<const void*, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Pointer;
-    /// pixel data mipmap image sizes
+    /// mipmap surface data sizes (in bytes)
     StaticArray<StaticArray<int, GfxConfig::MaxNumTextureMipMaps>, GfxConfig::MaxNumTextureFaces> Size;
+
+    /// setters with chaining
+    ImageContent();
+    ImageContent& SetPointer(int faceIndex, int mipIndex, const void* ptr);
+    ImageContent& SetSize(int faceIndex, int mipIndex, int size);
 };
 
 //------------------------------------------------------------------------------
@@ -831,120 +828,40 @@ public:
     @see Gfx, DisplayAttrs
 */
 struct GfxDesc {
-    GfxDesc() {
-        for (int i = 0; i < GfxResourceType::Num; i++) {
-            resourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
-        }
-    }
-    GfxDesc(const GfxDesc& rhs) {
-        *this = rhs;
-    }
-    GfxDesc& Width(int w) {
-        width = w; return *this; 
-    }
-    int Width() const {
-        return width;
-    }
-    GfxDesc& Height(int h) {
-        height = h; return *this;
-    }
-    int Height() const {
-        return height;
-    }
-    GfxDesc& ColorFormat(PixelFormat::Code fmt) {
-        colorFormat = fmt; return *this;
-    }
-    PixelFormat::Code ColorFormat() const {
-        return colorFormat;
-    }
-    GfxDesc& DepthFormat(PixelFormat::Code fmt) {
-        depthFormat = fmt; return *this;
-    }
-    PixelFormat::Code DepthFormat() const {
-        return depthFormat;
-    }
-    GfxDesc& SampleCount(int c) {
-        sampleCount = c; return *this;
-    }
-    int SampleCount() const {
-        return sampleCount;
-    }
-    GfxDesc& Windowed(bool b) {
-        windowed = b; return *this;
-    }
-    bool Windowed() const {
-        return windowed;
-    }
-    GfxDesc& SwapInterval(int i) {
-        swapInterval = i; return *this;
-    }
-    int SwapInterval() const {
-        return swapInterval;
-    }
-    GfxDesc& Title(const StringAtom& t) {
-        title = t; return *this;
-    }
-    const StringAtom& Title() const {
-        return title;
-    }
-    GfxDesc& HighDPI(bool b) {
-        highDPI = b; return *this;
-    }
-    bool HighDPI() const {
-        return highDPI;
-    }
-    GfxDesc& HtmlTrackElementSize(bool b) {
-        htmlTrackElementSize = b; return *this;
-    }
-    bool HtmlTrackElementSize() const {
-        return htmlTrackElementSize;
-    }
-    GfxDesc& HtmlElement(const StringAtom& e) {
-        htmlElement = e; return *this;
-    }
-    const StringAtom& HtmlElement() const {
-        return htmlElement;
-    }
-    GfxDesc& ResourcePoolSize(GfxResourceType::Code type, int size) {
-        resourcePoolSize[type] = size; return *this;
-    }
-    int ResourcePoolSize(GfxResourceType::Code type) const {
-        return resourcePoolSize[type];
-    }
-    GfxDesc& ResourceLabelStackCapacity(int c) {
-        resourceLabelStackCapacity = c; return *this;
-    }
-    int ResourceLabelStackCapacity() const {
-        return resourceLabelStackCapacity;
-    }
-    GfxDesc& ResourceRegistryCapacity(int c) {
-        resourceRegistryCapacity = c; return *this;
-    }
-    int ResourceRegistryCapacity() const {
-        return resourceRegistryCapacity;
-    }
-    GfxDesc& GlobalUniformBufferSize(int s) {
-        globalUniformBufferSize = s; return *this;
-    }
-    int GlobalUniformBufferSize() const {
-        return globalUniformBufferSize;
-    }
+    int Width = 640;
+    int Height = 400;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
+    int SampleCount = 1;
+    bool Windowed = true;
+    int SwapInterval = 1;
+    StringAtom Title = "Oryol";
+    bool HighDPI = false;
+    bool HtmlTrackElementSize = false;
+    StringAtom HtmlElement = "canvas";
+    StaticArray<int,GfxResourceType::Num> ResourcePoolSize;
+    int ResourceLabelStackCapacity = 256;
+    int ResourceRegistryCapacity = 256;
+    int GlobalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
 
-    int width = 640;
-    int height = 400;
-    PixelFormat::Code colorFormat = PixelFormat::RGBA8;
-    PixelFormat::Code depthFormat = PixelFormat::DEPTHSTENCIL;
-    int sampleCount = 1;
-    bool windowed = true;
-    int swapInterval = 1;
-    StringAtom title = "Oryol";
-    bool highDPI = false;
-    bool htmlTrackElementSize = false;
-    StringAtom htmlElement = "#canvas";
-    StaticArray<int,GfxResourceType::Num> resourcePoolSize;
-    int resourceLabelStackCapacity = 256;
-    int resourceRegistryCapacity = 256;
-    int globalUniformBufferSize = GfxConfig::DefaultGlobalUniformBufferSize;
+    /// setters with chaining
+    GfxDesc();
+    GfxDesc(const GfxDesc& rhs);
+    GfxDesc& SetWidth(int w);
+    GfxDesc& SetHeight(int h);
+    GfxDesc& SetColorFormat(PixelFormat::Code fmt);
+    GfxDesc& SetDepthFormat(PixelFormat::Code fmt);
+    GfxDesc& SetSampleCount(int c);
+    GfxDesc& SetWindowed(bool b);
+    GfxDesc& SetSwapInterval(int i);
+    GfxDesc& SetTitle(const StringAtom& t);
+    GfxDesc& SetHighDPI(bool b);
+    GfxDesc& SetHtmlTrackElementSize(bool b);
+    GfxDesc& SetHtmlElement(const StringAtom& e);
+    GfxDesc& SetResourcePoolSize(GfxResourceType::Code type, int size);
+    GfxDesc& SetResourceLabelStackCapacity(int c);
+    GfxDesc& SetResourceRegistryCapacity(int c);
+    GfxDesc& SetGlobalUniformBufferSize(int s);
 };
 
 //------------------------------------------------------------------------------
@@ -954,55 +871,22 @@ struct GfxDesc {
     @brief creation attributes for vertex- and index-buffers
 */
 struct BufferDesc {
-    BufferDesc() {
-        nativeBuffers.Fill(0);
-    }
-    BufferDesc(const BufferDesc& rhs) {
-        *this = rhs;
-    }
-    BufferDesc& Locator(const class Locator& l) {
-        locator = l; return *this;
-    }
-    const class Locator& Locator() const {
-        return locator;
-    }
-    BufferDesc& Type(BufferType::Code t) {
-        type = t; return *this;
-    }
-    BufferType::Code Type() const {
-        return type;
-    }
-    BufferDesc& Usage(Usage::Code u) {
-        usage = u; return *this;
-    }
-    Usage::Code Usage() const {
-        return usage;
-    }
-    BufferDesc& Size(int s) {
-        size = s; return *this;
-    }
-    int Size() const {
-        return size;
-    }
-    BufferDesc& Content(const void* c) {
-        content = c; return *this;
-    }
-    const void* Content() const {
-        return content;
-    }
-    BufferDesc& NativeBuffer(int index, intptr_t buf) {
-        nativeBuffers[index] = buf; return *this;
-    }
-    intptr_t NativeBuffer(int index) const {
-        return nativeBuffers[index];
-    }
+    class Locator Locator = Locator::NonShared();
+    BufferType::Code Type = BufferType::VertexBuffer;
+    Oryol::Usage::Code Usage = Usage::Immutable;
+    int Size = 0;
+    const void* Content = nullptr;
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeBuffers;
 
-    class Locator locator = Locator::NonShared();
-    BufferType::Code type = BufferType::VertexBuffer;
-    Oryol::Usage::Code usage = Usage::Immutable;
-    int size = 0;
-    const void* content = nullptr;
-    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> nativeBuffers;
+    /// setters with chaining
+    BufferDesc();
+    BufferDesc(const BufferDesc& rhs);
+    BufferDesc& SetLocator(const class Locator& l);
+    BufferDesc& SetType(BufferType::Code t);
+    BufferDesc& SetUsage(Usage::Code u);
+    BufferDesc& SetSize(int s);
+    BufferDesc& SetContent(const void* c);
+    BufferDesc& SetNativeBuffer(int index, intptr_t buf);
 };
 
 //------------------------------------------------------------------------------
@@ -1012,315 +896,85 @@ struct BufferDesc {
     @brief creation attribute for pipeline state objects
 */
 struct PipelineDesc {
+    class Locator Locator = Locator::NonShared();
+    Id Shader;
+    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> Layouts;
+    PrimitiveType::Code PrimType = PrimitiveType::Triangles;
+    Oryol::IndexType::Code IndexType = IndexType::None;
+    CompareFunc::Code DepthCmpFunc = CompareFunc::Always;
+    bool DepthWriteEnabled = false;
+    bool StencilEnabled = false;
+    uint8_t StencilReadMask = 0xFF;
+    uint8_t StencilWriteMask = 0xFF;
+    uint8_t StencilRef = 0x00;
+    StencilOp::Code StencilFrontFailOp = StencilOp::Keep;
+    StencilOp::Code StencilFrontDepthFailOp = StencilOp::Keep;
+    StencilOp::Code StencilFrontPassOp = StencilOp::Keep;
+    CompareFunc::Code StencilFrontCmpFunc = CompareFunc::Always;
+    StencilOp::Code StencilBackFailOp = StencilOp::Keep;
+    StencilOp::Code StencilBackDepthFailOp = StencilOp::Keep;
+    StencilOp::Code StencilBackPassOp = StencilOp::Keep;
+    CompareFunc::Code StencilBackCmpFunc = CompareFunc::Always;
+    bool BlendEnabled = false;
+    BlendFactor::Code BlendSrcFactorRGB = BlendFactor::One;
+    BlendFactor::Code BlendDstFactorRGB = BlendFactor::Zero;
+    BlendOperation::Code BlendOpRGB = BlendOperation::Add;
+    BlendFactor::Code BlendSrcFactorAlpha = BlendFactor::One;
+    BlendFactor::Code BlendDstFactorAlpha = BlendFactor::Zero;
+    BlendOperation::Code BlendOpAlpha = BlendOperation::Add;
+    PixelChannel::Mask ColorWriteMask = PixelChannel::RGBA;
+    PixelFormat::Code ColorFormat = PixelFormat::RGBA8;
+    PixelFormat::Code DepthFormat = PixelFormat::DEPTHSTENCIL;
+    int MRTCount = 1;
+    glm::vec4 BlendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    bool CullFaceEnabled = false;
+    bool AlphaToCoverageEnabled = false;
+    Face::Code CullFace = Face::Back;
+    int SampleCount = 1;
+    float DepthBias = 0.0f;
+    float DepthBiasSlopeScale = 0.0f;
+    float DepthBiasClamp = 0.0f;
+
+    /// setters with chaining
     PipelineDesc() { };
-    PipelineDesc(const PipelineDesc& rhs) {
-        *this = rhs;
-    }
-    PipelineDesc& Locator(const class Locator& loc) {
-        locator = loc; return *this;
-    }
-    const class Locator& Locator() const {
-        return locator;
-    }
-    PipelineDesc& Shader(const Id& shd) {
-        shader = shd; return *this;
-    }
-    const Id& Shader() const {
-        return shader;
-    }
-    PipelineDesc& Layout(int slotIndex, const VertexLayout& layout) {
-        layouts[slotIndex] = layout; return *this;
-    }
-    const VertexLayout& Layout(int slotIndex) const {
-        return layouts[slotIndex];
-    }
-    PipelineDesc& PrimitiveType(PrimitiveType::Code t) {
-        primType = t; return *this;
-    }
-    PrimitiveType::Code PrimitiveType() const {
-        return primType;
-    }
-    PipelineDesc& IndexType(IndexType::Code t) {
-        indexType = t; return *this;
-    }
-    IndexType::Code IndexType() const {
-        return indexType;
-    }
-    PipelineDesc& DepthCmpFunc(CompareFunc::Code f) {
-        depthCmpFunc = f; return *this;
-    }
-    CompareFunc::Code DepthCmpFunc() const {
-        return depthCmpFunc;
-    }
-    PipelineDesc& DepthWriteEnabled(bool b) {
-        depthWriteEnabled = b; return *this;
-    }
-    bool DepthWriteEnabled() const {
-        return depthWriteEnabled;
-    }
-    PipelineDesc& StencilEnabled(bool b) {
-        stencilEnabled = b; return *this;
-    }
-    bool StencilEnabled() const {
-        return stencilEnabled;
-    }
-    PipelineDesc& StencilReadMask(uint8_t m) {
-        stencilReadMask = m; return *this;
-    }
-    uint8_t StencilReadMask() const {
-        return stencilReadMask;
-    }
-    PipelineDesc& StencilWriteMask(uint8_t m) {
-        stencilWriteMask = m; return *this;
-    }
-    uint8_t StencilWriteMask() const {
-        return stencilWriteMask;
-    }
-    PipelineDesc& StencilRef(uint8_t r) {
-        stencilRef = r; return *this;
-    }
-    uint8_t StencilRef() const {
-        return stencilRef;
-    }
-    PipelineDesc& StencilFailOp(Face::Code face, StencilOp::Code op) {
-        if (Face::Front & face) {
-            stencilFrontFailOp = op;
-        }
-        if (Face::Back & face) {
-            stencilBackFailOp = op;
-        }
-        return *this;
-    }
-    StencilOp::Code StencilFailOp(Face::Code face) const {
-        if (Face::Front & face) {
-            return stencilFrontFailOp;
-        }
-        else {
-            return stencilBackFailOp;
-        }
-    }
-    PipelineDesc& StencilDepthFailOp(Face::Code face, StencilOp::Code op) {
-        if (Face::Front & face) {
-            stencilFrontDepthFailOp = op;
-        }
-        if (Face::Back & face) {
-            stencilBackDepthFailOp = op;
-        }
-        return *this;
-    }
-    StencilOp::Code StencilDepthFailOp(Face::Code face) {
-        if (Face::Front & face) {
-            return stencilFrontDepthFailOp;
-        }
-        else {
-            return stencilBackDepthFailOp;
-        }
-    }
-    PipelineDesc& StencilPassOp(Face::Code face, StencilOp::Code op) {
-        if (Face::Front & face) {
-            stencilFrontPassOp = op;
-        }
-        if (Face::Back & face) {
-            stencilBackPassOp = op;
-        }
-        return *this;
-    }
-    StencilOp::Code StencilPassOp(Face::Code face) {
-        if (Face::Front & face) {
-            return stencilFrontPassOp;
-        }
-        else {
-            return stencilBackPassOp;
-        }
-    }
-    PipelineDesc& StencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
-        if (Face::Front & face) {
-            stencilFrontCmpFunc = fn;
-        }
-        if (Face::Back & face) {
-            stencilBackCmpFunc = fn;
-        }
-        return *this;
-    }
-    CompareFunc::Code StencilCmpFunc(Face::Code face) {
-        if (Face::Front & face) {
-            return stencilFrontCmpFunc;
-        }
-        else {
-            return stencilBackCmpFunc;
-        }
-    }
-    PipelineDesc& BlendEnabled(bool b) {
-        blendEnabled = b; return *this;
-    }
-    bool BlendEnabled() const {
-        return blendEnabled;
-    }
-    PipelineDesc& BlendSrcFactor(BlendFactor::Code f) {
-        blendSrcFactorRGB = f;
-        blendSrcFactorAlpha = f;
-        return *this;
-    }
-    PipelineDesc& BlendSrcFactorRGB(BlendFactor::Code f) {
-        blendSrcFactorRGB = f; return *this;
-    }
-    BlendFactor::Code BlendSrcFactorRGB() const {
-        return blendSrcFactorRGB;
-    }
-    PipelineDesc& BlendSrcFactorAlpha(BlendFactor::Code f) {
-        blendSrcFactorAlpha = f; return *this;
-    }
-    BlendFactor::Code BlendSrcFactorAlpha() const {
-        return blendSrcFactorAlpha;
-    }
-    PipelineDesc& BlendDstFactor(BlendFactor::Code f) {
-        blendDstFactorRGB = f;
-        blendDstFactorAlpha = f;
-        return *this;
-    }
-    PipelineDesc& BlendDstFactorRGB(BlendFactor::Code f) {
-        blendDstFactorRGB = f; return *this;
-    }
-    BlendFactor::Code BlendDstFactorRGB() const {
-        return blendDstFactorRGB;
-    }
-    PipelineDesc& BlendDstFactorAlpha(BlendFactor::Code f) {
-        blendDstFactorAlpha = f; return *this;
-    }
-    BlendFactor::Code BlendDstFactorAlpha() const {
-        return blendDstFactorAlpha;
-    }
-    PipelineDesc& BlendOp(BlendOperation::Code op) {
-        blendOpRGB = op;
-        blendOpAlpha = op;
-        return *this;
-    }
-    PipelineDesc& BlendOpRGB(BlendOperation::Code op) {
-        blendOpRGB = op; return *this;
-    }
-    BlendOperation::Code BlendOpRGB() const {
-        return blendOpRGB;
-    }
-    PipelineDesc& BlendOpAlpha(BlendOperation::Code op) {
-        blendOpAlpha = op; return *this;
-    }
-    BlendOperation::Code BlendOpAlpha() const {
-        return blendOpAlpha;
-    }
-    PipelineDesc& ColorWriteMask(PixelChannel::Mask m) {
-        colorWriteMask = m; return *this;
-    }
-    PixelChannel::Mask ColorWriteMask() const {
-        return colorWriteMask;
-    }
-    PipelineDesc& ColorFormat(PixelFormat::Code fmt) {
-        colorFormat = fmt; return *this;
-    }
-    PixelFormat::Code ColorFormat() const {
-        return colorFormat;
-    }
-    PipelineDesc& DepthFormat(PixelFormat::Code fmt) {
-        depthFormat = fmt; return *this;
-    }
-    PixelFormat::Code DepthFormat() const {
-        return depthFormat;
-    }
-    PipelineDesc& SampleCount(int c) {
-        sampleCount = c; return *this;
-    }
-    int SampleCount() const {
-        return sampleCount;
-    }
-    PipelineDesc& MRTCount(int c) {
-        mrtCount = c; return *this;
-    }
-    int MRTCount() const {
-        return mrtCount;
-    }
-    PipelineDesc& BlendColor(const glm::vec4& c) {
-        blendColor = c; return *this;
-    }
-    const glm::vec4& BlendColor() const {
-        return blendColor;
-    }
-    PipelineDesc& CullFaceEnabled(bool b) {
-        cullFaceEnabled = b; return *this;
-    }
-    bool CullFaceEnabled() const {
-        return cullFaceEnabled;
-    }
-    PipelineDesc& CullFace(Face::Code f) {
-        cullFace = f; return *this;
-    }
-    Face::Code CullFace() const {
-        return cullFace;
-    }
-    PipelineDesc& AlphaToCoverageEnabled(bool b) {
-        alphaToCoverageEnabled = b; return *this;
-    }
-    bool AlphaToCoverageEnabled() const {
-        return alphaToCoverageEnabled;
-    }
-    PipelineDesc& DepthBias(float f) {
-        depthBias = f; return *this;
-    }
-    float DepthBias() const {
-        return depthBias;
-    }
-    PipelineDesc& DepthBiasSlopeScale(float f) {
-        depthBiasSlopeScale = f; return *this;
-    }
-    float DepthBiasSlopeScale() const {
-        return depthBiasSlopeScale;
-    }
-    PipelineDesc& DepthBiasClamp(float f) {
-        depthBiasClamp = f; return *this;
-    }
-    float DepthBiasClamp() const {
-        return depthBiasClamp;
-    }
-
-    class Locator locator = Locator::NonShared();
-    Id shader;
-    StaticArray<VertexLayout, GfxConfig::MaxNumVertexBuffers> layouts;
-    PrimitiveType::Code primType = PrimitiveType::Triangles;
-    Oryol::IndexType::Code indexType = IndexType::None;
-
-    CompareFunc::Code depthCmpFunc = CompareFunc::Always;
-    bool depthWriteEnabled = false;
-    bool stencilEnabled = false;
-    uint8_t stencilReadMask = 0xFF;
-    uint8_t stencilWriteMask = 0xFF;
-    uint8_t stencilRef = 0x00;
-    StencilOp::Code stencilFrontFailOp = StencilOp::Keep;
-    StencilOp::Code stencilFrontDepthFailOp = StencilOp::Keep;
-    StencilOp::Code stencilFrontPassOp = StencilOp::Keep;
-    CompareFunc::Code stencilFrontCmpFunc = CompareFunc::Always;
-    StencilOp::Code stencilBackFailOp = StencilOp::Keep;
-    StencilOp::Code stencilBackDepthFailOp = StencilOp::Keep;
-    StencilOp::Code stencilBackPassOp = StencilOp::Keep;
-    CompareFunc::Code stencilBackCmpFunc = CompareFunc::Always;
-
-    bool blendEnabled = false;
-    BlendFactor::Code blendSrcFactorRGB = BlendFactor::One;
-    BlendFactor::Code blendDstFactorRGB = BlendFactor::Zero;
-    BlendOperation::Code blendOpRGB = BlendOperation::Add;
-    BlendFactor::Code blendSrcFactorAlpha = BlendFactor::One;
-    BlendFactor::Code blendDstFactorAlpha = BlendFactor::Zero;
-    BlendOperation::Code blendOpAlpha = BlendOperation::Add;
-    PixelChannel::Mask colorWriteMask = PixelChannel::RGBA;
-    PixelFormat::Code colorFormat = PixelFormat::RGBA8;
-    PixelFormat::Code depthFormat = PixelFormat::DEPTHSTENCIL;
-    int mrtCount = 1;
-    glm::vec4 blendColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    bool cullFaceEnabled = false;
-    bool alphaToCoverageEnabled = false;
-    Face::Code cullFace = Face::Back;
-    int sampleCount = 1;
-    float depthBias = 0.0f;
-    float depthBiasSlopeScale = 0.0f;
-    float depthBiasClamp = 0.0f;
+    PipelineDesc(const PipelineDesc& rhs);
+    PipelineDesc& SetLocator(const class Locator& loc);
+    PipelineDesc& SetShader(const Id& shd);
+    PipelineDesc& SetLayout(int slotIndex, const VertexLayout& layout);
+    PipelineDesc& SetPrimitiveType(PrimitiveType::Code t);
+    PipelineDesc& SetIndexType(IndexType::Code t);
+    PipelineDesc& SetDepthCmpFunc(CompareFunc::Code f);
+    PipelineDesc& SetDepthWriteEnabled(bool b);
+    PipelineDesc& SetStencilEnabled(bool b);
+    PipelineDesc& SetStencilReadMask(uint8_t m);
+    PipelineDesc& SetStencilWriteMask(uint8_t m);
+    PipelineDesc& SetStencilRef(uint8_t r);
+    PipelineDesc& SetStencilFailOp(Face::Code face, StencilOp::Code op);
+    PipelineDesc& SetStencilDepthFailOp(Face::Code face, StencilOp::Code op);
+    PipelineDesc& SetStencilPassOp(Face::Code face, StencilOp::Code op);
+    PipelineDesc& SetStencilCmpFunc(Face::Code face, CompareFunc::Code fn);
+    PipelineDesc& SetBlendEnabled(bool b);
+    PipelineDesc& SetBlendSrcFactor(BlendFactor::Code f);
+    PipelineDesc& SetBlendSrcFactorRGB(BlendFactor::Code f);
+    PipelineDesc& SetBlendSrcFactorAlpha(BlendFactor::Code f);
+    PipelineDesc& SetBlendDstFactor(BlendFactor::Code f);
+    PipelineDesc& SetBlendDstFactorRGB(BlendFactor::Code f);
+    PipelineDesc& SetBlendDstFactorAlpha(BlendFactor::Code f);
+    PipelineDesc& SetBlendOp(BlendOperation::Code op);
+    PipelineDesc& SetBlendOpRGB(BlendOperation::Code op);
+    PipelineDesc& SetBlendOpAlpha(BlendOperation::Code op);
+    PipelineDesc& SetColorWriteMask(PixelChannel::Mask m);
+    PipelineDesc& SetColorFormat(PixelFormat::Code fmt);
+    PipelineDesc& SetDepthFormat(PixelFormat::Code fmt);
+    PipelineDesc& SetSampleCount(int c);
+    PipelineDesc& SetMRTCount(int c);
+    PipelineDesc& SetBlendColor(const glm::vec4& c);
+    PipelineDesc& SetCullFaceEnabled(bool b);
+    PipelineDesc& SetCullFace(Face::Code f);
+    PipelineDesc& SetAlphaToCoverageEnabled(bool b);
+    PipelineDesc& SetDepthBias(float f);
+    PipelineDesc& SetDepthBiasSlopeScale(float f);
+    PipelineDesc& SetDepthBiasClamp(float f);
 };
 
 //------------------------------------------------------------------------------
@@ -1330,61 +984,8 @@ struct PipelineDesc {
     @brief creation attributes for shaders
 */
 struct ShaderDesc {
-    ShaderDesc() { };
-    ShaderDesc(const ShaderDesc& rhs) {
-        *this = rhs;
-    }
-    ShaderDesc& Locator(const class Locator& loc) {
-        locator = loc; return *this;
-    }
-    const class Locator& Locator() const {
-        return locator;
-    }
-    ShaderDesc& Source(ShaderStage::Code stg, const char* src) {
-        stage[stg].Source = src; return *this;
-    }
-    const char* Source(ShaderStage::Code stg) {
-        return stage[stg].Source;
-    }
-    ShaderDesc& ByteCode(ShaderStage::Code stg, const uint8_t* ptr, int size) {
-        stage[stg].ByteCode = ptr;
-        stage[stg].ByteCodeSize = size;
-        return *this;
-    }
-    const uint8_t* ByteCodePtr(ShaderStage::Code stg) const {
-        return stage[stg].ByteCode;
-    }
-    int ByteCodeSize(ShaderStage::Code stg) const {
-        return stage[stg].ByteCodeSize;
-    }
-    ShaderDesc& Entry(ShaderStage::Code stg, const char* entry) {
-        stage[stg].Entry = entry; return *this;
-    }
-    const char* Entry(ShaderStage::Code stg) const {
-        return stage[stg].Entry;
-    }
-    ShaderDesc& Attr(const StringAtom& name, VertexFormat::Code fmt) {
-        layout.Add(name, fmt); return *this;
-    }
-    const VertexLayout& Layout() const {
-        return layout;
-    }
-    ShaderDesc& UniformBlock(ShaderStage::Code stg, int slot, const char* name, const char* type, int size) {
-        auto& ubSlot = stage[stg].UniformBlocks[slot];
-        ubSlot.Name = name;
-        ubSlot.Type = type;
-        ubSlot.Size = size;
-        return *this;
-    }
-    ShaderDesc& Texture(ShaderStage::Code stg, int slot, const char* name, TextureType::Code type) {
-        auto& texSlot = stage[stg].Textures[slot];
-        texSlot.Name = name;
-        texSlot.Type = type;
-        return *this;
-    }
-
-    class Locator locator = Locator::NonShared();
-    VertexLayout layout;
+    class Locator Locator = Locator::NonShared();
+    VertexLayout Layout;
     struct UniformBlockDesc {
         const char* Name = nullptr;
         const char* Type = nullptr;
@@ -1402,7 +1003,18 @@ struct ShaderDesc {
         StaticArray<UniformBlockDesc, GfxConfig::MaxNumUniformBlocksPerStage> UniformBlocks;
         StaticArray<TextureDesc, GfxConfig::MaxNumShaderTextures> Textures;
     };
-    StaticArray<StageDesc, ShaderStage::Num> stage;
+    StaticArray<StageDesc, ShaderStage::Num> Stage;
+
+    /// setters with chaining
+    ShaderDesc() { };
+    ShaderDesc(const ShaderDesc& rhs);
+    ShaderDesc& SetLocator(const class Locator& loc);
+    ShaderDesc& SetSource(ShaderStage::Code stg, const char* src);
+    ShaderDesc& SetByteCode(ShaderStage::Code stg, const uint8_t* ptr, int size);
+    ShaderDesc& SetEntry(ShaderStage::Code stg, const char* entry);
+    ShaderDesc& SetAttr(const StringAtom& name, VertexFormat::Code fmt);
+    ShaderDesc& SetUniformBlock(ShaderStage::Code stg, int slot, const char* name, const char* type, int size);
+    ShaderDesc& SetTexture(ShaderStage::Code stg, int slot, const char* name, TextureType::Code type);
 };
 
 //------------------------------------------------------------------------------
@@ -1412,146 +1024,46 @@ struct ShaderDesc {
     @brief setup object for textures and render targets
 */
 struct TextureDesc {
-    TextureDesc() {
-        nativeTextures.Fill(0);
-    }
-    TextureDesc(const TextureDesc& rhs) {
-        *this = rhs;
-    }
-    TextureDesc& Locator(const class Locator& loc) {
-        locator = loc; return *this;
-    }
-    const class Locator& Locator() const {
-        return locator;
-    }
-    TextureDesc& Type(TextureType::Code t) {
-        type = t; return *this;
-    }
-    TextureType::Code Type() const {
-        return type;
-    }
-    TextureDesc& RenderTarget(bool b) {
-        renderTarget = b; return *this;
-    }
-    bool RenderTarget() const {
-        return renderTarget;
-    }
-    TextureDesc& Width(int w) {
-        width = w; return *this;
-    }
-    int Width() const {
-        return width;
-    }
-    TextureDesc& Height(int h) {
-        height = h; return *this;
-    }
-    int Height() const {
-        return height;
-    }
-    TextureDesc& Depth(int d) {
-        depth = d; return *this;
-    }
-    int Depth() const {
-        return depth;
-    }
-    TextureDesc& Layers(int l) {
-        depth = l; return *this;
-    }
-    int Layers() const {
-        return depth;
-    }
-    TextureDesc& NumMipMaps(int n) {
-        numMipMaps = n; return *this;
-    }
-    int NumMipMaps() const {
-        return numMipMaps;
-    }
-    TextureDesc& Usage(Usage::Code u) {
-        usage = u; return *this;
-    }
-    Usage::Code Usage() const {
-        return usage;
-    }
-    TextureDesc& Format(PixelFormat::Code fmt) {
-        format = fmt; return *this;
-    }
-    PixelFormat::Code Format() const {
-        return format;
-    }
-    TextureDesc& SampleCount(int c) {
-        sampleCount = c; return *this;
-    }
-    int SampleCount() const {
-        return sampleCount;
-    }
-    TextureDesc& MagFilter(TextureFilterMode::Code f) {
-        magFilter = f; return *this;
-    }
-    TextureFilterMode::Code MagFilter() const {
-        return magFilter;
-    }
-    TextureDesc& MinFilter(TextureFilterMode::Code f) {
-        minFilter = f; return *this;
-    }
-    TextureFilterMode::Code MinFilter() const {
-        return minFilter;
-    }
-    TextureDesc& WrapU(TextureWrapMode::Code m) {
-        wrapU = m; return *this;
-    }
-    TextureWrapMode::Code WrapU() const {
-        return wrapU;
-    }
-    TextureDesc& WrapV(TextureWrapMode::Code m) {
-        wrapV = m; return *this;
-    }
-    TextureWrapMode::Code WrapV() const {
-        return wrapV;
-    }
-    TextureDesc& WrapW(TextureWrapMode::Code m) {
-        wrapW = m; return *this;
-    }
-    TextureWrapMode::Code WrapW() const {
-        return wrapW;
-    }
-    TextureDesc& NativeTexture(int index, intptr_t tex) {
-        nativeTextures[index] = tex; return *this;
-    }
-    intptr_t NativeTexture(int index) const {
-        return nativeTextures[index];
-    }
-    TextureDesc& MipSize(int faceIndex, int mipIndex, int size) {
-        content.Size[faceIndex][mipIndex] = size;
-        return *this;
-    }
-    int MipSize(int faceIndex, int mipIndex) const {
-        return content.Size[faceIndex][mipIndex];
-    }
-    TextureDesc& MipContent(int faceIndex, int mipIndex, const void* ptr) {
-        content.Pointer[faceIndex][mipIndex] = ptr;
-        return *this;
-    }
-    const void* MipContent(int faceIndex, int mipIndex) const {
-        return content.Pointer[faceIndex][mipIndex];
-    }
+    class Locator Locator = Locator::NonShared();
+    TextureType::Code Type = TextureType::Texture2D;
+    bool RenderTarget = false;
+    int Width = 1;
+    int Height = 1;
+    int Depth = 1;
+    int NumMipMaps = 1;
+    Oryol::Usage::Code Usage = Usage::Immutable;
+    PixelFormat::Code Format = PixelFormat::RGBA8;
+    int SampleCount = 1;
+    TextureFilterMode::Code MagFilter = TextureFilterMode::Nearest;
+    TextureFilterMode::Code MinFilter = TextureFilterMode::Nearest;
+    TextureWrapMode::Code WrapU = TextureWrapMode::Repeat;
+    TextureWrapMode::Code WrapV = TextureWrapMode::Repeat;
+    TextureWrapMode::Code WrapW = TextureWrapMode::Repeat;
+    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> NativeTextures;
+    ImageContent Content;
 
-    class Locator locator = Locator::NonShared();
-    TextureType::Code type = TextureType::Texture2D;
-    bool renderTarget = false;
-    int width = 1;
-    int height = 1;
-    int depth = 1;
-    int numMipMaps = 1;
-    Oryol::Usage::Code usage = Usage::Immutable;
-    PixelFormat::Code format = PixelFormat::RGBA8;
-    int sampleCount = 1;
-    TextureFilterMode::Code magFilter = TextureFilterMode::Nearest;
-    TextureFilterMode::Code minFilter = TextureFilterMode::Nearest;
-    TextureWrapMode::Code wrapU = TextureWrapMode::Repeat;
-    TextureWrapMode::Code wrapV = TextureWrapMode::Repeat;
-    TextureWrapMode::Code wrapW = TextureWrapMode::Repeat;
-    StaticArray<intptr_t, GfxConfig::MaxInflightFrames> nativeTextures;
-    ImageContent content;
+    /// setters with chaining
+    TextureDesc();
+    TextureDesc(const TextureDesc& rhs);
+    TextureDesc& SetLocator(const class Locator& loc);
+    TextureDesc& SetType(TextureType::Code t);
+    TextureDesc& SetRenderTarget(bool b);
+    TextureDesc& SetWidth(int w);
+    TextureDesc& SetHeight(int h);
+    TextureDesc& SetDepth(int d);
+    TextureDesc& SetLayers(int l);
+    TextureDesc& SetNumMipMaps(int n);
+    TextureDesc& SetUsage(Usage::Code u);
+    TextureDesc& SetFormat(PixelFormat::Code fmt);
+    TextureDesc& SetSampleCount(int c);
+    TextureDesc& SetMagFilter(TextureFilterMode::Code f);
+    TextureDesc& SetMinFilter(TextureFilterMode::Code f);
+    TextureDesc& SetWrapU(TextureWrapMode::Code m);
+    TextureDesc& SetWrapV(TextureWrapMode::Code m);
+    TextureDesc& SetWrapW(TextureWrapMode::Code m);
+    TextureDesc& SetNativeTexture(int index, intptr_t tex);
+    TextureDesc& SetMipSize(int faceIndex, int mipIndex, int size);
+    TextureDesc& SetMipContent(int faceIndex, int mipIndex, const void* ptr);
 };
 
 //------------------------------------------------------------------------------
@@ -1561,32 +1073,7 @@ struct TextureDesc {
     @brief creation attributes for render pass resource
 */
 struct PassDesc {
-    PassDesc() { };
-    PassDesc(const PassDesc& rhs) {
-        *this = rhs;
-    }
-    PassDesc& Locator(const class Locator& loc) {
-        locator = loc; return *this;
-    }
-    const class Locator& Locator() const {
-        return locator;
-    }
-    PassDesc& ColorAttachment(int slotIndex, const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
-        auto& att = colorAttachments[slotIndex];
-        att.Texture = tex;
-        att.MipLevel = mipLevel;
-        att.Face = faceLayerSlice;
-        return *this;
-    }
-    PassDesc& DepthStencilAttachment(const Id& tex, int mipLevel=0, int faceLayerSlice=0) {
-        auto& att = depthStencilAttachment;
-        att.Texture = tex;
-        att.MipLevel = mipLevel;
-        att.Face = faceLayerSlice;
-        return *this;
-    }
-
-    class Locator locator = Locator::NonShared();
+    class Locator Locator = Locator::NonShared();
     struct Attachment {
         Id Texture;
         int MipLevel = 0;
@@ -1596,8 +1083,15 @@ struct PassDesc {
             int Slice;
         };
     };
-    StaticArray<Attachment, GfxConfig::MaxNumColorAttachments> colorAttachments;
-    Attachment depthStencilAttachment;
+    StaticArray<Attachment, GfxConfig::MaxNumColorAttachments> ColorAttachments;
+    Attachment DepthStencilAttachment;
+
+    /// setters with chaining
+    PassDesc() { };
+    PassDesc(const PassDesc& rhs);
+    PassDesc& SetLocator(const class Locator& loc);
+    PassDesc& SetColorAttachment(int slotIndex, const Id& tex, int mipLevel=0, int faceLayerSlice=0);
+    PassDesc& SetDepthStencilAttachment(const Id& tex, int mipLevel=0, int faceLayerSlice=0);
 };
 
 //------------------------------------------------------------------------------

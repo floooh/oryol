@@ -166,20 +166,20 @@ static sg_compare_func convertCompareFunc(CompareFunc::Code f) {
 
 //------------------------------------------------------------------------------
 static void convertDepthStencilState(const PipelineDesc& src, sg_pipeline_desc& dst) {
-    dst.depth_stencil.stencil_front.fail_op = convertStencilOp(src.stencilFrontFailOp);
-    dst.depth_stencil.stencil_front.depth_fail_op = convertStencilOp(src.stencilFrontDepthFailOp);
-    dst.depth_stencil.stencil_front.pass_op = convertStencilOp(src.stencilFrontPassOp);
-    dst.depth_stencil.stencil_front.compare_func = convertCompareFunc(src.stencilFrontCmpFunc);
-    dst.depth_stencil.stencil_back.fail_op = convertStencilOp(src.stencilBackFailOp);
-    dst.depth_stencil.stencil_back.depth_fail_op = convertStencilOp(src.stencilBackDepthFailOp);
-    dst.depth_stencil.stencil_back.pass_op = convertStencilOp(src.stencilBackPassOp);
-    dst.depth_stencil.stencil_back.compare_func = convertCompareFunc(src.stencilBackCmpFunc);
-    dst.depth_stencil.depth_compare_func = convertCompareFunc(src.depthCmpFunc);
-    dst.depth_stencil.depth_write_enabled = src.depthWriteEnabled;
-    dst.depth_stencil.stencil_enabled = src.stencilEnabled;
-    dst.depth_stencil.stencil_read_mask = src.stencilReadMask;
-    dst.depth_stencil.stencil_write_mask = src.stencilWriteMask;
-    dst.depth_stencil.stencil_ref = src.stencilRef;
+    dst.depth_stencil.stencil_front.fail_op = convertStencilOp(src.StencilFrontFailOp);
+    dst.depth_stencil.stencil_front.depth_fail_op = convertStencilOp(src.StencilFrontDepthFailOp);
+    dst.depth_stencil.stencil_front.pass_op = convertStencilOp(src.StencilFrontPassOp);
+    dst.depth_stencil.stencil_front.compare_func = convertCompareFunc(src.StencilFrontCmpFunc);
+    dst.depth_stencil.stencil_back.fail_op = convertStencilOp(src.StencilBackFailOp);
+    dst.depth_stencil.stencil_back.depth_fail_op = convertStencilOp(src.StencilBackDepthFailOp);
+    dst.depth_stencil.stencil_back.pass_op = convertStencilOp(src.StencilBackPassOp);
+    dst.depth_stencil.stencil_back.compare_func = convertCompareFunc(src.StencilBackCmpFunc);
+    dst.depth_stencil.depth_compare_func = convertCompareFunc(src.DepthCmpFunc);
+    dst.depth_stencil.depth_write_enabled = src.DepthWriteEnabled;
+    dst.depth_stencil.stencil_enabled = src.StencilEnabled;
+    dst.depth_stencil.stencil_read_mask = src.StencilReadMask;
+    dst.depth_stencil.stencil_write_mask = src.StencilWriteMask;
+    dst.depth_stencil.stencil_ref = src.StencilRef;
 }
 
 //------------------------------------------------------------------------------
@@ -260,21 +260,21 @@ static sg_pixel_format convertPixelFormat(PixelFormat::Code fmt) {
 
 //------------------------------------------------------------------------------
 static void convertBlendState(const PipelineDesc& src, sg_pipeline_desc& dst) {
-    dst.blend.enabled = src.blendEnabled;
-    dst.blend.src_factor_rgb = convertBlendFactor(src.blendSrcFactorRGB);
-    dst.blend.dst_factor_rgb = convertBlendFactor(src.blendDstFactorRGB);
-    dst.blend.op_rgb = convertBlendOp(src.blendOpRGB);
-    dst.blend.src_factor_alpha = convertBlendFactor(src.blendSrcFactorAlpha);
-    dst.blend.dst_factor_alpha = convertBlendFactor(src.blendDstFactorAlpha);
-    dst.blend.op_alpha = convertBlendOp(src.blendOpAlpha);
-    dst.blend.color_write_mask = convertColorMask(src.colorWriteMask);
-    dst.blend.color_attachment_count = src.mrtCount;
-    dst.blend.color_format = convertPixelFormat(src.colorFormat);
-    dst.blend.depth_format = convertPixelFormat(src.depthFormat);
-    dst.blend.blend_color[0] = src.blendColor.r;
-    dst.blend.blend_color[1] = src.blendColor.g;
-    dst.blend.blend_color[2] = src.blendColor.b;
-    dst.blend.blend_color[3] = src.blendColor.a;
+    dst.blend.enabled = src.BlendEnabled;
+    dst.blend.src_factor_rgb = convertBlendFactor(src.BlendSrcFactorRGB);
+    dst.blend.dst_factor_rgb = convertBlendFactor(src.BlendDstFactorRGB);
+    dst.blend.op_rgb = convertBlendOp(src.BlendOpRGB);
+    dst.blend.src_factor_alpha = convertBlendFactor(src.BlendSrcFactorAlpha);
+    dst.blend.dst_factor_alpha = convertBlendFactor(src.BlendDstFactorAlpha);
+    dst.blend.op_alpha = convertBlendOp(src.BlendOpAlpha);
+    dst.blend.color_write_mask = convertColorMask(src.ColorWriteMask);
+    dst.blend.color_attachment_count = src.MRTCount;
+    dst.blend.color_format = convertPixelFormat(src.ColorFormat);
+    dst.blend.depth_format = convertPixelFormat(src.DepthFormat);
+    dst.blend.blend_color[0] = src.BlendColor.r;
+    dst.blend.blend_color[1] = src.BlendColor.g;
+    dst.blend.blend_color[2] = src.BlendColor.b;
+    dst.blend.blend_color[3] = src.BlendColor.a;
 }
 
 //------------------------------------------------------------------------------
@@ -294,13 +294,13 @@ static sg_cull_mode convertCullMode(bool enabled, Face::Code face) {
 
 //------------------------------------------------------------------------------
 static void convertRasterizerState(const PipelineDesc& src, sg_pipeline_desc& dst) {
-    dst.rasterizer.alpha_to_coverage_enabled = src.alphaToCoverageEnabled;
-    dst.rasterizer.cull_mode = convertCullMode(src.cullFaceEnabled, src.cullFace);
+    dst.rasterizer.alpha_to_coverage_enabled = src.AlphaToCoverageEnabled;
+    dst.rasterizer.cull_mode = convertCullMode(src.CullFaceEnabled, src.CullFace);
     dst.rasterizer.face_winding = _SG_FACEWINDING_DEFAULT;
-    dst.rasterizer.sample_count = src.sampleCount;
-    dst.rasterizer.depth_bias = src.depthBias;
-    dst.rasterizer.depth_bias_slope_scale = src.depthBiasSlopeScale;
-    dst.rasterizer.depth_bias_clamp = src.depthBiasClamp;
+    dst.rasterizer.sample_count = src.SampleCount;
+    dst.rasterizer.depth_bias = src.DepthBias;
+    dst.rasterizer.depth_bias_slope_scale = src.DepthBiasSlopeScale;
+    dst.rasterizer.depth_bias_clamp = src.DepthBiasClamp;
 }
 
 //------------------------------------------------------------------------------
@@ -336,7 +336,7 @@ static sg_vertex_format convertVertexFormat(VertexFormat::Code fmt) {
 static void convertVertexLayouts(const PipelineDesc& src, sg_pipeline_desc& dst, const VertexLayout& vsInput) {
     o_assert_dbg(GfxConfig::MaxNumVertexBuffers <= SG_MAX_SHADERSTAGE_BUFFERS);
     for (int layoutIndex = 0; layoutIndex < GfxConfig::MaxNumVertexBuffers; layoutIndex++) {
-        const auto& srcLayout = src.layouts[layoutIndex];
+        const auto& srcLayout = src.Layouts[layoutIndex];
         if (srcLayout.Empty()) {
             break;
         }
@@ -419,61 +419,61 @@ static sg_feature convertFeature(GfxFeature::Code f) {
 
 //------------------------------------------------------------------------------
 static void convertBufferDesc(const BufferDesc& src, sg_buffer_desc& dst) {
-    dst.size = src.size;
-    dst.type = convertBufferType(src.type);
-    dst.usage = convertUsage(src.usage);
-    dst.content = src.content;
+    dst.size = src.Size;
+    dst.type = convertBufferType(src.Type);
+    dst.usage = convertUsage(src.Usage);
+    dst.content = src.Content;
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
     #if ORYOL_OPENGL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        dst.gl_buffers[i] = (uint32_t) src.nativeBuffers[i];
+        dst.gl_buffers[i] = (uint32_t) src.NativeBuffers[i];
     }
     #elif ORYOL_METAL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        dst.mtl_buffers[i] = (const void*) src.nativeBuffers[i];
+        dst.mtl_buffers[i] = (const void*) src.NativeBuffers[i];
     }
     #elif ORYOL_D3D11
-    dst.d3d11_buffer = (const void*) src.nativeBuffers[0];
+    dst.d3d11_buffer = (const void*) src.NativeBuffers[0];
     #endif
 }
 
 //------------------------------------------------------------------------------
 static void convertTextureDesc(const TextureDesc& src, sg_image_desc& dst) {
-    dst.type = convertTextureType(src.type);
-    dst.render_target = src.renderTarget;
-    dst.width = src.width;
-    dst.height = src.height;
-    dst.depth = src.depth;
-    dst.num_mipmaps = src.numMipMaps;
-    dst.usage = convertUsage(src.usage);
-    dst.pixel_format = convertPixelFormat(src.format);
-    dst.sample_count = src.sampleCount;
-    dst.min_filter = convertFilter(src.minFilter);
-    dst.mag_filter = convertFilter(src.magFilter);
-    dst.wrap_u = convertWrap(src.wrapU);
-    dst.wrap_v = convertWrap(src.wrapV);
-    dst.wrap_w = convertWrap(src.wrapW);
+    dst.type = convertTextureType(src.Type);
+    dst.render_target = src.RenderTarget;
+    dst.width = src.Width;
+    dst.height = src.Height;
+    dst.depth = src.Depth;
+    dst.num_mipmaps = src.NumMipMaps;
+    dst.usage = convertUsage(src.Usage);
+    dst.pixel_format = convertPixelFormat(src.Format);
+    dst.sample_count = src.SampleCount;
+    dst.min_filter = convertFilter(src.MinFilter);
+    dst.mag_filter = convertFilter(src.MagFilter);
+    dst.wrap_u = convertWrap(src.WrapU);
+    dst.wrap_v = convertWrap(src.WrapV);
+    dst.wrap_w = convertWrap(src.WrapW);
     o_assert_dbg(GfxConfig::MaxNumTextureMipMaps <= SG_MAX_MIPMAPS);
     o_assert_dbg(GfxConfig::MaxNumTextureFaces <= SG_CUBEFACE_NUM);
     for (int f = 0; f < GfxConfig::MaxNumTextureFaces; f++) {
         for (int m = 0; m < GfxConfig::MaxNumTextureMipMaps; m++) {
-            if (src.content.Pointer[f][m] && (src.content.Size[f][m] > 0)) {
-                dst.content.subimage[f][m].ptr = src.content.Pointer[f][m];
-                dst.content.subimage[f][m].size = src.content.Size[f][m];
+            if (src.Content.Pointer[f][m] && (src.Content.Size[f][m] > 0)) {
+                dst.content.subimage[f][m].ptr = src.Content.Pointer[f][m];
+                dst.content.subimage[f][m].size = src.Content.Size[f][m];
             }
         }
     }
     o_assert_dbg(GfxConfig::MaxInflightFrames <= SG_NUM_INFLIGHT_FRAMES);
     #if ORYOL_OPENGL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        dst.gl_textures[i] = (uint32_t) src.nativeTextures[i];
+        dst.gl_textures[i] = (uint32_t) src.NativeTextures[i];
     }
     #elif ORYOL_METAL
     for (int i = 0; i < GfxConfig::MaxInflightFrames; i++) {
-        dst.mtl_textures[i] = (const void*) src.nativeTextures[i];
+        dst.mtl_textures[i] = (const void*) src.NativeTextures[i];
     }
     #elif ORYOL_D3D11
-    dst.d3d11_texture = (const void*) src.nativeTextures[0];
+    dst.d3d11_texture = (const void*) src.NativeTextures[0];
     #endif
 }
 
@@ -490,18 +490,18 @@ sokolGfxBackend::Setup(const GfxDesc& desc) {
 
     // setup sokol-gfx
     sg_desc sgDesc = { };
-    sgDesc.buffer_pool_size = desc.resourcePoolSize[GfxResourceType::Buffer];
-    sgDesc.image_pool_size = desc.resourcePoolSize[GfxResourceType::Texture];
-    sgDesc.shader_pool_size = desc.resourcePoolSize[GfxResourceType::Shader];
-    sgDesc.pipeline_pool_size = desc.resourcePoolSize[GfxResourceType::Pipeline];
-    sgDesc.pass_pool_size = desc.resourcePoolSize[GfxResourceType::Pass];
+    sgDesc.buffer_pool_size = desc.ResourcePoolSize[GfxResourceType::Buffer];
+    sgDesc.image_pool_size = desc.ResourcePoolSize[GfxResourceType::Texture];
+    sgDesc.shader_pool_size = desc.ResourcePoolSize[GfxResourceType::Shader];
+    sgDesc.pipeline_pool_size = desc.ResourcePoolSize[GfxResourceType::Pipeline];
+    sgDesc.pass_pool_size = desc.ResourcePoolSize[GfxResourceType::Pass];
     #if ORYOL_OPENGLES3
     sgDesc.gl_force_gles2 = this->displayManager.useGLES2;
     #elif ORYOL_METAL
     sgDesc.mtl_device = mtlDisplayMgr::mtlDevice();
     sgDesc.mtl_renderpass_descriptor_cb = mtlDisplayMgr::mtlRenderPassDescriptor;
     sgDesc.mtl_drawable_cb = mtlDisplayMgr::mtlDrawable;
-    sgDesc.mtl_global_uniform_buffer_size = desc.globalUniformBufferSize;
+    sgDesc.mtl_global_uniform_buffer_size = desc.GlobalUniformBufferSize;
     #elif ORYOL_D3D11
     sgDesc.d3d11_device = this->displayManager.d3d11Device;
     sgDesc.d3d11_device_context = this->displayManager.d3d11DeviceContext;
@@ -510,10 +510,10 @@ sokolGfxBackend::Setup(const GfxDesc& desc) {
     #endif
     sg_setup(&sgDesc);
 
-    this->registry.Setup(desc.resourceRegistryCapacity);
-    this->labelStack.Setup(desc.resourceLabelStackCapacity);
+    this->registry.Setup(desc.ResourceRegistryCapacity);
+    this->labelStack.Setup(desc.ResourceLabelStackCapacity);
     this->toDestroy.Reserve(64);
-    this->vsInputs.Reserve(desc.resourcePoolSize[GfxResourceType::Shader]);
+    this->vsInputs.Reserve(desc.ResourcePoolSize[GfxResourceType::Shader]);
     for (int i = 0; i < this->vsInputs.Capacity(); i++) {
         this->vsInputs.Add(VertexLayout());
     }
@@ -719,16 +719,16 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     sgDesc.vs.source = desc.stage[ShaderStage::VS].Source;
     sgDesc.fs.source = desc.stage[ShaderStage::FS].Source;
     #elif ORYOL_METAL || ORYOL_D3D11
-    sgDesc.vs.byte_code = desc.stage[ShaderStage::VS].ByteCode;
-    sgDesc.vs.byte_code_size = desc.stage[ShaderStage::VS].ByteCodeSize;
-    sgDesc.fs.byte_code = desc.stage[ShaderStage::FS].ByteCode;
-    sgDesc.fs.byte_code_size = desc.stage[ShaderStage::FS].ByteCodeSize;
+    sgDesc.vs.byte_code = desc.Stage[ShaderStage::VS].ByteCode;
+    sgDesc.vs.byte_code_size = desc.Stage[ShaderStage::VS].ByteCodeSize;
+    sgDesc.fs.byte_code = desc.Stage[ShaderStage::FS].ByteCode;
+    sgDesc.fs.byte_code_size = desc.Stage[ShaderStage::FS].ByteCodeSize;
     #endif
-    if (desc.stage[ShaderStage::VS].Entry) {
-        sgDesc.vs.entry = desc.stage[ShaderStage::VS].Entry;
+    if (desc.Stage[ShaderStage::VS].Entry) {
+        sgDesc.vs.entry = desc.Stage[ShaderStage::VS].Entry;
     }
-    if (desc.stage[ShaderStage::FS].Entry) {
-        sgDesc.fs.entry = desc.stage[ShaderStage::FS].Entry;
+    if (desc.Stage[ShaderStage::FS].Entry) {
+        sgDesc.fs.entry = desc.Stage[ShaderStage::FS].Entry;
     }
 
     // uniform block declarations
@@ -737,7 +737,7 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     int fsUbIndex = 0;
     for (int stageIndex = 0; stageIndex < ShaderStage::Num; stageIndex++) {
         for (int ubIndex = 0; ubIndex < GfxConfig::MaxNumUniformBlocksPerStage; ubIndex++) {
-            auto& src = desc.stage[stageIndex].UniformBlocks[ubIndex];
+            auto& src = desc.Stage[stageIndex].UniformBlocks[ubIndex];
             if (src.Size > 0) {
                 sg_shader_uniform_block_desc* dst = nullptr;
                 if (stageIndex == ShaderStage::VS) {
@@ -765,7 +765,7 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     int fsImgIndex = 0;
     for (int stageIndex = 0; stageIndex < ShaderStage::Num; stageIndex++) {
         for (int texIndex = 0; texIndex < GfxConfig::MaxNumShaderTextures; texIndex++) {
-            auto& src = desc.stage[stageIndex].Textures[texIndex];
+            auto& src = desc.Stage[stageIndex].Textures[texIndex];
             if (src.Type != TextureType::Invalid) {
                 sg_shader_image_desc* dst = nullptr;
                 if (stageIndex == ShaderStage::VS) {
@@ -782,9 +782,9 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
     Id shd = makeId(GfxResourceType::Shader, sg_make_shader(&sgDesc).id);
 
     // keep track of the shader's vertex layout
-    o_assert_dbg(!desc.layout.Empty());
+    o_assert_dbg(!desc.Layout.Empty());
     o_assert_dbg(this->vsInputs[shd.SlotIndex].Empty());
-    this->vsInputs[shd.SlotIndex] = desc.layout;
+    this->vsInputs[shd.SlotIndex] = desc.Layout;
 
     return shd;
 }
@@ -793,16 +793,16 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
 Id
 sokolGfxBackend::CreatePipeline(const PipelineDesc& desc) {
     o_assert_dbg(this->isValid);
-    o_assert_dbg(desc.shader.IsValid());
+    o_assert_dbg(desc.Shader.IsValid());
 
     // lookup the shader vertex shader input layout
-    const VertexLayout& vsLayout = this->vsInputs[desc.shader.SlotIndex];
+    const VertexLayout& vsLayout = this->vsInputs[desc.Shader.SlotIndex];
     o_assert_dbg(!vsLayout.Empty());
 
     sg_pipeline_desc sgDesc = { };
-    sgDesc.shader = makeShaderId(desc.shader);
-    sgDesc.primitive_type = convertPrimitiveType(desc.primType);
-    sgDesc.index_type = convertIndexType(desc.indexType);
+    sgDesc.shader = makeShaderId(desc.Shader);
+    sgDesc.primitive_type = convertPrimitiveType(desc.PrimType);
+    sgDesc.index_type = convertIndexType(desc.IndexType);
     convertVertexLayouts(desc, sgDesc, vsLayout);
     convertDepthStencilState(desc, sgDesc);
     convertBlendState(desc, sgDesc);
@@ -817,7 +817,7 @@ sokolGfxBackend::CreatePass(const PassDesc& desc) {
     o_assert_dbg(GfxConfig::MaxNumColorAttachments <= SG_MAX_COLOR_ATTACHMENTS);
     sg_pass_desc sgDesc = { };
     for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
-        const auto& src = desc.colorAttachments[i];
+        const auto& src = desc.ColorAttachments[i];
         if (src.Texture.IsValid()) {
             auto& dst = sgDesc.color_attachments[i];
             dst.image = makeImageId(src.Texture);
@@ -825,7 +825,7 @@ sokolGfxBackend::CreatePass(const PassDesc& desc) {
             dst.layer = src.Layer;
         }
     }
-    const auto& src = desc.depthStencilAttachment;
+    const auto& src = desc.DepthStencilAttachment;
     if (src.Texture.IsValid()) {
         auto& dst = sgDesc.depth_stencil_attachment;
         dst.image = makeImageId(src.Texture);
@@ -962,29 +962,29 @@ sokolGfxBackend::ApplyBindings(const Bindings& bindings) {
     o_assert_dbg(SG_MAX_SHADERSTAGE_IMAGES >= GfxConfig::MaxNumFragmentTextures);
     sg_bindings sgBindings = { };
     for (int i = 0; i < GfxConfig::MaxNumVertexBuffers; i++) {
-        if (bindings.vertexBuffers[i].IsValid()) {
-            sgBindings.vertex_buffers[i] = makeBufferId(bindings.vertexBuffers[i]);
-            sgBindings.vertex_buffer_offsets[i] = bindings.vertexBufferOffsets[i];
+        if (bindings.VertexBuffers[i].IsValid()) {
+            sgBindings.vertex_buffers[i] = makeBufferId(bindings.VertexBuffers[i]);
+            sgBindings.vertex_buffer_offsets[i] = bindings.VertexBufferOffsets[i];
         }
         else {
             break;
         }
     }
-    if (bindings.indexBuffer.IsValid()) {
-        sgBindings.index_buffer = makeBufferId(bindings.indexBuffer);
-        sgBindings.index_buffer_offset = bindings.indexBufferOffset;
+    if (bindings.IndexBuffer.IsValid()) {
+        sgBindings.index_buffer = makeBufferId(bindings.IndexBuffer);
+        sgBindings.index_buffer_offset = bindings.IndexBufferOffset;
     }
     for (int i = 0; i < GfxConfig::MaxNumVertexTextures; i++) {
-        if (bindings.vsTexture[i].IsValid()) {
-            sgBindings.vs_images[i] = makeImageId(bindings.vsTexture[i]);
+        if (bindings.VSTexture[i].IsValid()) {
+            sgBindings.vs_images[i] = makeImageId(bindings.VSTexture[i]);
         }
         else {
             break;
         }
     }
     for (int i = 0; i < GfxConfig::MaxNumFragmentTextures; i++) {
-        if (bindings.fsTexture[i].IsValid()) {
-            sgBindings.fs_images[i] = makeImageId(bindings.fsTexture[i]);
+        if (bindings.FSTexture[i].IsValid()) {
+            sgBindings.fs_images[i] = makeImageId(bindings.FSTexture[i]);
         }
         else {
             break;

@@ -368,6 +368,24 @@ const char* VertexFormat::ToString(Code c) {
 }
 
 //------------------------------------------------------------------------------
+PrimitiveGroup::PrimitiveGroup(int baseElm, int numElms):
+    BaseElement(baseElm),
+    NumElements(numElms)
+{ }
+
+//------------------------------------------------------------------------------
+PrimitiveGroup& PrimitiveGroup::SetBaseElement(int baseElm) {
+    this->BaseElement = baseElm;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PrimitiveGroup& PrimitiveGroup::SetNumElements(int numElms) {
+    this->NumElements = numElms;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
 PassAction::PassAction() {
     for (auto& c : this->Color) {
         c = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -490,46 +508,46 @@ PassAction& PassAction::DontCareDepthStencil() {
 
 //------------------------------------------------------------------------------
 Bindings::Bindings() {
-    this->vertexBufferOffsets.Fill(0);
+    this->VertexBufferOffsets.Fill(0);
 }
 
 //------------------------------------------------------------------------------
-Bindings& Bindings::VertexBuffer(int slot, const Id& bufId) {
+Bindings& Bindings::SetVertexBuffer(int slot, const Id& bufId) {
     o_assert_dbg(!bufId.IsValid() || (bufId.Type == GfxResourceType::Buffer));
-    this->vertexBuffers[slot] = bufId;
+    this->VertexBuffers[slot] = bufId;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-Bindings& Bindings::VertexBufferOffset(int slot, int offset) {
-    this->vertexBufferOffsets[slot] = offset;
+Bindings& Bindings::SetVertexBufferOffset(int slot, int offset) {
+    this->VertexBufferOffsets[slot] = offset;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-Bindings& Bindings::IndexBuffer(const Id& bufId) {
+Bindings& Bindings::SetIndexBuffer(const Id& bufId) {
     o_assert_dbg(!bufId.IsValid() || (bufId.Type == GfxResourceType::Buffer));
-    this->indexBuffer = bufId;
+    this->IndexBuffer = bufId;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-Bindings& Bindings::IndexBufferOffset(int offset) {
-    this->indexBufferOffset = offset;
+Bindings& Bindings::SetIndexBufferOffset(int offset) {
+    this->IndexBufferOffset = offset;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-Bindings& Bindings::VSTexture(int slot, const Id& texId) {
+Bindings& Bindings::SetVSTexture(int slot, const Id& texId) {
     o_assert_dbg(!texId.IsValid() || (texId.Type == GfxResourceType::Texture));
-    this->vsTexture[slot] = texId;
+    this->VSTexture[slot] = texId;
     return *this;
 }
 
 //------------------------------------------------------------------------------
-Bindings& Bindings::FSTexture(int slot, const Id& texId) {
+Bindings& Bindings::SetFSTexture(int slot, const Id& texId) {
     o_assert_dbg(!texId.IsValid() || (texId.Type == GfxResourceType::Texture));
-    this->fsTexture[slot] = texId;
+    this->FSTexture[slot] = texId;
     return *this;
 }
 
@@ -639,6 +657,621 @@ ImageContent::ImageContent() {
     for (auto& size : this->Size) {
         size.Fill(0);
     }
+}
+
+//------------------------------------------------------------------------------
+ImageContent& ImageContent::SetPointer(int faceIndex, int mipIndex, const void* ptr) {
+    this->Pointer[faceIndex][mipIndex] = ptr;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ImageContent& ImageContent::SetSize(int faceIndex, int mipIndex, int size) {
+    this->Size[faceIndex][mipIndex] = size;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc::GfxDesc() {
+    for (int i = 0; i < GfxResourceType::Num; i++) {
+        this->ResourcePoolSize[i] = GfxConfig::DefaultResourcePoolSize;
+    }
+}
+
+//------------------------------------------------------------------------------
+GfxDesc::GfxDesc(const GfxDesc& rhs) {
+    *this = rhs;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetWidth(int w) {
+    this->Width = w;
+    return *this; 
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetHeight(int h) {
+    this->Height = h;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetColorFormat(PixelFormat::Code fmt) {
+    this->ColorFormat = fmt;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetDepthFormat(PixelFormat::Code fmt) {
+    this->DepthFormat = fmt;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetSampleCount(int c) {
+    this->SampleCount = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetWindowed(bool b) {
+    this->Windowed = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetSwapInterval(int i) {
+    this->SwapInterval = i;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetTitle(const StringAtom& t) {
+    this->Title = t;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetHighDPI(bool b) {
+    this->HighDPI = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetHtmlTrackElementSize(bool b) {
+    this->HtmlTrackElementSize = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetHtmlElement(const StringAtom& e) {
+    this->HtmlElement = e;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetResourcePoolSize(GfxResourceType::Code type, int size) {
+    this->ResourcePoolSize[type] = size;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetResourceLabelStackCapacity(int c) {
+    this->ResourceLabelStackCapacity = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetResourceRegistryCapacity(int c) {
+    this->ResourceRegistryCapacity = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+GfxDesc& GfxDesc::SetGlobalUniformBufferSize(int s) {
+    this->GlobalUniformBufferSize = s;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc::BufferDesc() {
+    this->NativeBuffers.Fill(0);
+}
+
+//------------------------------------------------------------------------------
+BufferDesc::BufferDesc(const BufferDesc& rhs) {
+    *this = rhs;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc& BufferDesc::SetLocator(const class Locator& l) {
+    this->Locator = l;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc& BufferDesc::SetType(BufferType::Code t) {
+    this->Type = t;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc& BufferDesc::SetUsage(Usage::Code u) {
+    this->Usage = u;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc& BufferDesc::SetSize(int s) {
+    this->Size = s; return *this;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc& BufferDesc::SetContent(const void* c) {
+    this->Content = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+BufferDesc& BufferDesc::SetNativeBuffer(int index, intptr_t buf) {
+    this->NativeBuffers[index] = buf;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc::PipelineDesc(const PipelineDesc& rhs) {
+    *this = rhs;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetLocator(const class Locator& loc) {
+    this->Locator = loc;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetShader(const Id& shd) {
+    this->Shader = shd;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetLayout(int slotIndex, const VertexLayout& layout) {
+    this->Layouts[slotIndex] = layout;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetPrimitiveType(PrimitiveType::Code t) {
+    this->PrimType = t;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetIndexType(IndexType::Code t) {
+    this->IndexType = t;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetDepthCmpFunc(CompareFunc::Code f) {
+    this->DepthCmpFunc = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetDepthWriteEnabled(bool b) {
+    this->DepthWriteEnabled = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilEnabled(bool b) {
+    this->StencilEnabled = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilReadMask(uint8_t m) {
+    this->StencilReadMask = m;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilWriteMask(uint8_t m) {
+    this->StencilWriteMask = m;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilRef(uint8_t r) {
+    this->StencilRef = r;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilFailOp(Face::Code face, StencilOp::Code op) {
+    if (Face::Front & face) {
+        this->StencilFrontFailOp = op;
+    }
+    if (Face::Back & face) {
+        this->StencilBackFailOp = op;
+    }
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilDepthFailOp(Face::Code face, StencilOp::Code op) {
+    if (Face::Front & face) {
+        this->StencilFrontDepthFailOp = op;
+    }
+    if (Face::Back & face) {
+        this->StencilBackDepthFailOp = op;
+    }
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilPassOp(Face::Code face, StencilOp::Code op) {
+    if (Face::Front & face) {
+        this->StencilFrontPassOp = op;
+    }
+    if (Face::Back & face) {
+        this->StencilBackPassOp = op;
+    }
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetStencilCmpFunc(Face::Code face, CompareFunc::Code fn) {
+    if (Face::Front & face) {
+        this->StencilFrontCmpFunc = fn;
+    }
+    if (Face::Back & face) {
+        this->StencilBackCmpFunc = fn;
+    }
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendEnabled(bool b) {
+    this->BlendEnabled = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendSrcFactor(BlendFactor::Code f) {
+    this->BlendSrcFactorRGB = f;
+    this->BlendSrcFactorAlpha = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendSrcFactorRGB(BlendFactor::Code f) {
+    this->BlendSrcFactorRGB = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendSrcFactorAlpha(BlendFactor::Code f) {
+    this->BlendSrcFactorAlpha = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendDstFactor(BlendFactor::Code f) {
+    this->BlendDstFactorRGB = f;
+    this->BlendDstFactorAlpha = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendDstFactorRGB(BlendFactor::Code f) {
+    this->BlendDstFactorRGB = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendDstFactorAlpha(BlendFactor::Code f) {
+    this->BlendDstFactorAlpha = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendOp(BlendOperation::Code op) {
+    this->BlendOpRGB = op;
+    this->BlendOpAlpha = op;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendOpRGB(BlendOperation::Code op) {
+    this->BlendOpRGB = op;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendOpAlpha(BlendOperation::Code op) {
+    this->BlendOpAlpha = op;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetColorWriteMask(PixelChannel::Mask m) {
+    this->ColorWriteMask = m;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetColorFormat(PixelFormat::Code fmt) {
+    this->ColorFormat = fmt;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetDepthFormat(PixelFormat::Code fmt) {
+    this->DepthFormat = fmt;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetSampleCount(int c) {
+    this->SampleCount = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetMRTCount(int c) {
+    this->MRTCount = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetBlendColor(const glm::vec4& c) {
+    this->BlendColor = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetCullFaceEnabled(bool b) {
+    this->CullFaceEnabled = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetCullFace(Face::Code f) {
+    this->CullFace = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetAlphaToCoverageEnabled(bool b) {
+    this->AlphaToCoverageEnabled = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetDepthBias(float f) {
+    this->DepthBias = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetDepthBiasSlopeScale(float f) {
+    this->DepthBiasSlopeScale = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PipelineDesc& PipelineDesc::SetDepthBiasClamp(float f) {
+    this->DepthBiasClamp = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc::ShaderDesc(const ShaderDesc& rhs) {
+    *this = rhs;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetLocator(const class Locator& loc) {
+    this->Locator = loc;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetSource(ShaderStage::Code stg, const char* src) {
+    this->Stage[stg].Source = src;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetByteCode(ShaderStage::Code stg, const uint8_t* ptr, int size) {
+    this->Stage[stg].ByteCode = ptr;
+    this->Stage[stg].ByteCodeSize = size;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetEntry(ShaderStage::Code stg, const char* entry) {
+    this->Stage[stg].Entry = entry; return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetAttr(const StringAtom& name, VertexFormat::Code fmt) {
+    this->Layout.Add(name, fmt);
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetUniformBlock(ShaderStage::Code stg, int slot, const char* name, const char* type, int size) {
+    auto& ubSlot = this->Stage[stg].UniformBlocks[slot];
+    ubSlot.Name = name;
+    ubSlot.Type = type;
+    ubSlot.Size = size;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+ShaderDesc& ShaderDesc::SetTexture(ShaderStage::Code stg, int slot, const char* name, TextureType::Code type) {
+    auto& texSlot = this->Stage[stg].Textures[slot];
+    texSlot.Name = name;
+    texSlot.Type = type;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc::TextureDesc() {
+    this->NativeTextures.Fill(0);
+}
+
+//------------------------------------------------------------------------------
+TextureDesc::TextureDesc(const TextureDesc& rhs) {
+    *this = rhs;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetLocator(const class Locator& loc) {
+    this->Locator = loc;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetType(TextureType::Code t) {
+    this->Type = t;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetRenderTarget(bool b) {
+    this->RenderTarget = b;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetWidth(int w) {
+    this->Width = w;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetHeight(int h) {
+    this->Height = h;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetDepth(int d) {
+    this->Depth = d;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetLayers(int l) {
+    // not a bug
+    this->Depth = l;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetNumMipMaps(int n) {
+    this->NumMipMaps = n;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetUsage(Usage::Code u) {
+    this->Usage = u;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetFormat(PixelFormat::Code fmt) {
+    this->Format = fmt;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetSampleCount(int c) {
+    this->SampleCount = c;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetMagFilter(TextureFilterMode::Code f) {
+    this->MagFilter = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetMinFilter(TextureFilterMode::Code f) {
+    this->MinFilter = f;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetWrapU(TextureWrapMode::Code m) {
+    this->WrapU = m;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetWrapV(TextureWrapMode::Code m) {
+    this->WrapV = m;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetWrapW(TextureWrapMode::Code m) {
+    this->WrapW = m;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetNativeTexture(int index, intptr_t tex) {
+    this->NativeTextures[index] = tex;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetMipSize(int faceIndex, int mipIndex, int size) {
+    this->Content.Size[faceIndex][mipIndex] = size;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+TextureDesc& TextureDesc::SetMipContent(int faceIndex, int mipIndex, const void* ptr) {
+    this->Content.Pointer[faceIndex][mipIndex] = ptr;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassDesc::PassDesc(const PassDesc& rhs) {
+    *this = rhs;
+}
+
+//------------------------------------------------------------------------------
+PassDesc& PassDesc::SetLocator(const class Locator& loc) {
+    this->Locator = loc;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassDesc& PassDesc::SetColorAttachment(int slotIndex, const Id& tex, int mipLevel, int faceLayerSlice) {
+    auto& att = this->ColorAttachments[slotIndex];
+    att.Texture = tex;
+    att.MipLevel = mipLevel;
+    att.Face = faceLayerSlice;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+PassDesc& PassDesc::SetDepthStencilAttachment(const Id& tex, int mipLevel, int faceLayerSlice) {
+    auto& att = this->DepthStencilAttachment;
+    att.Texture = tex;
+    att.MipLevel = mipLevel;
+    att.Face = faceLayerSlice;
+    return *this;
 }
 
 } // namespace Oryol

@@ -72,16 +72,16 @@ void
 mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
 
     #if ORYOL_MACOS
-    StringBuilder strBuilder(desc.title);
+    StringBuilder strBuilder(desc.Title);
     strBuilder.Append(" (Metal)");
 
     NSWindow* window = osxBridge::ptr()->appWindow;
     [window setTitle:[NSString stringWithUTF8String:strBuilder.AsCStr()]];
-    [window setContentSize:NSMakeSize(desc.width, desc.height)];
+    [window setContentSize:NSMakeSize(desc.Width, desc.Height)];
     [window center];
     osBridge* bridge = osBridge::ptr();
-    if (!desc.highDPI) {
-        CGSize drawableSize = { (CGFloat) desc.width, (CGFloat) desc.height };
+    if (!desc.HighDPI) {
+        CGSize drawableSize = { (CGFloat) desc.Width, (CGFloat) desc.Height };
         [bridge->mtkView setDrawableSize:drawableSize];
     }
     #elif ORYOL_IOS
@@ -103,7 +103,7 @@ mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
     int fbWidth = (int) fbSize.width;
     int fbHeight = (int) fbSize.height;
     #if ORYOL_OSX
-    if (fbWidth == desc.width * 2) {
+    if (fbWidth == desc.Width * 2) {
         // we're on a Retina display
         bridge->mouseScale = 2.0;
     }
@@ -111,7 +111,7 @@ mtlDisplayMgr::configureWindow(const GfxDesc& desc) {
     Log::Info("mtlDisplayMgr: actual framebuffer size w=%d, h=%d\n", fbWidth, fbHeight);
     this->displayAttrs.Width = fbWidth;
     this->displayAttrs.Height = fbHeight;
-    [osBridge::ptr()->mtkView setSampleCount:desc.sampleCount];
+    [osBridge::ptr()->mtkView setSampleCount:desc.SampleCount];
 }
 
 //------------------------------------------------------------------------------
