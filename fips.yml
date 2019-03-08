@@ -6,17 +6,17 @@ imports:
     gliml:
         git: https://github.com/floooh/gliml.git
     fips-glm:
-        git: https://github.com/floooh/fips-glm.git
+        git: https://github.com/fips-libs/fips-glm.git
     fips-unittestpp:
         git: https://github.com/floooh/fips-unittestpp.git
     fips-zlib:
-        git: https://github.com/floooh/fips-zlib.git
+        git: https://github.com/fips-libs/fips-zlib.git
     fips-glfw:
-        git: https://github.com/floooh/fips-glfw.git
+        git: https://github.com/fips-libs/fips-glfw.git
     fips-libcurl:
         git: https://github.com/floooh/fips-libcurl.git
     fips-remotery:
-        git: https://github.com/floooh/fips-remotery.git
+        git: https://github.com/fips-libs/fips-remotery.git
     fips-vld:
         git: https://github.com/floooh/fips-vld.git
 
