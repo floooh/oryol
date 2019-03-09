@@ -1,0 +1,7 @@
+---
+platform: linux 
+generator: Unix Makefiles
+build_tool: clion
+build_type: Release
+defines:
+    FIPS_GLFW_WAYLAND: ON
