@@ -14,7 +14,8 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
 
-    DrawState bgDrawState;
+    Id bgPipeline;
+    Bindings bgBindings;
     Id triVBuf;
     Id pipelines[BlendFactor::Num][BlendFactor::Num];
     TriShader::params params;
@@ -26,23 +27,23 @@ AppState::Code
 BlendTestApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(1024)
-        .Height(768)
-        .Title("Oryol Blend Sample")
-        .HtmlTrackElementSize(true)
-        .ResourcePoolSize(GfxResourceType::Pipeline, 512));
+        .SetWidth(1024)
+        .SetHeight(768)
+        .SetTitle("Oryol Blend Sample")
+        .SetHtmlTrackElementSize(true)
+        .SetResourcePoolSize(GfxResourceType::Pipeline, 512));
 
     // create pipeline object for a patterned background
     const float bgVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->bgDrawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
-        .Size(sizeof(bgVertices))
-        .Content(bgVertices));
-    this->bgDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
-        .Shader(Gfx::CreateShader(BGShader::Desc()))
-        .Layout(0, {
+    this->bgBindings.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
+        .SetSize(sizeof(bgVertices))
+        .SetContent(bgVertices));
+    this->bgPipeline = Gfx::CreatePipeline(PipelineDesc()
+        .SetShader(Gfx::CreateShader(BGShader::Desc()))
+        .SetLayout(0, {
             { "in_pos", VertexFormat::Float2 }
         })
-        .PrimitiveType(PrimitiveType::TriangleStrip));
+        .SetPrimitiveType(PrimitiveType::TriangleStrip));
 
     // setup a triangle mesh and shader
     float triVertices[] = {
@@ -52,23 +53,23 @@ BlendTestApp::OnInit() {
           -0.05f, -0.05f, 0.5f, 0.0f, 0.0f, 0.75f, 0.75f
     };
     this->triVBuf = Gfx::CreateBuffer(BufferDesc()
-        .Size(sizeof(triVertices))
-        .Content(triVertices));
+        .SetSize(sizeof(triVertices))
+        .SetContent(triVertices));
 
     // setup one draw state for each blend factor combination
     auto ps = PipelineDesc()
-        .Shader(Gfx::CreateShader(TriShader::Desc()))
-        .Layout(0, {
+        .SetShader(Gfx::CreateShader(TriShader::Desc()))
+        .SetLayout(0, {
             { "in_pos", VertexFormat::Float3 },
             { "in_color", VertexFormat::Float4 }
         })
-        .BlendEnabled(true)
-        .BlendColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
-        .ColorWriteMask(PixelChannel::RGB);
+        .SetBlendEnabled(true)
+        .SetBlendColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
+        .SetColorWriteMask(PixelChannel::RGB);
     for (uint32_t y = 0; y < BlendFactor::Num; y++) {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
-            ps.BlendSrcFactorRGB((BlendFactor::Code)x);
-            ps.BlendDstFactorRGB((BlendFactor::Code)y);
+            ps.SetBlendSrcFactorRGB((BlendFactor::Code)x);
+            ps.SetBlendDstFactorRGB((BlendFactor::Code)y);
             this->pipelines[y][x] = Gfx::CreatePipeline(ps);
         }
     }
@@ -81,12 +82,13 @@ BlendTestApp::OnRunning() {
     
     // draw checkboard background
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->bgDrawState);
+    Gfx::ApplyPipeline(this->bgPipeline);
+    Gfx::ApplyBindings(this->bgBindings);
     Gfx::Draw(0, 4);
 
     // draw blended triangles
-    DrawState triDrawState;
-    triDrawState.VertexBuffers[0] = this->triVBuf;
+    Bindings triBind;
+    triBind.VertexBuffers[0] = this->triVBuf;
     float d = 1.0f / BlendFactor::Num;
     for (uint32_t y = 0; y < BlendFactor::Num; y++) {
         for (uint32_t x = 0; x < BlendFactor::Num; x++) {
@@ -114,9 +116,9 @@ BlendTestApp::OnRunning() {
             if (valid) {
                 this->params.translate.x = ((d * x) + d*0.5f) * 2.0f - 1.0f;
                 this->params.translate.y = ((d * y) + d*0.5f) * 2.0f - 1.0f;
-                triDrawState.Pipeline = this->pipelines[y][x];
-                Gfx::ApplyDrawState(triDrawState);
-                Gfx::ApplyUniformBlock(this->params);
+                Gfx::ApplyPipeline(this->pipelines[y][x]);
+                Gfx::ApplyBindings(triBind);
+                Gfx::ApplyUniforms(this->params);
                 Gfx::Draw(0, 3);
             }
         }

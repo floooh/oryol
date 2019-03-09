@@ -30,7 +30,8 @@ public:
     static const int NumColorBuffer = 3;
     PrimitiveGroup cubePrimGroup;
     StaticArray<Id, NumColorBuffer> colorBuffers;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::params params;
     float angleX = 0.0f;
     float angleY = 0.0f;
@@ -42,10 +43,11 @@ AppState::Code
 SeparateBuffersApp::OnInit() {
 
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(400)
-        .SampleCount(4)
-        .Title("Separate Buffers")
-        .HtmlTrackElementSize(true));
+        .SetWidth(600)
+        .SetHeight(400)
+        .SetSampleCount(4)
+        .SetTitle("Separate Buffers")
+        .SetHtmlTrackElementSize(true));
 
     // create a cube mesh with positions only, this will be placed
     // into the first vertex buffer bind slot
@@ -54,8 +56,8 @@ SeparateBuffersApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->cubePrimGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // create 3 meshes with only color data
     static const int NumVertices = 24;
@@ -66,18 +68,18 @@ SeparateBuffersApp::OnInit() {
             colorVertices[vi][i] = glm::linearRand(0.5f, 1.0f);
         }
         this->colorBuffers[i] = Gfx::CreateBuffer(BufferDesc()
-            .Size(sizeof(colorVertices))
-            .Content(colorVertices));
+            .SetSize(sizeof(colorVertices))
+            .SetContent(colorVertices));
     }
 
     // create shader and pipeline, the position data vertex Layout
     // goes into the first layout slot, and the color data vertex layout into the second slot
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .Layout(1, { { "in_color", VertexFormat::Float3 } })
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount()));
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetLayout(1, { { "in_color", VertexFormat::Float3 } })
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(Gfx::Desc().SampleCount));
 
     return App::OnInit();
 }
@@ -90,6 +92,7 @@ SeparateBuffersApp::OnRunning() {
     this->angleX += 0.02f;
     
     Gfx::BeginPass();
+    Gfx::ApplyPipeline(pip);
     static const glm::vec3 positions[] = {
         glm::vec3(-2.0, 0.0f, -6.0f),
         glm::vec3(0.0f, 0.0f, -6.0f),
@@ -98,10 +101,10 @@ SeparateBuffersApp::OnRunning() {
     for (int i = 0; i < 3; i++) {
         // switch to the next color data buffer, but keep the
         // same position data buffer
-        this->drawState.VertexBuffers[1] = this->colorBuffers[i];
-        Gfx::ApplyDrawState(this->drawState);
+        this->bind.VertexBuffers[1] = this->colorBuffers[i];
+        Gfx::ApplyBindings(this->bind);
         this->params.mvp = this->computeMVP(positions[i]);
-        Gfx::ApplyUniformBlock(this->params);
+        Gfx::ApplyUniforms(this->params);
         Gfx::Draw(this->cubePrimGroup);
     }
     Gfx::EndPass();
