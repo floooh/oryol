@@ -1,0 +1,8 @@
+---
+platform: linux
+generator: Ninja 
+build_tool: vscode_cmake
+build_type: Debug
+defines:
+    FIPS_UNITTESTS: ON
+    FIPS_GLFW_WAYLAND: ON

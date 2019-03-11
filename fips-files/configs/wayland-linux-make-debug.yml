@@ -1,0 +1,7 @@
+---
+platform: linux 
+generator: Unix Makefiles
+build_tool: make
+build_type: Debug
+defines:
+    FIPS_GLFW_WAYLAND: ON

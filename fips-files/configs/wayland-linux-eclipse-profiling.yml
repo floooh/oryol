@@ -1,0 +1,8 @@
+---
+platform: linux
+generator: Eclipse CDT4 - Unix Makefiles
+build_tool: make
+build_type: Release
+defines:
+    FIPS_PROFILING: ON
+    FIPS_GLFW_WAYLAND: ON

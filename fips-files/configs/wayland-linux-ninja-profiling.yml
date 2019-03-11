@@ -1,0 +1,8 @@
+---
+platform: linux 
+generator: Ninja
+build_tool: ninja
+build_type: Release
+defines:
+    FIPS_PROFILING: ON
+    FIPS_GLFW_WAYLAND: ON

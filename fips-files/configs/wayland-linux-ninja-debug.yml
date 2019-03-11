@@ -1,0 +1,7 @@
+---
+platform: linux 
+generator: Ninja
+build_tool: ninja
+build_type: Debug
+defines:
+    FIPS_GLFW_WAYLAND: ON

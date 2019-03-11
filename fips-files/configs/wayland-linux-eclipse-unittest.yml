@@ -1,0 +1,9 @@
+---
+platform: linux
+generator: Eclipse CDT4 - Unix Makefiles
+build_tool: make
+build_type: Debug
+defines:
+    FIPS_UNITTESTS: ON
+    FIPS_UNITTESTS_HEADLESS: ON
+    FIPS_GLFW_WAYLAND: ON
