@@ -73,22 +73,22 @@ emscDisplayMgr::SetupDisplay(const GfxDesc& desc) {
     o_assert(!this->IsDisplayValid());
     displayMgrBase::SetupDisplay(desc);
 
-    if (desc.htmlTrackElementSize) {
+    if (desc.HtmlTrackElementSize) {
         // register notification callback when canvas size changes
         double width, height;
-        if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(desc.htmlElement.AsCStr(), &width, &height)) {
+        if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(desc.HtmlElement.AsCStr(), &width, &height)) {
             this->displayAttrs.Width = (int) width;
             this->displayAttrs.Height = (int) height;
             Log::Info("Tracked HTML element size '%s': %dx%d\n", 
-                desc.htmlElement.AsCStr(),
+                desc.HtmlElement.AsCStr(),
                 this->displayAttrs.Width,
                 this->displayAttrs.Height);
         }
-        emscripten_set_canvas_element_size(desc.htmlElement.AsCStr(), this->displayAttrs.Width, this->displayAttrs.Height);
+        emscripten_set_canvas_element_size(desc.HtmlElement.AsCStr(), this->displayAttrs.Width, this->displayAttrs.Height);
         emscripten_set_resize_callback(nullptr, nullptr, false, emscWindowSizeChanged); 
     }
-    else if (desc.windowed) {
-        emscripten_set_canvas_element_size("#canvas", desc.width, desc.height);
+    else if (desc.Windowed) {
+        emscripten_set_canvas_element_size(desc.HtmlElement.AsCStr(), desc.Width, desc.Height);
     }
     else {
         enter_soft_fullscreen();
@@ -96,10 +96,10 @@ emscDisplayMgr::SetupDisplay(const GfxDesc& desc) {
 
     EmscriptenWebGLContextAttributes ctxAttrs;
     emscripten_webgl_init_context_attributes(&ctxAttrs);
-    ctxAttrs.alpha = 0 < PixelFormat::NumBits(desc.colorFormat, PixelChannel::Alpha);
-    ctxAttrs.depth = 0 < PixelFormat::NumBits(desc.depthFormat, PixelChannel::Depth);
-    ctxAttrs.stencil = 0 < PixelFormat::NumBits(desc.depthFormat, PixelChannel::Stencil);
-    ctxAttrs.antialias = desc.sampleCount > 1;
+    ctxAttrs.alpha = 0 < PixelFormat::NumBits(desc.ColorFormat, PixelChannel::Alpha);
+    ctxAttrs.depth = 0 < PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Depth);
+    ctxAttrs.stencil = 0 < PixelFormat::NumBits(desc.DepthFormat, PixelChannel::Stencil);
+    ctxAttrs.antialias = desc.SampleCount > 1;
     ctxAttrs.premultipliedAlpha = false;
     ctxAttrs.preserveDrawingBuffer = false;
     Log::Info("emscDisplayMgr: alpha=%d, depth=%d, stencil=%d, antialias=%d\n", 
@@ -156,7 +156,7 @@ emscDisplayMgr::DiscardDisplay() {
 EM_BOOL
 emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void* userData) {
     int newWidth, newHeight;
-    emscripten_get_canvas_element_size("#canvas", &newWidth, &newHeight);
+    emscripten_get_canvas_element_size(self->gfxDesc.HtmlElement.AsCStr(), &newWidth, &newHeight);
     self->displayAttrs.Width = newWidth; 
     self->displayAttrs.Height = newHeight;
     return true;
@@ -166,10 +166,10 @@ emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void*
 EM_BOOL
 emscDisplayMgr::emscWindowSizeChanged(int eventType, const EmscriptenUiEvent* uiEvent, void* userData) {
     double width, height;
-    if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(self->gfxDesc.htmlElement.AsCStr(), &width, &height)) {
+    if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_element_css_size(self->gfxDesc.HtmlElement.AsCStr(), &width, &height)) {
         self->displayAttrs.Width = (int) width;
         self->displayAttrs.Height = (int) height;
-        emscripten_set_canvas_element_size(self->gfxDesc.htmlElement.AsCStr(), self->displayAttrs.Width, self->displayAttrs.Height);
+        emscripten_set_canvas_element_size(self->gfxDesc.HtmlElement.AsCStr(), self->displayAttrs.Width, self->displayAttrs.Height);
     }
     return true;
 }

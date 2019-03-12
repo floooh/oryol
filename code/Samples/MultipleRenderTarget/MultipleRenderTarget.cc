@@ -30,14 +30,17 @@ public:
     PrimitiveGroup planePrimGroup;
     Id mrtPass;
     PassAction mrtPassAction;
-    DrawState rt0DrawState;
-    DrawState rt1DrawState;
-    DrawState rt2DrawState;
+    Id rtPipeline;
+    Bindings rt0Bind;
+    Bindings rt1Bind;
+    Bindings rt2Bind;
 
-    DrawState cubeDrawState;
+    Id cubePipeline;
+    Bindings cubeBind;
     OffscreenShader::vsParams cubeParams;
 
-    DrawState displayDrawState;
+    Id displayPipeline;
+    Bindings displayBind;
     DisplayShader::vsParams displayParams;
 
     glm::mat4 offscreenProj;
@@ -49,7 +52,11 @@ OryolMain(MultipleRenderTargetApp);
 //------------------------------------------------------------------------------
 AppState::Code
 MultipleRenderTargetApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(DisplayWidth).Height(DisplayHeight).SampleCount(4).Title("Oryol MRT Sample"));
+    Gfx::Setup(GfxDesc()
+        .SetWidth(DisplayWidth)
+        .SetHeight(DisplayHeight)
+        .SetSampleCount(4)
+        .SetTitle("Oryol MRT Sample"));
     Dbg::Setup();
 
     // if rendering backend doesn't support MRT, drop out now
@@ -64,25 +71,25 @@ MultipleRenderTargetApp::OnInit() {
     const PixelFormat::Code rtDepthFormat = PixelFormat::DEPTHSTENCIL;
     const int rtSampleCount = 4;
     auto rtDesc = TextureDesc()
-        .Type(TextureType::Texture2D)
-        .RenderTarget(true)
-        .Width(OffscreenWidth)
-        .Height(OffscreenHeight)
-        .Format(rtColorFormat)
-        .MinFilter(TextureFilterMode::Linear)
-        .MagFilter(TextureFilterMode::Linear)
-        .SampleCount(rtSampleCount);
+        .SetType(TextureType::Texture2D)
+        .SetRenderTarget(true)
+        .SetWidth(OffscreenWidth)
+        .SetHeight(OffscreenHeight)
+        .SetFormat(rtColorFormat)
+        .SetMinFilter(TextureFilterMode::Linear)
+        .SetMagFilter(TextureFilterMode::Linear)
+        .SetSampleCount(rtSampleCount);
     Id rtColor0 = Gfx::CreateTexture(rtDesc);
     Id rtColor1 = Gfx::CreateTexture(rtDesc);
     Id rtColor2 = Gfx::CreateTexture(rtDesc);
-    Id rtDepth = Gfx::CreateTexture(TextureDesc(rtDesc).Format(rtDepthFormat));
+    Id rtDepth = Gfx::CreateTexture(TextureDesc(rtDesc).SetFormat(rtDepthFormat));
 
     // create a render pass with the 3 color- and 1 depth-attachment
     this->mrtPass = Gfx::CreatePass(PassDesc()
-        .ColorAttachment(0, rtColor0)
-        .ColorAttachment(1, rtColor1)
-        .ColorAttachment(2, rtColor2)
-        .DepthStencilAttachment(rtDepth));
+        .SetColorAttachment(0, rtColor0)
+        .SetColorAttachment(1, rtColor1)
+        .SetColorAttachment(2, rtColor2)
+        .SetDepthStencilAttachment(rtDepth));
 
     // a pass-action to clear the multiple-render-target
     this->mrtPassAction
@@ -105,54 +112,51 @@ MultipleRenderTargetApp::OnInit() {
 
     // create a draw state to render a cube into the
     // offscreen render targets (this is where the MRT rendering happens)
-    this->cubeDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
-        .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(true)
-        .ColorFormat(rtColorFormat)
-        .DepthFormat(rtDepthFormat)
-        .SampleCount(rtSampleCount)
-        .MRTCount(3));
-    this->cubeDrawState.VertexBuffers[0] = shapesVertexBuffer;
-    this->cubeDrawState.IndexBuffer = shapesIndexBuffer;
+    this->cubePipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+        .SetShader(Gfx::CreateShader(OffscreenShader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetCullFaceEnabled(true)
+        .SetColorFormat(rtColorFormat)
+        .SetDepthFormat(rtDepthFormat)
+        .SetSampleCount(rtSampleCount)
+        .SetMRTCount(3));
+    this->cubeBind.VertexBuffers[0] = shapesVertexBuffer;
+    this->cubeBind.IndexBuffer = shapesIndexBuffer;
 
     // create a quad-mesh for displaying the 3 render target textures on screen
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
     Id quadVertexBuffer = Gfx::CreateBuffer(BufferDesc()
-        .Size(sizeof(quadVertices))
-        .Content(quadVertices));
-    Id quadPipeline = Gfx::CreatePipeline(PipelineDesc()
-        .Shader(Gfx::CreateShader(QuadShader::Desc()))
-        .Layout(0, { { "in_pos", VertexFormat::Float2 } })
-        .PrimitiveType(PrimitiveType::TriangleStrip)
-        .DepthWriteEnabled(false)
-        .DepthCmpFunc(CompareFunc::Always)
-        .CullFaceEnabled(false)
-        .SampleCount(Gfx::Desc().SampleCount()));
-    this->rt0DrawState.Pipeline = quadPipeline;
-    this->rt0DrawState.VertexBuffers[0] = quadVertexBuffer;
-    this->rt0DrawState.FSTexture[QuadShader::tex] = rtColor0;
-    this->rt1DrawState.Pipeline = quadPipeline;
-    this->rt1DrawState.VertexBuffers[0] = quadVertexBuffer;
-    this->rt1DrawState.FSTexture[QuadShader::tex] = rtColor1;
-    this->rt2DrawState.Pipeline = quadPipeline;
-    this->rt2DrawState.VertexBuffers[0] = quadVertexBuffer;
-    this->rt2DrawState.FSTexture[QuadShader::tex] = rtColor2;
+        .SetSize(sizeof(quadVertices))
+        .SetContent(quadVertices));
+    this->rtPipeline = Gfx::CreatePipeline(PipelineDesc()
+        .SetShader(Gfx::CreateShader(QuadShader::Desc()))
+        .SetLayout(0, { { "in_pos", VertexFormat::Float2 } })
+        .SetPrimitiveType(PrimitiveType::TriangleStrip)
+        .SetDepthWriteEnabled(false)
+        .SetDepthCmpFunc(CompareFunc::Always)
+        .SetCullFaceEnabled(false)
+        .SetSampleCount(Gfx::Desc().SampleCount));
+    this->rt0Bind.VertexBuffers[0] = quadVertexBuffer;
+    this->rt0Bind.FSTexture[QuadShader::tex] = rtColor0;
+    this->rt1Bind.VertexBuffers[0] = quadVertexBuffer;
+    this->rt1Bind.FSTexture[QuadShader::tex] = rtColor1;
+    this->rt2Bind.VertexBuffers[0] = quadVertexBuffer;
+    this->rt2Bind.FSTexture[QuadShader::tex] = rtColor2;
 
     // and finally create a draw state to render a plane to the
     // main display which samples the 3 offscreen render targets
-    this->displayDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
-        .Shader(Gfx::CreateShader(DisplayShader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(false)
-        .SampleCount(Gfx::Desc().SampleCount()));
-    this->displayDrawState.VertexBuffers[0] = shapesVertexBuffer;
-    this->displayDrawState.IndexBuffer = shapesIndexBuffer;
-    this->displayDrawState.FSTexture[DisplayShader::redTex] = rtColor0;
-    this->displayDrawState.FSTexture[DisplayShader::greenTex] = rtColor1;
-    this->displayDrawState.FSTexture[DisplayShader::blueTex] = rtColor2;
+    this->displayPipeline = Gfx::CreatePipeline(PipelineDesc(shapes.PipelineDesc)
+        .SetShader(Gfx::CreateShader(DisplayShader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetCullFaceEnabled(false)
+        .SetSampleCount(Gfx::Desc().SampleCount));
+    this->displayBind.VertexBuffers[0] = shapesVertexBuffer;
+    this->displayBind.IndexBuffer = shapesIndexBuffer;
+    this->displayBind.FSTexture[DisplayShader::redTex] = rtColor0;
+    this->displayBind.FSTexture[DisplayShader::greenTex] = rtColor1;
+    this->displayBind.FSTexture[DisplayShader::blueTex] = rtColor2;
 
     this->offscreenProj = glm::perspectiveFov(glm::radians(45.0f), float(OffscreenWidth), float(OffscreenHeight), 0.01f, 100.0f);
 
@@ -179,28 +183,31 @@ MultipleRenderTargetApp::OnRunning() {
     // render the cube into the 3 MRT render targets using a single draw call,
     // the fragment shader writes 3 colors, one for each color attachment
     Gfx::BeginPass(this->mrtPass, this->mrtPassAction);
-    Gfx::ApplyDrawState(this->cubeDrawState);
-    Gfx::ApplyUniformBlock(this->cubeParams);
+    Gfx::ApplyPipeline(this->cubePipeline);
+    Gfx::ApplyBindings(this->cubeBind);
+    Gfx::ApplyUniforms(this->cubeParams);
     Gfx::Draw(this->cubePrimGroup);
     Gfx::EndPass();
 
     // debug-visualize the 3 offscreen render targets at the bottom of the screen
     Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
+    Gfx::ApplyPipeline(this->rtPipeline);
     Gfx::ApplyViewPort(0, 0, 200, 200);
-    Gfx::ApplyDrawState(this->rt0DrawState);
+    Gfx::ApplyBindings(this->rt0Bind);
     Gfx::Draw(0, 4);
     Gfx::ApplyViewPort(200, 0, 200, 200);
-    Gfx::ApplyDrawState(this->rt1DrawState);
+    Gfx::ApplyBindings(this->rt1Bind);
     Gfx::Draw(0, 4);
     Gfx::ApplyViewPort(400, 0, 200, 200);
-    Gfx::ApplyDrawState(this->rt2DrawState);
+    Gfx::ApplyBindings(this->rt2Bind);
     Gfx::Draw(0, 4);
 
     // render the final plane which samples from all 3 offscreen rendertarget textures
     const auto& rpAttrs = Gfx::DisplayAttrs();
     Gfx::ApplyViewPort(0, 0, rpAttrs.Width, rpAttrs.Height);
-    Gfx::ApplyDrawState(this->displayDrawState);
-    Gfx::ApplyUniformBlock(this->displayParams);
+    Gfx::ApplyPipeline(this->displayPipeline);
+    Gfx::ApplyBindings(this->displayBind);
+    Gfx::ApplyUniforms(this->displayParams);
     Gfx::Draw(this->planePrimGroup);
 
     Gfx::EndPass();

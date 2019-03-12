@@ -48,7 +48,8 @@ public:
     float maxDist;
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     glm::vec2 startPolar;
     glm::vec2 polar;
     float distance = 6.0f;
@@ -67,10 +68,11 @@ OryolMain(TestInputApp);
 AppState::Code
 TestInputApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(800).Height(400)
-        .HighDPI(true)
-        .Title("Oryol Input Test Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(400)
+        .SetHighDPI(true)
+        .SetTitle("Oryol Input Test Sample")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
     if (Gfx::DisplayAttrs().Width > 800) {
         Dbg::TextScale(2.0f, 2.0f);
@@ -98,13 +100,13 @@ TestInputApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(true));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetCullFaceEnabled(true));
 
     this->polar = glm::vec2(glm::radians(45.0f), glm::radians(45.0f));
     this->distance = 6.0f;
@@ -470,8 +472,9 @@ TestInputApp::drawCube() {
     glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
     Shader::vsParams vsParams;
     vsParams.mvp = proj * this->view;
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(vsParams);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(vsParams);
     Gfx::Draw(this->primGroup);
 }
 

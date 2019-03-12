@@ -15,7 +15,8 @@ public:
     AppState::Code OnInit();
     AppState::Code OnCleanup();
     
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::params params;
 };
 OryolMain(FullscreenQuadApp);
@@ -24,13 +25,14 @@ OryolMain(FullscreenQuadApp);
 AppState::Code
 FullscreenQuadApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(600)
-        .Title("Oryol Fullscreen Quad Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(600)
+        .SetHeight(600)
+        .SetTitle("Oryol Fullscreen Quad Sample")
+        .SetHtmlTrackElementSize(true));
     auto fsq = FullscreenQuadBuilder().Build();
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(fsq.VertexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(fsq.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc())));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(fsq.VertexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(fsq.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc())));
     this->params.time = 0.0f;
     return App::OnInit();
 }
@@ -41,8 +43,9 @@ FullscreenQuadApp::OnRunning() {
     // render one frame
     this->params.time += 1.0f / 60.0f;
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->params);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(this->params);
     Gfx::Draw(0, 4);
     Gfx::EndPass();
     Gfx::CommitFrame();

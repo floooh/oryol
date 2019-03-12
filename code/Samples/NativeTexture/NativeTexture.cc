@@ -28,7 +28,8 @@ public:
 
     glm::mat4 computeMVP(const glm::vec3& pos);
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     ResourceLabel texLabel;
     Shader::vsParams params;
     float angleX = 0.0f;
@@ -48,11 +49,12 @@ AppState::Code
 NativeTextureApp::OnInit() {
 
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(400)
-        .SampleCount(4)
-        .Title("Oryol NativeTexture Sample")
-        .HtmlTrackElementSize(true));
-    Dbg::Setup(DbgDesc().SampleCount(4));
+        .SetWidth(600)
+        .SetHeight(400)
+        .SetSampleCount(4)
+        .SetTitle("Oryol NativeTexture Sample")
+        .SetHtmlTrackElementSize(true));
+    Dbg::Setup(DbgDesc().SetSampleCount(4));
 
     // FIXME: D3D and Metal
     #if !ORYOL_OPENGL
@@ -66,8 +68,8 @@ NativeTextureApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 4)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     #if ORYOL_OPENGL
     // the interesting part, create 2 GL textures and hand them to the
@@ -92,23 +94,23 @@ NativeTextureApp::OnInit() {
     // push a new resource label and keep it for later since we'll have
     // to cleanup the resource ourselves
     Gfx::PushResourceLabel();
-    this->drawState.FSTexture[0] = Gfx::CreateTexture(TextureDesc()
-        .Type(TextureType::Texture2D)
-        .Width(TexWidth)
-        .Height(TexHeight)
-        .Format(PixelFormat::RGBA8)
-        .Usage(Usage::Stream)
-        .NativeTexture(0, this->glTextures[0])
-        .NativeTexture(1, this->glTextures[1]));
+    this->bind.FSTexture[0] = Gfx::CreateTexture(TextureDesc()
+        .SetType(TextureType::Texture2D)
+        .SetWidth(TexWidth)
+        .SetHeight(TexHeight)
+        .SetFormat(PixelFormat::RGBA8)
+        .SetUsage(Usage::Stream)
+        .SetNativeTexture(0, this->glTextures[0])
+        .SetNativeTexture(1, this->glTextures[1]));
     this->texLabel = Gfx::PopResourceLabel();
     #endif
 
     // ...and finally the pipeline object
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount()));
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(Gfx::Desc().SampleCount));
 
     return App::OnInit();
 }
@@ -138,12 +140,13 @@ NativeTextureApp::OnRunning() {
     ImageContent imgContent;
     imgContent.Pointer[0][0] = this->Buffer;
     imgContent.Size[0][0] = sizeof(this->Buffer);
-    Gfx::UpdateTexture(this->drawState.FSTexture[0], imgContent);
+    Gfx::UpdateTexture(this->bind.FSTexture[0], imgContent);
 
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
     this->params.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, -3.0f));
-    Gfx::ApplyUniformBlock(this->params);
+    Gfx::ApplyUniforms(this->params);
     Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();

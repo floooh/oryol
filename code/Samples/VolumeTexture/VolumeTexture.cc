@@ -23,7 +23,8 @@ public:
     void computeShaderParams();
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::vsParams vsParams;
     int frameIndex = 0;
 };
@@ -33,10 +34,11 @@ OryolMain(VolumeTextureApp);
 AppState::Code
 VolumeTextureApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(800).Height(600)
-        .SampleCount(4)
-        .Title("3D Texture Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(600)
+        .SetSampleCount(4)
+        .SetTitle("3D Texture Sample")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
 
     // if 3D textures not supported show a warning later during rendering
@@ -63,16 +65,16 @@ VolumeTextureApp::OnInit() {
         }
         p.z += 1.0f / dim;
     }
-    this->drawState.FSTexture[Shader::tex] = Gfx::CreateTexture(TextureDesc()
-        .Type(TextureType::Texture3D)
-        .Width(dim)
-        .Height(dim)
-        .Depth(dim)
-        .Format(PixelFormat::RGBA8)
-        .MinFilter(TextureFilterMode::Linear)
-        .MagFilter(TextureFilterMode::Linear)
-        .MipSize(0, 0, sizeof(data))
-        .MipContent(0, 0, data));
+    this->bind.FSTexture[Shader::tex] = Gfx::CreateTexture(TextureDesc()
+        .SetType(TextureType::Texture3D)
+        .SetWidth(dim)
+        .SetHeight(dim)
+        .SetDepth(dim)
+        .SetFormat(PixelFormat::RGBA8)
+        .SetMinFilter(TextureFilterMode::Linear)
+        .SetMagFilter(TextureFilterMode::Linear)
+        .SetMipSize(0, 0, sizeof(data))
+        .SetMipContent(0, 0, data));
 
     // create a cube which will be the hull geometry for raycasting through the 3D texture
     auto shape = ShapeBuilder()
@@ -80,13 +82,13 @@ VolumeTextureApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount()));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(Gfx::Desc().SampleCount));
 
     return App::OnInit();
 }
@@ -104,8 +106,9 @@ VolumeTextureApp::OnRunning() {
 
     // render the rotating cube
     Gfx::BeginPass(PassAction().Clear(0.25f, 0.25f, 0.25f, 1.0f));
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(this->vsParams);
     Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();

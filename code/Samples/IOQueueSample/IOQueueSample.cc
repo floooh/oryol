@@ -28,8 +28,8 @@ IOQueueApp::OnInit() {
     // setup the IO module, attach a HTTP filesystem and setup
     // a path assign (aka path alias)
     IO::Setup(IODesc()
-        .FileSystem("http", HTTPFileSystem::Creator())
-        .Assign("res:", ORYOL_SAMPLE_URL));
+        .AddFileSystem("http", HTTPFileSystem::Creator())
+        .AddAssign("res:", ORYOL_SAMPLE_URL));
 
     // now the important part: start loading files, and define
     // the success-callbacks as lambdas

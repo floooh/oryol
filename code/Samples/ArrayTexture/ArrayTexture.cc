@@ -25,7 +25,8 @@ public:
     Shader::vsParams computeShaderParams();
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     int frameIndex = 0;
 };
 OryolMain(ArrayTextureApp);
@@ -34,10 +35,11 @@ OryolMain(ArrayTextureApp);
 AppState::Code
 ArrayTextureApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(800).Height(512)
-        .SampleCount(4)
-        .Title("Array Texture Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(512)
+        .SetSampleCount(4)
+        .SetTitle("Array Texture Sample")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
 
     // if array textures are not supported, only show a warning
@@ -66,16 +68,16 @@ ArrayTextureApp::OnInit() {
             }
         }
     }
-    this->drawState.FSTexture[Shader::tex] = Gfx::CreateTexture(TextureDesc()
-        .Type(TextureType::TextureArray)
-        .Width(width)
-        .Height(height)
-        .Layers(numLayers)
-        .Format(PixelFormat::RGBA8)
-        .MinFilter(TextureFilterMode::Linear)
-        .MagFilter(TextureFilterMode::Linear)
-        .MipSize(0, 0, sizeof(data))
-        .MipContent(0, 0, data));
+    this->bind.FSTexture[Shader::tex] = Gfx::CreateTexture(TextureDesc()
+        .SetType(TextureType::TextureArray)
+        .SetWidth(width)
+        .SetHeight(height)
+        .SetLayers(numLayers)
+        .SetFormat(PixelFormat::RGBA8)
+        .SetMinFilter(TextureFilterMode::Linear)
+        .SetMagFilter(TextureFilterMode::Linear)
+        .SetMipSize(0, 0, sizeof(data))
+        .SetMipContent(0, 0, data));
 
     // build a cube mesh
     auto shape = ShapeBuilder()
@@ -84,15 +86,15 @@ ArrayTextureApp::OnInit() {
         .Box(1.0f, 1.0f, 1.0f, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // ...and a pipeline object to complete the DrawState
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount()));
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(Gfx::Desc().SampleCount));
 
     return App::OnInit();
 }
@@ -111,15 +113,15 @@ ArrayTextureApp::OnRunning() {
 
     // render texture cube
     Gfx::BeginPass(PassAction().Clear(0.2f, 0.2f, 0.3f, 1.0f));
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(vsParams);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(vsParams);
     Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();
     this->frameIndex++;
     return Gfx::QuitRequested() ? AppState::Cleanup : AppState::Running;
 }
-
 
 //------------------------------------------------------------------------------
 AppState::Code

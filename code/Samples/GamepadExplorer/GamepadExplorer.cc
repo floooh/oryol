@@ -49,7 +49,11 @@ const char* axisNames[GamepadAxis::NumAxes] = {
 //------------------------------------------------------------------------------
 AppState::Code
 GamepadExplorerApp::OnInit() {
-    Gfx::Setup(GfxDesc().Width(800).Height(600).Title("Test Gamepads").HtmlTrackElementSize(true));
+    Gfx::Setup(GfxDesc()
+        .SetWidth(800)
+        .SetHeight(600)
+        .SetTitle("Test Gamepads")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     return App::OnInit();

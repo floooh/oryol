@@ -23,7 +23,8 @@ public:
     glm::mat4 computeMVP(const glm::vec3& pos);
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::vsParams vsParams;
     float angleX = 0.0f;
     float angleY = 0.0f;
@@ -36,14 +37,15 @@ DDSCubeMapApp::OnInit() {
 
     // setup IO system
     IO::Setup(IODesc()
-        .FileSystem("http", HTTPFileSystem::Creator())
-        .Assign("tex:", ORYOL_SAMPLE_URL));
+        .AddFileSystem("http", HTTPFileSystem::Creator())
+        .AddAssign("tex:", ORYOL_SAMPLE_URL));
 
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(400)
-        .Title("Oryol DXT Cube Map Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(600)
+        .SetHeight(400)
+        .SetTitle("Oryol DXT Cube Map Sample")
+        .SetHtmlTrackElementSize(true));
 
     // create resources
     StringAtom texPath;
@@ -53,12 +55,12 @@ DDSCubeMapApp::OnInit() {
     else {
         texPath = "tex:romechurch_dxt1.dds";
     }
-    this->drawState.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
-        .Locator(texPath)
-        .MinFilter(TextureFilterMode::LinearMipmapLinear)
-        .MagFilter(TextureFilterMode::Linear)
-        .WrapU(TextureWrapMode::ClampToEdge)
-        .WrapV(TextureWrapMode::ClampToEdge));
+    this->bind.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
+        .SetLocator(texPath)
+        .SetMinFilter(TextureFilterMode::LinearMipmapLinear)
+        .SetMagFilter(TextureFilterMode::Linear)
+        .SetWrapU(TextureWrapMode::ClampToEdge)
+        .SetWrapV(TextureWrapMode::ClampToEdge));
 
     auto shape = ShapeBuilder()
         .Positions("in_pos", VertexFormat::Float3)
@@ -67,12 +69,12 @@ DDSCubeMapApp::OnInit() {
         .Sphere(1.0f, 36, 20)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual));
 
     return App::OnInit();
 }
@@ -87,8 +89,9 @@ DDSCubeMapApp::OnRunning() {
     
     Gfx::BeginPass(PassAction().Clear(0.5f, 0.5f, 0.5f, 1.0f));
     this->vsParams.mvp = this->computeMVP(glm::vec3(0.0f, 0.0f, 0.0f));
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(this->vsParams);
     Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     Gfx::CommitFrame();

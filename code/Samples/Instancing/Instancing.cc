@@ -26,7 +26,8 @@ public:
     void updateParticles();
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::vsParams vsParams;
     bool updateEnabled = true;
     int frameCount = 0;
@@ -44,9 +45,10 @@ AppState::Code
 InstancingApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(800).Height(500)
-        .Title("Oryol Instancing Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(500)
+        .SetTitle("Oryol Instancing Sample")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     
@@ -65,22 +67,23 @@ InstancingApp::OnInit() {
         .Sphere(0.05f, 3, 2)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
 
     // create dynamic instance data vertex buffer on slot 1
-    this->drawState.VertexBuffers[1] = Gfx::CreateBuffer(BufferDesc()
-        .Size(MaxNumParticles * VertexFormat::ByteSize(VertexFormat::Float4))
-        .Usage(Usage::Stream));
+    this->bind.VertexBuffers[1] = Gfx::CreateBuffer(BufferDesc()
+        .SetSize(MaxNumParticles * VertexFormat::ByteSize(VertexFormat::Float4))
+        .SetUsage(Usage::Stream));
 
     // setup pipeline state for instanced rendering
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .Layout(1, VertexLayout().EnableInstancing()
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetLayout(1, VertexLayout()
+            .EnableInstancing()
             .Add("in_instpos", VertexFormat::Float4))
-        .CullFaceEnabled(true)
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual));
+        .SetCullFaceEnabled(true)
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual));
     
     return App::OnInit();
 }
@@ -101,15 +104,16 @@ InstancingApp::OnRunning() {
         updTime = Clock::Since(updStart);
 
         TimePoint bufStart = Clock::Now();
-        Gfx::UpdateBuffer(this->drawState.VertexBuffers[1], this->positions, this->curNumParticles * sizeof(glm::vec4));
+        Gfx::UpdateBuffer(this->bind.VertexBuffers[1], this->positions, this->curNumParticles * sizeof(glm::vec4));
         bufTime = Clock::Since(bufStart);
     }
     
     // render block        
     TimePoint drawStart = Clock::Now();
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(this->vsParams);
     Gfx::Draw(this->primGroup, this->curNumParticles);
     drawTime = Clock::Since(drawStart);
     

@@ -22,8 +22,10 @@ public:
     glm::mat4 computeMVP(const glm::mat4& proj, const glm::mat4& model);
 
     PrimitiveGroup primGroup;
-    DrawState offscreenDrawState;
-    DrawState displayDrawState;
+    Id offscreenPipeline;
+    Id displayPipeline;
+    Bindings offscreenBind;
+    Bindings displayBind;
     struct {
         Id texture;
         Id pass;
@@ -42,10 +44,11 @@ AppState::Code
 InfiniteSpheresApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(800).Height(600)
-        .SampleCount(4)
-        .Title("Oryol Infinite Spheres Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(600)
+        .SetSampleCount(4)
+        .SetTitle("Oryol Infinite Spheres Sample")
+        .SetHtmlTrackElementSize(true));
 
     // create 2 ping-pong offscreen render targets, only need 1 depth buffer
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA8;
@@ -53,23 +56,23 @@ InfiniteSpheresApp::OnInit() {
     const int rtWidth = 512;
     const int rtHeight = 512;
     Id rtDepth = Gfx::CreateTexture(TextureDesc()
-        .RenderTarget(true)
-        .Width(rtWidth)
-        .Height(rtHeight)
-        .Format(rtDepthFormat));
+        .SetRenderTarget(true)
+        .SetWidth(rtWidth)
+        .SetHeight(rtHeight)
+        .SetFormat(rtDepthFormat));
     for (int i = 0; i < 2; i++) {
         this->passInfo[i].texture = Gfx::CreateTexture(TextureDesc()
-            .RenderTarget(true)
-            .Width(rtWidth)
-            .Height(rtHeight)
-            .Format(rtColorFormat)
-            .MinFilter(TextureFilterMode::Linear)
-            .MagFilter(TextureFilterMode::Linear)
-            .WrapU(TextureWrapMode::Repeat)
-            .WrapV(TextureWrapMode::Repeat));
+            .SetRenderTarget(true)
+            .SetWidth(rtWidth)
+            .SetHeight(rtHeight)
+            .SetFormat(rtColorFormat)
+            .SetMinFilter(TextureFilterMode::Linear)
+            .SetMagFilter(TextureFilterMode::Linear)
+            .SetWrapU(TextureWrapMode::Repeat)
+            .SetWrapV(TextureWrapMode::Repeat));
         this->passInfo[i].pass = Gfx::CreatePass(PassDesc()
-            .ColorAttachment(0, this->passInfo[i].texture)
-            .DepthStencilAttachment(rtDepth));
+            .SetColorAttachment(0, this->passInfo[i].texture)
+            .SetDepthStencilAttachment(rtDepth));
     }
 
     // create a sphere shape mesh
@@ -82,26 +85,26 @@ InfiniteSpheresApp::OnInit() {
     this->primGroup = sphere.PrimitiveGroups[0];
     Id vbuf = Gfx::CreateBuffer(sphere.VertexBufferDesc);
     Id ibuf = Gfx::CreateBuffer(sphere.IndexBufferDesc);
-    this->offscreenDrawState.VertexBuffers[0] = vbuf;
-    this->offscreenDrawState.IndexBuffer = ibuf;
-    this->displayDrawState.VertexBuffers[0] = vbuf;
-    this->displayDrawState.IndexBuffer = ibuf;
+    this->offscreenBind.VertexBuffers[0] = vbuf;
+    this->offscreenBind.IndexBuffer = ibuf;
+    this->displayBind.VertexBuffers[0] = vbuf;
+    this->displayBind.IndexBuffer = ibuf;
 
     // create shader which is used for both offscreen- and display-rendering
     Id shd = Gfx::CreateShader(Shader::Desc());
 
     // create draw state for rendering into default render target
-    this->displayDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
-        .Shader(shd)
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .SampleCount(Gfx::Desc().SampleCount()));
-    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
-        .Shader(shd)
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .ColorFormat(rtColorFormat)
-        .DepthFormat(rtDepthFormat));
+    this->displayPipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
+        .SetShader(shd)
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetSampleCount(Gfx::Desc().SampleCount));
+    this->offscreenPipeline = Gfx::CreatePipeline(PipelineDesc(sphere.PipelineDesc)
+        .SetShader(shd)
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetColorFormat(rtColorFormat)
+        .SetDepthFormat(rtDepthFormat));
 
     // setup static transform matrices
     this->offscreenProj = glm::perspective(glm::radians(45.0f), 1.0f, 0.01f, 20.0f);
@@ -125,9 +128,9 @@ InfiniteSpheresApp::OnRunning() {
     glm::mat4 model = this->computeModel(this->angleX, this->angleY, glm::vec3(0.0f, 0.0f, -2.0f));
     this->vsParams.mvp = this->computeMVP(this->offscreenProj, model);
     Gfx::BeginPass(this->passInfo[index0].pass);
-    this->offscreenDrawState.FSTexture[Shader::tex] = this->passInfo[index1].texture;
-    Gfx::ApplyDrawState(this->offscreenDrawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyPipeline(this->offscreenPipeline);
+    Gfx::ApplyBindings(this->offscreenBind.SetFSTexture(Shader::tex, this->passInfo[index1].texture));
+    Gfx::ApplyUniforms(this->vsParams);
     Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     
@@ -136,9 +139,10 @@ InfiniteSpheresApp::OnRunning() {
     glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 20.0f);
     this->vsParams.mvp = this->computeMVP(proj, model);
     Gfx::BeginPass(this->passAction);
-    this->displayDrawState.FSTexture[Shader::tex] = this->passInfo[index0].texture;
-    Gfx::ApplyDrawState(this->displayDrawState);
-    Gfx::ApplyUniformBlock(this->vsParams);
+    this->displayBind.FSTexture[Shader::tex] = this->passInfo[index0].texture;
+    Gfx::ApplyPipeline(this->displayPipeline);
+    Gfx::ApplyBindings(this->displayBind.SetFSTexture(Shader::tex, this->passInfo[index0].texture));
+    Gfx::ApplyUniforms(this->vsParams);
     Gfx::Draw(this->primGroup);
     Gfx::EndPass();
     

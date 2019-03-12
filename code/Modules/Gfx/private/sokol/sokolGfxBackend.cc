@@ -716,8 +716,8 @@ sokolGfxBackend::CreateShader(const ShaderDesc& desc) {
 
     // set source- or byte-code, and optional entry function
     #if ORYOL_OPENGL
-    sgDesc.vs.source = desc.stage[ShaderStage::VS].Source;
-    sgDesc.fs.source = desc.stage[ShaderStage::FS].Source;
+    sgDesc.vs.source = desc.Stage[ShaderStage::VS].Source;
+    sgDesc.fs.source = desc.Stage[ShaderStage::FS].Source;
     #elif ORYOL_METAL || ORYOL_D3D11
     sgDesc.vs.byte_code = desc.Stage[ShaderStage::VS].ByteCode;
     sgDesc.vs.byte_code_size = desc.Stage[ShaderStage::VS].ByteCodeSize;

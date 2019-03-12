@@ -25,7 +25,8 @@ public:
     
     float distVal = 0.0f;
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     static const int NumTextures = 16;
     StaticArray<Id, NumTextures> textures;
     Shader::vsParams vsParams;
@@ -38,14 +39,15 @@ DDSTextureLoadingApp::OnInit() {
 
     // setup IO system
     IO::Setup(IODesc()
-        .FileSystem("http", HTTPFileSystem::Creator())
-        .Assign("tex:", ORYOL_SAMPLE_URL));
+        .AddFileSystem("http", HTTPFileSystem::Creator())
+        .AddAssign("tex:", ORYOL_SAMPLE_URL));
 
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(400)
-        .Title("Oryol DDS Loading Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(600)
+        .SetHeight(400)
+        .SetTitle("Oryol DDS Loading Sample")
+        .SetHtmlTrackElementSize(true));
 
     // setup resources
     static const char *paths[NumTextures] = {
@@ -68,11 +70,11 @@ DDSTextureLoadingApp::OnInit() {
     };
     for (int i = 0; i < NumTextures; i++) {
         this->textures[i] = TextureLoader::Load(TextureDesc()
-            .Locator(paths[i])
-            .MinFilter(TextureFilterMode::LinearMipmapLinear)
-            .MagFilter(TextureFilterMode::Linear)
-            .WrapU(TextureWrapMode::ClampToEdge)
-            .WrapV(TextureWrapMode::ClampToEdge));
+            .SetLocator(paths[i])
+            .SetMinFilter(TextureFilterMode::LinearMipmapLinear)
+            .SetMagFilter(TextureFilterMode::Linear)
+            .SetWrapU(TextureWrapMode::ClampToEdge)
+            .SetWrapV(TextureWrapMode::ClampToEdge));
     }
 
     auto shape = ShapeBuilder()
@@ -82,12 +84,12 @@ DDSTextureLoadingApp::OnInit() {
         .Plane(1.0f, 1.0f, 4)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual));
     
     return App::OnInit();
 }
@@ -124,12 +126,13 @@ DDSTextureLoadingApp::OnRunning() {
         glm::vec3(+1.65f, -1.1f, 0.0f),
         glm::vec3(+2.75f, -1.1f, 0.0f)
     };
+    Gfx::ApplyPipeline(this->pip);
     for (int i = 0; i < NumTextures; i++) {
         glm::vec3 p = pos[i] + glm::vec3(0.0f, 0.0f, -20.0f + glm::sin(this->distVal) * 19.0f);
         this->vsParams.mvp = this->computeMVP(p);
-        this->drawState.FSTexture[Shader::tex] = this->textures[i];
-        Gfx::ApplyDrawState(this->drawState);
-        Gfx::ApplyUniformBlock(this->vsParams);
+        this->bind.FSTexture[Shader::tex] = this->textures[i];
+        Gfx::ApplyBindings(this->bind);
+        Gfx::ApplyUniforms(this->vsParams);
         Gfx::Draw(this->primGroup);
     }
     Gfx::EndPass();

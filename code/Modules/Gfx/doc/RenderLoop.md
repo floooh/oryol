@@ -208,7 +208,7 @@ There are 2 special GfxDesc members useful for HTML5 apps:
 /// if true, ignore own size and instead track size of an HTML element (emscripten only)
 HtmlTrackElementSize(bool track): default = false
 /// name of the HTML element to track
-HtmlElement(const StringAtom& domName): default = "#canvas"
+HtmlElement(const StringAtom& domName): default = "canvas"
 ```
 
 If **GfxDesc::HtmlTrackElementSize** is set to true, the size members

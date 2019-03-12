@@ -39,12 +39,12 @@ IO::Setup(const IODesc& desc) {
     state->router.setup(ptrs);
 
     // setup initial assigns
-    for (const auto& assign : desc.assigns) {
+    for (const auto& assign : desc.Assigns) {
         SetAssign(assign.Key(), assign.Value());
     }
     
     // setup initial filesystems
-    for (const auto& fs : desc.fileSystems) {
+    for (const auto& fs : desc.FileSystems) {
         RegisterFileSystem(fs.Key(), fs.Value());
     }
 

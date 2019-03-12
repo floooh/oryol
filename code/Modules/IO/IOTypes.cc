@@ -11,25 +11,15 @@ namespace Oryol {
 #define _TOSTRING(c) case c: return #c
 
 //------------------------------------------------------------------------------
-IODesc& IODesc::Assign(const String& name, const String& path) {
-    assigns.Add(name, path);
+IODesc& IODesc::AddAssign(const String& name, const String& path) {
+    this->Assigns.Add(name, path);
     return *this;
 }
 
 //------------------------------------------------------------------------------
-const Map<String, String> IODesc::Assigns() const {
-    return assigns; 
-}
-
-//------------------------------------------------------------------------------
-IODesc& IODesc::FileSystem(const StringAtom& scheme, std::function<Ptr<FileSystemBase>()> fsCreatorFunc) {
-    fileSystems.Add(scheme, fsCreatorFunc);
+IODesc& IODesc::AddFileSystem(const StringAtom& scheme, std::function<Ptr<FileSystemBase>()> fsCreatorFunc) {
+    this->FileSystems.Add(scheme, fsCreatorFunc);
     return *this;
-}
-
-//------------------------------------------------------------------------------
-const Map<StringAtom, std::function<Ptr<FileSystemBase>()>>& IODesc::FileSystems() const {
-    return fileSystems;
 }
 
 //------------------------------------------------------------------------------

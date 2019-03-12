@@ -27,7 +27,8 @@ public:
     struct Object {
         uint32_t createdFrame = 0;
         PrimitiveGroup primGroup;
-        DrawState drawState;
+        Id pip;
+        Bindings bind;
         ResourceLabel label;
         glm::mat4 modelTransform;
     };
@@ -45,17 +46,19 @@ AppState::Code
 ResourceStressApp::OnInit() {
     // setup IO system
     IO::Setup(IODesc()
-        .FileSystem("http", HTTPFileSystem::Creator())
-        .Assign("tex:", ORYOL_SAMPLE_URL));
+        .AddFileSystem("http", HTTPFileSystem::Creator())
+        .AddAssign("tex:", ORYOL_SAMPLE_URL));
 
     // setup Gfx system
     Gfx::Setup(GfxDesc()
-        .Width(600).Height(400).Title("Oryol Resource Stress Test")
-        .ResourcePoolSize(GfxResourceType::Buffer, 2 * (MaxNumObjects + 32))
-        .ResourcePoolSize(GfxResourceType::Texture, MaxNumObjects + 32)
-        .ResourcePoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32)
-        .ResourcePoolSize(GfxResourceType::Shader, 4)
-        .HtmlTrackElementSize(true));
+        .SetWidth(600)
+        .SetHeight(400)
+        .SetTitle("Oryol Resource Stress Test")
+        .SetResourcePoolSize(GfxResourceType::Buffer, 2 * (MaxNumObjects + 32))
+        .SetResourcePoolSize(GfxResourceType::Texture, MaxNumObjects + 32)
+        .SetResourcePoolSize(GfxResourceType::Pipeline, MaxNumObjects + 32)
+        .SetResourcePoolSize(GfxResourceType::Shader, 4)
+        .SetHtmlTrackElementSize(true));
 
     // setup the shader that is used by all objects
     this->shader = Gfx::CreateShader(Shader::Desc());
@@ -78,13 +81,14 @@ ResourceStressApp::OnRunning() {
         // the check is not necessary since rendering for non-valid resources
         // will be skipped anyway, but this way we have test coverage for
         // Gfx::QueryResourceState()
-        const Id& tex = obj.drawState.FSTexture[Shader::tex];
+        const Id& tex = obj.bind.FSTexture[Shader::tex];
         if (Gfx::QueryResourceState(tex) == ResourceState::Valid) {
-            Gfx::ApplyDrawState(obj.drawState);
+            Gfx::ApplyPipeline(obj.pip);
+            Gfx::ApplyBindings(obj.bind);
             glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), float(Gfx::Width()), float(Gfx::Height()), 0.01f, 100.0f);
             Shader::vsParams vsParams;
             vsParams.mvp = proj * obj.modelTransform;
-            Gfx::ApplyUniformBlock(vsParams);
+            Gfx::ApplyUniforms(vsParams);
             Gfx::Draw(obj.primGroup);
         }
     }
@@ -123,19 +127,19 @@ ResourceStressApp::createObjects() {
         .Box(0.1f, 0.1f, 0.1f, 1)
         .Build();
     obj.primGroup = shape.PrimitiveGroups[0];
-    obj.drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    obj.drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    obj.drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(this->shader)
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(true));
-    obj.drawState.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
-        .Locator(Locator::NonShared("tex:lok_dxt1.dds"))
-        .MinFilter(TextureFilterMode::LinearMipmapLinear)
-        .MagFilter(TextureFilterMode::Linear)
-        .WrapU(TextureWrapMode::ClampToEdge)
-        .WrapV(TextureWrapMode::ClampToEdge));
+    obj.bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    obj.bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    obj.bind.FSTexture[Shader::tex] = TextureLoader::Load(TextureDesc()
+        .SetLocator(Locator::NonShared("tex:lok_dxt1.dds"))
+        .SetMinFilter(TextureFilterMode::LinearMipmapLinear)
+        .SetMagFilter(TextureFilterMode::Linear)
+        .SetWrapU(TextureWrapMode::ClampToEdge)
+        .SetWrapV(TextureWrapMode::ClampToEdge));
+    obj.pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(this->shader)
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetCullFaceEnabled(true));
     glm::vec3 pos = glm::ballRand(2.0f) + glm::vec3(0.0f, 0.0f, -6.0f);
     obj.modelTransform = glm::translate(glm::mat4(), pos);
     this->objects.Add(obj);
@@ -152,11 +156,10 @@ ResourceStressApp::updateObjects() {
         // check if object should be destroyed (it will be
         // destroyed after the texture object had been valid for
         // at least 3 seconds, or if it failed to load)
-        const Id& tex = obj.drawState.FSTexture[Shader::tex];
+        const Id& tex = obj.bind.FSTexture[Shader::tex];
         ResourceState::Code state = Gfx::QueryResourceState(tex);
         if ((state == ResourceState::Failed) ||
             ((state == ResourceState::Valid) && (age > (20 * 60)))) {
-
             Gfx::DestroyResources(obj.label);
             this->objects.Erase(i);
         }

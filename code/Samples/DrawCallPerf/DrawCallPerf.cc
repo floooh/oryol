@@ -26,7 +26,8 @@ public:
     void updateParticles();
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::perFrameParams perFrameParams;
     Shader::perParticleParams perParticleParams;
     bool updateEnabled = true;
@@ -47,11 +48,11 @@ AppState::Code
 DrawCallPerfApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(800)
-        .Height(500)
-        .Title("Oryol DrawCallPerf Sample")
-        .GlobalUniformBufferSize(1024 * 1024 * 32)
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(500)
+        .SetTitle("Oryol DrawCallPerf Sample")
+        .SetGlobalUniformBufferSize(1024 * 1024 * 32)
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
 
@@ -65,13 +66,13 @@ DrawCallPerfApp::OnInit() {
         .Sphere(0.05f, 3, 2)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .CullFaceEnabled(true)
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetCullFaceEnabled(true)
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual));
     
     return App::OnInit();
 }
@@ -97,11 +98,12 @@ DrawCallPerfApp::OnRunning() {
     Gfx::BeginPass();
     applyRtTime = Clock::Since(applyRtStart);
     TimePoint drawStart = Clock::Now();
-    Gfx::ApplyDrawState(this->drawState);
-    Gfx::ApplyUniformBlock(this->perFrameParams);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
+    Gfx::ApplyUniforms(this->perFrameParams);
     for (int i = 0; i < this->curNumParticles; i++) {
         this->perParticleParams.translate = this->particles[i].pos;
-        Gfx::ApplyUniformBlock(this->perParticleParams);
+        Gfx::ApplyUniforms(this->perParticleParams);
         Gfx::Draw(this->primGroup);
     }
     drawTime = Clock::Since(drawStart);

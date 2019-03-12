@@ -20,8 +20,10 @@ public:
     
     Id renderPass;
     PassAction renderPassAction;
-    DrawState offscreenDrawState;
-    DrawState copyDrawState;
+    Id offscreenPipeline;
+    Bindings offscreenBind;
+    Id copyPipeline;
+    Bindings copyBind;
     OffscreenShader::fsParams offscreenFSParams;
     TimePoint lastFrameTimePoint;
 };
@@ -32,9 +34,10 @@ AppState::Code
 TextureFloatApp::OnInit() {
     // setup rendering system
     Gfx::Setup(GfxDesc()
-        .Width(512).Height(512)
-        .Title("Oryol Float Texture Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(512)
+        .SetHeight(512)
+        .SetTitle("Oryol Float Texture Sample")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
 
     // check required extensions
@@ -46,37 +49,38 @@ TextureFloatApp::OnInit() {
     // configure texture sampler with point-filtering
     const PixelFormat::Code rtColorFormat = PixelFormat::RGBA32F;
     Id rt = Gfx::CreateTexture(TextureDesc()
-        .RenderTarget(true)
-        .Width(Gfx::Desc().Width())
-        .Height(Gfx::Desc().Height())
-        .Format(rtColorFormat)
-        .MinFilter(TextureFilterMode::Nearest)
-        .MagFilter(TextureFilterMode::Nearest));
-    this->renderPass = Gfx::CreatePass(PassDesc().ColorAttachment(0, rt));
+        .SetRenderTarget(true)
+        .SetWidth(Gfx::Desc().Width)
+        .SetHeight(Gfx::Desc().Height)
+        .SetFormat(rtColorFormat)
+        .SetMinFilter(TextureFilterMode::Nearest)
+        .SetMagFilter(TextureFilterMode::Nearest));
+    this->renderPass = Gfx::CreatePass(PassDesc()
+        .SetColorAttachment(0, rt));
     this->renderPassAction.DontCareColor(0);
 
     // fullscreen mesh, we'll reuse this several times
     const float quadVertices[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f };
-    this->offscreenDrawState.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
-        .Size(sizeof(quadVertices))
-        .Content(quadVertices));
-    this->copyDrawState.VertexBuffers[0] = this->offscreenDrawState.VertexBuffers[0];
+    this->offscreenBind.VertexBuffers[0] = Gfx::CreateBuffer(BufferDesc()
+        .SetSize(sizeof(quadVertices))
+        .SetContent(quadVertices));
+    this->copyBind.VertexBuffers[0] = this->offscreenBind.VertexBuffers[0];
 
     // setup draw state for offscreen rendering to float render target
-    this->offscreenDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
-        .Shader(Gfx::CreateShader(OffscreenShader::Desc()))
-        .Layout(0, {{"in_pos", VertexFormat::Float2}})
-        .PrimitiveType(PrimitiveType::TriangleStrip)
-        .ColorFormat(rtColorFormat)
-        .DepthFormat(PixelFormat::None));
+    this->offscreenPipeline = Gfx::CreatePipeline(PipelineDesc()
+        .SetShader(Gfx::CreateShader(OffscreenShader::Desc()))
+        .SetLayout(0, {{"in_pos", VertexFormat::Float2}})
+        .SetPrimitiveType(PrimitiveType::TriangleStrip)
+        .SetColorFormat(rtColorFormat)
+        .SetDepthFormat(PixelFormat::None));
     this->offscreenFSParams.time = 0.0f;
 
     // fullscreen-copy resources
-    this->copyDrawState.Pipeline = Gfx::CreatePipeline(PipelineDesc()
-        .Shader(Gfx::CreateShader(CopyShader::Desc()))
-        .Layout(0, {{"in_pos", VertexFormat::Float2}})
-        .PrimitiveType(PrimitiveType::TriangleStrip));
-    this->copyDrawState.FSTexture[CopyShader::tex] = rt;
+    this->copyPipeline = Gfx::CreatePipeline(PipelineDesc()
+        .SetShader(Gfx::CreateShader(CopyShader::Desc()))
+        .SetLayout(0, {{"in_pos", VertexFormat::Float2}})
+        .SetPrimitiveType(PrimitiveType::TriangleStrip));
+    this->copyBind.FSTexture[CopyShader::tex] = rt;
 
     return App::OnInit();
 }
@@ -89,14 +93,16 @@ TextureFloatApp::OnRunning() {
     
     // render plasma to offscreen render target, do not clear
     Gfx::BeginPass(this->renderPass, this->renderPassAction);
-    Gfx::ApplyDrawState(this->offscreenDrawState);
-    Gfx::ApplyUniformBlock(this->offscreenFSParams);
+    Gfx::ApplyPipeline(this->offscreenPipeline);
+    Gfx::ApplyBindings(this->offscreenBind);
+    Gfx::ApplyUniforms(this->offscreenFSParams);
     Gfx::Draw(0, 4);
     Gfx::EndPass();
     
     // copy fullscreen quad
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->copyDrawState);
+    Gfx::ApplyPipeline(this->copyPipeline);
+    Gfx::ApplyBindings(this->copyBind);
     Gfx::Draw(0, 4);
     Dbg::DrawTextBuffer();
     Gfx::EndPass();

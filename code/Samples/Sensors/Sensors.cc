@@ -24,7 +24,8 @@ public:
     glm::mat4 computeMVP();
 
     PrimitiveGroup primGroup;
-    DrawState drawState;
+    Id pip;
+    Bindings bind;
     Shader::vsParams vsParams;
     TimePoint lastFrameTimePoint;
 };
@@ -34,9 +35,10 @@ OryolMain(SensorsApp);
 AppState::Code
 SensorsApp::OnInit() {
     Gfx::Setup(GfxDesc()
-        .Width(800).Height(400)
-        .Title("Oryol Device Sensor Sample")
-        .HtmlTrackElementSize(true));
+        .SetWidth(800)
+        .SetHeight(400)
+        .SetTitle("Oryol Device Sensor Sample")
+        .SetHtmlTrackElementSize(true));
     Dbg::Setup();
     Input::Setup();
     
@@ -47,13 +49,13 @@ SensorsApp::OnInit() {
         .Box(2.0, 2.0, 2.0, 1)
         .Build();
     this->primGroup = shape.PrimitiveGroups[0];
-    this->drawState.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
-    this->drawState.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
-    this->drawState.Pipeline = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
-        .Shader(Gfx::CreateShader(Shader::Desc()))
-        .DepthWriteEnabled(true)
-        .DepthCmpFunc(CompareFunc::LessEqual)
-        .CullFaceEnabled(true));
+    this->bind.VertexBuffers[0] = Gfx::CreateBuffer(shape.VertexBufferDesc);
+    this->bind.IndexBuffer = Gfx::CreateBuffer(shape.IndexBufferDesc);
+    this->pip = Gfx::CreatePipeline(PipelineDesc(shape.PipelineDesc)
+        .SetShader(Gfx::CreateShader(Shader::Desc()))
+        .SetDepthWriteEnabled(true)
+        .SetDepthCmpFunc(CompareFunc::LessEqual)
+        .SetCullFaceEnabled(true));
     return App::OnInit();
 }
 
@@ -74,9 +76,10 @@ AppState::Code
 SensorsApp::OnRunning() {
     
     Gfx::BeginPass();
-    Gfx::ApplyDrawState(this->drawState);
+    Gfx::ApplyPipeline(this->pip);
+    Gfx::ApplyBindings(this->bind);
     this->vsParams.mvp = this->computeMVP();
-    Gfx::ApplyUniformBlock(this->vsParams);
+    Gfx::ApplyUniforms(this->vsParams);
     Gfx::Draw(this->primGroup);
     Dbg::Print("\n\n\n\n");
     if (!Input::SensorsAttached()) {
