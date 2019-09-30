@@ -13,6 +13,7 @@
     to query touch gestures.
 */
 #include "Input/InputTypes.h"
+#include "glm/vec3.hpp"
 
 namespace Oryol {
     
