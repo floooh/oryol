@@ -89,6 +89,8 @@ public:
     static void BeginPass();
     /// begin rendering to default render pass with override clear values
     static void BeginPass(const PassAction& action);
+    /// begin rendering to default render pass with override clear values
+    static void BeginPassNoFbBind(const PassAction& action);
     /// begin offscreen rendering
     static void BeginPass(const Id& passId);
     /// begin offscreen rendering with override clear colors

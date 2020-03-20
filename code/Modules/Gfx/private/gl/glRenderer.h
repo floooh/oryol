@@ -39,6 +39,10 @@ public:
 
     /// begin rendering pass (pass can be nullptr for default framebuffer)
     void beginPass(renderPass* pass, const PassAction* action);
+
+    /// begin rendering pass (pass can be nullptr for default framebuffer)
+    void beginPassNoFbBind (renderPass* pass, const PassAction* action);
+  
     /// end current rendering pass
     void endPass();
 

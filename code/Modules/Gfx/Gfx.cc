@@ -145,6 +145,16 @@ Gfx::BeginPass(const PassAction& action) {
 
 //------------------------------------------------------------------------------
 void
+Gfx::BeginPassNoFbBind (const PassAction& action) {
+  o_assert_dbg (IsValid ());
+  o_assert_dbg (!state->inPass);
+  state->inPass = true;
+  state->gfxFrameInfo.NumPasses++;
+  state->renderer.beginPassNoFbBind (nullptr, &action);
+}
+
+//------------------------------------------------------------------------------
+void
 Gfx::BeginPass(const Id& id) {
     o_assert_dbg(IsValid());
     o_assert_dbg(!state->inPass);

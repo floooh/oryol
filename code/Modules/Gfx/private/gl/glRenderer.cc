@@ -367,6 +367,113 @@ glRenderer::beginPass(renderPass* pass, const PassAction* action) {
 
 //------------------------------------------------------------------------------
 void
+glRenderer::beginPassNoFbBind (renderPass* pass, const PassAction* action) {
+  o_assert_dbg (this->valid);
+  o_assert_dbg (action);
+  ORYOL_GL_CHECK_ERROR ();
+
+  if (nullptr == pass) {
+    this->rpAttrs = this->pointers.displayMgr->GetDisplayAttrs ();
+  }
+  else {
+    o_assert_dbg (pass->colorTextures[0]);
+    this->rpAttrs = DisplayAttrs::FromTextureAttrs (pass->colorTextures[0]->textureAttrs);
+  }
+
+  o_assert_dbg (nullptr == this->curRenderPass);
+  if (nullptr == pass) {
+    //this->pointers.displayMgr->glBindDefaultFramebuffer ();
+  }
+  else {
+    //::glBindFramebuffer (GL_FRAMEBUFFER, pass->glFramebuffer);
+    ORYOL_GL_CHECK_ERROR ();
+  #if !ORYOL_OPENGLES2
+    if (!glCaps::IsFlavour (glCaps::GLES2)) {
+      int numAtts = 0;
+      GLenum att[GfxConfig::MaxNumColorAttachments] = {};
+      for (; numAtts < GfxConfig::MaxNumColorAttachments; numAtts++) {
+        if (pass->colorTextures[numAtts]) {
+          att[numAtts] = GL_COLOR_ATTACHMENT0 + numAtts;
+        }
+        else {
+          break;
+        }
+      }
+      ::glDrawBuffers (numAtts, att);
+      ORYOL_GL_CHECK_ERROR ();
+    }
+  #endif
+  }
+  ORYOL_GL_CHECK_ERROR ();
+  this->curRenderPass = pass;
+  this->rpValid = true;
+
+  // prepare state for clear operations
+  this->applyViewPort (0, 0, this->rpAttrs.FramebufferWidth, this->rpAttrs.FramebufferHeight, false);
+  if (this->rasterizerState.ScissorTestEnabled) {
+    this->rasterizerState.ScissorTestEnabled = false;
+    ::glDisable (GL_SCISSOR_TEST);
+  }
+  if (PixelChannel::RGBA != this->blendState.ColorWriteMask) {
+    this->blendState.ColorWriteMask = PixelChannel::RGBA;
+    ::glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
+  if (!this->depthStencilState.DepthWriteEnabled) {
+    this->depthStencilState.DepthWriteEnabled = true;
+    ::glDepthMask (GL_TRUE);
+  }
+  if (this->depthStencilState.StencilWriteMask != 0xFF) {
+    this->depthStencilState.StencilWriteMask = 0xFF;
+    ::glStencilMask (0xFF);
+  }
+  ORYOL_GL_CHECK_ERROR ();
+
+  // perform clear actions on render targets
+  // FIXME: GL_EXT_discard_framebuffer for DontCare
+  if ((nullptr == pass) || glCaps::IsFlavour (glCaps::GLES2)) {
+    // special case: default render pass or no MRT support
+    GLbitfield clearMask = 0;
+    if (action->Flags & PassAction::ClearC0) {
+      clearMask |= GL_COLOR_BUFFER_BIT;
+      const auto& c = action->Color[0];
+      ::glClearColor (c.x, c.y, c.z, c.w);
+    }
+    if (action->Flags & PassAction::ClearDS) {
+      clearMask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+    #if (ORYOL_OPENGLES2 || ORYOL_OPENGLES3)
+      ::glClearDepthf (action->Depth);
+    #else
+      ::glClearDepth (action->Depth);
+    #endif
+      ::glClearStencil (action->Stencil);
+    }
+    if (0 != clearMask) {
+      ::glClear (clearMask);
+    }
+    ORYOL_GL_CHECK_ERROR ();
+  }
+#if !ORYOL_OPENGLES2
+  else {
+    o_assert_dbg (pass);
+    // GLES3 / GL3 potential MRT
+    for (int i = 0; i < GfxConfig::MaxNumColorAttachments; i++) {
+      if (pass->colorTextures[i]) {
+        if (action->Flags & (PassAction::ClearC0 << i)) {
+          const GLfloat* c = glm::value_ptr (action->Color[i]);
+          ::glClearBufferfv (GL_COLOR, i, c);
+        }
+      }
+    }
+    if (pass->depthStencilTexture && (action->Flags & PassAction::ClearDS)) {
+      ::glClearBufferfi (GL_DEPTH_STENCIL, 0, action->Depth, action->Stencil);
+    }
+    ORYOL_GL_CHECK_ERROR ();
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+void
 glRenderer::endPass() {
     o_assert_dbg(this->valid);
 
