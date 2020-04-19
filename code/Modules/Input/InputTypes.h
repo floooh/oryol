@@ -3,6 +3,7 @@
 #include "Core/Containers/StaticArray.h"
 #include "Core/Containers/Map.h"
 #include "Core/String/StringAtom.h"
+#include "Core/String/String.h"
 #include "glm/vec2.hpp"
 #include <functional>
 
@@ -133,6 +134,8 @@ public:
     bool AccelerometerEnabled = true;
     /// gyrometer enabled
     bool GyrometerEnabled = true;
+    /// name of HTML5 canvas element with the input focus
+    String HtmlElement = "#canvas";
 };
 
 //------------------------------------------------------------------------------

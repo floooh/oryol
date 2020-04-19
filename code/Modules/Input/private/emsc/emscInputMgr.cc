@@ -53,17 +53,19 @@ emscInputMgr::discard() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::setupCallbacks() {
-    emscripten_set_keydown_callback(0, this, true, emscKeyDown);
-    emscripten_set_keyup_callback(0, this, true, emscKeyUp);
-    emscripten_set_keypress_callback(0, this, true, emscKeyPress);
-    emscripten_set_mousedown_callback("#canvas", this, true, emscMouseDown);
-    emscripten_set_mouseup_callback("#canvas", this, true, emscMouseUp);
-    emscripten_set_mousemove_callback("#canvas", this, true, emscMouseMove);
-    emscripten_set_wheel_callback("#canvas", this, false, emscWheel);
-    emscripten_set_touchstart_callback("#canvas", this, true, emscTouch);
-    emscripten_set_touchend_callback("#canvas", this, true, emscTouch);
-    emscripten_set_touchmove_callback("#canvas", this, true, emscTouch);
-    emscripten_set_touchcancel_callback("#canvas", this, true, emscTouch);
+    o_assert(!this->inputSetup.HtmlElement.Empty());
+    const char* canvasId = this->inputSetup.HtmlElement.AsCStr();
+    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, true, emscKeyDown);
+    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, true, emscKeyUp);
+    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, true, emscKeyPress);
+    emscripten_set_mousedown_callback(canvasId, this, true, emscMouseDown);
+    emscripten_set_mouseup_callback(canvasId, this, true, emscMouseUp);
+    emscripten_set_mousemove_callback(canvasId, this, true, emscMouseMove);
+    emscripten_set_wheel_callback(canvasId, this, false, emscWheel);
+    emscripten_set_touchstart_callback(canvasId, this, true, emscTouch);
+    emscripten_set_touchend_callback(canvasId, this, true, emscTouch);
+    emscripten_set_touchmove_callback(canvasId, this, true, emscTouch);
+    emscripten_set_touchcancel_callback(canvasId, this, true, emscTouch);
     if (this->inputSetup.AccelerometerEnabled) {
         emscripten_set_devicemotion_callback(this, true, emscDeviceMotion);
     }
@@ -75,17 +77,19 @@ emscInputMgr::setupCallbacks() {
 //------------------------------------------------------------------------------
 void
 emscInputMgr::discardCallbacks() {
-    emscripten_set_keydown_callback(0, 0, true, 0);
-    emscripten_set_keyup_callback(0, 0, true, 0);    
-    emscripten_set_keypress_callback(0, 0, true, 0);
-    emscripten_set_mousedown_callback("#canvas", 0, true, 0);
-    emscripten_set_mouseup_callback("#canvas", 0, true, 0);
-    emscripten_set_mousemove_callback("#canvas", 0, true, 0);
-    emscripten_set_wheel_callback("#canvas", 0, true, 0);
-    emscripten_set_touchstart_callback("#canvas", 0, true, 0);
-    emscripten_set_touchend_callback("#canvas", 0, true, 0);
-    emscripten_set_touchmove_callback("#canvas", 0, true, 0);
-    emscripten_set_touchcancel_callback("#canvas", 0, true, 0);
+    o_assert(!this->inputSetup.HtmlElement.Empty());
+    const char* canvasId = this->inputSetup.HtmlElement.AsCStr();
+    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, true, 0);
+    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, true, 0);    
+    emscripten_set_keypress_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, true, 0);
+    emscripten_set_mousedown_callback(canvasId, 0, true, 0);
+    emscripten_set_mouseup_callback(canvasId, 0, true, 0);
+    emscripten_set_mousemove_callback(canvasId, 0, true, 0);
+    emscripten_set_wheel_callback(canvasId, 0, true, 0);
+    emscripten_set_touchstart_callback(canvasId, 0, true, 0);
+    emscripten_set_touchend_callback(canvasId, 0, true, 0);
+    emscripten_set_touchmove_callback(canvasId, 0, true, 0);
+    emscripten_set_touchcancel_callback(canvasId, 0, true, 0);
     emscripten_set_devicemotion_callback(0, true, 0);
     emscripten_set_deviceorientation_callback(0, true, 0);
 }
@@ -364,7 +368,7 @@ emscInputMgr::mapMouseButton(unsigned short html5Btn) const {
 bool
 emscInputMgr::updatePointerLockMode(PointerLockMode::Code lockMode) {
     if (PointerLockMode::Enable == lockMode) {
-        emscripten_request_pointerlock(0, false);
+        emscripten_request_pointerlock(EMSCRIPTEN_EVENT_TARGET_WINDOW, false);
         return true;
     }
     else {

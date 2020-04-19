@@ -92,7 +92,7 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
         emscripten_set_canvas_element_size(renderSetup.HtmlElement.AsCStr(), this->displayAttrs.FramebufferWidth, this->displayAttrs.FramebufferHeight);
         emscripten_set_resize_callback(nullptr, nullptr, false, emscWindowSizeChanged); 
     } else if (renderSetup.Windowed) {
-        emscripten_set_canvas_element_size("#canvas", renderSetup.Width, renderSetup.Height);
+        emscripten_set_canvas_element_size(renderSetup.HtmlElement.AsCStr(), renderSetup.Width, renderSetup.Height);
     }
     else {
         enter_soft_fullscreen();
@@ -115,7 +115,7 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
     #if ORYOL_OPENGLES3
     Log::Info("emscDisplayMgr: trying to create WebGL2 context...\n");
     ctxAttrs.majorVersion = 2;
-    this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
+    this->ctx = emscripten_webgl_create_context(renderSetup.HtmlElement.AsCStr(), &ctxAttrs);
     if (this->ctx) {
         Log::Info("emscDisplayMgr: using WebGL2 context\n");
     }
@@ -125,7 +125,7 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
         // WebGL2 context creation failed, try WebGL1
         Log::Info("emscDisplayMgr: using WebGL1 context...\n");
         ctxAttrs.majorVersion = 1;
-        this->ctx = emscripten_webgl_create_context(nullptr, &ctxAttrs);
+        this->ctx = emscripten_webgl_create_context(renderSetup.HtmlElement.AsCStr(), &ctxAttrs);
         glFlavour = glCaps::GLES2;
     }
     o_assert2(this->ctx > 0, "Failed to create WebGL context");
@@ -171,7 +171,7 @@ emscDisplayMgr::glBindDefaultFramebuffer() {
 EM_BOOL
 emscDisplayMgr::emscCanvasSizeChanged(int eventType, const void* reserved, void* userData) {
     int newWidth, newHeight;
-    emscripten_get_canvas_element_size("#canvas", &newWidth, &newHeight);
+    emscripten_get_canvas_element_size(self->gfxSetup.HtmlElement.AsCStr(), &newWidth, &newHeight);
     self->displayAttrs.FramebufferWidth = newWidth; 
     self->displayAttrs.FramebufferHeight = newHeight;
     return true;

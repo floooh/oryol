@@ -238,7 +238,7 @@ There are 2 special GfxSetup members useful for HTML5 apps:
 ```cpp
 /// if true, ignore own size and instead track size of an HTML element (emscripten only)
 bool HtmlTrackElementSize = false;
-/// name of the HTML element to track (default: #canvas)
+/// name of the HTML element to track (default: "#canvas")
 String HtmlElement = "#canvas";
 ```
 
