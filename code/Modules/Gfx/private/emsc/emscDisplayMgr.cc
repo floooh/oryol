@@ -90,7 +90,7 @@ emscDisplayMgr::SetupDisplay(const GfxSetup& renderSetup, const gfxPointers& ptr
                 this->displayAttrs.FramebufferHeight);
         }
         emscripten_set_canvas_element_size(renderSetup.HtmlElement.AsCStr(), this->displayAttrs.FramebufferWidth, this->displayAttrs.FramebufferHeight);
-        emscripten_set_resize_callback(nullptr, nullptr, false, emscWindowSizeChanged); 
+        emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, false, emscWindowSizeChanged); 
     } else if (renderSetup.Windowed) {
         emscripten_set_canvas_element_size(renderSetup.HtmlElement.AsCStr(), renderSetup.Width, renderSetup.Height);
     }
