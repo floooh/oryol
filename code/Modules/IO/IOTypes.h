@@ -90,6 +90,7 @@ public:
         // these are custom Oryol status codes
         Cancelled = 1000,
         DownloadError = 1001,
+        ZeroLength = 1002,
         
         InvalidIOStatus = InvalidIndex
     };

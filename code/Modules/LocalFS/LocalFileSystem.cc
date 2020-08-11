@@ -67,6 +67,10 @@ LocalFileSystem::onRead(const Ptr<IORead>& msg) {
                     msg->Status = IOStatus::OK;
                 }
             }
+            else if (size == 0) {
+                msg->Status = IOStatus::ZeroLength;
+                msg->ErrorDesc = "Zero length file read";
+            }
             fsWrapper::close(h);
         }
         else {
