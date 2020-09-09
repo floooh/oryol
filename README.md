@@ -1,3 +1,6 @@
+Please note that Oryol is currently not actively maintained and hasn't been for a long time, 
+my focus is currently on the Sokol headers and (from time to time) on the Chips emulator stuff.
+
 # Oryol
  
 A small, portable and extensible 3D coding framework written in C++:
