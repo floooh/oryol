@@ -185,7 +185,11 @@ def toETC(srcFilename, dstFilename, format) :
     tmpFilename, ext = os.path.splitext(dstFilename)
     tmpFilename += '.ppm'
 
-    convTool = getToolsBinPath() + 'convert'
+    if platform.system() == 'Darwin' :
+        convTool = getToolsBinPath() + 'convert'
+    elif platform.system() == 'Linux':
+        convTool = 'convert'
+
     etcTool  = getToolsBinPath() + 'etcpack'
     srcPath  = TexSrcDirectory + '/' + srcFilename
     dstPath  = TexDstDirectory + '/' + dstFilename
@@ -197,7 +201,10 @@ def toETC(srcFilename, dstFilename, format) :
 
     # first convert file to PPM format
     subprocess.call(args=[convTool, srcPath, tmpPath])
-    cmd = [etcTool, tmpPath, TexDstDirectory, '-mipmaps', '-ktx', '-c']
+    if platform.system() == 'Darwin' :
+        cmd = [etcTool, tmpPath, TexDstDirectory, '-mipmaps', '-ktx', '-c']
+    elif platform.system() == 'Linux':
+        cmd = [etcTool, tmpPath, dstPath, '-c']
     if format == 'etc1' :
         cmd.append('etc1')
     else :
