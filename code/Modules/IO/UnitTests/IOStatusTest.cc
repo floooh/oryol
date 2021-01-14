@@ -55,4 +55,5 @@ TEST(IOStatusTest) {
     CHECK(TOSTR(HTTPVersionNotSupported));
     CHECK(TOSTR(Cancelled));
     CHECK(TOSTR(DownloadError));
+    CHECK(TOSTR(ZeroLength));
 }

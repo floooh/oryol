@@ -55,6 +55,7 @@ IOStatus::ToString(Code c) {
         _TOSTRING(HTTPVersionNotSupported);
         _TOSTRING(Cancelled);
         _TOSTRING(DownloadError);
+        _TOSTRING(ZeroLength);
         default: return "InvalidIOStatus";
     }
 }
