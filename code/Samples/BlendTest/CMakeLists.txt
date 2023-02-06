@@ -1,7 +1,0 @@
-fips_begin_app(BlendTest windowed)
-    fips_vs_warning_level(3)
-    fips_files(BlendTest.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets)
-    oryol_add_web_sample(BlendTest "Test BlendState implementation" "emscripten,android" BlendTest.jpg "BlendTest/BlendTest.cc")
-fips_end_app()

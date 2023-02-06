@@ -1,7 +1,0 @@
-fips_begin_app(MultipleRenderTarget windowed)
-    fips_vs_warning_level(3)
-    fips_files(MultipleRenderTarget.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Dbg Assets)
-    oryol_add_web_sample(MultipleRenderTarget "Demonstrate MRT rendering" "emscripten" MultipleRenderTarget.jpg "MultipleRenderTarget/MultipleRenderTarget.cc")
-fips_end_app()

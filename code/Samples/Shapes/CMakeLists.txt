@@ -1,7 +1,0 @@
-fips_begin_app(Shapes windowed)
-    fips_vs_warning_level(3)
-    fips_files(Shapes.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets)
-    oryol_add_web_sample(Shapes "Shapes with random vertex colors, created with ShapeBuilder class" "emscripten" Shapes.jpg "Shapes/Shapes.cc")
-fips_end_app()

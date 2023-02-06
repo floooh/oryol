@@ -1,7 +1,0 @@
-fips_begin_app(DrawCallPerf windowed)
-    fips_vs_warning_level(3)
-    fips_files(DrawCallPerf.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets Dbg Input)
-    oryol_add_web_sample(DrawCallPerf "Measure draw call performance" "emscripten" DrawCallPerf.jpg "DrawCallPerf/DrawCallPerf.cc")
-fips_end_app()

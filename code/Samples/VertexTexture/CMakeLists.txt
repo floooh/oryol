@@ -1,7 +1,0 @@
-fips_begin_app(VertexTexture windowed)
-    fips_vs_warning_level(3)
-    fips_files(VertexTexture.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets Dbg)
-    oryol_add_web_sample(VertexTexture "Vertex texture fetch from offscreen render target" "emscripten" VertexTexture.jpg "VertexTexture/VertexTexture.cc")
-fips_end_app()

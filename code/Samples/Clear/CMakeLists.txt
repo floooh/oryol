@@ -1,6 +1,0 @@
-fips_begin_app(Clear windowed)
-    fips_vs_warning_level(3)
-    fips_files(Clear.cc Clear.jpg)
-    fips_deps(Gfx)
-    oryol_add_web_sample(Clear "Just call glClear in a loop" "emscripten" Clear.jpg "Clear/Clear.cc")
-fips_end_app()

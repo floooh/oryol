@@ -1,7 +1,0 @@
-fips_begin_app(SimpleRenderTarget windowed)
-    fips_vs_warning_level(3)
-    fips_files(SimpleRenderTarget.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets)
-    oryol_add_web_sample(SimpleRenderTarget "Demonstrate simple offscreen rendering" "emscripten" SimpleRenderTarget.jpg "SimpleRenderTarget/SimpleRenderTarget.cc")
-fips_end_app()

@@ -1,7 +1,0 @@
-fips_begin_app(Instancing windowed)
-    fips_vs_warning_level(3)
-    fips_files(Instancing.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets Dbg Input)
-    oryol_add_web_sample(Instancing "Instanced rendering" "emscripten" Instancing.jpg "Instancing/Instancing.cc")
-fips_end_app()

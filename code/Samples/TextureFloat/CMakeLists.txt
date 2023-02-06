@@ -1,7 +1,0 @@
-fips_begin_app(TextureFloat windowed)
-    fips_vs_warning_level(3)
-    fips_files(TextureFloat.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Dbg)
-    oryol_add_web_sample(TextureFloat "RGB plasma using float render texture" "emscripten" TextureFloat.jpg "TextureFloat/TextureFloat.cc")
-fips_end_app()

@@ -1,7 +1,0 @@
-fips_begin_app(ResourceStress windowed)
-    fips_vs_warning_level(3)
-    fips_files(ResourceStress.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets HttpFS Dbg)
-    oryol_add_web_sample(ResourceStress "Resource loading stresstest" "emscripten" none "ResourceStress/ResourceStress.cc")
-fips_end_app()

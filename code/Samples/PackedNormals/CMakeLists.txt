@@ -1,7 +1,0 @@
-fips_begin_app(PackedNormals windowed)
-    fips_vs_warning_level(3)
-    fips_files(PackedNormals.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets)
-    oryol_add_web_sample(PackedNormals "Shapes with packed vertex normals" "emscripten" PackedNormals.jpg "PackedNormals/PackedNormals.cc")
-fips_end_app()

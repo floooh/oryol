@@ -1,7 +1,0 @@
-fips_begin_app(TestInput windowed)
-    fips_vs_warning_level(3)
-    fips_files(TestInput.cc)
-    oryol_shader(shaders.glsl)
-    fips_deps(Gfx Assets Dbg Input)
-    oryol_add_web_sample(TestInput "Test Input module functionality" "emscripten" TestInput.jpg "TestInput/TestInput.cc")
-fips_end_app()

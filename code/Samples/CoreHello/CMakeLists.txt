@@ -1,6 +1,0 @@
-fips_begin_app(CoreHello cmdline)
-    fips_vs_warning_level(3)
-    fips_files(CoreHello.cc)
-    fips_deps(Core)
-    oryol_add_web_sample(CoreHello "Low-level hello world sample" "emscripten" none "CoreHello/CoreHello.cc")
-fips_end_app()
